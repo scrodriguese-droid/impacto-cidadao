@@ -26,6 +26,9 @@ import httpx
 from config import cfg
 
 log = logging.getLogger("impacto.fontes")
+# O pypdf avisa sobre fontes CFF a cada página ("fontTools is required..."), mas a extração
+# de texto é idêntica sem ele (verificado em 12 planos do TSE); silenciamos o ruído.
+logging.getLogger("pypdf").setLevel(logging.ERROR)
 
 TAMANHO_MAX_ARQUIVO = 40 * 1024 * 1024  # 40 MB
 
