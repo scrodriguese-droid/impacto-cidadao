@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ImpactoCidadão — Transparência no seu dia a dia</title>
+    <meta name="description" content="Planos de governo, leis e medidas provisórias traduzidos em impacto prático para o seu perfil e a sua cidade.">
+
+    <!-- Tailwind via CDN: ótimo para desenvolvimento. Em produção, compile o CSS (tailwindcss CLI). -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: { extend: {
+                colors: { brand: { 50: '#f0f9ff', 100: '#e0f2fe', 400: '#38bdf8', 500: '#0ea5e9', 600: '#0284c7', 700: '#0369a1', 800: '#075985', 900: '#0c4a6e', 950: '#082f49' } },
+                fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] }
+            } }
+        }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Inter', system-ui, sans-serif; }
+        details > summary { list-style: none; cursor: pointer; }
+        details > summary::-webkit-details-marker { display: none; }
+        details[open] > summary .chev { transform: rotate(180deg); }
+        .chev { transition: transform .15s ease; }
+        .scroll-x { scrollbar-width: thin; }
+        :focus-visible { outline: 2px solid #0284c7; outline-offset: 2px; }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-full flex flex-col transition-colors duration-200">
+
+<a href="#conteudo" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-white focus:text-slate-900 focus:p-3">Ir para o conteúdo</a>
+
+<!-- ========================= CABEÇALHO ========================= -->
+<header class="sticky top-0 z-40 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+            <a href="#" class="flex items-center space-x-3" aria-label="ImpactoCidadão — início">
+                <div class="bg-gradient-to-tr from-brand-700 to-teal-500 text-white p-2.5 rounded-xl shadow-md">
+                    <i class="fa-solid fa-scale-balanced text-xl" aria-hidden="true"></i>
+                </div>
+                <div>
+                    <span class="font-extrabold text-xl tracking-tight bg-gradient-to-r from-brand-700 via-teal-600 to-sky-600 bg-clip-text text-transparent">ImpactoCidadão</span>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 hidden sm:block">O que muda na sua vida, em linguagem simples</p>
+                </div>
+            </a>
+            <nav class="hidden md:flex space-x-1 font-medium text-sm" aria-label="Seções">
+                <a href="#candidatos" class="px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"><i class="fa-solid fa-flag mr-1.5 text-slate-400" aria-hidden="true"></i>Planos de governo</a>
+                <a href="#leis" class="px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"><i class="fa-solid fa-newspaper mr-1.5 text-slate-400" aria-hidden="true"></i>Leis e MPs</a>
+                <a href="#simuladores" class="px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"><i class="fa-solid fa-calculator mr-1.5 text-slate-400" aria-hidden="true"></i>Simuladores</a>
+            </nav>
+            <button id="btnTema" type="button" class="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl" aria-label="Alternar tema claro/escuro">
+                <i class="fa-solid fa-moon dark:hidden text-lg" aria-hidden="true"></i>
+                <i class="fa-solid fa-sun hidden dark:block text-amber-400 text-lg" aria-hidden="true"></i>
+            </button>
+        </div>
+    </div>
+</header>
+
+<!-- ========================= HERO: PERFIL + CIDADE ========================= -->
+<section class="bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 text-white py-10 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+        <div class="text-center max-w-3xl mx-auto mb-8">
+            <span class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-slate-800/80 border border-slate-700 text-xs font-semibold text-brand-400 mb-3">
+                <i class="fa-solid fa-bullseye text-teal-400" aria-hidden="true"></i><span>Informação sem partido, focada em você</span>
+            </span>
+            <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight">O que as propostas do governo mudam na sua vida e na sua cidade?</h1>
+            <p class="mt-3 text-slate-300 text-sm sm:text-base">Escolha seu perfil e sua cidade. Traduzimos planos de governo, leis e medidas provisórias para o que importa no dia a dia — sempre com o documento original à mão.</p>
+        </div>
+
+        <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider text-center mb-3">1. Seu perfil</p>
+        <div id="perfilGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3" role="radiogroup" aria-label="Perfil do cidadão"></div>
+
+        <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider text-center mt-8 mb-3">2. Sua cidade <span class="normal-case font-normal">(opcional)</span></p>
+        <div class="max-w-md mx-auto relative">
+            <label for="cidadeInput" class="sr-only">Buscar município</label>
+            <i class="fa-solid fa-location-dot absolute left-4 top-3.5 text-slate-400" aria-hidden="true"></i>
+            <input id="cidadeInput" type="text" autocomplete="off" placeholder="Digite o nome da sua cidade…"
+                   class="w-full pl-11 pr-4 py-3 rounded-xl bg-slate-800 border border-slate-600 text-sm text-white placeholder-slate-400 focus:ring-2 focus:ring-brand-500 focus:outline-none">
+            <ul id="cidadeLista" class="hidden absolute z-30 mt-1 w-full bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 overflow-hidden text-sm" role="listbox"></ul>
+            <div id="cidadeChip" class="hidden mt-3 text-center"></div>
+        </div>
+    </div>
+</section>
+
+<main id="conteudo" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full space-y-14">
+
+    <!-- ========================= PLANOS DE GOVERNO ========================= -->
+    <section id="candidatos" class="scroll-mt-20" aria-labelledby="tCandidatos">
+        <div class="mb-5">
+            <h2 id="tCandidatos" class="text-2xl font-bold text-slate-900 dark:text-white flex items-center">
+                <i class="fa-solid fa-flag text-brand-600 mr-2.5" aria-hidden="true"></i>Planos de governo para a Presidência
+            </h2>
+            <p class="text-sm text-slate-600 dark:text-slate-400 mt-1">Mesma pergunta, para todos, no mesmo formato e em ordem alfabética. Cada proposta traz o trecho original e a página do documento registrado no TSE.</p>
+        </div>
+
+        <div class="rounded-xl border border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 text-xs p-3.5 flex items-start space-x-2.5 mb-5" role="note">
+            <i class="fa-solid fa-triangle-exclamation mt-0.5" aria-hidden="true"></i>
+            <p><b>Isto é informação, não recomendação de voto.</b> Os resumos são gerados por inteligência artificial a partir dos planos oficiais e conferidos automaticamente contra o PDF, mas podem conter imprecisões — confira sempre o trecho original. O que um plano promete não é garantia de execução: depende do Congresso, do orçamento e, muitas vezes, de estados e prefeituras.</p>
+        </div>
+
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 mb-5">
+            <div id="temaChips" class="flex gap-2 overflow-x-auto scroll-x pb-1" role="radiogroup" aria-label="Tema"></div>
+            <label class="inline-flex items-center space-x-2 text-sm shrink-0 cursor-pointer">
+                <input id="chkTurno2" type="checkbox" class="rounded border-slate-300 text-brand-600 focus:ring-brand-500">
+                <span>Somente candidatos no <b>2º turno</b></span>
+            </label>
+        </div>
+
+        <div id="candidatosGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5" aria-live="polite"></div>
+    </section>
+
+    <!-- ========================= LEIS E MPs ========================= -->
+    <section id="leis" class="scroll-mt-20" aria-labelledby="tLeis">
+        <div class="lg:grid lg:grid-cols-12 lg:gap-8">
+            <aside class="lg:col-span-3 mb-6 lg:mb-0">
+                <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-200 dark:border-slate-700/80 shadow-sm lg:sticky lg:top-20 space-y-5">
+                    <h3 class="text-sm font-bold uppercase tracking-wider flex items-center justify-between">
+                        <span><i class="fa-solid fa-filter text-brand-500 mr-2" aria-hidden="true"></i>Filtros</span>
+                        <button id="btnLimpar" type="button" class="text-xs text-brand-600 dark:text-brand-400 hover:underline normal-case font-normal">Limpar</button>
+                    </h3>
+                    <div class="relative">
+                        <label for="busca" class="sr-only">Buscar</label>
+                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-400 text-xs" aria-hidden="true"></i>
+                        <input id="busca" type="search" placeholder="FGTS, MEI, imposto, MPV 1394…" maxlength="120"
+                               class="w-full pl-9 pr-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-2">Área de impacto</label>
+                        <div id="catFiltros" class="space-y-1"></div>
+                    </div>
+                    <div>
+                        <label for="filtroStatus" class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-2">Situação</label>
+                        <select id="filtroStatus" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs"></select>
+                    </div>
+                </div>
+            </aside>
+
+            <div class="lg:col-span-9">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+                    <div>
+                        <h2 id="tLeis" class="text-xl font-bold flex items-center"><i class="fa-solid fa-newspaper text-brand-600 mr-2.5" aria-hidden="true"></i>Leis e medidas provisórias do Executivo</h2>
+                        <p class="text-xs text-slate-500 dark:text-slate-400" id="contagemLeis" aria-live="polite">Carregando…</p>
+                    </div>
+                    <div class="flex items-center space-x-2 text-xs">
+                        <label for="ordem" class="text-slate-500">Ordenar por</label>
+                        <select id="ordem" class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1.5 font-medium">
+                            <option value="recentes">Mais recentes</option>
+                            <option value="impacto">Maior impacto no bolso</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="leisLista" class="space-y-5"></div>
+                <div class="text-center mt-6"><button id="btnMais" type="button" class="hidden px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold">Carregar mais</button></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========================= SIMULADORES ========================= -->
+    <section id="simuladores" class="scroll-mt-20 bg-white dark:bg-slate-800 rounded-2xl p-6 sm:p-8 border border-slate-200 dark:border-slate-700/80 shadow-sm" aria-labelledby="tSim">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 border-b border-slate-100 dark:border-slate-700/60 pb-5">
+            <div>
+                <h2 id="tSim" class="text-xl font-bold flex items-center"><i class="fa-solid fa-calculator text-teal-500 mr-2.5" aria-hidden="true"></i>Simuladores do seu bolso</h2>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Cálculos com as regras vigentes, feitos no servidor com parâmetros legais documentados. São estimativas de orientação.</p>
+            </div>
+            <div class="inline-flex rounded-xl p-1 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700" role="tablist">
+                <button id="tabIR" role="tab" type="button" class="px-3 py-1.5 text-xs font-semibold rounded-lg">Imposto de Renda</button>
+                <button id="tabMEI" role="tab" type="button" class="px-3 py-1.5 text-xs font-semibold rounded-lg">Limite do MEI</button>
+            </div>
+        </div>
+
+        <!-- IR -->
+        <div id="painelIR" class="grid grid-cols-1 md:grid-cols-12 gap-6">
+            <div class="md:col-span-5 space-y-4">
+                <div>
+                    <label for="irSalario" class="block text-xs font-semibold mb-1">Salário bruto mensal (R$)</label>
+                    <input id="irSalario" type="number" inputmode="decimal" min="0" max="1000000" step="50" value="4500"
+                           class="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                </div>
+                <div>
+                    <label for="irDeps" class="block text-xs font-semibold mb-1">Dependentes: <span id="irDepsTxt" class="font-bold text-brand-600">0</span></label>
+                    <input id="irDeps" type="range" min="0" max="6" value="0" class="w-full accent-brand-600">
+                </div>
+                <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">Compara a retenção na fonte pela regra de 2025 com a regra de 2026 (Lei 15.270/2025: isenção até R$ 5.000 e redução gradual até R$ 7.350).</p>
+            </div>
+            <div id="irResultado" class="md:col-span-7 bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl p-5 shadow-lg border border-slate-700" aria-live="polite"></div>
+        </div>
+
+        <!-- MEI -->
+        <div id="painelMEI" class="hidden grid grid-cols-1 md:grid-cols-12 gap-6">
+            <div class="md:col-span-5 space-y-4">
+                <div>
+                    <label for="meiFat" class="block text-xs font-semibold mb-1">Faturamento anual (R$)</label>
+                    <input id="meiFat" type="number" inputmode="decimal" min="0" max="10000000" step="1000" value="90000"
+                           class="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                </div>
+                <div>
+                    <label for="meiAtiv" class="block text-xs font-semibold mb-1">Atividade</label>
+                    <select id="meiAtiv" class="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm">
+                        <option value="servicos">Serviços</option>
+                        <option value="comercio_industria">Comércio ou indústria</option>
+                        <option value="comercio_servicos">Comércio e serviços</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="meiTeto" class="block text-xs font-semibold mb-1">E se o teto anual fosse… (R$, hipótese)</label>
+                    <input id="meiTeto" type="number" inputmode="decimal" min="0" max="10000000" step="1000" placeholder="ex.: 130000"
+                           class="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                    <p class="text-[11px] text-slate-500 mt-1">Simulação livre: não representa lei aprovada.</p>
+                </div>
+            </div>
+            <div id="meiResultado" class="md:col-span-7 bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl p-5 shadow-lg border border-slate-700" aria-live="polite"></div>
+        </div>
+    </section>
+</main>
+
+<!-- ========================= RODAPÉ ========================= -->
+<footer class="bg-slate-900 text-slate-400 py-10 border-t border-slate-800 text-xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+            <div>
+                <h4 class="text-white font-semibold mb-3 uppercase tracking-wider">Fontes oficiais</h4>
+                <ul class="space-y-2">
+                    <li><a class="hover:text-white" target="_blank" rel="noopener" href="https://divulgacandcontas.tse.jus.br/">TSE — DivulgaCandContas (planos de governo)</a></li>
+                    <li><a class="hover:text-white" target="_blank" rel="noopener" href="https://dadosabertos.camara.leg.br/">Câmara dos Deputados — Dados Abertos</a></li>
+                    <li><a class="hover:text-white" target="_blank" rel="noopener" href="https://www12.senado.leg.br/dados-abertos">Senado Federal — Dados Abertos</a></li>
+                    <li><a class="hover:text-white" target="_blank" rel="noopener" href="https://www.in.gov.br/">Diário Oficial da União</a></li>
+                    <li><a class="hover:text-white" target="_blank" rel="noopener" href="https://servicodados.ibge.gov.br/api/docs">IBGE — municípios e população</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="text-white font-semibold mb-3 uppercase tracking-wider">Compromisso editorial</h4>
+                <p class="leading-relaxed">Descrevemos, não avaliamos. Todos os candidatos passam pelo mesmo roteiro, em ordem alfabética, sem ranking. Cada proposta cita o texto original, e citações que não existem no PDF são descartadas automaticamente. O conteúdo é gerado por IA e pode conter erros: consulte o documento oficial.</p>
+            </div>
+            <div>
+                <h4 class="text-white font-semibold mb-3 uppercase tracking-wider">Sobre as votações</h4>
+                <p class="leading-relaxed">A consulta de opinião vale apenas para leis e medidas provisórias. É informal, anônima e <b>não é pesquisa eleitoral</b> nem representa a população. Não coletamos CPF, e-mail ou endereço IP para votar.</p>
+            </div>
+        </div>
+        <p class="pt-6 border-t border-slate-800 text-slate-500">Projeto independente e sem vínculo com governo, partidos ou candidaturas.</p>
+    </div>
+</footer>
+
+<script>
+/* ====================================================================== *
+ *  ImpactoCidadão — front-end (JavaScript puro, sem build)
+ *  Toda a informação vem da API (/api/...). Texto vindo do servidor é
+ *  sempre escapado antes de ir para o HTML (função esc).
+ * ====================================================================== */
+const API = location.protocol.startsWith('http') ? '' : 'http://localhost:8000';
+
+/* ---------- utilidades ---------- */
+const $ = (id) => document.getElementById(id);
+const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const urlSegura = (u) => (/^https?:\/\//i.test(u || '') ? u : '#');
+const brl = (n) => Number(n || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+const fmtData = (iso) => { if (!iso) return ''; const d = new Date(iso.slice(0, 10) + 'T00:00:00'); return isNaN(d) ? '' : d.toLocaleDateString('pt-BR'); };
+const debounce = (fn, ms) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
+const guardar = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (_) { /* navegação privada */ } };
+const ler = (k, padrao) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : padrao; } catch (_) { return padrao; } };
+
+async function api(caminho, opcoes) {
+    const resp = await fetch(API + caminho, opcoes);
+    if (!resp.ok) {
+        let detalhe = '';
+        try { const j = await resp.json(); detalhe = typeof j.detail === 'string' ? j.detail : ''; } catch (_) { /* sem corpo */ }
+        throw new Error(detalhe || `Erro ${resp.status}`);
+    }
+    return resp.json();
+}
+const mensagemErro = (e) => `<div class="p-4 rounded-xl border border-rose-300 dark:border-rose-800 bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-200 text-sm"><i class="fa-solid fa-circle-exclamation mr-2" aria-hidden="true"></i>${esc(e.message || e)} <span class="block text-xs mt-1 opacity-80">Verifique se o servidor está no ar (uvicorn) e tente novamente.</span></div>`;
+
+/* ---------- estado ---------- */
+const prefs = ler('ic_prefs', {});
+const S = {
+    perfil: prefs.perfil || '', municipio: prefs.municipio || null, tema: prefs.tema || 'saude',
+    turno2: prefs.turno2 !== undefined ? prefs.turno2 : true,
+    categoria: 'all', status: 'all', q: '', ordem: 'recentes', pagina: 1, total: 0, itens: [],
+    perfis: [], categorias: [], statusLista: [], candidatosResumo: {},
+};
+const salvarPrefs = () => guardar('ic_prefs', { perfil: S.perfil, municipio: S.municipio, tema: S.tema, turno2: S.turno2 });
+
+const CANAIS = {
+    beneficio_direto: ['Pago direto à pessoa', 'fa-hand-holding-dollar'],
+    programa_via_municipio: ['Executado pela prefeitura', 'fa-city'],
+    repasse_a_municipios: ['Repasse aos municípios', 'fa-money-bill-transfer'],
+    regulacao_nacional: ['Regra nacional', 'fa-scale-balanced'],
+    investimento_federal_direto: ['Obra ou serviço federal', 'fa-building-columns'],
+    nao_especificado: ['Execução não detalhada', 'fa-circle-question'],
+};
+const STATUS_PLANO = {
+    aguardando_pdf: 'O arquivo do plano ainda não pôde ser obtido; a análise está pendente.',
+    sem_texto: 'O PDF do plano é uma imagem sem texto selecionável; a análise automática está pendente.',
+    texto_longo: 'O plano é muito extenso e a análise automática está pendente.',
+    pendente: 'A análise deste plano ainda não foi executada.',
+    falha: 'A análise automática deste plano falhou e será refeita.',
+    sem_plano: 'Nenhum plano de governo foi encontrado no registro da candidatura.',
+};
+const RELEVANCIA = { alta: ['Impacto alto no bolso', 'bg-rose-100 text-rose-800 dark:bg-rose-950/70 dark:text-rose-300'],
+                     media: ['Impacto médio', 'bg-amber-100 text-amber-800 dark:bg-amber-950/70 dark:text-amber-300'],
+                     baixa: ['Impacto baixo', 'bg-sky-100 text-sky-800 dark:bg-sky-950/70 dark:text-sky-300'],
+                     nenhuma: ['Sem efeito direto', 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300'] };
+
+/* ---------- tema claro/escuro ---------- */
+$('btnTema').addEventListener('click', () => {
+    const escuro = document.documentElement.classList.toggle('dark');
+    guardar('ic_tema', escuro ? 'dark' : 'light');
+});
+(function iniciarTema() {
+    const salvo = ler('ic_tema', null);
+    const escuro = salvo ? salvo === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.classList.toggle('dark', escuro);
+})();
+
+/* ====================================================================== *
+ *  Perfil
+ * ====================================================================== */
+function renderPerfis() {
+    const todos = [{ id: '', nome: 'Todos os perfis', icone: 'fa-users' }, ...S.perfis];
+    $('perfilGrid').innerHTML = todos.map((p) => {
+        const ativo = p.id === S.perfil;
+        return `<button type="button" role="radio" aria-checked="${ativo}" data-perfil="${esc(p.id)}"
+                class="flex flex-col items-center justify-center p-3.5 rounded-2xl border text-center transition ${ativo
+                ? 'bg-brand-600 border-brand-500 text-white shadow-lg ring-2 ring-brand-400/50'
+                : 'bg-slate-800/80 border-slate-700/80 text-slate-300 hover:bg-slate-700/80 hover:text-white'}">
+                <i class="fa-solid ${esc(p.icone)} text-lg mb-2 ${ativo ? 'text-white' : 'text-brand-400'}" aria-hidden="true"></i>
+                <span class="text-xs font-semibold leading-tight">${esc(p.nome)}</span></button>`;
+    }).join('');
+}
+$('perfilGrid').addEventListener('click', (ev) => {
+    const b = ev.target.closest('[data-perfil]');
+    if (!b) return;
+    S.perfil = b.dataset.perfil;
+    salvarPrefs(); renderPerfis(); carregarCandidatos(); recarregarLeis();
+});
+
+/* ====================================================================== *
+ *  Cidade (autocomplete IBGE)
+ * ====================================================================== */
+function renderCidadeChip() {
+    const chip = $('cidadeChip');
+    if (!S.municipio) { chip.classList.add('hidden'); chip.innerHTML = ''; return; }
+    chip.classList.remove('hidden');
+    chip.innerHTML = `<span class="inline-flex items-center space-x-2 bg-teal-500/15 border border-teal-400/40 text-teal-200 rounded-full px-3 py-1 text-xs font-semibold">
+        <i class="fa-solid fa-location-dot" aria-hidden="true"></i><span>${esc(S.municipio.nome)}/${esc(S.municipio.uf)}</span>
+        <button type="button" id="btnTirarCidade" class="ml-1 hover:text-white" aria-label="Remover cidade"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></span>`;
+    $('btnTirarCidade').addEventListener('click', () => { S.municipio = null; salvarPrefs(); renderCidadeChip(); carregarCandidatos(); });
+}
+const buscarCidade = debounce(async () => {
+    const q = $('cidadeInput').value.trim();
+    const lista = $('cidadeLista');
+    if (q.length < 2) { lista.classList.add('hidden'); return; }
+    try {
+        const achados = await api('/api/municipios?q=' + encodeURIComponent(q));
+        lista.innerHTML = achados.length
+            ? achados.map((m) => `<li><button type="button" role="option" data-cod="${m.codigo}" data-nome="${esc(m.nome)}" data-uf="${esc(m.uf)}"
+                class="w-full text-left px-4 py-2.5 hover:bg-slate-100 dark:hover:bg-slate-700">${esc(m.nome)} <span class="text-slate-400">/ ${esc(m.uf)}</span></button></li>`).join('')
+            : '<li class="px-4 py-2.5 text-slate-500">Nenhum município encontrado.</li>';
+        lista.classList.remove('hidden');
+    } catch (e) { lista.innerHTML = `<li class="px-4 py-2.5 text-rose-600">${esc(e.message)}</li>`; lista.classList.remove('hidden'); }
+}, 250);
+$('cidadeInput').addEventListener('input', buscarCidade);
+$('cidadeLista').addEventListener('click', (ev) => {
+    const b = ev.target.closest('[data-cod]');
+    if (!b) return;
+    S.municipio = { codigo: Number(b.dataset.cod), nome: b.dataset.nome, uf: b.dataset.uf };
+    $('cidadeInput').value = ''; $('cidadeLista').classList.add('hidden');
+    salvarPrefs(); renderCidadeChip(); carregarCandidatos();
+});
+document.addEventListener('click', (ev) => { if (!ev.target.closest('#cidadeLista') && ev.target.id !== 'cidadeInput') $('cidadeLista').classList.add('hidden'); });
+
+/* ====================================================================== *
+ *  Planos de governo
+ * ====================================================================== */
+function renderTemaChips() {
+    $('temaChips').innerHTML = S.categorias.map((c) => {
+        const ativo = c.id === S.tema;
+        return `<button type="button" role="radio" aria-checked="${ativo}" data-tema="${esc(c.id)}"
+            class="shrink-0 inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-full text-xs font-semibold border transition ${ativo
+            ? 'bg-brand-600 border-brand-600 text-white'
+            : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-brand-400'}">
+            <i class="fa-solid ${esc(c.icone)}" aria-hidden="true"></i><span>${esc(c.nome)}</span></button>`;
+    }).join('');
+}
+$('temaChips').addEventListener('click', (ev) => {
+    const b = ev.target.closest('[data-tema]');
+    if (!b) return;
+    S.tema = b.dataset.tema; salvarPrefs(); renderTemaChips(); carregarCandidatos();
+});
+$('chkTurno2').addEventListener('change', (ev) => { S.turno2 = ev.target.checked; salvarPrefs(); carregarCandidatos(); });
+
+const chip = (ok, texto) => `<span class="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full text-[11px] font-medium ${ok
+    ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
+    : 'bg-slate-100 text-slate-500 dark:bg-slate-700/60 dark:text-slate-400'}"><i class="fa-solid ${ok ? 'fa-check' : 'fa-minus'} text-[9px]" aria-hidden="true"></i><span>${texto}</span></span>`;
+
+function cartaoProposta(p) {
+    const [rotuloCanal, iconeCanal] = CANAIS[p.canal] || CANAIS.nao_especificado;
+    return `<li class="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-900/50 p-3.5">
+        <p class="text-sm font-medium leading-snug">${esc(p.descricao)}</p>
+        <div class="flex flex-wrap gap-1.5 mt-2.5">
+            ${chip(p.especifica.meta_numerica, 'meta numérica')}${chip(p.especifica.prazo, 'prazo')}${chip(p.especifica.fonte_de_recurso, 'fonte de recursos')}
+            <span class="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-sky-100 text-sky-800 dark:bg-sky-950/60 dark:text-sky-300">
+                <i class="fa-solid ${iconeCanal} text-[9px]" aria-hidden="true"></i><span>${esc(rotuloCanal)}</span></span>
+        </div>
+        ${p.como_chega_na_cidade ? `<p class="mt-2.5 text-xs leading-relaxed text-teal-900 dark:text-teal-200 bg-teal-50 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-900 rounded-lg p-2.5">
+            <i class="fa-solid fa-location-dot mr-1" aria-hidden="true"></i><b>Na sua cidade:</b> ${esc(p.como_chega_na_cidade)}</p>` : ''}
+        <details class="mt-2.5 text-xs">
+            <summary class="text-brand-700 dark:text-brand-400 font-semibold inline-flex items-center space-x-1">
+                <span>Ver trecho original${p.pagina ? ` (p. ${esc(p.pagina)})` : ''}</span><i class="fa-solid fa-chevron-down text-[9px] chev" aria-hidden="true"></i></summary>
+            <blockquote class="mt-2 pl-3 border-l-2 border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-400 italic">“${esc(p.trecho_literal)}”</blockquote>
+        </details>
+    </li>`;
+}
+
+function cartaoCandidato(c) {
+    const seg = (c.totalizacao || '').toLowerCase().startsWith('2');
+    const r = S.candidatosResumo[c.sq_candidato];
+    const plano = r ? r.plano : null;
+    const pdf = c.url_pdf || (plano && plano.url_pdf);
+    let corpo;
+    if (c.plano_status !== 'ok') {
+        corpo = `<p class="text-sm text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-900/60 rounded-xl p-3.5">
+            <i class="fa-solid fa-hourglass-half mr-1.5" aria-hidden="true"></i>${esc(STATUS_PLANO[c.plano_status] || 'Análise indisponível.')}</p>`;
+    } else if (!c.mencionado) {
+        corpo = `<p class="text-sm text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-900/60 rounded-xl p-3.5">
+            <i class="fa-solid fa-circle-minus mr-1.5" aria-hidden="true"></i>Nenhuma proposta sobre este tema foi identificada na análise automática. Confira o documento original.</p>`;
+    } else {
+        corpo = `${c.resumo ? `<p class="text-sm text-slate-700 dark:text-slate-300 leading-relaxed mb-3">${esc(c.resumo)}</p>` : ''}
+            ${c.propostas.length ? `<ul class="space-y-3">${c.propostas.map(cartaoProposta).join('')}</ul>` : ''}
+            ${c.propostas_ocultas_pelo_perfil ? `<p class="mt-3 text-xs text-slate-500"><i class="fa-solid fa-eye-slash mr-1" aria-hidden="true"></i>${c.propostas_ocultas_pelo_perfil} proposta(s) deste tema não são específicas para o perfil escolhido. <button type="button" class="underline" data-acao="todos-perfis">Ver todas</button></p>` : ''}`;
+    }
+    const estat = plano && plano.status === 'ok'
+        ? `<p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">${plano.propostas} propostas identificadas no plano · ${plano.com_meta_numerica} com meta numérica · ${plano.com_prazo} com prazo · ${plano.com_fonte_de_recurso} com fonte de recursos</p>` : '';
+    return `<article class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-sm p-5 flex flex-col">
+        <header class="pb-3 mb-3 border-b border-slate-100 dark:border-slate-700/60">
+            <div class="flex items-start justify-between gap-2">
+                <div>
+                    <h3 class="text-lg font-bold leading-tight">${esc(c.nome)}</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">${esc(c.partido || '')} · nº ${esc(c.numero ?? '—')}${c.vice ? ` · vice: ${esc(c.vice)}` : ''}</p>
+                </div>
+                ${seg ? '<span class="shrink-0 text-[10px] font-bold uppercase tracking-wide px-2 py-1 rounded-full bg-brand-100 text-brand-800 dark:bg-brand-950 dark:text-brand-300">2º turno</span>' : ''}
+            </div>
+            ${estat}
+        </header>
+        <div class="flex-grow">${corpo}</div>
+        ${pdf ? `<footer class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-700/60 text-xs">
+            <a href="${esc(urlSegura(pdf))}" target="_blank" rel="noopener" class="text-brand-700 dark:text-brand-400 font-semibold hover:underline">
+                <i class="fa-solid fa-file-pdf mr-1" aria-hidden="true"></i>Ler o plano completo (TSE)<i class="fa-solid fa-arrow-up-right-from-square text-[9px] ml-1" aria-hidden="true"></i></a></footer>` : ''}
+    </article>`;
+}
+
+let reqCandidatos = 0;
+async function carregarCandidatos() {
+    const grade = $('candidatosGrid');
+    const minha = ++reqCandidatos;
+    grade.innerHTML = '<p class="text-sm text-slate-500 col-span-full"><i class="fa-solid fa-spinner fa-spin mr-2" aria-hidden="true"></i>Carregando planos…</p>';
+    const params = new URLSearchParams({ categoria: S.tema, turno2: S.turno2 });
+    if (S.perfil) params.set('perfil', S.perfil);
+    if (S.municipio) params.set('municipio', S.municipio.codigo);
+    try {
+        const [cmp, resumo] = await Promise.all([
+            api('/api/candidatos/comparar?' + params), api('/api/candidatos?turno2=' + S.turno2),
+        ]);
+        if (minha !== reqCandidatos) return; // resposta antiga
+        S.candidatosResumo = Object.fromEntries(resumo.itens.map((i) => [i.sq_candidato, i]));
+        if (!cmp.candidatos.length) {
+            grade.innerHTML = '<p class="text-sm text-slate-500 col-span-full">Nenhum candidato encontrado. Rode o coletor de candidatos (veja o README).</p>';
+            return;
+        }
+        const dicaCidade = S.municipio ? '' : `<p class="col-span-full text-xs text-slate-500 dark:text-slate-400"><i class="fa-solid fa-location-dot mr-1" aria-hidden="true"></i>Escolha sua cidade no topo para ver como cada proposta chegaria até você.</p>`;
+        grade.innerHTML = dicaCidade + cmp.candidatos.map(cartaoCandidato).join('');
+        if (cmp.municipio && cmp.municipio.populacao) {
+            const pop = cmp.municipio.populacao;
+            grade.insertAdjacentHTML('afterbegin', `<p class="col-span-full text-xs text-slate-500 dark:text-slate-400"><i class="fa-solid fa-city mr-1" aria-hidden="true"></i>${esc(cmp.municipio.nome)}/${esc(cmp.municipio.uf)} — ${esc(cmp.municipio.regiao)} · ${pop.valor.toLocaleString('pt-BR')} habitantes (estimativa IBGE ${esc(pop.ano)}).</p>`);
+        }
+    } catch (e) { if (minha === reqCandidatos) grade.innerHTML = `<div class="col-span-full">${mensagemErro(e)}</div>`; }
+}
+$('candidatosGrid').addEventListener('click', (ev) => {
+    if (ev.target.closest('[data-acao="todos-perfis"]')) { S.perfil = ''; salvarPrefs(); renderPerfis(); carregarCandidatos(); recarregarLeis(); }
+});
+
+/* ====================================================================== *
+ *  Leis e MPs
+ * ====================================================================== */
+function renderFiltrosLeis() {
+    const todas = [{ id: 'all', nome: 'Todas as áreas', icone: 'fa-layer-group' }, ...S.categorias];
+    $('catFiltros').innerHTML = todas.map((c) => {
+        const ativo = c.id === S.categoria;
+        return `<button type="button" data-cat="${esc(c.id)}" aria-pressed="${ativo}"
+            class="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition ${ativo
+            ? 'bg-brand-100 dark:bg-brand-950 text-brand-700 dark:text-brand-300 font-bold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900'}">
+            <span class="flex items-center space-x-2"><i class="fa-solid ${esc(c.icone)} text-slate-400 w-4" aria-hidden="true"></i><span>${esc(c.nome)}</span></span></button>`;
+    }).join('');
+    $('filtroStatus').innerHTML = '<option value="all">Todas as situações</option>' + S.statusLista.map((s) => `<option value="${esc(s)}">${esc(s)}</option>`).join('');
+    $('filtroStatus').value = S.status;
+}
+$('catFiltros').addEventListener('click', (ev) => {
+    const b = ev.target.closest('[data-cat]'); if (!b) return;
+    S.categoria = b.dataset.cat; renderFiltrosLeis(); recarregarLeis();
+});
+$('filtroStatus').addEventListener('change', (ev) => { S.status = ev.target.value; recarregarLeis(); });
+$('ordem').addEventListener('change', (ev) => { S.ordem = ev.target.value; recarregarLeis(); });
+$('busca').addEventListener('input', debounce((ev) => { S.q = ev.target.value.trim(); recarregarLeis(); }, 300));
+$('btnLimpar').addEventListener('click', () => {
+    S.categoria = 'all'; S.status = 'all'; S.q = ''; $('busca').value = ''; renderFiltrosLeis(); recarregarLeis();
+});
+$('btnMais').addEventListener('click', () => { S.pagina += 1; carregarLeis(true); });
+
+function placarHtml(v) {
+    const t = v.total || 0;
+    const pct = (n) => (t ? Math.round((n / t) * 100) : 0);
+    if (!t) return '<p class="text-[11px] text-slate-500">Ainda sem votos. Seja o primeiro a opinar.</p>';
+    return `<div class="flex h-2.5 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-700" role="img" aria-label="${pct(v.concordo)}% concordam, ${pct(v.concordo_com_ajustes)}% concordam com ajustes, ${pct(v.discordo)}% discordam">
+            <div class="bg-emerald-500" style="width:${pct(v.concordo)}%"></div><div class="bg-amber-400" style="width:${pct(v.concordo_com_ajustes)}%"></div><div class="bg-rose-500" style="width:${pct(v.discordo)}%"></div></div>
+        <p class="text-[11px] text-slate-500 mt-1.5">${t} opinião(ões) · ${pct(v.concordo)}% concordam · ${pct(v.concordo_com_ajustes)}% com ajustes · ${pct(v.discordo)}% discordam</p>`;
+}
+const meusVotos = ler('ic_votos', {});
+function tokenAnonimo() {
+    let t = ler('ic_token', null);
+    if (!t) {
+        const b = new Uint8Array(24); crypto.getRandomValues(b);
+        t = Array.from(b, (x) => x.toString(16).padStart(2, '0')).join('');
+        guardar('ic_token', t);
+    }
+    return t;
+}
+
+function linhaDoTempo(ev) {
+    if (!ev || !ev.length) return '<p class="text-xs text-slate-500">Sem andamentos registrados.</p>';
+    return `<ol class="relative border-l-2 border-slate-200 dark:border-slate-700 ml-2 space-y-3">${ev.map((e) => `
+        <li class="ml-4"><span class="absolute -left-[7px] mt-1 w-3 h-3 rounded-full ${e.status === 'current' ? 'bg-brand-500 ring-4 ring-brand-500/20' : 'bg-emerald-500'}"></span>
+            <p class="text-xs font-semibold">${esc(e.etapa)} <span class="font-normal text-slate-500">· ${esc(e.orgao)} · ${esc(fmtData(e.data))}</span></p>
+            ${e.detalhe ? `<p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">${esc(e.detalhe)}</p>` : ''}</li>`).join('')}</ol>`;
+}
+
+const OPCOES_VOTO = [
+    ['concordo', 'Concordo', 'fa-thumbs-up', { base: 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:border-emerald-800 dark:text-emerald-300', ativo: 'border-emerald-600 bg-emerald-600 text-white' }],
+    ['concordo_com_ajustes', 'Com ajustes', 'fa-sliders', { base: 'border-amber-200 bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:border-amber-800 dark:text-amber-300', ativo: 'border-amber-500 bg-amber-500 text-white' }],
+    ['discordo', 'Discordo', 'fa-thumbs-down', { base: 'border-rose-200 bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:border-rose-800 dark:text-rose-300', ativo: 'border-rose-600 bg-rose-600 text-white' }],
+];
+function botoesVoto(id) {
+    const meu = meusVotos[id];
+    return OPCOES_VOTO.map(([valor, rotulo, icone, cor]) => `<button type="button" data-voto="${valor}" data-id="${id}" aria-pressed="${meu === valor}"
+        class="p-2 rounded-lg border text-xs font-semibold transition ${meu === valor ? cor.ativo : cor.base}"><i class="fa-solid ${icone} block mb-1" aria-hidden="true"></i>${rotulo}</button>`).join('');
+}
+
+function cartaoLei(p) {
+    const [rotRel, clsRel] = RELEVANCIA[p.relevancia] || RELEVANCIA.nenhuma;
+    const nomesPerfis = (p.perfis || []).map((id) => (id === 'todos' ? 'Todos' : (S.perfis.find((x) => x.id === id) || {}).nome || id));
+    const nomesCats = (p.categorias || []).map((id) => (S.categorias.find((x) => x.id === id) || {}).nome || id);
+    return `<article class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-sm overflow-hidden">
+        <div class="p-5 sm:p-6">
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                <div class="flex flex-wrap items-center gap-2">
+                    <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold border bg-sky-100 text-sky-800 border-sky-300 dark:bg-sky-950/80 dark:text-sky-300 dark:border-sky-800">${esc(p.status || 'Situação não informada')}</span>
+                    <span class="text-xs text-slate-400 font-mono">${esc(p.identificacao)}</span>
+                    <span class="px-2 py-0.5 rounded-full text-[11px] font-semibold ${clsRel}">${esc(rotRel)}</span>
+                </div>
+                <span class="text-xs text-slate-400">${p.data_apresentacao ? `<i class="fa-regular fa-calendar mr-1" aria-hidden="true"></i>${esc(fmtData(p.data_apresentacao))}` : ''}</span>
+            </div>
+            <h3 class="text-lg font-bold leading-snug">${esc(p.titulo)}</h3>
+            <p class="mt-2 text-sm text-slate-600 dark:text-slate-300 leading-relaxed">${esc(p.resumo)}</p>
+            <div class="mt-4 p-4 bg-slate-50 dark:bg-slate-900/80 rounded-xl border-l-4 border-brand-500">
+                <span class="text-xs font-bold uppercase tracking-wider block"><i class="fa-solid fa-bolt text-brand-600 mr-1" aria-hidden="true"></i>Como afeta o seu dia a dia</span>
+                <p class="text-sm text-slate-700 dark:text-slate-300 font-medium mt-1">${esc(p.impacto_pratico)}</p>
+            </div>
+            <p class="mt-3 text-[11px] text-slate-500">${nomesPerfis.length ? `<b>Quem é afetado:</b> ${esc(nomesPerfis.join(', '))} · ` : ''}${nomesCats.length ? `<b>Áreas:</b> ${esc(nomesCats.join(', '))}` : ''}</p>
+        </div>
+        <details class="border-t border-slate-200 dark:border-slate-700">
+            <summary class="px-5 sm:px-6 py-3 flex items-center justify-between text-xs font-bold text-brand-700 dark:text-brand-400 hover:bg-slate-50 dark:hover:bg-slate-900/40">
+                <span>Ver análise, tramitação e opinar</span><i class="fa-solid fa-chevron-down text-[10px] chev" aria-hidden="true"></i></summary>
+            <div class="bg-slate-50/80 dark:bg-slate-900/50 p-5 sm:p-6 space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                    <div class="bg-emerald-50/70 dark:bg-emerald-950/30 p-3.5 rounded-xl border border-emerald-200 dark:border-emerald-800/50">
+                        <span class="font-bold text-emerald-800 dark:text-emerald-300 block mb-1.5"><i class="fa-solid fa-circle-check mr-1.5" aria-hidden="true"></i>Argumento geralmente apresentado a favor</span>
+                        <p class="text-slate-700 dark:text-slate-300">${esc(p.ponto_positivo)}</p></div>
+                    <div class="bg-amber-50/70 dark:bg-amber-950/30 p-3.5 rounded-xl border border-amber-200 dark:border-amber-800/50">
+                        <span class="font-bold text-amber-800 dark:text-amber-300 block mb-1.5"><i class="fa-solid fa-triangle-exclamation mr-1.5" aria-hidden="true"></i>Ponto de atenção geralmente apontado</span>
+                        <p class="text-slate-700 dark:text-slate-300">${esc(p.ponto_atencao)}</p></div>
+                </div>
+                <div><h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3"><i class="fa-solid fa-timeline text-brand-500 mr-1.5" aria-hidden="true"></i>Linha do tempo de tramitação</h4>${linhaDoTempo(p.linha_do_tempo)}</div>
+                <div class="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 text-xs">
+                    <span class="font-bold text-slate-500 block mb-1">Ementa oficial</span>
+                    <p class="font-mono text-slate-600 dark:text-slate-400">${esc(p.ementa_oficial)}</p>
+                    <p class="mt-2 text-[11px] text-slate-400">${p.texto_analisado === 'ementa' ? 'A análise usou apenas a ementa (texto integral indisponível).' : 'A análise usou o texto integral publicado.'}</p></div>
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-2">Opinião da comunidade <span class="normal-case font-normal">(consulta informal, não é pesquisa)</span></span>
+                    <div id="votos-${p.id}" class="mb-3">${placarHtml(p.votos)}</div>
+                    <div id="botoes-${p.id}" class="grid grid-cols-3 gap-2 max-w-md">${botoesVoto(p.id)}</div>
+                </div>
+                <p class="text-xs">${p.url_fonte ? `<a href="${esc(urlSegura(p.url_fonte))}" target="_blank" rel="noopener" class="text-brand-700 dark:text-brand-400 font-semibold hover:underline"><i class="fa-solid fa-landmark mr-1" aria-hidden="true"></i>Ver no site oficial<i class="fa-solid fa-arrow-up-right-from-square text-[9px] ml-1" aria-hidden="true"></i></a>` : ''}</p>
+            </div>
+        </details>
+    </article>`;
+}
+
+let reqLeis = 0;
+async function carregarLeis(acrescentar = false) {
+    const minha = ++reqLeis;
+    const params = new URLSearchParams({ ordem: S.ordem, pagina: S.pagina, por_pagina: 10 });
+    if (S.perfil) params.set('perfil', S.perfil);
+    if (S.categoria !== 'all') params.set('categoria', S.categoria);
+    if (S.status !== 'all') params.set('status', S.status);
+    if (S.q) params.set('q', S.q);
+    try {
+        const r = await api('/api/proposicoes?' + params);
+        if (minha !== reqLeis) return;
+        S.total = r.total;
+        S.itens = acrescentar ? S.itens.concat(r.itens) : r.itens;
+        $('contagemLeis').textContent = `Mostrando ${S.itens.length} de ${r.total} proposição(ões) analisada(s)`;
+        $('leisLista').innerHTML = S.itens.length ? S.itens.map(cartaoLei).join('') : `<div class="text-center py-12 bg-white dark:bg-slate-800 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700">
+            <i class="fa-solid fa-folder-open text-4xl text-slate-300 mb-3" aria-hidden="true"></i><h4 class="font-semibold">Nenhuma proposição encontrada</h4>
+            <p class="text-xs text-slate-500 mt-1">Ajuste os filtros — ou rode o coletor (<code>python backend/coletor.py</code>) para trazer dados.</p></div>`;
+        $('btnMais').classList.toggle('hidden', S.itens.length >= r.total);
+    } catch (e) { if (minha === reqLeis) { $('leisLista').innerHTML = mensagemErro(e); $('contagemLeis').textContent = ''; } }
+}
+function recarregarLeis() { S.pagina = 1; carregarLeis(false); }
+
+$('leisLista').addEventListener('click', async (ev) => {
+    const b = ev.target.closest('[data-voto]'); if (!b) return;
+    const id = Number(b.dataset.id), voto = b.dataset.voto;
+    try {
+        const r = await api(`/api/proposicoes/${id}/voto`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ voto, token: tokenAnonimo(), perfil: S.perfil || null }),
+        });
+        meusVotos[id] = voto; guardar('ic_votos', meusVotos);
+        const placar = $('votos-' + id); if (placar) placar.innerHTML = placarHtml(r.placar);
+        const botoes = $('botoes-' + id); if (botoes) botoes.innerHTML = botoesVoto(id);
+        const item = S.itens.find((x) => x.id === id); if (item) item.votos = r.placar;
+    } catch (e) { alert('Não foi possível registrar o voto: ' + e.message); }
+});
+
+/* ====================================================================== *
+ *  Simuladores
+ * ====================================================================== */
+function abaSimulador(qual) {
+    const ir = qual === 'ir';
+    $('painelIR').classList.toggle('hidden', !ir); $('painelMEI').classList.toggle('hidden', ir);
+    const ativo = 'bg-white dark:bg-slate-800 text-brand-600 dark:text-brand-400 shadow-sm';
+    const inativo = 'text-slate-600 dark:text-slate-400';
+    $('tabIR').className = `px-3 py-1.5 text-xs font-semibold rounded-lg ${ir ? ativo : inativo}`;
+    $('tabMEI').className = `px-3 py-1.5 text-xs font-semibold rounded-lg ${ir ? inativo : ativo}`;
+    $('tabIR').setAttribute('aria-selected', String(ir)); $('tabMEI').setAttribute('aria-selected', String(!ir));
+    (ir ? simularIR : simularMEI)();
+}
+$('tabIR').addEventListener('click', () => abaSimulador('ir'));
+$('tabMEI').addEventListener('click', () => abaSimulador('mei'));
+
+async function post(caminho, corpo) {
+    return api(caminho, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(corpo) });
+}
+const num = (id) => { const v = parseFloat($(id).value); return Number.isFinite(v) && v >= 0 ? v : 0; };
+
+const simularIR = debounce(async () => {
+    $('irDepsTxt').textContent = $('irDeps').value;
+    try {
+        const r = await post('/api/simulador/ir', { salario_bruto: num('irSalario'), dependentes: parseInt($('irDeps').value, 10) || 0 });
+        const e = r.economia_mensal;
+        const manchete = e > 0
+            ? `<span class="text-xs text-slate-400 uppercase tracking-widest block">Você deixa de pagar</span><div class="text-3xl sm:text-4xl font-extrabold text-emerald-400 my-1">${brl(e)} <span class="text-sm font-normal text-slate-300">/mês</span></div><p class="text-xs text-slate-300">≈ ${brl(r.economia_anual_estimada)} por ano (12 meses, sem 13º).</p>`
+            : `<span class="text-xs text-slate-400 uppercase tracking-widest block">Efeito da regra de 2026</span><div class="text-2xl font-extrabold text-white my-1">Sem mudança no seu imposto na fonte</div><p class="text-xs text-slate-300">${r.faixa === 'sem_beneficio' ? 'Acima de R$ 7.350 mensais não há redução.' : 'Seu imposto já era zero pela regra anterior.'}</p>`;
+        $('irResultado').innerHTML = `<div class="text-center border-b border-slate-700/80 pb-4">${manchete}</div>
+            <table class="w-full text-xs mt-4"><thead><tr class="text-slate-400"><th class="text-left font-medium pb-2"></th><th class="text-right font-medium pb-2">Regra 2025</th><th class="text-right font-medium pb-2">Regra 2026</th></tr></thead>
+            <tbody class="divide-y divide-slate-700/60">
+              <tr><td class="py-1.5 text-slate-300">IRRF mensal</td><td class="text-right">${brl(r.regra_2025.imposto_mensal)}</td><td class="text-right font-bold text-emerald-300">${brl(r.regra_2026.imposto_mensal)}</td></tr>
+              <tr><td class="py-1.5 text-slate-300">INSS mensal</td><td class="text-right">${brl(r.inss)}</td><td class="text-right">${brl(r.inss)}</td></tr>
+              <tr><td class="py-1.5 text-slate-300">Líquido mensal</td><td class="text-right">${brl(r.regra_2025.liquido_mensal)}</td><td class="text-right font-bold">${brl(r.regra_2026.liquido_mensal)}</td></tr>
+            </tbody></table>
+            <p class="text-[11px] text-slate-400 mt-4 leading-relaxed">${esc(r.observacoes[0])} ${r.fontes.map((f) => `<a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(f.url))}">${esc(f.nome)}</a>`).join(' · ')}</p>`;
+    } catch (err) { $('irResultado').innerHTML = `<p class="text-sm text-rose-300">${esc(err.message)}</p>`; }
+}, 250);
+
+const simularMEI = debounce(async () => {
+    const teto = num('meiTeto');
+    try {
+        const r = await post('/api/simulador/mei', { faturamento_anual: num('meiFat'), atividade: $('meiAtiv').value, teto_hipotetico: teto > 0 ? teto : null });
+        const cores = { dentro_do_limite: 'text-emerald-400', excesso_ate_20: 'text-amber-400', excesso_acima_20: 'text-rose-400' };
+        const s = r.situacao_atual;
+        const hip = r.cenario_hipotetico
+            ? `<div class="mt-4 p-3 rounded-xl bg-slate-800/80 border border-slate-700 text-xs"><p class="font-semibold text-slate-200">Hipótese: teto de ${brl(r.cenario_hipotetico.teto_anual)}</p>
+               <p class="${cores[r.cenario_hipotetico.situacao.codigo]} font-bold mt-1">${esc(r.cenario_hipotetico.situacao.titulo)}</p>
+               <p class="text-slate-400 mt-1">${r.cenario_hipotetico.mudou_em_relacao_ao_atual ? 'Muda em relação às regras de hoje.' : 'Sem mudança em relação às regras de hoje.'} Simulação livre, não é lei aprovada.</p></div>` : '';
+        $('meiResultado').innerHTML = `<div class="text-center border-b border-slate-700/80 pb-4">
+                <span class="text-xs text-slate-400 uppercase tracking-widest block">Situação frente ao limite de ${brl(r.limite_vigente)}</span>
+                <div class="text-xl font-extrabold ${cores[s.codigo]} my-1">${esc(s.titulo)}</div>
+                <p class="text-xs text-slate-300">${esc(s.detalhe)}</p>
+                <p class="text-[11px] text-slate-400 mt-2">Você usou ${r.percentual_do_limite}% do limite.</p></div>
+            <div class="grid grid-cols-2 gap-3 mt-4 text-center">
+                <div class="p-3 rounded-xl bg-slate-800/80 border border-slate-700"><span class="text-[11px] text-slate-400 block">DAS mensal</span><b class="text-lg">${brl(r.das_mensal)}</b></div>
+                <div class="p-3 rounded-xl bg-slate-800/80 border border-slate-700"><span class="text-[11px] text-slate-400 block">DAS no ano</span><b class="text-lg">${brl(r.das_anual)}</b></div></div>${hip}
+            <p class="text-[11px] text-slate-400 mt-4">${esc(r.observacoes[0])}</p>`;
+    } catch (err) { $('meiResultado').innerHTML = `<p class="text-sm text-rose-300">${esc(err.message)}</p>`; }
+}, 250);
+['irSalario', 'irDeps'].forEach((id) => $(id).addEventListener('input', simularIR));
+['meiFat', 'meiAtiv', 'meiTeto'].forEach((id) => $(id).addEventListener('input', simularMEI));
+
+/* ====================================================================== *
+ *  Inicialização
+ * ====================================================================== */
+async function iniciar() {
+    $('chkTurno2').checked = S.turno2;
+    renderCidadeChip();
+    abaSimulador('ir');
+    try {
+        const [perfis, categorias, statusLista] = await Promise.all([api('/api/perfis'), api('/api/categorias'), api('/api/status')]);
+        S.perfis = perfis; S.categorias = categorias; S.statusLista = statusLista;
+        if (S.perfil && !perfis.some((p) => p.id === S.perfil)) S.perfil = '';
+        if (!categorias.some((c) => c.id === S.tema)) S.tema = categorias[0].id;
+    } catch (e) {
+        $('candidatosGrid').innerHTML = `<div class="col-span-full">${mensagemErro(e)}</div>`;
+        $('leisLista').innerHTML = mensagemErro(e); $('contagemLeis').textContent = '';
+        return;
+    }
+    renderPerfis(); renderTemaChips(); renderFiltrosLeis();
+    carregarCandidatos(); carregarLeis();
+}
+iniciar();
+</script>
+</body>
+</html>

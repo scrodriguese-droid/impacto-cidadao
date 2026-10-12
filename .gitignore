@@ -1,0 +1,21 @@
+# Segredos
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+
+# PDFs baixados / colocados manualmente (podem ser grandes)
+dados/planos/*.pdf
+dados/planos/cache/
+
+# SO / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

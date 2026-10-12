@@ -1,1 +1,116 @@
-# impacto-cidadao
+# ImpactoCidadão
+
+Traduz **planos de governo**, **leis** e **medidas provisórias** em impacto prático para o perfil do cidadão
+(CLT, MEI, estudante, aposentado, produtor rural…) e para a **sua cidade**. Dados 100% de fontes oficiais:
+TSE, Câmara dos Deputados, Senado Federal e IBGE. A IA só traduz; nunca é a fonte.
+
+> **Informação, não recomendação de voto.** O conteúdo é gerado por IA e pode conter erros — o app
+> sempre aponta para o documento oficial.
+
+## Estrutura
+
+```
+impacto-cidadao/
+├── .env.example               # copie para .env e preencha
+├── docker-compose.yml         # PostgreSQL local (aplica o schema sozinho)
+├── database/
+│   └── schema.sql             # usuarios, perfis, proposicoes_analisadas, votos_comunitarios,
+│                              # notificacoes + candidatos, planos_governo, temas/propostas
+├── backend/
+│   ├── main.py                # API FastAPI (rotas /api/...) + serve o front-end
+│   ├── coletor.py             # Câmara/Senado -> filtro -> IA -> banco   (leis e MPs)
+│   ├── coletor_candidatos.py  # TSE -> PDF do plano -> IA -> conferência de citações -> banco
+│   ├── prompts.py             # prompts de sistema (proposições e planos)  ← o "prompt exato"
+│   ├── schemas.py             # vocabulários + validação estrita da saída da IA
+│   ├── llm.py                 # Claude (padrão) ou Gemini; nova tentativa com a correção explicada
+│   ├── fontes.py              # clientes Câmara, Senado, TSE, IBGE; leitura de PDF/HTML
+│   ├── simuladores.py         # IR (Lei 15.270/2025) e MEI — sem IA, parâmetros documentados
+│   ├── db.py, config.py
+│   └── tests/                 # 26 testes unitários (rodam sem rede, banco ou IA)
+├── frontend/index.html        # Tailwind + JS puro; consome a API
+└── dados/
+    ├── candidatos_presidente_2026.json   # snapshot de contingência (campos mínimos)
+    └── planos/                           # coloque PDFs aqui se o download for bloqueado
+```
+
+## Como rodar (Windows / PowerShell)
+
+> **Crie o ambiente virtual fora do OneDrive.** O OneDrive tenta sincronizar milhares de arquivos
+> do `venv` e o caminho longo do Windows quebra o `pip install` da biblioteca `anthropic`.
+
+```powershell
+cd "C:\Users\elois\OneDrive\Ambiente de Trabalho\impacto-cidadao"
+
+# 1) Python (3.11+) em um venv fora do OneDrive
+python -m venv "$env:USERPROFILE\.venvs\impacto"
+& "$env:USERPROFILE\.venvs\impacto\Scripts\Activate.ps1"
+pip install -r backend\requirements.txt
+
+# 2) Configuração
+Copy-Item .env.example .env        # edite: ANTHROPIC_API_KEY (ou GEMINI_API_KEY + LLM_PROVIDER=gemini)
+
+# 3) Banco (Docker Desktop precisa estar aberto)
+docker compose up -d               # cria o banco e aplica database/schema.sql
+
+# 4) Dados
+python backend\coletor_candidatos.py --so-segundo-turno   # planos de governo (comece pelo 2º turno)
+python backend\coletor.py --dias 30 --limite 10           # leis e MPs recentes do Executivo
+
+# 5) App
+uvicorn main:app --reload --app-dir backend
+# abra http://localhost:8000   (documentação da API: http://localhost:8000/docs)
+```
+
+Sem Docker? Crie um projeto no [Supabase](https://supabase.com), cole `database/schema.sql` no SQL Editor e
+ponha a *connection string* do pooler em `DATABASE_URL`.
+
+Testes: `cd backend && python -m pytest -q`
+
+### Modos úteis dos coletores
+
+| Comando | Para quê |
+|---|---|
+| `coletor.py --sem-ia` | só coleta e grava como "pendente" (zero custo de IA) |
+| `coletor.py --id 2647155 --forcar` | reanalisa uma proposição específica da Câmara |
+| `coletor.py --max-alto-impacto 0` | só Poder Executivo (desliga propostas do Congresso por "alto impacto") |
+| `coletor_candidatos.py --sq <SQ> --forcar` | reanalisa um candidato |
+| `coletor_candidatos.py --sem-ia` | cadastra candidatos e lê os PDFs, sem chamar a IA |
+
+Os coletores são **idempotentes**: reexecutar não duplica nem reanalisa o que não mudou (hash do texto/PDF).
+Dá para agendar `coletor.py` no Agendador de Tarefas do Windows (ex.: de hora em hora).
+
+## Como garantimos neutralidade e fidelidade
+
+1. **Mesmo roteiro para todos.** Todos os candidatos passam pelo mesmo prompt, esquema, modelo e parâmetros,
+   processados e exibidos em ordem alfabética, **sem ranking**.
+2. **Citação obrigatória e conferida.** Cada proposta traz um trecho literal. O código procura esse trecho no
+   PDF e **descarta** o que não existe (`propostas_descartadas` mostra quantas). A página é calculada pelo código.
+3. **Silêncio ≠ ausência.** Se nenhuma citação resistir à conferência, o app não afirma que o plano "não fala"
+   do tema — diz que não conseguiu verificar.
+4. **Descrever, não avaliar.** O prompt proíbe adjetivos, comparações e inferência de intenções. "Detalhamento"
+   (meta numérica, prazo, fonte de recursos) é exibido como fato do texto, nunca como nota.
+5. **"Na sua cidade" sem chute.** O impacto local é derivado do *canal de execução* que o próprio plano indica
+   (pago direto, via prefeitura, repasse, regra nacional…) combinado com dados do IBGE. Sem valores inventados.
+6. **Saída da IA validada.** Título ≤ 8 palavras, resumo ≤ 3 frases, vocabulário fechado; resposta fora do
+   contrato é rejeitada e refeita — nunca vai para o banco.
+7. **Minimização de dados.** CPF, título de eleitor, bens e data de nascimento do TSE nunca são gravados.
+
+## Decisões que você deve conhecer
+
+* **Sem votação sobre candidatos.** Enquetes públicas sobre candidatos podem ser enquadradas como *pesquisa
+  eleitoral*, que exige registro prévio na Justiça Eleitoral (Lei 9.504/1997, art. 33). Por isso a votação
+  existe só para leis/MPs. Valide o uso com um advogado eleitoralista antes de divulgar o app em período eleitoral.
+* **IA em conteúdo sobre eleições.** O app rotula tudo como gerado por IA e sempre linka o original. Confirme
+  com assessoria jurídica se a sua forma de divulgação exige outros avisos (Res. TSE 23.610/2019).
+* **PDFs do TSE.** O download usa um *User-Agent* honesto (sem disfarce de navegador). Se o TSE responder 403,
+  baixe o plano no navegador e salve como `dados/planos/<SQ_CANDIDATO>.pdf`; o coletor usa o arquivo local.
+* **PDFs escaneados** (imagem) ficam como `sem_texto` e aparecem no app como "análise pendente" — falta OCR.
+* **Simuladores** usam as regras vigentes (IR: tabela de 2025 vs. regra de 2026; MEI: DAS 2026). Parâmetros
+  ficam no topo de `simuladores.py` para atualizar quando a lei mudar.
+* **Créditos extraordinários** ("Abre crédito…") são ignorados por padrão (`--incluir-creditos` traz de volta).
+
+## Próximos passos sugeridos
+
+Login (Supabase Auth) + tela de notificações (a tabela e o *trigger* já existem) · OCR para planos escaneados ·
+compilar o Tailwind em vez do CDN · cache HTTP/CDN na frente da API · revisão editorial por amostragem das
+traduções (a tabela guarda `analise_bruta` e o modelo usado para auditoria).

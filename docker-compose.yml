@@ -1,0 +1,25 @@
+# PostgreSQL local para desenvolvimento.
+#   docker compose up -d
+# O schema.sql é aplicado automaticamente na PRIMEIRA criação do volume.
+# Para recriar do zero:  docker compose down -v && docker compose up -d
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: impacto-db
+    environment:
+      POSTGRES_USER: impacto
+      POSTGRES_PASSWORD: impacto
+      POSTGRES_DB: impacto
+    ports:
+      - "127.0.0.1:5432:5432"   # só acessível pela própria máquina
+    volumes:
+      - impacto-pg:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U impacto -d impacto"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  impacto-pg:
