@@ -135,7 +135,7 @@ function deficits(d) {
         const tem = v != null;
         const def = tem && v >= 0;
         const cor = !tem ? 'text-slate-400' : def ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400';
-        return cartao(`<p class="text-xs font-semibold text-slate-500">${rot}</p>
+        return cartao(`<p class="text-xs font-semibold text-slate-500">${rot}${gl(SIGLA_DEFICIT[rot])}</p>
             <p class="text-2xl font-extrabold mt-1 ${cor}">${tem ? brlCurto(Math.abs(v)) : 'Indisponível'}</p>
             <p class="text-xs font-bold ${cor}">${tem ? (def ? 'Déficit' : 'Superávit') : ''}</p>
             <p class="text-xs text-slate-500 mt-2">${dica}</p>
@@ -188,24 +188,43 @@ async function carregarReservas() {
         box.innerHTML = `<h3 class="font-bold">Patrimônio e reservas internacionais da União</h3>
             <p class="text-xs text-slate-500">Ativos em moeda estrangeira administrados pelo Banco Central. Não fazem parte da LOA nem do resultado primário acima.</p>
             <div class="grid sm:grid-cols-2 gap-4 mt-2">
-                ${cartao(`<p class="text-xs font-semibold text-slate-500"><i class="fa-solid fa-vault mr-1" aria-hidden="true"></i>Reservas internacionais (conceito caixa)</p>
+                ${cartao(`<p class="text-xs font-semibold text-slate-500"><i class="fa-solid fa-vault mr-1" aria-hidden="true"></i>Reservas internacionais (conceito caixa)${gl('RESERVAS_INTERNACIONAIS')}</p>
                     <p class="text-3xl font-extrabold mt-1">${usd(c.valor)}</p>
                     <p class="text-xs text-slate-500">Saldo no fim de ${esc(fmtMes(c.data.slice(0, 7)))}${dif != null ? ` · ${dif >= 0 ? '+' : '−'}${usd(Math.abs(dif))} no mês` : ''}</p>
                     <div class="mt-2">${linhaSpark(c.serie)}</div>
                     <p class="text-[11px] text-slate-400">Últimos ${c.serie.length} meses. Série 3546 do Banco Central.</p>`)}
                 ${cartao(`<p class="text-xs font-semibold text-slate-500"><i class="fa-solid fa-scale-balanced mr-1" aria-hidden="true"></i>Dentro das reservas: ouro, DES e posição no FMI</p>
-                    <ul class="mt-2 space-y-1.5 text-sm">${r.fluxos.map((f) => `<li class="flex justify-between gap-3"><span>${esc(f.nome.replace(' — transações do mês', ''))}</span>
+                    <ul class="mt-2 space-y-1.5 text-sm">${r.fluxos.map((f) => `<li class="flex justify-between gap-3"><span>${esc(f.nome.replace(' — transações do mês', ''))}${gl(SIGLA_RESERVA[f.id])}</span>
                         <span class="font-semibold whitespace-nowrap">${f.valor >= 0 ? '+' : '−'}${usd(Math.abs(f.valor))}</span></li>`).join('')}</ul>
                     <p class="text-[11px] text-slate-400 mt-2">Transações em ${esc(fmtMes((r.fluxos[0] || {}).data ? r.fluxos[0].data.slice(0, 7) : c.data.slice(0, 7)))}: a <b>variação</b> do mês, não o saldo.</p>`)}
             </div>
             <div class="mt-3 text-xs text-slate-600 dark:text-slate-400 space-y-1.5">
                 <p><b>O que é a posição no FMI:</b> o Brasil é sócio do Fundo e parte do que depositou (cota) conta como ativo de reserva: a <i>posição de reserva</i> e os <i>Direitos Especiais de Saque (DES)</i>, ativo criado pelo FMI e trocável por moedas.</p>
                 <p><b>Saldo exato no FMI:</b> o Banco Central não publica o saldo dessas rubricas em série aberta. Consulte a posição oficial do Brasil no <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(r.links.fmi))}">FMI (Financial Position in the Fund)</a> e a <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(r.links.bcb))}">composição das reservas no Banco Central</a>.</p>
-                ${r.liquidez ? `<p><b>Atenção ao conceito:</b> pelo conceito <i>liquidez</i> (o mais citado), as reservas estavam em ${usd(r.liquidez.valor)} em ${esc(fmtData(r.liquidez.data))}; é maior que o conceito caixa e não deve ser comparado diretamente.</p>` : ''}
+                ${r.liquidez ? `<p><b>Atenção ao conceito:</b> pelo conceito <i>liquidez</i>${gl('CONCEITO_LIQUIDEZ')} (o mais citado), as reservas estavam em ${usd(r.liquidez.valor)} em ${esc(fmtData(r.liquidez.data))}; é maior que o conceito caixa e não deve ser comparado diretamente.</p>` : ''}
                 <p class="text-[11px] text-slate-400">Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(c.url_fonte))}">${esc(c.fonte)}</a> · consultado em ${esc(fmtDataHora(r.consultado_em))}.</p>
             </div>`;
     } catch (e) { box.innerHTML = mensagemErro(e); }
 }
+
+/* ---------- glossário: "?" ao lado do termo, com a explicação e o link do verbete ---------- */
+let GLOSS = {};
+async function carregarGlossario() {
+    try {
+        const resp = await fetch('assets/glossario.json');
+        if (!resp.ok) return;
+        for (const termos of Object.values(await resp.json())) Object.assign(GLOSS, termos);
+    } catch (_) { /* sem glossário a página segue funcionando */ }
+}
+const gl = (sigla) => {
+    const g = GLOSS[sigla];
+    if (!g) return '';
+    return ` <a href="glossario.html#${encodeURIComponent(sigla)}" title="${esc(g.nome_cidadao)}: ${esc(g.explicacao_simples)}" aria-label="${esc(g.nome_cidadao)}: ver no glossário"
+        class="inline-flex items-center justify-center w-4 h-4 rounded-full bg-slate-200 dark:bg-slate-700 text-[10px] font-bold text-slate-600 dark:text-slate-300 hover:bg-brand-500 hover:text-white align-middle">?</a>`;
+};
+const SIGLA_DEFICIT = { 'Déficit nominal': 'DEFICIT_NOMINAL', 'Déficit primário': 'DEFICIT_PRIMARIO', 'Déficit operacional': 'DEFICIT_OPERACIONAL' };
+const SIGLA_RESERVA = { fmi_posicao_fluxo: 'POSICAO_RESERVA_FMI', des_fluxo: 'DES_SDR', ouro_fluxo: 'OURO_MONETARIO' };
+const SIGLA_FASE = { Dotado: 'DOTACAO_INICIAL', Empenhado: 'EMPENHADO', Liquidado: 'LIQUIDADO', Pago: 'PAGO' };
 
 /* ---------- níveis ---------- */
 function nivel1(d) {
@@ -221,13 +240,13 @@ function nivel1(d) {
     };
     const lrf = p ? (() => {
         const [rot, cls, cor] = nivelLrf[p.nivel] || nivelLrf.indefinido;
-        return cartao(`<p class="text-xs font-semibold text-slate-500">Folha de pagamento (LRF)</p>
+        return cartao(`<p class="text-xs font-semibold text-slate-500">Folha de pagamento (LRF)${gl('LRF')}</p>
             <p class="text-3xl font-extrabold mt-1">${pct(p.pct_rcl)} <span class="text-sm font-medium text-slate-500">da receita</span></p>
             <div class="mt-3 relative">${barra(p.limite_maximo ? (p.pct_rcl / p.limite_maximo) * 100 : 0, cor)}</div>
             <p class="text-xs text-slate-500 mt-2">Limite legal: <b>${pct(p.limite_maximo)}</b> · alerta a partir de ${pct(p.limite_alerta)}</p>
             <span class="inline-block mt-2 px-2.5 py-1 rounded-full text-xs font-bold ${cls}">${rot}</span>
             <p class="text-[11px] text-slate-400 mt-2">${esc(p.referencia)} · Poder Executivo</p>`);
-    })() : cartao('<p class="text-xs font-semibold text-slate-500">Folha de pagamento (LRF)</p><p class="text-sm text-slate-500 mt-2">O município não publicou o RGF mais recente.</p>');
+    })() : cartao(`<p class="text-xs font-semibold text-slate-500">Folha de pagamento (LRF)${gl('LRF')}</p><p class="text-sm text-slate-500 mt-2">O município não publicou o RGF mais recente.</p>`);
     const fatia = (f, rot, icone) => f ? cartao(`<p class="text-xs font-semibold text-slate-500"><i class="fa-solid ${icone} mr-1" aria-hidden="true"></i>${rot}</p>
             <p class="text-3xl font-extrabold mt-1">${pct(f.pct)} <span class="text-sm font-medium text-slate-500">da despesa</span></p>
             <div class="mt-3">${barra(f.pct * 2, 'bg-brand-500')}</div>
@@ -235,7 +254,7 @@ function nivel1(d) {
         : cartao(`<p class="text-xs font-semibold text-slate-500">${rot}</p><p class="text-sm text-slate-500 mt-2">Sem dado por função.</p>`);
     return `<section aria-labelledby="n1">${titulo(1, 'Saúde fiscal', 'Responde em 3 segundos: as contas estão em dia?').replace('<h2', '<h2 id="n1"')}
         <div class="grid sm:grid-cols-2 gap-4">
-            ${cartao(`<p class="text-xs font-semibold text-slate-500">Resultado do período</p>
+            ${cartao(`<p class="text-xs font-semibold text-slate-500">Resultado do período${gl('DEFICIT_NOMINAL')}</p>
                 <p class="text-3xl font-extrabold mt-1 ${corBal}"><i class="fa-solid ${sup ? 'fa-circle-check' : 'fa-triangle-exclamation'} mr-1.5 text-2xl" aria-hidden="true"></i>${sup ? 'Superávit' : 'Déficit'}</p>
                 <p class="text-lg font-bold mt-1">${brlCurto(b.resultado)}</p>
                 <p class="text-xs text-slate-500 mt-2">Arrecadou ${brlCurto(b.receita_arrecadada)} e comprometeu (empenhou) ${brlCurto(b.despesa_empenhada)}.</p>
@@ -252,7 +271,7 @@ function nivel1(d) {
 
 function listaGrupo(itens, total) {
     return itens.map((g) => `<li class="py-3">
-        <div class="flex items-baseline justify-between gap-3"><span class="font-semibold">${esc(g.nome)}</span>
+        <div class="flex items-baseline justify-between gap-3"><span class="font-semibold">${esc(g.nome)}${g.id === 'transferencias' ? gl('FPM_FPE') + gl('FUNDEB') : ''}</span>
             <span class="text-sm font-bold whitespace-nowrap">${brlCurto(g.valor)} <span class="text-slate-400 font-normal">· ${pct(g.pct)}</span></span></div>
         <div class="mt-1.5">${barra(g.pct)}</div>
         ${(g.detalhe || []).length ? `<ul class="mt-2 grid sm:grid-cols-2 gap-x-6 gap-y-0.5 text-xs text-slate-600 dark:text-slate-400">
@@ -295,10 +314,10 @@ function nivel3(d) {
         ['LOA', 'Lei Orçamentária Anual', 'Quanto, em reais, cada secretaria pode gastar no ano.', 'fa-file-invoice-dollar'],
     ];
     return `<section aria-labelledby="n3">${titulo(3, 'Ciclo orçamentário', 'Da promessa política ao dinheiro que realmente sai.').replace('<h2', '<h2 id="n3"')}
-        <div class="grid sm:grid-cols-3 gap-3 mb-4">${leis.map(([s, t, dsc, ic]) => cartao(`<p class="font-extrabold text-brand-700 dark:text-brand-400"><i class="fa-solid ${ic} mr-1.5" aria-hidden="true"></i>${s}</p>
+        <div class="grid sm:grid-cols-3 gap-3 mb-4">${leis.map(([s, t, dsc, ic]) => cartao(`<p class="font-extrabold text-brand-700 dark:text-brand-400"><i class="fa-solid ${ic} mr-1.5" aria-hidden="true"></i>${s}${gl(s)}</p>
             <p class="text-xs font-semibold mt-1">${t}</p><p class="text-xs text-slate-500 mt-1">${dsc}</p>`)).join('')}</div>
         ${cartao(`<h3 class="font-bold mb-3">Execução do orçamento deste ano</h3><ul class="space-y-4">${linhas.map(([r, v, p, c]) => `<li>
-            <div class="flex justify-between gap-3 text-sm"><span>${r}</span><span class="font-bold whitespace-nowrap">${brlCurto(v)}${r.startsWith('Dotado') ? '' : ` <span class="text-slate-400 font-normal">· ${pct(p)}</span>`}</span></div>
+            <div class="flex justify-between gap-3 text-sm"><span>${r}${gl(SIGLA_FASE[r.split(' ')[0]])}</span><span class="font-bold whitespace-nowrap">${brlCurto(v)}${r.startsWith('Dotado') ? '' : ` <span class="text-slate-400 font-normal">· ${pct(p)}</span>`}</span></div>
             <div class="mt-1.5">${barra(p, c)}</div></li>`).join('')}</ul>
             <p class="text-[11px] text-slate-400 mt-3">Percentuais calculados sobre a dotação atualizada. A diferença entre empenhado e pago costuma virar “restos a pagar”.</p>`)}</section>`;
 }
@@ -355,7 +374,7 @@ async function carregar() {
         desenhar();
     } catch (e) { $('estado').innerHTML = mensagemErro(e); }
 }
-carregar();
+carregarGlossario().then(carregar);
 </script>
 </body>
 </html>
