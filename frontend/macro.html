@@ -115,7 +115,7 @@
             <div id="dividaFontes" class="text-[11px] text-slate-400 space-y-0.5"></div>
 
             <div class="rounded-2xl border-2 border-teal-200 dark:border-teal-900 bg-white dark:bg-slate-800 p-4">
-                <h3 class="font-bold"><i class="fa-solid fa-piggy-bank text-teal-600 mr-1.5" aria-hidden="true"></i>Tesouro Direto <span class="text-xs font-normal text-slate-500">— só a parcela vendida a pessoas físicas</span></h3>
+                <h3 class="font-bold"><i class="fa-solid fa-piggy-bank text-teal-600 mr-1.5" aria-hidden="true"></i>Tesouro Direto <span class="text-xs font-normal text-slate-500">— só a parcela vendida a pessoas físicas</span> <a class="text-xs font-normal underline" href="glossario.html#TESOURO_DIRETO">O que é?</a></h3>
                 <p id="tdResumo" class="text-sm text-slate-600 dark:text-slate-400 mt-1"></p>
                 <div class="grid lg:grid-cols-2 gap-4 mt-3">
                     <div><div class="grafico"><canvas id="gTd"></canvas></div></div>
@@ -187,9 +187,37 @@ function criar(id, config) {
     return M.graficos[id];
 }
 
+/* ---------- glossário (assets/glossario.json) ---------- */
+const GLOSSARIO_DE = {
+    ipca: 'IPCA', ipca12: 'IPCA', selic: 'SELIC', desemprego: 'DESOCUPACAO',
+    primario: 'RESULTADO_PRIMARIO', primario12: 'RESULTADO_PRIMARIO',
+    nominal: 'DEFICIT_NOMINAL', nominal12: 'DEFICIT_NOMINAL', juros: 'JUROS_NOMINAIS', juros12: 'JUROS_NOMINAIS',
+    dlsp_pib: 'DLSP_PIB', dlsp_rs: 'DLSP_PIB',
+    reservas_caixa: 'RESERVAS_INTERNACIONAIS', reservas_liquidez: 'CONCEITO_LIQUIDEZ',
+    fmi_posicao_fluxo: 'POSICAO_RESERVA_FMI', des_fluxo: 'DES_SDR', ouro_fluxo: 'OURO_MONETARIO',
+};
+let GLOSS = {};
+async function carregarGlossario() {
+    try {
+        const resp = await fetch('assets/glossario.json');
+        if (!resp.ok) return;
+        const dados = await resp.json();
+        for (const termos of Object.values(dados)) Object.assign(GLOSS, termos);
+    } catch (_) { /* sem glossário, a página segue funcionando */ }
+}
+const verbete = (id) => { const sigla = GLOSSARIO_DE[id]; return sigla && GLOSS[sigla] ? { sigla, ...GLOSS[sigla] } : null; };
+const blocoGlossario = (id) => {
+    const g = verbete(id); if (!g) return '';
+    return `<p class="mt-3 text-xs font-semibold"><span aria-hidden="true">${esc(g.icone)}</span> ${esc(g.nome_cidadao)}</p>
+        <details class="mt-1 text-xs text-slate-600 dark:text-slate-400"><summary class="cursor-pointer text-brand-700 dark:text-brand-400 font-semibold">O que é isso?</summary>
+            <p class="mt-1 leading-relaxed">${esc(g.explicacao_simples)}</p>
+            <a class="inline-block mt-1 underline" href="glossario.html#${encodeURIComponent(g.sigla)}">Ver no glossário</a></details>`;
+};
+
 /* ---------- 1. cartões ---------- */
 async function carregarCartoes() {
     try {
+        await carregarGlossario();
         const r = await api('/api/macro/resumo');
         const ordem = ['ipca', 'ipca12', 'selic', 'desemprego', 'primario12', 'nominal12', 'juros12', 'dlsp_pib'];
         const por = Object.fromEntries(r.cartoes.map((c) => [c.id, c]));
@@ -197,11 +225,13 @@ async function carregarCartoes() {
             const c = por[k];
             const quando = c.referencia ? c.referencia : fmtMes(c.data.slice(0, 7));
             const dif = c.anterior != null ? c.valor - c.anterior : null;
-            return `<a href="#h-explorador" data-ind="${esc(k)}" class="block rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 hover:border-brand-500">
+            return `<div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
                 <p class="text-xs font-semibold text-slate-500">${esc(c.nome)}</p>
                 <p class="text-3xl font-extrabold mt-1">${num(c.valor)}</p>
                 <p class="text-xs text-slate-500">${esc(c.unidade)}</p>
-                <p class="text-[11px] text-slate-400 mt-2">Ref.: ${esc(quando)}${dif != null ? ` · anterior ${num(c.anterior)}` : ''}</p></a>`;
+                <p class="text-[11px] text-slate-400 mt-2">Ref.: ${esc(quando)}${dif != null ? ` · anterior ${num(c.anterior)}` : ''}</p>
+                ${blocoGlossario(k)}
+                <a href="#h-explorador" data-ind="${esc(k)}" class="inline-block mt-3 text-xs font-semibold text-brand-700 dark:text-brand-400 hover:underline">Ver no gráfico →</a></div>`;
         }).join('');
         $('cartoesInfo').textContent = `Consultado em ${fmtDataHora(r.consultado_em)}.` + (r.erros.length ? ` Indisponíveis agora: ${r.erros.map((e) => e.id).join(', ')}.` : '');
         $('cartoes').addEventListener('click', (ev) => {
@@ -307,6 +337,7 @@ function renderFichas(series) {
         const pts = filtrar(s.pontos); const ult = pts[pts.length - 1];
         return `<details class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4"><summary class="font-semibold text-sm">${esc(s.nome)} <span class="text-xs font-normal text-slate-500">· ${esc(s.unidade)} · ${esc(s.frequencia)}</span></summary>
             <div class="mt-2 text-sm space-y-1.5 text-slate-600 dark:text-slate-400">
+                ${verbete(s.id) ? `<p><b>Em linguagem simples:</b> <span aria-hidden="true">${esc(verbete(s.id).icone)}</span> ${esc(verbete(s.id).nome_cidadao)} — ${esc(verbete(s.id).explicacao_simples)} <a class="underline" href="glossario.html#${encodeURIComponent(verbete(s.id).sigla)}">Glossário</a></p>` : ''}
                 <p><b>O que mede:</b> ${esc(s.mede)}</p><p><b>Como interpretar:</b> ${esc(s.interpreta)}</p>
                 ${s.nota ? `<p><b>Atenção:</b> ${esc(s.nota)}</p>` : ''}
                 <p class="text-xs">Período dos dados: ${esc(s.periodo_referencia.inicio || '—')} a ${esc(s.periodo_referencia.fim || '—')}${ult ? ` · último valor: ${fmtValor(ult.valor, s.unidade)} (${ult.referencia ? esc(ult.referencia) : esc(fmtData(ult.data))})` : ''}</p>
@@ -389,6 +420,7 @@ async function carregarDivida() {
 /* ---------- início ---------- */
 (async function iniciar() {
     desenharAtalhos();
+    carregarGlossario();
     carregarCartoes();
     try {
         M.catalogo = await api('/api/macro/catalogo');
