@@ -524,6 +524,14 @@ def macro_serie(
         raise _fonte_macro_indisponivel(exc) from exc
 
 
+@router.get("/macro/reservas", tags=["macro"])
+def macro_reservas() -> dict:
+    try:
+        return macro.reservas()
+    except Exception as exc:  # noqa: BLE001
+        raise _fonte_macro_indisponivel(exc) from exc
+
+
 @router.get("/macro/divida", tags=["macro"])
 def macro_divida() -> dict:
     try:

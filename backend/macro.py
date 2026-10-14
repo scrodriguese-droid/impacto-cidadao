@@ -66,6 +66,8 @@ FISCAL_NOTA = ("Setor público consolidado (Governo Central + estados + municíp
                "exceto Petrobras e Eletrobras), conceito NFSP “sem desvalorização cambial”. "
                "Sinal do BCB: positivo = déficit (necessidade de financiamento); negativo = superávit.")
 
+NOTA_FLUXO_BPM = ('Balanço de Pagamentos: são as TRANSAÇÕES do mês (variação por compras, vendas e rendimentos), não o saldo. O BCB não publica o saldo desta rubrica por série aberta.')
+
 CATALOGO: dict[str, dict] = {
     "ipca": dict(fonte="bcb", codigo=433, grupo="Inflação", nome="IPCA — variação mensal", unidade="% ao mês",
                  frequencia="mensal", tipo="taxa",
@@ -116,8 +118,34 @@ CATALOGO: dict[str, dict] = {
                     unidade="R$ milhões (saldo)", frequencia="mensal", tipo="valor",
                     nota="Dívida LÍQUIDA do setor público consolidado.",
                     mede="Saldo em reais da dívida líquida do setor público.", interpreta="Mesmo indicador do % do PIB, em reais correntes."),
+    # Reservas internacionais (estoque, US$ milhões) e transações do Balanço de Pagamentos
+    "reservas_caixa": dict(fonte="bcb", codigo=3546, grupo="Reservas internacionais",
+                           nome="Reservas internacionais — conceito caixa (fim do mês)", unidade="US$ milhões",
+                           frequencia="mensal", tipo="valor",
+                           nota="Saldo (estoque), em dólares. Coincide com o conceito caixa diário (SGS 13621) no fim de cada mês.",
+                           mede="Ativos externos de liquidez imediata sob controle do Banco Central: títulos, depósitos, ouro, DES e posição no FMI.",
+                           interpreta="Funcionam como seguro contra crises cambiais. Variam com compras e vendas de dólares, rendimentos e a cotação dos ativos."),
+    "reservas_liquidez": dict(fonte="bcb", codigo=13982, grupo="Reservas internacionais",
+                              nome="Reservas internacionais — conceito liquidez (diária)", unidade="US$ milhões",
+                              frequencia="diária", tipo="valor",
+                              nota="Conceito liquidez: o que o BCB divulga como “reservas internacionais” no dia a dia; é maior que o conceito caixa.",
+                              mede="Reservas internacionais pelo conceito liquidez internacional, saldo diário.",
+                              interpreta="Mesma ideia do conceito caixa, com abrangência maior. Não compare valores dos dois conceitos entre si."),
+    "fmi_posicao_fluxo": dict(fonte="bcb", codigo=23048, grupo="Reservas internacionais",
+                              nome="Posição de reserva no FMI — transações do mês", unidade="US$ milhões (fluxo)",
+                              frequencia="mensal", tipo="valor", nota=NOTA_FLUXO_BPM,
+                              mede="Variação mensal do crédito do Brasil junto ao FMI contado como reserva.",
+                              interpreta="Positivo/negativo indica aumento/redução da posição no mês; não informa o saldo."),
+    "des_fluxo": dict(fonte="bcb", codigo=23047, grupo="Reservas internacionais",
+                      nome="Direitos Especiais de Saque (DES) — transações do mês", unidade="US$ milhões (fluxo)",
+                      frequencia="mensal", tipo="valor", nota=NOTA_FLUXO_BPM,
+                      mede="Variação mensal da posse de DES, o ativo de reserva criado pelo FMI.",
+                      interpreta="Mostra movimentos, não o saldo de DES."),
+    "ouro_fluxo": dict(fonte="bcb", codigo=23044, grupo="Reservas internacionais",
+                       nome="Ouro monetário — transações do mês", unidade="US$ milhões (fluxo)",
+                       frequencia="mensal", tipo="valor", nota=NOTA_FLUXO_BPM,
+                       mede="Variação mensal do ouro mantido como reserva.", interpreta="Zero indica que não houve compra ou venda no mês."),
 }
-
 # Séries mensais podem ir bem longe; a Selic (diária) é buscada em janelas de até 10 anos.
 INICIO_PADRAO = date(2010, 1, 1)
 
@@ -134,15 +162,28 @@ def _num(txt: Any) -> float | None:
         return None
 
 
-def _bcb(codigo: int) -> list[dict]:
-    """Série completa do SGS desde INICIO_PADRAO (janelas ≤ 10 anos), sem alterar valores."""
+def _json_com_nova_tentativa(url: str, params: dict) -> Any:
+    """O SGS às vezes devolve uma página de erro com status 200; tenta de novo antes de desistir."""
+    ultimo: Exception | None = None
+    for tentativa in range(4):
+        if tentativa:
+            time.sleep(2 * tentativa)
+        try:
+            return _http.json(url, params)
+        except ErroFonte as exc:
+            ultimo = exc
+    raise ErroFonte(str(ultimo))
+
+
+def _bcb(codigo: int, desde: int | None = None) -> list[dict]:
+    """Série do SGS desde `desde` (padrão INICIO_PADRAO), em janelas ≤ 10 anos, sem alterar valores."""
     def produzir() -> list[dict]:
         hoje = date.today()
         pontos: list[dict] = []
-        ano = INICIO_PADRAO.year
+        ano = desde or INICIO_PADRAO.year
         while ano <= hoje.year:
             fim_ano = min(ano + 9, hoje.year)
-            dados = _http.json(f"{SGS}.{codigo}/dados", {
+            dados = _json_com_nova_tentativa(f"{SGS}.{codigo}/dados", {
                 "formato": "json", "dataInicial": f"01/01/{ano}",
                 "dataFinal": f"{hoje.day:02d}/{hoje.month:02d}/{hoje.year}" if fim_ano == hoje.year else f"31/12/{fim_ano}"})
             if isinstance(dados, list):
@@ -153,7 +194,7 @@ def _bcb(codigo: int) -> list[dict]:
             ano = fim_ano + 1
         unicos = {p["data"]: p for p in pontos}
         return [unicos[k] for k in sorted(unicos)]
-    return _memo(("bcb", codigo), produzir)
+    return _memo(("bcb", codigo, desde), produzir)
 
 
 def _sidra_desemprego() -> list[dict]:
@@ -185,7 +226,10 @@ def serie(chave: str, inicio: str | None = None, fim: str | None = None) -> dict
     meta = CATALOGO.get(chave)
     if not meta:
         raise KeyError(chave)
-    pontos = _sidra_desemprego() if meta["fonte"] == "sidra" else _bcb(meta["codigo"])
+    if meta["fonte"] == "sidra":
+        pontos = _sidra_desemprego()
+    else:  # séries diárias longas: só os últimos anos (o histórico completo não é necessário)
+        pontos = _bcb(meta["codigo"], date.today().year - 2 if meta.get("frequencia") == "diária" and not meta.get("alteracoes") else None)
     if meta.get("alteracoes"):
         pontos = _so_alteracoes(pontos)
     if inicio:
@@ -204,6 +248,30 @@ def serie(chave: str, inicio: str | None = None, fim: str | None = None) -> dict
         "consultado_em": _agora(),
         "periodo_referencia": {"inicio": pontos[0]["data"] if pontos else None, "fim": pontos[-1]["data"] if pontos else None},
         "pontos": pontos,
+    }
+
+
+def reservas() -> dict:
+    """Reservas internacionais (saldo) e transações do mês de ouro, DES e posição no FMI."""
+    caixa = serie("reservas_caixa")["pontos"]
+    liquidez = serie("reservas_liquidez", inicio=(date.today().replace(day=1)).replace(year=date.today().year - 1).isoformat())["pontos"]
+    fluxos = []
+    for chave in ("fmi_posicao_fluxo", "des_fluxo", "ouro_fluxo"):
+        s = serie(chave)
+        if s["pontos"]:
+            ult = s["pontos"][-1]
+            fluxos.append({"id": chave, "nome": s["nome"], "valor": ult["valor"], "data": ult["data"], "unidade": s["unidade"]})
+    return {
+        "consultado_em": _agora(),
+        "caixa": {"valor": caixa[-1]["valor"], "data": caixa[-1]["data"],
+                  "anterior": caixa[-2]["valor"] if len(caixa) > 1 else None, "serie": caixa[-36:],
+                  "fonte": "Banco Central do Brasil — SGS, série 3546",
+                  "url_fonte": f"{SGS}.3546/dados?formato=json"},
+        "liquidez": ({"valor": liquidez[-1]["valor"], "data": liquidez[-1]["data"],
+                      "url_fonte": f"{SGS}.13982/dados?formato=json"} if liquidez else None),
+        "fluxos": fluxos, "nota_fluxos": NOTA_FLUXO_BPM,
+        "links": {"fmi": "https://www.imf.org/external/np/fin/tad/exfin2.aspx?memberKey1=90",
+                  "bcb": "https://www.bcb.gov.br/estabilidadefinanceira/reservasinternacionais"},
     }
 
 
