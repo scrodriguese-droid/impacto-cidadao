@@ -47,6 +47,9 @@
         </div>
     </div>
 
+    <!-- Esfera de governo -->
+    <div id="segEsfera" class="mt-3 inline-flex flex-wrap gap-1 p-1 rounded-2xl bg-slate-200/70 dark:bg-slate-800" role="radiogroup" aria-label="Esfera de governo"></div>
+
     <div id="estado" class="mt-4"></div>
     <div id="painel" class="hidden mt-4 space-y-8"></div>
 </main>
@@ -57,7 +60,29 @@
 <script>
 renderLayout('economia');
 
-const E = { municipio: lerPrefs().municipio || null, dados: null, aba: 'receitas' };
+const ESFERAS = [
+    { id: 'municipio', rotulo: 'Município', icone: 'fa-city' },
+    { id: 'estado', rotulo: 'Estado', icone: 'fa-map' },
+    { id: 'uniao', rotulo: 'União', icone: 'fa-flag' },
+];
+const E = { municipio: lerPrefs().municipio || null, esfera: ler('ic_esfera_economia', 'municipio'), dados: null, aba: 'receitas' };
+if (!ESFERAS.some((x) => x.id === E.esfera)) E.esfera = 'municipio';
+// Código do ente no SICONFI: município = IBGE (7 dígitos); estado = 2 primeiros dígitos; União = 1.
+const codigoEnte = () => {
+    if (E.esfera === 'uniao') return 1;
+    if (!E.municipio) return null;
+    return E.esfera === 'estado' ? Math.floor(E.municipio.codigo / 100000) : E.municipio.codigo;
+};
+function desenharEsfera() {
+    $('segEsfera').innerHTML = ESFERAS.map((x) => `<button type="button" role="radio" aria-checked="${E.esfera === x.id}" data-esfera="${x.id}"
+        class="px-3.5 py-2 rounded-xl text-sm font-semibold ${E.esfera === x.id ? 'bg-white dark:bg-slate-700 shadow text-brand-700 dark:text-brand-300' : 'text-slate-500'}">
+        <i class="fa-solid ${x.icone} mr-1.5 text-xs" aria-hidden="true"></i>${x.rotulo}</button>`).join('');
+}
+$('segEsfera').addEventListener('click', (ev) => {
+    const b = ev.target.closest('[data-esfera]');
+    if (!b || b.dataset.esfera === E.esfera) return;
+    E.esfera = b.dataset.esfera; guardar('ic_esfera_economia', E.esfera); carregar();
+});
 const pct = (v) => (v == null ? '—' : `${Number(v).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%`);
 const brlCurto = (n) => {
     const v = Math.abs(Number(n || 0)), s = n < 0 ? '−' : '';
@@ -155,7 +180,8 @@ function listaGrupo(itens, total) {
 
 function nivel2(d) {
     const r = d.nivel2.receitas, de = d.nivel2.despesas;
-    const abaRec = `<p class="text-sm text-slate-500 mb-1">Total arrecadado: <b>${brlCurto(r.total)}</b></p><ul class="divide-y divide-slate-100 dark:divide-slate-700">${listaGrupo(r.grupos)}</ul>`;
+    const abaRec = `<p class="text-sm text-slate-500 mb-1">Total arrecadado: <b>${brlCurto(r.total)}</b></p><ul class="divide-y divide-slate-100 dark:divide-slate-700">${listaGrupo(r.grupos.filter((g) => g.valor > 0))}</ul>
+        ${d.esfera === 'uniao' ? '<p class="text-[11px] text-slate-400 mt-2">Na União, “empréstimos” e “serviço da dívida” incluem a rolagem (refinanciamento) da dívida pública, o que infla os dois lados.</p>' : ''}`;
     const tipos = de.tipos.map((t) => ({ ...t, detalhe: t.extra ? [{ nome: 'Só folha e encargos sociais', valor: t.extra.pessoal }] : [], detalhe_periodo: 'acumulado no exercício' }));
     const abaDes = `<p class="text-sm text-slate-500 mb-1">Total gasto (liquidado): <b>${brlCurto(de.total_liquidado)}</b></p>
         <h3 class="font-bold mt-3">Por tipo de custo</h3><ul class="divide-y divide-slate-100 dark:divide-slate-700">${listaGrupo(tipos)}</ul>
@@ -201,7 +227,9 @@ function nivel4(d) {
         <p class="text-xs text-slate-500 mt-1">${dsc}</p></a>`;
     return `<section aria-labelledby="n4">${titulo(4, 'Transparência aplicada', 'Emendas, contratos e fornecedores: confira nas fontes oficiais.').replace('<h2', '<h2 id="n4"')}
         <div class="grid sm:grid-cols-2 gap-3">
-            ${link(`https://portaldatransparencia.gov.br/localidades/${cod}`, 'fa-map-location-dot', 'Dinheiro federal na sua cidade', 'Portal da Transparência (CGU): repasses, benefícios e despesas da União no município.')}
+            ${d.esfera === 'municipio'
+                ? link(`https://portaldatransparencia.gov.br/localidades/${cod}`, 'fa-map-location-dot', 'Dinheiro federal na sua cidade', 'Portal da Transparência (CGU): repasses, benefícios e despesas da União no município.')
+                : link('https://portaldatransparencia.gov.br/despesas', 'fa-sack-dollar', 'Despesas da União', 'Portal da Transparência (CGU): quanto o governo federal gasta, por órgão e por favorecido.')}
             ${link('https://portaldatransparencia.gov.br/emendas', 'fa-hand-holding-dollar', 'Emendas parlamentares', 'Quem indicou, quanto, para qual órgão e em que fase está (indicada, empenhada, paga).')}
             ${link('https://obrasgov.gestao.gov.br/', 'fa-helmet-safety', 'Obras públicas', 'ObrasGov.br: obras financiadas com recursos federais e seu andamento.')}
             ${link('https://siconfi.tesouro.gov.br/siconfi/pages/public/consulta_finbra/finbra_list.jsf', 'fa-file-lines', 'Balanços completos', 'SICONFI: demonstrativos contábeis do município, com todos os anexos.')}
@@ -213,7 +241,7 @@ function nivel4(d) {
 
 function desenhar() {
     const d = E.dados;
-    $('periodoRotulo').textContent = d ? `Dados: ${d.periodo.rotulo}` : '';
+    $('periodoRotulo').textContent = d ? `${d.instituicao || ''}${d.populacao ? ' · ' + Number(d.populacao).toLocaleString('pt-BR') + ' habitantes' : ''} · ${d.periodo.rotulo}` : '';
     const painel = $('painel');
     painel.classList.toggle('hidden', !d);
     if (!d) return;
@@ -229,14 +257,16 @@ $('painel').addEventListener('click', (ev) => {
 async function carregar() {
     const m = E.municipio;
     $('cidadeRotulo').textContent = m ? `${m.nome} – ${m.uf}` : 'Escolher cidade';
+    desenharEsfera();
     E.dados = null; desenhar();
-    if (!m) {
-        $('estado').innerHTML = cartao('<p class="text-center text-slate-500"><i class="fa-solid fa-city text-2xl mb-2 block text-slate-300" aria-hidden="true"></i>Escolha uma cidade para ver as contas.</p>');
+    const ente = codigoEnte();
+    if (ente == null) {
+        $('estado').innerHTML = cartao(`<p class="text-center text-slate-500"><i class="fa-solid fa-city text-2xl mb-2 block text-slate-300" aria-hidden="true"></i>Escolha uma cidade para ver as contas${E.esfera === 'estado' ? ' do seu estado' : ''}.</p>`);
         return;
     }
     $('estado').innerHTML = '<p class="text-sm text-slate-500" aria-live="polite"><i class="fa-solid fa-spinner fa-spin mr-1.5" aria-hidden="true"></i>Consultando o Tesouro Nacional…</p>';
     try {
-        E.dados = await api('/api/economia/' + encodeURIComponent(m.codigo));
+        E.dados = await api('/api/economia/' + encodeURIComponent(ente));
         $('estado').innerHTML = '';
         desenhar();
     } catch (e) { $('estado').innerHTML = mensagemErro(e); }

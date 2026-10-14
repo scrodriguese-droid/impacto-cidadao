@@ -121,7 +121,28 @@ def _balanco(a1: list[dict]) -> dict:
     }
 
 
-def _receitas(a1: list[dict], a3: list[dict]) -> dict:
+def _esfera(ente: int) -> str:
+    """1 = União; 2 dígitos = Estado/DF (código IBGE da UF); 7 dígitos = município."""
+    return "uniao" if ente == 1 else "estado" if ente < 100 else "municipio"
+
+
+# (rótulo, cod_conta no RREO Anexo 03) por esfera — últimos 12 meses
+_PROPRIOS_A3 = {
+    "municipio": (("IPTU", "IPTULiquidoExcetoTransferenciasEFUNDEB"), ("ISS", "ISSLiquidoExcetoTransferenciasEFUNDEB"),
+                  ("ITBI", "ITBILiquidoExcetoTransferenciasEFUNDEB"), ("IRRF", "IRRFLiquidoExcetoTransferenciasEFUNDEB")),
+    "estado": (("ICMS", "ICMSLiquidoExcetoTransferenciasEFUNDEB"), ("IPVA", "IPVALiquidoExcetoTransferenciasEFUNDEB"),
+               ("ITCD", "ITCDLiquidoExcetoTransferenciasEFUNDEB"), ("IRRF", "IRRFLiquidoExcetoTransferenciasEFUNDEB")),
+    "uniao": (),
+}
+_REPASSES_A3 = {
+    "municipio": (("FPM (Fundo de Participação)", "RREO3CotaParteDoFPM"), ("ICMS (cota do Estado)", "RREO3CotaParteDoICMS"),
+                  ("IPVA (cota do Estado)", "RREO3CotaParteDoIPVA"), ("FUNDEB", "RREO3TransferenciasDoFUNDEB")),
+    "estado": (("FPE (Fundo de Participação)", "RREO3CotaParteDoFPE"), ("FUNDEB", "RREO3TransferenciasDoFUNDEB")),
+    "uniao": (),
+}
+
+
+def _receitas(a1: list[dict], a3: list[dict], esfera: str = "municipio") -> dict:
     def r1(cod: str) -> float:
         return _num(_valor(a1, cod, "Até o Bimestre"))
 
@@ -131,16 +152,12 @@ def _receitas(a1: list[dict], a3: list[dict]) -> dict:
     total = r1("TotalReceitas")
     grupos = [
         {"id": "proprios", "nome": "Impostos próprios", "valor": r1("Impostos"),
-         "detalhe": [{"nome": n, "valor": r3(c)} for n, c in (
-             ("IPTU", "IPTULiquidoExcetoTransferenciasEFUNDEB"), ("ISS", "ISSLiquidoExcetoTransferenciasEFUNDEB"),
-             ("ITBI", "ITBILiquidoExcetoTransferenciasEFUNDEB"), ("IRRF", "IRRFLiquidoExcetoTransferenciasEFUNDEB"))
-             if r3(c)], "detalhe_periodo": "últimos 12 meses"},
+         "detalhe": [{"nome": n, "valor": r3(c)} for n, c in _PROPRIOS_A3[esfera] if r3(c)],
+         "detalhe_periodo": "últimos 12 meses"},
         {"id": "transferencias", "nome": "Transferências e repasses",
          "valor": r1("TransferenciasCorrentes") + r1("TransferenciasDeCapital"),
-         "detalhe": [{"nome": n, "valor": r3(c)} for n, c in (
-             ("FPM (Fundo de Participação)", "RREO3CotaParteDoFPM"), ("ICMS (cota do Estado)", "RREO3CotaParteDoICMS"),
-             ("IPVA (cota do Estado)", "RREO3CotaParteDoIPVA"), ("FUNDEB", "RREO3TransferenciasDoFUNDEB"))
-             if r3(c)], "detalhe_periodo": "últimos 12 meses"},
+         "detalhe": [{"nome": n, "valor": r3(c)} for n, c in _REPASSES_A3[esfera] if r3(c)],
+         "detalhe_periodo": "últimos 12 meses"},
         {"id": "outras", "nome": "Outras receitas",
          "valor": r1("Taxas") + r1("ReceitaDeContribuicoes") + r1("ReceitaPatrimonial") + r1("ReceitaDeServicos")
          + r1("OutrasReceitasCorrentes") + r1("AlienacaoDeBens") + r1("OutrasReceitasDeCapital")
@@ -150,7 +167,7 @@ def _receitas(a1: list[dict], a3: list[dict]) -> dict:
              ("Patrimônio e serviços", r1("ReceitaPatrimonial") + r1("ReceitaDeServicos")),
              ("Multas e juros", r1("MultasEJurosDeMora")), ("Venda de bens", r1("AlienacaoDeBens"))) if v],
          "detalhe_periodo": "acumulado no exercício"},
-        {"id": "credito", "nome": "Empréstimos (operações de crédito)", "valor": r1("ReceitasDeOperacoesDeCredito"),
+        {"id": "credito", "nome": "Empréstimos (operações de crédito)", "valor": r1("ReceitasDeOperacoesDeCredito") + r1("OperacoesDeCreditoRefinanciamento"),
          "detalhe": [], "detalhe_periodo": ""},
     ]
     for g in grupos:
@@ -165,7 +182,8 @@ def _despesas(a1: list[dict], a2: list[dict]) -> dict:
 
     total = d("TotalDespesas")
     pessoal = d("PessoalEEncargosSociais") + d("PessoalEEncargosSociaisIntra")
-    divida = d("JurosEEncargosDaDivida") + d("AmortizacaoDaDivida") + d("JurosEEncargosDaDividaIntra") + d("AmortizacaoDaDividaIntra")
+    divida = (d("JurosEEncargosDaDivida") + d("AmortizacaoDaDivida") + d("JurosEEncargosDaDividaIntra")
+              + d("AmortizacaoDaDividaIntra") + d("AmortizacaoRefinanciamentoDaDivida"))
     invest = d("Investimentos") + d("InversoesFinanceiras")
     custeio = round(total - invest - divida, 2)
     tipos = [
@@ -211,6 +229,8 @@ def _pessoal(ente: int, ano: int) -> dict | None:
                                 co_tipo_demonstrativo="RGF", id_ente=ente, no_anexo="RGF-Anexo 01", co_poder="E")
             except ErroFonte:
                 continue
+            if ente == 1:  # o RGF federal traz uma linha por órgão; o limite que interessa é o da União
+                linhas = [r for r in linhas if r.get("rotulo") == "União"]
             uso = _valor(linhas, "DespesaComPessoalTotal", "% sobre a RCL")
             if uso is None:
                 continue
@@ -266,8 +286,12 @@ def painel_economia(ente: int) -> dict | None:
 
     despesas = _despesas(a1, a2)
     funcoes = {f["nome"]: f for f in despesas["funcoes"]}
+    esfera = _esfera(ente)
     return {
         "ente": ente,
+        "esfera": esfera,
+        "instituicao": next((r.get("instituicao") for r in a1 if r.get("instituicao")), None),
+        "populacao": next((r.get("populacao") for r in a1 if r.get("populacao")), None),
         "periodo": {"ano": ano, "bimestre": bim, "rotulo": f"{bim}º bimestre de {ano}"},
         "nivel1": {
             "balanco": _balanco(a1),
@@ -275,7 +299,7 @@ def painel_economia(ente: int) -> dict | None:
             "saude": funcoes.get("Saúde"),
             "educacao": funcoes.get("Educação"),
         },
-        "nivel2": {"receitas": _receitas(a1, a3), "despesas": despesas},
+        "nivel2": {"receitas": _receitas(a1, a3, esfera), "despesas": despesas},
         "nivel3": {"execucao": _execucao(a1)},
         "fonte": "SICONFI / Tesouro Nacional (RREO e RGF declarados pelos próprios entes)",
     }

@@ -492,7 +492,7 @@ def pesquisar_municipios(q: Annotated[str, Query(min_length=2, max_length=60)]) 
 # Economia do setor público (SICONFI)
 # --------------------------------------------------------------------------- #
 @router.get("/economia/{codigo_ibge}", tags=["economia"])
-def economia_municipio(codigo_ibge: Annotated[int, Path(ge=1000000, le=5999999)]) -> dict:
+def economia_municipio(codigo_ibge: Annotated[int, Path(ge=1, le=5999999)]) -> dict:
     """Saúde fiscal, receitas, despesas e execução orçamentária do município (código IBGE de 7 dígitos)."""
     try:
         painel = economia.painel_economia(codigo_ibge)
