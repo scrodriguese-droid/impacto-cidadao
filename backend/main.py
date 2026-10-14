@@ -19,6 +19,7 @@ import re
 import time
 from collections import defaultdict, deque
 from contextlib import asynccontextmanager
+from datetime import date
 from typing import Annotated, Any, Literal
 
 import psycopg
@@ -239,9 +240,13 @@ def listar_proposicoes(
     )] = False,
     agrupar_por: Annotated[Literal["tema", "nivel_poder"] | None, Query(
         description="ordena por grupos antes da ordenação escolhida")] = None,
+    desde: Annotated[date | None, Query(description="atos apresentados a partir desta data (AAAA-MM-DD)")] = None,
+    ate: Annotated[date | None, Query(description="atos apresentados até esta data (AAAA-MM-DD)")] = None,
     pagina: Annotated[int, Query(ge=1, le=1000)] = 1,
     por_pagina: Annotated[int, Query(ge=1, le=50)] = 20,
 ) -> dict:
+    if desde and ate and desde > ate:
+        raise HTTPException(status_code=422, detail="A data inicial não pode ser posterior à final.")
     perfil = _validar_perfil(perfil)
     categoria = _validar_categoria(categoria)
     if status in ("", "all"):
@@ -270,6 +275,8 @@ def listar_proposicoes(
          WHERE (p.analise_status = 'ok' OR %(pendentes)s)
            AND (%(instancia)s::text IS NULL OR p.instancia = %(instancia)s::text)
            AND (%(nivel)s::text IS NULL OR p.nivel = %(nivel)s::text)
+           AND (%(desde)s::date IS NULL OR p.data_apresentacao >= %(desde)s::date)
+           AND (%(ate)s::date IS NULL OR p.data_apresentacao <= %(ate)s::date)
            AND (%(perfil)s::text IS NULL OR %(perfil)s::text = ANY (p.perfis_impactados) OR 'todos' = ANY (p.perfis_impactados)
                 OR (%(pendentes)s AND p.analise_status <> 'ok'))
            AND (%(categoria)s::text IS NULL OR {_TEMA_PRINCIPAL} = %(categoria)s::text)
@@ -282,7 +289,7 @@ def listar_proposicoes(
         "perfil": perfil, "categoria": categoria, "status": status, "q": termo,
         "q_like": _escapar_like(termo) if termo else None,
         "instancia": instancia, "nivel": nivel, "pendentes": incluir_pendentes,
-        "ordem_temas": list(CATEGORIAS),
+        "desde": desde, "ate": ate, "ordem_temas": list(CATEGORIAS),
     }
     linhas = db.consultar(
         f"""
@@ -362,8 +369,22 @@ def resumo_politicas() -> dict:
                 "aplicavel": aplicavel, "fonte_conectada": conectada, "fonte": fonte, "observacao": obs,
                 "total": c["total"] if c else 0, "traduzidas": c["traduzidas"] if c else 0,
             })
+    # Frescor dos dados: quando a coleta rodou pela última vez e até onde no passado ela olhou.
+    coleta = db.consultar_um(
+        "SELECT max(concluida_em) AS ultima, min(desde) AS cobertura_desde "
+        "FROM coletas WHERE tipo = 'proposicoes' AND concluida_em IS NOT NULL"
+    ) or {}
+    datas = db.consultar_um(
+        "SELECT min(data_apresentacao) AS mais_antigo, max(data_apresentacao) AS mais_recente "
+        "FROM proposicoes_analisadas"
+    ) or {}
+    iso = lambda v: v.isoformat() if v else None  # noqa: E731
     return {"niveis": [{"id": i, "nome": n} for i, n in NIVEIS],
-            "instancias": [{"id": i, "nome": n} for i, n in INSTANCIAS], "celulas": celulas}
+            "instancias": [{"id": i, "nome": n} for i, n in INSTANCIAS], "celulas": celulas,
+            "coleta": {"ultima_coleta": iso(coleta.get("ultima")),
+                       "cobertura_desde": iso(coleta.get("cobertura_desde")),
+                       "ato_mais_antigo": iso(datas.get("mais_antigo")),
+                       "ato_mais_recente": iso(datas.get("mais_recente"))}}
 
 
 # --- Votação -------------------------------------------------------------- #
@@ -523,8 +544,12 @@ def listar_candidatos(
                 "citacoes_descartadas": r["propostas_descartadas"],
             },
         })
+    ultima = db.consultar_um(
+        "SELECT max(concluida_em) AS ultima FROM coletas WHERE tipo = 'candidatos' AND concluida_em IS NOT NULL"
+    ) or {}
     return {"eleicao": cfg.tse_ano, "ordenacao": "alfabética por nome de urna (sem ranking)",
-            "aviso": AVISO_IA, "itens": itens}
+            "aviso": AVISO_IA, "atualizado_em": ultima["ultima"].isoformat() if ultima.get("ultima") else None,
+            "itens": itens}
 
 
 def _como_chega(canal: str, cidade: str) -> str:

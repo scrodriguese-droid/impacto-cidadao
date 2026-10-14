@@ -245,6 +245,30 @@ def test_instancia_do_item_segue_a_origem():
     assert Item(origem="alto_impacto", **base).instancia == "legislativo"
 
 
+def test_status_finais_sao_validos_e_mp_aguardando_votacao_continua_sendo_atualizada():
+    from coletor import STATUS_FINAIS
+    from schemas import STATUS
+    assert set(STATUS_FINAIS) <= set(STATUS)
+    assert "Em vigor (MP aguardando votação)" not in STATUS_FINAIS
+    assert "Em análise no Congresso" not in STATUS_FINAIS
+
+
+def test_credenciais_configuradas_segue_o_provedor(monkeypatch):
+    from dataclasses import replace
+
+    import llm
+    monkeypatch.delenv("ANTHROPIC_AUTH_TOKEN", raising=False)
+    base = llm.cfg
+    monkeypatch.setattr(llm, "cfg", replace(base, llm_provider="anthropic", anthropic_api_key="", gemini_api_key="g"))
+    assert llm.credenciais_configuradas() is False
+    monkeypatch.setattr(llm, "cfg", replace(base, llm_provider="anthropic", anthropic_api_key="k"))
+    assert llm.credenciais_configuradas() is True
+    monkeypatch.setattr(llm, "cfg", replace(base, llm_provider="gemini", gemini_api_key="g"))
+    assert llm.credenciais_configuradas() is True
+    monkeypatch.setattr(llm, "cfg", replace(base, llm_provider="gemini", gemini_api_key=""))
+    assert llm.credenciais_configuradas() is False
+
+
 def test_limpar_texto_remove_nul_e_surrogates():
     from coletor_candidatos import _limpar_texto
     assert _limpar_texto("sa\x00úde\ud800 pública") == "saúde pública"

@@ -177,7 +177,9 @@ class Camara:
     def __init__(self) -> None:
         self.http = ClienteHTTP(self.BASE)
 
-    def listar(self, sigla_tipo: str, ano: int, desde: date | None = None, max_itens: int = 300) -> Iterator[dict]:
+    def listar(self, sigla_tipo: str, ano: int, desde: date | None = None,
+               max_itens: int | None = None) -> Iterator[dict]:
+        """Lista proposições percorrendo TODAS as páginas da janela (max_itens=None = sem teto)."""
         params: dict[str, Any] = {
             "siglaTipo": sigla_tipo, "ano": ano, "ordem": "DESC", "ordenarPor": "id",
             "itens": 100, "pagina": 1,
@@ -185,12 +187,12 @@ class Camara:
         if desde:
             params["dataApresentacaoInicio"] = desde.isoformat()
         entregues = 0
-        while entregues < max_itens:
+        while max_itens is None or entregues < max_itens:
             dados = self.http.json("/proposicoes", params)
             for item in dados.get("dados", []):
                 yield item
                 entregues += 1
-                if entregues >= max_itens:
+                if max_itens is not None and entregues >= max_itens:
                     return
             if not any(link.get("rel") == "next" for link in dados.get("links", [])):
                 return

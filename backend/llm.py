@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import re
 import time
 from typing import Any, TypeVar
@@ -44,6 +45,13 @@ class RecusaLLM(ErroLLM):
 # --------------------------------------------------------------------------- #
 # API pública
 # --------------------------------------------------------------------------- #
+def credenciais_configuradas() -> bool:
+    """Há chave para o provedor escolhido? (Quem usa só `ant auth login` deve passar --ia sim.)"""
+    if cfg.llm_provider == "gemini":
+        return bool(cfg.gemini_api_key)
+    return bool(cfg.anthropic_api_key or os.getenv("ANTHROPIC_AUTH_TOKEN"))
+
+
 def modelo_em_uso() -> str:
     return cfg.gemini_model if cfg.llm_provider == "gemini" else cfg.anthropic_model
 

@@ -38,7 +38,7 @@ from psycopg.types.json import Jsonb
 import db
 from config import cfg
 from fontes import ErroFonte, Tse, extrair_paginas_pdf, localizar_trecho, normalizar, texto_paginado
-from llm import ErroConfiguracaoLLM, ErroLLM, RecusaLLM, analisar, modelo_em_uso
+from llm import ErroConfiguracaoLLM, ErroLLM, RecusaLLM, analisar, credenciais_configuradas, modelo_em_uso
 from prompts import PROMPT_PLANO, montar_usuario_plano
 from schemas import AnalisePlano, PropostaPlano
 
@@ -226,11 +226,17 @@ def gravar_plano(conn, c: dict, arquivo: dict, *, status: str, erro: str | None 
             )
 
 
-def plano_ja_analisado(conn, arquivo_id: int, sha: str) -> bool:
+def plano_ja_analisado(conn, arquivo_id: int, sha: str, sem_ia: bool = False) -> bool:
+    """Nada a fazer: PDF idêntico e (já analisado, ou — sem IA — já lido e indexado para busca)."""
     linha = conn.execute(
-        "SELECT status, pdf_sha256 FROM planos_governo WHERE arquivo_id = %s", (arquivo_id,)
+        "SELECT p.status, p.pdf_sha256, (SELECT count(*) FROM paginas_plano g WHERE g.plano_id = p.id) AS paginas "
+        "FROM planos_governo p WHERE p.arquivo_id = %s", (arquivo_id,)
     ).fetchone()
-    return bool(linha and linha["status"] == "ok" and linha["pdf_sha256"] == sha)
+    if not linha or linha["pdf_sha256"] != sha:
+        return False
+    if linha["status"] == "ok":
+        return True
+    return sem_ia and linha["status"] == "pendente" and linha["paginas"] > 0
 
 
 # --------------------------------------------------------------------------- #
@@ -264,9 +270,9 @@ def processar(c: dict, tse: Tse, args: argparse.Namespace, placar: Placar) -> No
 
     sha = hashlib.sha256(conteudo).hexdigest()
     with db.conexao_avulsa() as conn:
-        if not args.forcar and plano_ja_analisado(conn, arquivo["arquivo_id"], sha):
+        if not args.forcar and plano_ja_analisado(conn, arquivo["arquivo_id"], sha, args.sem_ia):
             placar.pulados += 1
-            log.info("= %s: plano já analisado (PDF inalterado).", nome)
+            log.info("= %s: plano inalterado; nada a refazer.", nome)
             return
 
     try:
@@ -347,7 +353,9 @@ def interpretar_argumentos(argv: list[str] | None = None) -> argparse.Namespace:
     p.add_argument("--incluir-todos", action="store_true",
                    help="inclui candidaturas indeferidas, renunciadas etc. (padrão: só deferidas / 2º turno)")
     p.add_argument("--forcar", action="store_true", help="reanalisa mesmo que o PDF não tenha mudado")
-    p.add_argument("--sem-ia", action="store_true", help="cadastra candidatos e lê os PDFs, sem chamar a IA")
+    p.add_argument("--ia", choices=["auto", "sim", "nao"], default="auto",
+                   help="análise por IA: auto = só se houver chave configurada (padrão), sim = exige, nao = só lê os PDFs")
+    p.add_argument("--sem-ia", action="store_true", help="atalho para --ia nao: cadastra candidatos e lê os PDFs")
     p.add_argument("-v", "--verbose", action="store_true")
     return p.parse_args(argv)
 
@@ -370,11 +378,28 @@ def main(argv: list[str] | None = None) -> int:
     logging.getLogger("httpx").setLevel(logging.WARNING)
 
     tse, placar = Tse(), Placar()
+
+    modo_ia = "nao" if args.sem_ia else args.ia
+    usar_ia = {"sim": True, "nao": False, "auto": credenciais_configuradas()}[modo_ia]
+    if modo_ia == "auto" and not usar_ia:
+        log.info("Sem chave de IA configurada: os planos serão lidos e indexados para busca, sem análise. "
+                 "Preencha o .env, ou use --ia sim se a credencial vem do login do CLI.")
+    args.sem_ia = not usar_ia
+
     try:
         candidatos = obter_candidatos(args, tse)
     except (ErroFonte, json.JSONDecodeError, KeyError) as exc:
         log.error("Não foi possível obter a lista de candidatos: %s", exc)
         return 1
+
+    coleta_id = None
+    try:
+        with db.conexao_avulsa() as conn:
+            coleta_id = conn.execute(
+                "INSERT INTO coletas (tipo, com_ia) VALUES ('candidatos', %s) RETURNING id", (usar_ia,)
+            ).fetchone()["id"]
+    except Exception as exc:  # noqa: BLE001 - o registro nunca deve derrubar a coleta
+        log.warning("Não foi possível registrar a coleta: %s", exc)
 
     # Ordem alfabética: nenhum candidato é tratado antes ou depois por qualquer critério.
     escolhidos = sorted((c for c in candidatos if elegivel(c, args)), key=lambda c: normalizar(c["nome_urna"]))
@@ -393,6 +418,17 @@ def main(argv: list[str] | None = None) -> int:
         return 1
     except KeyboardInterrupt:
         log.warning("Interrompido pelo usuário.")
+
+    if coleta_id is not None:
+        try:
+            with db.conexao_avulsa() as conn:
+                conn.execute(
+                    "UPDATE coletas SET concluida_em = now(), novos = %s, so_andamento = %s, pendentes = %s, "
+                    "falhas = %s WHERE id = %s",
+                    (placar.ok, placar.pulados, placar.pendentes, placar.falhas, coleta_id),
+                )
+        except Exception as exc:  # noqa: BLE001
+            log.warning("Não foi possível concluir o registro da coleta: %s", exc)
 
     log.info("Resumo: %d analisados | %d já atualizados | %d pendentes | %d falhas | %d citações descartadas",
              placar.ok, placar.pulados, placar.pendentes, placar.falhas, placar.descartadas)

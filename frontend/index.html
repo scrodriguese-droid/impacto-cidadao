@@ -385,6 +385,9 @@ async function carregarCandidatos() {
             ? `<div class="col-span-full text-xs text-slate-600 dark:text-slate-400"><p><b>Resultados para “${esc(S.buscaPlano)}”.</b> ${esc((busca && busca.aviso) || '')}</p>
                <button type="button" class="mt-1 underline text-brand-700 dark:text-brand-400" data-acao="limpar-busca">Limpar busca</button></div>` : '';
         grade.innerHTML = cabecalhoBusca + dicaCidade + lista.map((c) => cartaoCandidato(c, buscaPorSq[c.sq_candidato], modo)).join('');
+        if (resumo.atualizado_em) {
+            grade.insertAdjacentHTML('beforeend', `<p class="col-span-full text-[11px] text-slate-400 dark:text-slate-500"><i class="fa-solid fa-rotate mr-1" aria-hidden="true"></i>Planos lidos do TSE em ${esc(fmtDataHora(resumo.atualizado_em))}.</p>`);
+        }
         if (cmp && cmp.municipio && cmp.municipio.populacao) {
             const pop = cmp.municipio.populacao;
             grade.insertAdjacentHTML('afterbegin', `<p class="col-span-full text-xs text-slate-500 dark:text-slate-400"><i class="fa-solid fa-city mr-1" aria-hidden="true"></i>${esc(cmp.municipio.nome)}/${esc(cmp.municipio.uf)} — ${esc(cmp.municipio.regiao)} · ${pop.valor.toLocaleString('pt-BR')} habitantes (estimativa IBGE ${esc(pop.ano)}).</p>`);

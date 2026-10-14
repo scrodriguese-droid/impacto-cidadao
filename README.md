@@ -107,18 +107,49 @@ Para conectar uma fonte nova: (1) faça o coletor gravar `instancia`, `nivel` (e
 `proposicoes_analisadas`; (2) troque `fonte_conectada` para `True` na célula em `COBERTURA`.
 Atos ainda sem tradução de IA aparecem com a ementa oficial, a tramitação e o link da fonte.
 
+### Janela de tempo, frescor e coleta diária
+
+* **Você escolhe o período na tela.** Na página *Políticas públicas*, o botão de período aceita atalhos
+  (7 dias, 30 dias, 6 meses, 1 ano…), "últimos **N** dias" livres ou um intervalo de datas. A API aceita
+  `desde=AAAA-MM-DD` e `ate=AAAA-MM-DD` em `/api/proposicoes`.
+* **O que há para filtrar depende do que foi coletado.** A coleta usa `--dias N` (padrão 60). Se o período
+  pedido for mais antigo que a base, a tela avisa e mostra o comando para ampliar
+  (ex.: `python backend\coletor.py --dias 365`).
+* **A tela mostra a data dos dados:** "Dados coletados em 14/10/2026 às 18:09 · atos apresentados de … a …"
+  (vem da tabela `coletas`, uma linha por execução).
+* **A listagem não tem teto:** percorre todas as páginas da janela. Atos já examinados e descartados ficam
+  em `proposicoes_descartadas`, então a rodada diária só consulta o que é novo.
+* **Atos em tramitação fora da janela continuam sendo atualizados** (uma MP de 61 dias atrás que for votada
+  hoje muda de situação na próxima coleta). Atos concluídos (sancionados, arquivados…) deixam de ser reexaminados.
+* **Tradução por IA:** `--limite N` (padrão 25) vale só para traduções por rodada; o excedente é coletado
+  sem tradução e entra na fila da próxima. `--ia auto` (padrão) só traduz se houver chave no `.env`.
+
+**Coleta diária automática (Windows):**
+
+```powershell
+.\scripts\agendar.ps1                         # todo dia às 07:30, janela de 30 dias
+.\scripts\agendar.ps1 -Hora 06:00 -Dias 60
+.\scripts\agendar.ps1 -Remover
+Start-ScheduledTask -TaskName ImpactoCidadao-Coleta     # roda agora, para testar
+```
+
+O script `scripts\coletar.ps1` abre o Docker Desktop se preciso, roda os dois coletores e registra tudo em
+`logs\coleta-AAAA-MM-DD.log`. O PC precisa estar ligado (se perder o horário, roda quando voltar).
+
 ### Modos úteis dos coletores
 
 | Comando | Para quê |
 |---|---|
-| `coletor.py --sem-ia` | só coleta e grava como "pendente" (zero custo de IA) |
+| `coletor.py --dias 365` | carga histórica: examina um ano inteiro |
+| `coletor.py --ia nao` | só coleta e grava como "pendente" (zero custo de IA) |
+| `coletor.py --ia sim` | exige IA (erro se não houver chave) |
 | `coletor.py --id 2647155 --forcar` | reanalisa uma proposição específica da Câmara |
 | `coletor.py --max-alto-impacto 0` | só Poder Executivo (desliga propostas do Congresso por "alto impacto") |
+| `coletor.py --so-temas` | recalcula o tema aproximado dos atos, sem coletar |
 | `coletor_candidatos.py --sq <SQ> --forcar` | reanalisa um candidato |
-| `coletor_candidatos.py --sem-ia` | cadastra candidatos e lê os PDFs, sem chamar a IA |
+| `coletor_candidatos.py --ia nao` | cadastra candidatos e lê os PDFs, sem chamar a IA |
 
-Os coletores são **idempotentes**: reexecutar não duplica nem reanalisa o que não mudou (hash do texto/PDF).
-Dá para agendar `coletor.py` no Agendador de Tarefas do Windows (ex.: de hora em hora).
+Os coletores são **idempotentes**: reexecutar não duplica linhas nem refaz o que não mudou.
 
 ## Como garantimos neutralidade e fidelidade
 

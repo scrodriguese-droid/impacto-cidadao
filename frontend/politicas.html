@@ -69,6 +69,36 @@
             <option value="executivo">Executivo</option>
             <option value="legislativo">Legislativo</option>
         </select>
+        <div class="relative">
+            <button id="btnPeriodo" type="button" class="inline-flex items-center gap-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2" aria-expanded="false" aria-controls="popPeriodo">
+                <i class="fa-regular fa-calendar text-xs text-slate-400" aria-hidden="true"></i><span id="periodoRotulo">Todo o período</span>
+                <i class="fa-solid fa-chevron-down text-[10px] text-slate-400" aria-hidden="true"></i>
+            </button>
+            <div id="popPeriodo" class="hidden absolute left-0 top-full mt-2 w-80 max-w-[88vw] z-40 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-xl p-3 space-y-3 text-sm">
+                <div>
+                    <p class="text-xs font-semibold text-slate-500 mb-1.5">Atos apresentados…</p>
+                    <div id="periodoAtalhos" class="grid grid-cols-3 gap-1.5"></div>
+                </div>
+                <form id="formDias" class="flex items-center gap-2">
+                    <label for="periodoDias" class="text-xs font-semibold text-slate-500 whitespace-nowrap">Últimos</label>
+                    <input id="periodoDias" type="number" min="1" max="3650" inputmode="numeric" placeholder="45"
+                           class="w-20 px-2 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                    <span class="text-xs text-slate-500">dias</span>
+                    <button type="submit" class="ml-auto px-3 py-1.5 rounded-lg bg-brand-600 text-white text-xs font-semibold">Aplicar</button>
+                </form>
+                <form id="formDatas" class="space-y-2">
+                    <p class="text-xs font-semibold text-slate-500">ou entre as datas</p>
+                    <div class="flex items-center gap-2">
+                        <label class="sr-only" for="periodoDe">De</label>
+                        <input id="periodoDe" type="date" class="flex-1 min-w-0 px-2 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs">
+                        <span class="text-xs text-slate-400">até</span>
+                        <label class="sr-only" for="periodoAte">Até</label>
+                        <input id="periodoAte" type="date" class="flex-1 min-w-0 px-2 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs">
+                    </div>
+                    <button type="submit" class="w-full px-3 py-1.5 rounded-lg bg-brand-600 text-white text-xs font-semibold">Aplicar datas</button>
+                </form>
+            </div>
+        </div>
         <div class="relative flex-grow min-w-[10rem] max-w-xs">
             <label for="busca" class="sr-only">Buscar</label>
             <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400 text-xs" aria-hidden="true"></i>
@@ -91,6 +121,8 @@
 
     <div id="chipsFiltro" class="flex flex-wrap gap-2 mt-3"></div>
     <p id="contagem" class="text-xs text-slate-500 dark:text-slate-400 mt-3" aria-live="polite">Carregando…</p>
+    <p id="frescor" class="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5"></p>
+    <p id="avisoPeriodo" class="hidden mt-2 text-xs text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 rounded-lg px-3 py-2"></p>
 
     <!-- Cartões -->
     <div id="lista" class="mt-3 space-y-4"></div>
@@ -105,6 +137,7 @@
             <button id="btnFecharFontes" type="button" class="p-1.5 -m-1.5 text-slate-500 hover:text-slate-800 dark:hover:text-white" aria-label="Fechar"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
         </div>
         <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">De onde vêm os atos mostrados e o que ainda não cobrimos. Preferimos declarar a lacuna a mostrar dados incompletos como se fossem tudo.</p>
+        <p id="fontesColeta" class="text-xs mt-3 px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-900/60 text-slate-600 dark:text-slate-300"></p>
         <ul id="fontesLista" class="mt-3 divide-y divide-slate-100 dark:divide-slate-700"></ul>
         <h3 class="text-sm font-bold mt-5">Como definimos o tema</h3>
         <p class="text-xs text-slate-600 dark:text-slate-400 mt-1">Nos atos já traduzidos, o tema vem da análise por IA. Nos demais, é <b>aproximado por palavras-chave da ementa oficial</b> e aparece marcado como “tema aproximado”; pode errar, então confira a ementa em “Ver detalhes”.</p>
@@ -123,6 +156,8 @@ const P = {
     perfil: prefs.perfil || '', municipio: prefs.municipio || null,
     nivel: '', instancia: '', categoria: 'all', status: 'all', q: '', ordem: 'recentes',
     pagina: 1, total: 0, itens: [], perfis: [], categorias: [], statusLista: [], resumo: null, temasContagem: {},
+    periodo: prefs.periodo || { modo: 'todos' }, // { modo: 'todos' } | { modo: 'dias', dias } | { modo: 'datas', de, ate }
+    coleta: {},
 };
 const NOME_NIVEL = { federal: 'Federal', estadual: 'Estadual', municipal: 'Municipal' };
 const ICONE_NIVEL = { federal: 'fa-landmark', estadual: 'fa-building', municipal: 'fa-house-flag' };
@@ -211,6 +246,10 @@ $('btnSemCidade').addEventListener('click', () => {
 
 /* ---------- status das fontes (modal) ---------- */
 function renderFontes() {
+    const c = P.coleta || {};
+    $('fontesColeta').innerHTML = c.ultima_coleta
+        ? `<i class="fa-solid fa-rotate mr-1.5" aria-hidden="true"></i>Última coleta: <b>${esc(fmtDataHora(c.ultima_coleta))}</b>${c.cobertura_desde ? ` · janela já examinada: desde <b>${esc(fmtData(c.cobertura_desde))}</b>` : ''}. Atos ainda em tramitação continuam sendo atualizados mesmo fora da janela.`
+        : 'Nenhuma coleta registrada ainda.';
     $('fontesLista').innerHTML = celulas().filter((c) => c.aplicavel).map((c) => `<li class="py-3 flex gap-3">
         <span class="mt-0.5 ${c.fonte_conectada ? 'text-emerald-600' : 'text-amber-600'}"><i class="fa-solid ${c.fonte_conectada ? 'fa-circle-check' : 'fa-clock'}" aria-hidden="true"></i></span>
         <div>
@@ -254,6 +293,7 @@ $('btnMais').addEventListener('click', () => { P.pagina += 1; carregar(true); })
 
 function renderChips() {
     const chips = [];
+    if (P.periodo && P.periodo.modo !== 'todos') chips.push(['periodo', `Período: ${rotuloPeriodo()}`]);
     if (P.categoria !== 'all') chips.push(['categoria', `Tema: ${temaInfo(P.categoria).nome}`]);
     if (P.instancia) chips.push(['instancia', `Poder: ${NOME_INST[P.instancia]}`]);
     if (P.status !== 'all') chips.push(['status', `Situação: ${(STATUS_VISUAL[P.status] || [P.status])[0]}`]);
@@ -266,13 +306,97 @@ $('chipsFiltro').addEventListener('click', (ev) => {
     const b = ev.target.closest('[data-remover]');
     if (!b) return;
     const k = b.dataset.remover;
-    if (k === 'categoria') { P.categoria = 'all'; $('filtroCategoria').value = 'all'; }
+    if (k === 'periodo') { P.periodo = { modo: 'todos' }; salvarPrefsParciais({ periodo: P.periodo }); renderPeriodo(); }
+    else if (k === 'categoria') { P.categoria = 'all'; $('filtroCategoria').value = 'all'; }
     else if (k === 'instancia') { P.instancia = ''; $('filtroInstancia').value = ''; }
     else if (k === 'status') { P.status = 'all'; $('filtroStatus').value = 'all'; }
     else if (k === 'q') { P.q = ''; $('busca').value = ''; }
     atualizar();
 });
 function atualizar() { renderSegNivel(); renderChips(); P.pagina = 1; carregar(false); }
+
+/* ====================================================================== *
+ *  Período livre (você escolhe quanto quiser) e frescor dos dados
+ * ====================================================================== */
+const isoLocal = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+const diasAtras = (n) => { const d = new Date(); d.setDate(d.getDate() - n); return isoLocal(d); };
+const diasDesde = (iso) => Math.max(1, Math.ceil((Date.now() - new Date(iso + 'T00:00:00').getTime()) / 86400000));
+const ATALHOS = [[7, '7 dias'], [30, '30 dias'], [60, '60 dias'], [90, '90 dias'], [180, '6 meses'], [365, '1 ano']];
+
+function intervalo() { // { desde, ate } em AAAA-MM-DD ('' = sem limite)
+    const p = P.periodo || { modo: 'todos' };
+    if (p.modo === 'dias' && p.dias > 0) return { desde: diasAtras(p.dias), ate: '' };
+    if (p.modo === 'datas') return { desde: p.de || '', ate: p.ate || '' };
+    return { desde: '', ate: '' };
+}
+function rotuloPeriodo() {
+    const p = P.periodo || { modo: 'todos' };
+    if (p.modo === 'dias') return `Últimos ${p.dias} dias`;
+    if (p.modo === 'datas') return `${p.de ? fmtData(p.de) : 'início'} – ${p.ate ? fmtData(p.ate) : 'hoje'}`;
+    return 'Todo o período';
+}
+function renderFrescor() {
+    const c = P.coleta || {};
+    $('frescor').textContent = c.ultima_coleta
+        ? `Dados coletados em ${fmtDataHora(c.ultima_coleta)}` + (c.ato_mais_antigo ? ` · atos apresentados de ${fmtData(c.ato_mais_antigo)} a ${fmtData(c.ato_mais_recente)}` : '')
+        : 'Ainda não há coleta registrada.';
+    const { desde } = intervalo();
+    const aviso = $('avisoPeriodo');
+    if (desde && c.cobertura_desde && desde < c.cobertura_desde) {
+        aviso.innerHTML = `<i class="fa-solid fa-circle-info mr-1" aria-hidden="true"></i>Seu período começa em ${esc(fmtData(desde))}, mas só coletamos atos apresentados a partir de ${esc(fmtData(c.cobertura_desde))}. Para ampliar a base, rode <code>python backend\\coletor.py --dias ${diasDesde(desde)}</code>.`;
+        aviso.classList.remove('hidden');
+    } else {
+        aviso.classList.add('hidden');
+    }
+}
+function renderPeriodo() {
+    $('periodoRotulo').textContent = rotuloPeriodo();
+    const dias = P.periodo && P.periodo.modo === 'dias' ? P.periodo.dias : null;
+    const todos = !P.periodo || P.periodo.modo === 'todos';
+    $('periodoAtalhos').innerHTML = ATALHOS.map(([n, t]) => `<button type="button" data-dias="${n}"
+        class="px-2 py-1.5 rounded-lg border text-xs font-semibold ${dias === n ? 'bg-brand-600 text-white border-brand-600' : 'border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700'}">${t}</button>`).join('')
+        + `<button type="button" data-dias="0" class="col-span-3 px-2 py-1.5 rounded-lg border text-xs font-semibold ${todos ? 'bg-brand-600 text-white border-brand-600' : 'border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700'}">Todo o período coletado</button>`;
+    renderFrescor();
+}
+function alternarPeriodo(abrir) {
+    const pop = $('popPeriodo');
+    const mostrar = abrir ?? pop.classList.contains('hidden');
+    pop.classList.toggle('hidden', !mostrar);
+    $('btnPeriodo').setAttribute('aria-expanded', String(mostrar));
+    if (mostrar) {
+        const p = P.periodo || {};
+        $('periodoDias').value = p.modo === 'dias' ? p.dias : '';
+        $('periodoDe').value = p.modo === 'datas' ? (p.de || '') : '';
+        $('periodoAte').value = p.modo === 'datas' ? (p.ate || '') : '';
+    }
+}
+function definirPeriodo(periodo) {
+    P.periodo = periodo;
+    salvarPrefsParciais({ periodo });
+    alternarPeriodo(false); renderPeriodo(); atualizar();
+}
+$('btnPeriodo').addEventListener('click', () => alternarPeriodo());
+document.addEventListener('click', (ev) => { if (!ev.target.closest('#popPeriodo') && !ev.target.closest('#btnPeriodo')) alternarPeriodo(false); });
+document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') alternarPeriodo(false); });
+$('periodoAtalhos').addEventListener('click', (ev) => {
+    const b = ev.target.closest('[data-dias]');
+    if (!b) return;
+    const n = Number(b.dataset.dias);
+    definirPeriodo(n > 0 ? { modo: 'dias', dias: n } : { modo: 'todos' });
+});
+$('formDias').addEventListener('submit', (ev) => {
+    ev.preventDefault();
+    const n = parseInt($('periodoDias').value, 10);
+    if (Number.isFinite(n) && n >= 1 && n <= 3650) definirPeriodo({ modo: 'dias', dias: n });
+    else $('periodoDias').focus();
+});
+$('formDatas').addEventListener('submit', (ev) => {
+    ev.preventDefault();
+    let de = $('periodoDe').value, ate = $('periodoAte').value;
+    if (!de && !ate) return;
+    if (de && ate && de > ate) [de, ate] = [ate, de];
+    definirPeriodo({ modo: 'datas', de, ate });
+});
 
 /* ====================================================================== *
  *  Cartões de impacto
@@ -432,6 +556,9 @@ async function carregar(acrescentar = false) {
     const params = new URLSearchParams({ ordem: P.ordem, pagina: P.pagina, por_pagina: 10, incluir_pendentes: true, agrupar_por: 'tema' });
     if (P.nivel) params.set('nivel', P.nivel);
     if (P.instancia) params.set('instancia', P.instancia);
+    const iv = intervalo();
+    if (iv.desde) params.set('desde', iv.desde);
+    if (iv.ate) params.set('ate', iv.ate);
     if (P.perfil) params.set('perfil', P.perfil);
     if (P.categoria !== 'all') params.set('categoria', P.categoria);
     if (P.status !== 'all') params.set('status', P.status);
@@ -482,6 +609,7 @@ async function iniciar() {
             api('/api/perfis'), api('/api/categorias'), api('/api/status'), api('/api/politicas/resumo'),
         ]);
         P.perfis = perfis; P.categorias = categorias; P.statusLista = statusLista; P.resumo = resumo;
+        P.coleta = resumo.coleta || {};
         if (P.perfil && !perfis.some((p) => p.id === P.perfil)) P.perfil = '';
     } catch (e) {
         $('lista').innerHTML = mensagemErro(e); $('contagem').textContent = '';
@@ -497,7 +625,7 @@ async function iniciar() {
     if (NOME_NIVEL[a]) P.nivel = a;
     if (NOME_INST[b || a]) { P.instancia = b || a; $('filtroInstancia').value = P.instancia; }
 
-    renderBarra(); renderSegNivel(); renderChips(); carregar(false);
+    renderBarra(); renderSegNivel(); renderPeriodo(); renderChips(); carregar(false);
 }
 iniciar();
 </script>

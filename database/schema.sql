@@ -383,6 +383,34 @@ ALTER TABLE paginas_plano ADD COLUMN IF NOT EXISTS indice boolean
 CREATE INDEX IF NOT EXISTS ix_paginas_busca ON paginas_plano USING gin (busca);
 
 -- -----------------------------------------------------------------------------
+-- 6b. Controle das coletas (para a tela dizer "dados atualizados em…") e atos já
+--     examinados e descartados (para a coleta diária não repetir chamadas à Câmara)
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS coletas (
+    id            bigserial PRIMARY KEY,
+    tipo          text NOT NULL CHECK (tipo IN ('proposicoes', 'candidatos')),
+    iniciada_em   timestamptz NOT NULL DEFAULT now(),
+    concluida_em  timestamptz,                 -- nulo = em andamento ou interrompida
+    desde         date,                        -- início da janela de apresentação examinada
+    janela_dias   integer,
+    com_ia        boolean NOT NULL DEFAULT false,
+    novos         integer NOT NULL DEFAULT 0,
+    atualizados   integer NOT NULL DEFAULT 0,
+    so_andamento  integer NOT NULL DEFAULT 0,
+    pendentes     integer NOT NULL DEFAULT 0,
+    falhas        integer NOT NULL DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS ix_coletas_tipo ON coletas (tipo, concluida_em DESC);
+
+CREATE TABLE IF NOT EXISTS proposicoes_descartadas (
+    fonte         text NOT NULL,
+    id_externo    text NOT NULL,
+    motivo        text NOT NULL,               -- ex.: 'autoria_congresso_sem_alto_impacto'
+    verificado_em timestamptz NOT NULL DEFAULT now(),
+    PRIMARY KEY (fonte, id_externo)
+);
+
+-- -----------------------------------------------------------------------------
 -- 7. Row Level Security
 --    O backend conecta com o dono das tabelas (ignora RLS). Se as tabelas forem
 --    expostas pelo PostgREST do Supabase, o papel `anon` só LÊ conteúdo público;
@@ -395,7 +423,7 @@ BEGIN
     FOREACH t IN ARRAY ARRAY['perfis', 'categorias', 'usuarios', 'proposicoes_analisadas',
                              'votos_comunitarios', 'notificacoes', 'candidatos',
                              'planos_governo', 'temas_candidato', 'propostas_candidato',
-                             'paginas_plano']
+                             'paginas_plano', 'coletas', 'proposicoes_descartadas']
     LOOP
         EXECUTE format('ALTER TABLE %I ENABLE ROW LEVEL SECURITY', t);
     END LOOP;
