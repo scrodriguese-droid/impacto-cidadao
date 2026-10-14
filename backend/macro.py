@@ -357,6 +357,146 @@ def pib_12_meses(ano: int) -> float | None:
     return None
 
 
+def _soma(valores: list[float | None]) -> float | None:
+    return None if any(v is None for v in valores) else round(sum(valores), 2)
+
+
+def _comparar(serie_mes: dict[str, float | None], fluxo: bool) -> dict | None:
+    """Mês × mês anterior e, para fluxos, últimos 12 meses × 12 meses anteriores; só com dados completos."""
+    meses = sorted(m for m, v in serie_mes.items() if v is not None)
+    if not meses:
+        return None
+    ult = meses[-1]
+    ano, mes = int(ult[:4]), int(ult[5:7])
+
+    def mes_antes(n: int) -> str:
+        idx = ano * 12 + mes - 1 - n
+        return f"{idx // 12}-{idx % 12 + 1:02d}"
+
+    atual, anterior = serie_mes[ult], serie_mes.get(mes_antes(1))
+    out: dict[str, Any] = {"mes": ult, "valor": atual, "mes_anterior": anterior,
+                           "mesmo_mes_ano_anterior": serie_mes.get(mes_antes(12))}
+    if fluxo:
+        a = _soma([serie_mes.get(mes_antes(i)) for i in range(0, 12)])
+        b = _soma([serie_mes.get(mes_antes(i)) for i in range(12, 24)])
+        out.update({"acumulado_12m": a, "acumulado_12m_anterior": b})
+    return out
+
+
+def financiamento() -> dict:
+    """Necessidade de financiamento (resultado fiscal) × emissões, resgates e estoque da DPF."""
+    consultado = _agora()
+    erros: list[str] = []
+    fiscal: dict[str, dict[str, float]] = {}
+    for chave in ("primario", "nominal", "juros"):
+        try:
+            fiscal[chave] = {p["data"][:7]: p["valor"] for p in serie(chave)["pontos"]}
+        except Exception as exc:  # noqa: BLE001
+            log.warning("fiscal %s indisponível: %s", chave, exc)
+            fiscal[chave] = {}
+            erros.append("Séries fiscais do Banco Central indisponíveis no momento.")
+            break
+    try:
+        er = _emissoes_resgates()
+        emi = {x["mes"]: x for x in er["serie"]}
+    except Exception as exc:  # noqa: BLE001
+        log.warning("emissões indisponíveis: %s", exc)
+        er, emi = None, {}
+        erros.append("Emissões e resgates do Tesouro indisponíveis no momento.")
+    try:
+        dpf = _estoque_dpf()
+        extra = dpf["_extra"]
+        est = {x["mes"]: x for x in extra["por_mes"]}
+    except Exception as exc:  # noqa: BLE001
+        log.warning("estoque DPF indisponível: %s", exc)
+        dpf, extra, est = None, None, {}
+        erros.append("Estoque da Dívida Pública Federal indisponível no momento.")
+
+    todos = sorted(set(fiscal.get("nominal", {})) | set(emi) | set(est))
+    todos = todos[-48:]
+    meses = [m for m in todos]
+    linhas = []
+    estoque_mes: dict[str, float | None] = {}
+    for m in meses:
+        e = emi.get(m) or {}
+        em, rs = e.get("emissoes"), e.get("resgates")
+        total = est[m]["total"] / 1e6 if m in est else None  # R$ → R$ milhões
+        estoque_mes[m] = total
+        linhas.append({"mes": m,
+                       "primario": fiscal.get("primario", {}).get(m), "nominal": fiscal.get("nominal", {}).get(m),
+                       "juros": fiscal.get("juros", {}).get(m),
+                       "emissoes": em, "resgates": rs,
+                       "emissao_liquida": round(em - rs, 2) if em is not None and rs is not None else None,
+                       "estoque": round(total, 2) if total is not None else None})
+    for i, l in enumerate(linhas):
+        ant = linhas[i - 1]["estoque"] if i else None
+        l["variacao_estoque"] = round(l["estoque"] - ant, 2) if l["estoque"] is not None and ant is not None else None
+        # diferença entre a variação do estoque e a emissão líquida: juros apropriados, câmbio e outros ajustes
+        l["diferenca_estoque_vs_emissao"] = (round(l["variacao_estoque"] - l["emissao_liquida"], 2)
+                                             if l["variacao_estoque"] is not None and l["emissao_liquida"] is not None else None)
+
+    def col(chave: str) -> dict[str, float | None]:
+        return {l["mes"]: l[chave] for l in linhas}
+
+    comparativos = {
+        "primario": _comparar(col("primario"), True), "nominal": _comparar(col("nominal"), True),
+        "juros": _comparar(col("juros"), True), "emissoes": _comparar(col("emissoes"), True),
+        "resgates": _comparar(col("resgates"), True), "emissao_liquida": _comparar(col("emissao_liquida"), True),
+        "estoque": _comparar(col("estoque"), False), "variacao_estoque": _comparar(col("variacao_estoque"), True),
+    }
+
+    saida: dict[str, Any] = {
+        "consultado_em": consultado, "erros": erros, "serie": linhas, "comparativos": comparativos,
+        "nfsp": {
+            "indicador": "Resultado nominal do setor público (NFSP, sem desvalorização cambial)",
+            "serie_bcb": 4583, "metodologia": "“Abaixo da linha”: variação nominal do saldo da dívida líquida, deduzidos ajustes patrimoniais e metodológicos. "
+                                              "O primário é medido por caixa e os juros nominais por competência.",
+            "abrangencia": "Governo Federal (Tesouro e Previdência), governos estaduais e municipais, empresas estatais das três esferas (exceto Petrobras e Eletrobras) e Banco Central.",
+            "sinal": "No Banco Central, valor positivo = necessidade de financiamento (déficit); negativo = superávit.",
+            "url": "https://www3.bcb.gov.br/sgspub/consultarmetadados/consultarMetadadosSeries.do?method=consultarMetadadosSeriesInternet&hdOidSerieSelecionada=4583",
+        },
+        "fontes": {
+            "fiscal": {"nome": "Banco Central do Brasil — SGS (4649, 4583, 4616)", "periodicidade": "mensal", "unidade": "R$ milhões (fluxo mensal corrente)"},
+            "emissoes": ({"nome": "Tesouro Transparente — Emissões e Resgates da DPF", "periodicidade": "mensal", "unidade": "R$ milhões",
+                          "atualizado": er["atualizado"], "url": er["pagina"]} if er else None),
+            "estoque": ({"nome": "Tesouro Transparente — Estoque da DPF", "periodicidade": "mensal", "unidade": "R$ (convertido para R$ milhões nos gráficos)",
+                         "atualizado": dpf["atualizado"], "url": dpf["pagina"]} if dpf else None),
+        },
+    }
+    if dpf and extra:
+        ref = dpf["referencia"]
+        ult = est[ref]
+        faixas, tot = extra["faixas"], dpf["total"]
+        def faixa(k: str) -> dict:
+            v = faixas.get(k, 0.0)
+            return {"valor": v, "pct": round(v / tot * 100, 1) if tot else None}
+        prazo = extra["prazo_medio_anos"]
+        ano_ant = f"{int(ref[:4]) - 1}{ref[4:]}"
+        saida["estoque"] = {
+            "referencia": ref, "total": tot, "dpmfi": ult["interna"], "dpfe": ult["externa"],
+            "pct_dpmfi": round(ult["interna"] / tot * 100, 1), "pct_dpfe": round(ult["externa"] / tot * 100, 1),
+            "mercado": ult["mercado"], "banco_central": ult["banco_central"],
+        }
+        saida["vencimentos"] = {
+            "referencia": ref, "curto": faixa("curto"), "medio": faixa("medio"), "longo": faixa("longo"), "sem_data": faixa("sem data"),
+            "proximos_12_meses": extra["calendario"],
+            "nota": "Valores de face do estoque por data de vencimento; não incluem emissões futuras. Observado, não é projeção.",
+        }
+        saida["composicao"] = {
+            "referencia": ref,
+            "indexadores": [{**i, "pct": round(i["valor"] / tot * 100, 1)} for i in extra["indexadores"]],
+            "prazo_medio_anos": prazo.get(ref), "prazo_medio_anos_ano_anterior": prazo.get(ano_ant),
+            "nota": "Indexador classificado por tipo de título (cálculo nosso) e prazo médio ponderado pelo estoque (cálculo nosso). "
+                    "Os números oficiais estão no Relatório Mensal da Dívida do Tesouro.",
+        }
+    saida["custo_medio"] = {
+        "disponivel": False,
+        "motivo": "O custo médio da DPF é divulgado no Relatório Mensal da Dívida (PDF) e não há série aberta por API; não estimamos.",
+        "url": "https://www.tesourotransparente.gov.br/publicacoes/relatorio-mensal-da-divida-rmd",
+    }
+    return saida
+
+
 def reservas() -> dict:
     """Reservas internacionais (saldo) e transações do mês de ouro, DES e posição no FMI."""
     caixa = serie("reservas_caixa")["pontos"]
@@ -448,6 +588,20 @@ def _grupo_titulo(nome: str) -> str:
     return m.group(0).upper() if m else "OUTROS"
 
 
+# Indexador por tipo de título (classificação nossa; o Relatório Mensal da Dívida do Tesouro é a referência oficial)
+_INDEXADOR = {
+    "LFT": "Selic (pós-fixado)", "LTN": "Prefixado", "NTN-F": "Prefixado",
+    "NTN-B": "Índice de preços (IPCA/IGP-M)", "NTN-C": "Índice de preços (IPCA/IGP-M)", "NTN-I": "Índice de preços (IPCA/IGP-M)",
+    "NTN-D": "Câmbio",
+}
+
+
+def _indexador(titulo: str, tipo_divida: str) -> str:
+    if "Externa" in tipo_divida:
+        return "Câmbio (dívida externa)"
+    return _INDEXADOR.get(_grupo_titulo(titulo), "Demais (TDA, contratos e outros)")
+
+
 def _estoque_dpf() -> dict:
     def produzir() -> dict:
         linhas, rec = _csv("estoque-da-divida-publica-federal")
@@ -456,6 +610,11 @@ def _estoque_dpf() -> dict:
         por_tipo: dict[str, dict[str, float]] = defaultdict(lambda: defaultdict(float))
         por_titulo: dict[str, dict[str, float]] = defaultdict(lambda: defaultdict(float))
         venc: dict[str, dict[str, float]] = defaultdict(lambda: defaultdict(float))
+        peso_prazo: dict[str, float] = defaultdict(float)       # Σ valor × anos até o vencimento
+        base_prazo: dict[str, float] = defaultdict(float)       # Σ valor com vencimento válido
+        por_indexador: dict[str, dict[str, float]] = defaultdict(lambda: defaultdict(float))
+        faixas: dict[str, dict[str, float]] = defaultdict(lambda: defaultdict(float))
+        calendario: dict[str, dict[str, float]] = defaultdict(lambda: defaultdict(float))  # mês de referência → AAAA-MM de vencimento
         for r in linhas:
             if len(r) < 7:
                 continue
@@ -467,7 +626,20 @@ def _estoque_dpf() -> dict:
             por_classe[mes][r[5]] += v
             por_tipo[mes][r[6]] += v
             por_titulo[mes][_grupo_titulo(r[0])] += v
-            venc[mes][r[1][-4:] if re.search(r"\d{4}$", r[1]) else "s/d"] += v
+            por_indexador[mes][_indexador(r[0], r[6])] += v
+            m = re.fullmatch(r"(\d{2})/(\d{2})/(\d{4})", r[1].strip())
+            venc[mes][m.group(3) if m else "s/d"] += v
+            if not m:
+                faixas[mes]["sem data"] += v
+                continue
+            vm = int(m.group(3)) * 12 + int(m.group(2))
+            rm = int(mes[:4]) * 12 + int(mes[5:7])
+            meses_ate = vm - rm
+            peso_prazo[mes] += v * max(meses_ate, 0) / 12
+            base_prazo[mes] += v
+            faixas[mes]["curto" if meses_ate <= 12 else "medio" if meses_ate <= 36 else "longo"] += v
+            if 0 <= meses_ate <= 12:
+                calendario[mes][f"{m.group(3)}-{m.group(2)}"] += v
         meses = sorted(total)
         ultimo = meses[-1]
         titulos = sorted(por_titulo[ultimo].items(), key=lambda kv: -kv[1])
@@ -476,7 +648,20 @@ def _estoque_dpf() -> dict:
         if resto:
             composicao.append({"nome": "Demais", "valor": round(resto, 2)})
         perfil = [{"ano": a, "valor": round(v, 2)} for a, v in sorted(venc[ultimo].items())]
+        prazo = {m: round(peso_prazo[m] / base_prazo[m], 2) for m in meses if base_prazo[m]}
+        indexadores = [{"nome": n, "valor": round(v, 2)} for n, v in sorted(por_indexador[ultimo].items(), key=lambda kv: -kv[1])]
         return {
+            "_extra": {
+                "por_mes": [{"mes": m, "total": round(total[m], 2),
+                             "interna": round(sum(v for k, v in por_tipo[m].items() if "Interna" in k), 2),
+                             "externa": round(sum(v for k, v in por_tipo[m].items() if "Externa" in k), 2),
+                             "mercado": round(por_classe[m].get("Mercado", 0), 2),
+                             "banco_central": round(por_classe[m].get("Banco Central", 0), 2)} for m in meses],
+                "prazo_medio_anos": prazo,
+                "faixas": {k: round(v, 2) for k, v in faixas[ultimo].items()},
+                "calendario": [{"mes": k, "valor": round(v, 2)} for k, v in sorted(calendario[ultimo].items())],
+                "indexadores": indexadores,
+            },
             "referencia": ultimo, "atualizado": rec["atualizado"], "pagina": rec["pagina"], "url": rec["url"],
             "evolucao": [{"mes": m, "valor": round(total[m], 2)} for m in meses],
             "total": round(total[ultimo], 2),
@@ -510,12 +695,24 @@ def _emissoes_resgates() -> dict:
             r = achadas[ocorrencia]
             return {m: (float(r[i]) if isinstance(r[i], (int, float)) else None) for i, m in colunas}
 
+        def linha_exata(rotulo: str) -> dict[str, float | None]:
+            try:
+                return linha(rotulo)
+            except IndexError:
+                return {}
+
         emissoes, resgates = linha("EMISSÕES"), linha("RESGATES")
+        em_dpmfi, em_dpfe = linha_exata("I - DPMFi"), linha_exata("II - DPFe")
+        rs_dpmfi, rs_dpfe = linha_exata("III - DPMFi"), linha_exata("IV - DPFe")
+        liq_dpmfi, liq_dpfe = linha_exata("DPMFi    (I - III)"), linha_exata("DPFe    (II - IV)")
         meses = [m for _, m in colunas]
         return {
             "unidade": "R$ milhões (conforme a planilha do Tesouro)", "atualizado": rec["atualizado"],
             "pagina": rec["pagina"], "url": rec["url"],
-            "serie": [{"mes": m, "emissoes": emissoes.get(m), "resgates": resgates.get(m)} for m in meses
+            "serie": [{"mes": m, "emissoes": emissoes.get(m), "resgates": resgates.get(m),
+                       "emissoes_dpmfi": em_dpmfi.get(m), "emissoes_dpfe": em_dpfe.get(m),
+                       "resgates_dpmfi": rs_dpmfi.get(m), "resgates_dpfe": rs_dpfe.get(m),
+                       "liquida_dpmfi": liq_dpmfi.get(m), "liquida_dpfe": liq_dpfe.get(m)} for m in meses
                       if emissoes.get(m) is not None or resgates.get(m) is not None],
         }
     return _memo(("emissoes",), produzir)
@@ -568,7 +765,7 @@ def divida() -> dict:
 
     try:
         d = _estoque_dpf()
-        partes["dpf"] = {k: v for k, v in d.items() if k != "total_por_mes"}
+        partes["dpf"] = {k: v for k, v in d.items() if k not in ("total_por_mes", "_extra")}
     except Exception as exc:  # noqa: BLE001
         log.warning("DPF indisponível: %s", exc)
         d = None

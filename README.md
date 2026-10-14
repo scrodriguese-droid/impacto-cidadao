@@ -228,3 +228,11 @@ TLS, instale `truststore` (já em `requirements.txt`) para usar o repositório d
   e RGF, então estados e municípios aparecem como lacuna; mostramos a dotação inicial (LOA) do RREO.
 * Não vem da fonte: os valores da LOA federal por área/ação (SIOP exige o sistema próprio; Portal da
   Transparência exige chave para API) — a página aponta para eles.
+
+### Dívida e títulos públicos (`financiamento.html`)
+
+`GET /api/macro/financiamento`: resultado primário/nominal (BCB SGS 4649/4583/4616), emissões, resgates e
+emissão líquida (Tesouro Transparente, XLSX), estoque da DPF e vencimentos (CSV), indexadores e prazo médio
+(cálculo próprio a partir do estoque) e comparativos mensais/anuais. O custo médio da DPF não tem série
+aberta e é declarado como indisponível (Relatório Mensal da Dívida). A NFSP é o resultado nominal
+“abaixo da linha” do BCB (setor público consolidado, exceto Petrobras e Eletrobras).

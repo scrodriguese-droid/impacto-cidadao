@@ -111,6 +111,13 @@
       "explicacao_simples": "Parte da riqueza ou da receita que vai apenas para remunerar quem emprestou ao governo. Sobe e desce com a Selic.",
       "icone": "💳",
       "categoria": "Dívida Pública"
+    },
+    "NFSP": {
+      "termo_tecnico": "Necessidades de Financiamento do Setor Público (NFSP)",
+      "nome_cidadao": "Quanto o setor público precisou se financiar",
+      "explicacao_simples": "É o resultado nominal medido pela variação da dívida líquida (“abaixo da linha”). Valor positivo indica déficit: o governo precisou de dinheiro novo ou de mais dívida.",
+      "icone": "🏦",
+      "categoria": "Saúde Fiscal"
     }
   },
   "reservas_e_fmi": {
@@ -275,6 +282,50 @@
       "explicacao_simples": "Demonstrativo quadrimestral ou semestral que mostra a despesa com pessoal e a dívida em relação aos limites da LRF.",
       "icone": "📋",
       "categoria": "Fontes"
+    }
+  },
+  "divida_e_titulos": {
+    "EMISSAO_BRUTA": {
+      "termo_tecnico": "Emissão bruta de títulos públicos",
+      "nome_cidadao": "Títulos novos vendidos no mês",
+      "explicacao_simples": "Total de títulos que o Tesouro vendeu no período. Não serve só para cobrir déficit: grande parte paga títulos antigos que venceram.",
+      "icone": "📤",
+      "categoria": "Dívida Pública"
+    },
+    "RESGATE": {
+      "termo_tecnico": "Resgate de títulos públicos",
+      "nome_cidadao": "Títulos que o governo pagou e tirou da dívida",
+      "explicacao_simples": "Valor de títulos que venceram ou foram recomprados no período e saíram do estoque da dívida.",
+      "icone": "📥",
+      "categoria": "Dívida Pública"
+    },
+    "EMISSAO_LIQUIDA": {
+      "termo_tecnico": "Emissão líquida = emissões brutas − resgates",
+      "nome_cidadao": "Dívida nova de verdade no mês",
+      "explicacao_simples": "Se positiva, o Tesouro vendeu mais títulos do que pagou; se negativa, pagou mais do que vendeu. É diferente do déficit e diferente da variação do estoque, que também inclui juros e câmbio.",
+      "icone": "➕",
+      "categoria": "Dívida Pública"
+    },
+    "DPMFI_DPFE": {
+      "termo_tecnico": "DPMFi e DPFe",
+      "nome_cidadao": "Dívida interna e dívida externa",
+      "explicacao_simples": "DPMFi é a dívida mobiliária federal interna, em reais. DPFe é a dívida pública federal externa, em moeda estrangeira.",
+      "icone": "🌎",
+      "categoria": "Dívida Pública"
+    },
+    "ROLAGEM": {
+      "termo_tecnico": "Rolagem (refinanciamento) da dívida",
+      "nome_cidadao": "Pagar dívida antiga com dívida nova",
+      "explicacao_simples": "Quando um título vence, o Tesouro emite outros para pagá-lo. Quanto mais dívida vence em pouco tempo, maior a necessidade de rolagem.",
+      "icone": "🔄",
+      "categoria": "Dívida Pública"
+    },
+    "INDEXADOR": {
+      "termo_tecnico": "Indexador da dívida (Selic, prefixado, inflação, câmbio)",
+      "nome_cidadao": "O que faz a dívida crescer",
+      "explicacao_simples": "É o índice que corrige cada título: Selic (juros do dia a dia), taxa fixa combinada na compra, inflação (IPCA) ou dólar. Cada um reage de um jeito a mudanças na economia.",
+      "icone": "🧭",
+      "categoria": "Dívida Pública"
     }
   }
 }

@@ -538,6 +538,14 @@ def macro_serie(
         raise _fonte_macro_indisponivel(exc) from exc
 
 
+@router.get("/macro/financiamento", tags=["macro"])
+def macro_financiamento() -> dict:
+    try:
+        return macro.financiamento()
+    except Exception as exc:  # noqa: BLE001
+        raise _fonte_macro_indisponivel(exc) from exc
+
+
 @router.get("/macro/reservas", tags=["macro"])
 def macro_reservas() -> dict:
     try:
