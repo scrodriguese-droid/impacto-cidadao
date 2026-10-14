@@ -53,17 +53,20 @@ const NAVEGACAO = [
 ];
 
 function renderLayout(paginaAtual) {
+    if (!document.querySelector('link[rel="icon"]')) {
+        const ic = document.createElement('link');
+        ic.rel = 'icon'; ic.type = 'image/png'; ic.href = 'assets/favicon.png';
+        document.head.appendChild(ic);
+    }
     const cab = $('cabecalho');
     if (cab) {
         cab.outerHTML = `<header class="sticky top-0 z-40 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-sm">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-16">
             <a href="index.html" class="flex items-center space-x-3" aria-label="ImpactoCidadão — início">
-                <div class="bg-gradient-to-tr from-brand-700 to-teal-500 text-white p-2.5 rounded-xl shadow-md">
-                    <i class="fa-solid fa-scale-balanced text-xl" aria-hidden="true"></i>
-                </div>
+                <img src="assets/logo-icone.png" alt="" width="44" height="44" class="w-11 h-11 rounded-xl shadow-md">
                 <div>
-                    <span class="font-extrabold text-xl tracking-tight bg-gradient-to-r from-brand-700 via-teal-600 to-sky-600 bg-clip-text text-transparent">ImpactoCidadão</span>
+                    <span class="font-extrabold text-xl tracking-tight"><span class="text-[#0b2a5b] dark:text-white">Impacto</span><span class="bg-gradient-to-r from-sky-700 to-teal-500 bg-clip-text text-transparent">Cidadão</span></span>
                     <p class="text-xs text-slate-500 dark:text-slate-400 hidden sm:block">O que muda na sua vida, em linguagem simples</p>
                 </div>
             </a>
