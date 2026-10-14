@@ -277,7 +277,10 @@ function desenharSeletor() {
     const grupos = {};
     for (const c of M.catalogo) if (M.freq === 'todas' || grupoFreq(c.frequencia) === M.freq || M.escolhidos.includes(c.id)) (grupos[c.grupo] ||= []).push(c);
     $('listaIndicadores').innerHTML = Object.entries(grupos).map(([g, itens]) => `<div><p class="text-[11px] uppercase tracking-wider text-slate-400 font-bold">${esc(g)}</p>
-        ${itens.map((c) => `<label class="flex items-start gap-2 py-1 text-sm"><input type="checkbox" class="mt-1" data-ind="${esc(c.id)}" ${M.escolhidos.includes(c.id) ? 'checked' : ''}><span>${esc(c.nome)}<span class="block text-[11px] text-slate-400">${esc(c.unidade)} · ${esc(c.frequencia)}</span></span></label>`).join('')}</div>`).join('');
+        ${itens.map((c) => { const v = verbete(c.id); return `<div class="flex items-start gap-1.5 py-1 text-sm">
+            <label class="flex items-start gap-2 flex-1 min-w-0"><input type="checkbox" class="mt-1" data-ind="${esc(c.id)}" ${M.escolhidos.includes(c.id) ? 'checked' : ''}><span>${esc(c.nome)}<span class="block text-[11px] text-slate-400">${esc(c.unidade)} · ${esc(c.frequencia)}</span>${v ? `<span class="block text-[11px] text-slate-500"><span aria-hidden="true">${esc(v.icone)}</span> ${esc(v.nome_cidadao)}</span>` : ''}</span></label>
+            ${v ? `<a href="glossario.html#${encodeURIComponent(v.sigla)}" title="${esc(v.nome_cidadao)}: ${esc(v.explicacao_simples)}" aria-label="${esc(v.nome_cidadao)}: ver no glossário"
+                class="mt-0.5 shrink-0 inline-flex items-center justify-center w-4 h-4 rounded-full bg-slate-200 dark:bg-slate-700 text-[10px] font-bold text-slate-600 dark:text-slate-300 hover:bg-brand-500 hover:text-white">?</a>` : ''}</div>`; }).join('')}</div>`).join('');
 }
 $('listaIndicadores').addEventListener('change', (ev) => {
     const id = ev.target.dataset.ind; if (!id) return;
@@ -310,7 +313,7 @@ async function atualizarGrafico() {
     const datasets = series.map((s, i) => ({
         label: `${s.nome} (${s.unidade})`, data: filtrar(s.pontos).map((p) => ({ x: p.data, y: p.valor })),
         borderColor: CORES[i % CORES.length], backgroundColor: CORES[i % CORES.length], borderWidth: 2, pointRadius: 0, pointHoverRadius: 4,
-        tension: 0, stepped: s.id === 'selic' ? 'after' : false, yAxisID: un.indexOf(s.unidade) === 0 ? 'y' : 'y1', spanGaps: false,
+        tension: 0, stepped: s.id === 'selic' ? 'after' : false, yAxisID: un.indexOf(s.unidade) === 0 ? 'y' : 'y1', spanGaps: true,
     }));
     const escalas = {
         x: { type: 'category', labels: undefined, ticks: { maxTicksLimit: 8 } },
@@ -327,7 +330,7 @@ async function atualizarGrafico() {
             plugins: { tooltip: { callbacks: { title: (it) => fmtData(it[0].label) } } } },
     });
     const faltando = ids.length - series.length;
-    $('statusGrafico').textContent = `${todasDatas.length} datas no período${faltando ? ` · ${faltando} série(s) fora do gráfico por unidade` : ''}. Linhas sem ponto indicam dado ausente na fonte.`;
+    $('statusGrafico').textContent = `${todasDatas.length} datas no período${faltando ? ` · ${faltando} série(s) fora do gráfico por unidade` : ''}. As linhas ligam apenas os pontos publicados pela fonte, sem criar valores; a Selic aparece em degraus porque só muda nas reuniões do Copom.`;
     renderFichas(series);
     renderTabelaSeletor(series);
 }
@@ -420,7 +423,7 @@ async function carregarDivida() {
 /* ---------- início ---------- */
 (async function iniciar() {
     desenharAtalhos();
-    carregarGlossario();
+    await carregarGlossario();
     carregarCartoes();
     try {
         M.catalogo = await api('/api/macro/catalogo');
