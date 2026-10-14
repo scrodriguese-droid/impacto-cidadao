@@ -118,6 +118,41 @@
       "explicacao_simples": "É o resultado nominal medido pela variação da dívida líquida (“abaixo da linha”). Valor positivo indica déficit: o governo precisou de dinheiro novo ou de mais dívida.",
       "icone": "🏦",
       "categoria": "Saúde Fiscal"
+    },
+    "CICLO_ECONOMICO": {
+      "termo_tecnico": "Ciclo econômico (expansão, desaceleração, contração)",
+      "nome_cidadao": "Altos e baixos da economia",
+      "explicacao_simples": "A atividade econômica não cresce em linha reta: alterna períodos de avanço e de queda. Identificar o momento exige olhar vários indicadores, por quanto tempo e com que força eles caem.",
+      "icone": "🌊",
+      "categoria": "Macroeconomia"
+    },
+    "PIB_TRIMESTRAL": {
+      "termo_tecnico": "PIB trimestral — taxa contra o trimestre anterior (com ajuste sazonal)",
+      "nome_cidadao": "Quanto a economia cresceu em relação ao trimestre passado",
+      "explicacao_simples": "Compara o trimestre com o imediatamente anterior, depois de retirar efeitos típicos de cada época do ano. A taxa contra o mesmo trimestre do ano anterior mostra o ritmo em um ano.",
+      "icone": "📈",
+      "categoria": "Macroeconomia"
+    },
+    "IBC_BR": {
+      "termo_tecnico": "Índice de Atividade Econômica do Banco Central (IBC-Br)",
+      "nome_cidadao": "Prévia mensal do PIB",
+      "explicacao_simples": "Estimativa mensal da atividade feita pelo Banco Central. Serve de termômetro entre uma divulgação do PIB e outra, mas não é o PIB oficial do IBGE.",
+      "icone": "🌡️",
+      "categoria": "Macroeconomia"
+    },
+    "AJUSTE_SAZONAL": {
+      "termo_tecnico": "Ajuste sazonal (série dessazonalizada)",
+      "nome_cidadao": "Tirando os efeitos de cada época do ano",
+      "explicacao_simples": "Retira variações que se repetem todo ano, como vendas de fim de ano, para comparar meses diferentes de forma justa.",
+      "icone": "🗓️",
+      "categoria": "Macroeconomia"
+    },
+    "ESTABILIZADOR_AUTOMATICO": {
+      "termo_tecnico": "Estabilizadores automáticos",
+      "nome_cidadao": "Freios e amortecedores embutidos nas contas públicas",
+      "explicacao_simples": "Receitas e despesas que variam com a atividade econômica por regras já existentes, sem nova decisão do governo. Quando a economia desacelera, a arrecadação cai e alguns gastos, como o seguro-desemprego, sobem, o que amortece a queda da renda.",
+      "icone": "🛡️",
+      "categoria": "Saúde Fiscal"
     }
   },
   "reservas_e_fmi": {

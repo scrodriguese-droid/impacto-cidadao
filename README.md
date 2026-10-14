@@ -236,3 +236,10 @@ emissão líquida (Tesouro Transparente, XLSX), estoque da DPF e vencimentos (CS
 (cálculo próprio a partir do estoque) e comparativos mensais/anuais. O custo médio da DPF não tem série
 aberta e é declarado como indisponível (Relatório Mensal da Dívida). A NFSP é o resultado nominal
 “abaixo da linha” do BCB (setor público consolidado, exceto Petrobras e Eletrobras).
+
+### Ciclo econômico (`ciclo.html`)
+
+`GET /api/macro/ciclo`: PIB trimestral (IBGE SIDRA 5932), IBC-Br dessazonalizado (BCB SGS 24364), PNAD (6381, 6390, 6320),
+produção industrial (8888), vendas do varejo (8880), IPCA, e relação com contas públicas (Resultado do Tesouro
+Nacional e séries fiscais do BCB). A leitura “expansão / desaceleração / possível contração” usa disseminação,
+duração e intensidade com limiares explícitos, é interpretativa e não substitui a datação do CODACE/FGV IBRE.

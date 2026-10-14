@@ -48,6 +48,7 @@ const NAVEGACAO = [
     { id: 'orcamento', href: 'orcamento.html', icone: 'fa-receipt', rotulo: 'Seu imposto' },
     { id: 'economia', href: 'economia.html', icone: 'fa-chart-pie', rotulo: 'Economia' },
     { id: 'macro', href: 'macro.html', icone: 'fa-chart-line', rotulo: 'Indicadores' },
+    { id: 'ciclo', href: 'ciclo.html', icone: 'fa-wave-square', rotulo: 'Ciclo econômico' },
     { id: 'financiamento', href: 'financiamento.html', icone: 'fa-file-invoice-dollar', rotulo: 'Dívida e títulos' },
     { id: 'bancadas', href: 'bancadas.html', icone: 'fa-people-group', rotulo: 'Bancadas' },
     { id: 'glossario', href: 'glossario.html', icone: 'fa-book', rotulo: 'Glossário' },

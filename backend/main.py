@@ -31,6 +31,7 @@ from pydantic import BaseModel, Field, field_validator
 
 import bancadas
 import db
+import ciclo
 import economia
 import macro
 import orcamento
@@ -534,6 +535,14 @@ def macro_serie(
         return macro.serie(chave, inicio.isoformat() if inicio else None, fim.isoformat() if fim else None)
     except KeyError as exc:
         raise HTTPException(status_code=404, detail="Indicador desconhecido.") from exc
+    except Exception as exc:  # noqa: BLE001
+        raise _fonte_macro_indisponivel(exc) from exc
+
+
+@router.get("/macro/ciclo", tags=["macro"])
+def macro_ciclo() -> dict:
+    try:
+        return ciclo.ciclo()
     except Exception as exc:  # noqa: BLE001
         raise _fonte_macro_indisponivel(exc) from exc
 
