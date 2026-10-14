@@ -19,6 +19,7 @@ import time
 from datetime import date
 from typing import Any
 
+import macro
 from fontes import ClienteHTTP, ErroFonte, normalizar
 
 log = logging.getLogger("impacto.economia")
@@ -362,6 +363,104 @@ def _deficits(a1: list[dict], a6: list[dict], ano: int, bim: int) -> dict:
 
 
 # --------------------------------------------------------------------------- #
+# Situação fiscal em 4 dimensões (fluxo, estoque, custo e capacidade)
+# --------------------------------------------------------------------------- #
+def _capacidade_uniao() -> dict:
+    """Receita e despesa primárias do Governo Federal no último exercício encerrado, em % do PIB."""
+    ano = date.today().year - 1
+    try:
+        a6 = _rreo(1, ano, 6, "RREO-Anexo 06")
+    except ErroFonte:
+        a6 = []
+    rec = _valor(a6, "RREO6TotalReceitaPrimaria", "RECEITAS REALIZADAS")
+    des = _valor(a6, "RREO6TotalDespesaPrimaria", "DESPESAS EMPENHADAS")
+    pib = None
+    try:
+        pib = macro.pib_12_meses(ano)
+    except Exception:  # noqa: BLE001 — série do BCB fora do ar: a dimensão fica indisponível
+        pib = None
+    if rec is None or des is None or not pib:
+        return {"itens": [], "indisponivel": "Não foi possível obter a receita e a despesa primárias do último exercício ou o PIB de referência."}
+    return {
+        "periodo": f"exercício de {ano} (Governo Federal, sem operações financeiras)",
+        "itens": [
+            {"id": "receita", "nome": "Receita primária total", "valor_rs": float(rec), "pct": round(float(rec) / pib * 100, 1), "rotulo_pct": "% do PIB"},
+            {"id": "despesa", "nome": "Despesa primária total", "valor_rs": float(des), "pct": round(float(des) / pib * 100, 1), "rotulo_pct": "% do PIB"},
+        ],
+        "indisponivel": None,
+        "nota": "O PIB de referência é derivado do saldo da dívida líquida (R$ ÷ % do PIB) divulgado pelo BCB. A carga tributária bruta não tem série aberta de API.",
+    }
+
+
+def _situacao_subnacional(ente: int, a1: list[dict], a6: list[dict], deficits: dict, pessoal: dict | None, instituicao: str | None) -> dict:
+    prim, nom = deficits["primario"]["valor"], deficits["nominal"]["valor"]
+    itens_fluxo = [
+        {"id": "primario", "nome": "Primário (sem juros)", "valor_rs": prim, "pct_pib": None, "situacao": "deficit" if prim > 0 else "superavit"},
+        {"id": "nominal", "nome": "Nominal (com juros da dívida)", "valor_rs": nom, "pct_pib": None, "situacao": "deficit" if nom > 0 else "superavit"},
+    ]
+    if prim <= 0 < nom:
+        leitura = "Sem contar os juros, arrecadou mais do que gastou; a conta de juros da dívida tornou o saldo final negativo."
+    elif prim > 0:
+        leitura = "Mesmo sem contar os juros, gastou mais do que arrecadou; os juros da dívida ampliam o buraco."
+    else:
+        leitura = "Arrecadou mais do que gastou, mesmo contando os juros da dívida."
+
+    atual = ini = None
+    for r in a6:
+        if r.get("cod_conta") == "DividaConsolidada":
+            col = normalizar(r.get("coluna", ""))
+            if col.startswith(normalizar("Até o Bimestre")):
+                atual = r.get("valor")
+            elif col.startswith(normalizar("Em 31/12")):
+                ini = r.get("valor")
+    rcl = pessoal["rcl"] if pessoal and pessoal.get("rcl") else None
+    itens_estoque = []
+    var_pct = None
+    if atual is not None:
+        var_pct = round((float(atual) / float(ini) - 1) * 100, 1) if ini else None
+        item = {"id": "divida", "nome": "Dívida consolidada", "valor_rs": float(atual), "variacao_pct": var_pct}
+        if rcl:
+            item.update({"pct": round(float(atual) / rcl * 100, 1), "rotulo_pct": "% da receita corrente líquida"})
+        itens_estoque.append(item)
+    tendencia = None if var_pct is None else ("alta" if var_pct > 0.5 else "queda" if var_pct < -0.5 else "estavel")
+
+    op = deficits["operacional"]
+    receita = deficits["nominal"]["receitas_totais"]
+    juros = op.get("juros_nominais")
+    itens_custo = []
+    if juros is not None:
+        itens_custo.append({"id": "juros", "nome": "Juros e encargos da dívida (no exercício)", "valor_rs": juros,
+                            "pct": round(juros / receita * 100, 1) if receita else None, "rotulo_pct": "% da receita arrecadada"})
+    if op.get("juros_reais") is not None:
+        itens_custo.append({"id": "juros_reais", "nome": "Juros reais (acima da inflação, aprox.)", "valor_rs": op["juros_reais"],
+                            "nota": "Cálculo nosso: juros − IPCA acumulado × dívida no início do ano."})
+    return {
+        "universo": instituicao or "Ente consultado",
+        "referencia": deficits.get("periodo"),
+        "fluxo": {"periodo": deficits.get("periodo"), "itens": itens_fluxo, "leitura": leitura},
+        "estoque": {"itens": itens_estoque, "tendencia": tendencia, "variacao_pct": var_pct,
+                    "nota": "Estados e municípios não têm série do PIB aberta e atual; comparamos a dívida com a receita corrente líquida (limite da LRF)."},
+        "custo": {"itens": itens_custo,
+                  "leitura": "Quanto da receita vai para pagar a dívida; depende de juros e da inflação sobre o saldo devedor."},
+        "capacidade": {"itens": [], "indisponivel": "A proporção da receita e da despesa em relação ao PIB só faz sentido para o país. "
+                                                    "O PIB estadual e municipal do IBGE sai com cerca de dois anos de defasagem."},
+        "fonte": {"nome": "SICONFI / Tesouro Nacional (RREO anexos 01 e 06, RGF anexo 01)", "url": "https://siconfi.tesouro.gov.br/"},
+    }
+
+
+def _situacao_fiscal(ente: int, esfera: str, a1: list[dict], a6: list[dict], deficits: dict, pessoal: dict | None, instituicao: str | None) -> dict | None:
+    try:
+        if esfera == "uniao":
+            s = macro.situacao_fiscal_brasil()
+            s["capacidade"] = _capacidade_uniao()
+            return s
+        return _situacao_subnacional(ente, a1, a6, deficits, pessoal, instituicao)
+    except Exception as exc:  # noqa: BLE001 — o painel antigo continua útil sem esta seção
+        log.warning("situação fiscal indisponível (%s): %s", ente, exc)
+        return None
+
+
+# --------------------------------------------------------------------------- #
 # API pública do módulo
 # --------------------------------------------------------------------------- #
 def painel_economia(ente: int) -> dict | None:
@@ -390,8 +489,11 @@ def painel_economia(ente: int) -> dict | None:
     despesas = _despesas(a1, a2)
     funcoes = {f["nome"]: f for f in despesas["funcoes"]}
     esfera = _esfera(ente)
+    deficits = _deficits(a1, a6, ano, bim)
+    instituicao = next((r.get("instituicao") for r in a1 if r.get("instituicao")), None)
     return {
         "ente": ente,
+        "situacao_fiscal": _situacao_fiscal(ente, esfera, a1, a6, deficits, pessoal, instituicao),
         "esfera": esfera,
         "instituicao": next((r.get("instituicao") for r in a1 if r.get("instituicao")), None),
         "populacao": next((r.get("populacao") for r in a1 if r.get("populacao")), None),
@@ -402,7 +504,7 @@ def painel_economia(ente: int) -> dict | None:
             "saude": funcoes.get("Saúde"),
             "educacao": funcoes.get("Educação"),
         },
-        "deficits": _deficits(a1, a6, ano, bim),
+        "deficits": deficits,
         "nivel2": {"receitas": _receitas(a1, a3, esfera), "despesas": despesas},
         "nivel3": {"execucao": _execucao(a1)},
         "fonte": "SICONFI / Tesouro Nacional (RREO e RGF declarados pelos próprios entes)",

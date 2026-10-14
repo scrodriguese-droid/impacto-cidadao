@@ -118,6 +118,11 @@ CATALOGO: dict[str, dict] = {
                     unidade="R$ milhões (saldo)", frequencia="mensal", tipo="valor",
                     nota="Dívida LÍQUIDA do setor público consolidado.",
                     mede="Saldo em reais da dívida líquida do setor público.", interpreta="Mesmo indicador do % do PIB, em reais correntes."),
+    "dbgg_pib": dict(fonte="bcb", codigo=13762, grupo="Dívida pública", nome="Dívida bruta do governo geral — % do PIB",
+                     unidade="% do PIB (saldo)", frequencia="mensal", tipo="taxa",
+                     nota="Dívida BRUTA do governo geral (União, estados e municípios; metodologia a partir de 2008). Não desconta ativos; difere da dívida líquida do setor público.",
+                     mede="Saldo bruto da dívida do governo geral como proporção do PIB.",
+                     interpreta="É a medida de dívida mais usada em comparações internacionais."),
     # Reservas internacionais (estoque, US$ milhões) e transações do Balanço de Pagamentos
     "reservas_caixa": dict(fonte="bcb", codigo=3546, grupo="Reservas internacionais",
                            nome="Reservas internacionais — conceito caixa (fim do mês)", unidade="US$ milhões",
@@ -249,6 +254,107 @@ def serie(chave: str, inicio: str | None = None, fim: str | None = None) -> dict
         "periodo_referencia": {"inicio": pontos[0]["data"] if pontos else None, "fim": pontos[-1]["data"] if pontos else None},
         "pontos": pontos,
     }
+
+
+def _ultimos(chave: str, n: int) -> list[dict]:
+    return serie(chave)["pontos"][-n:]
+
+
+def _soma_12_meses(chave: str) -> tuple[float | None, str | None]:
+    """Soma dos 12 últimos fluxos mensais publicados; None se faltar algum mês."""
+    pts = _ultimos(chave, 12)
+    if len(pts) < 12:
+        return None, None
+    meses = [int(p["data"][:4]) * 12 + int(p["data"][5:7]) for p in pts]
+    if any(b - a != 1 for a, b in zip(meses, meses[1:])):
+        return None, None
+    return round(sum(p["valor"] for p in pts), 2), pts[-1]["data"]
+
+
+def _um_ano_antes(chave: str) -> dict | None:
+    pts = serie(chave)["pontos"]
+    if len(pts) < 13:
+        return None
+    ult = pts[-1]
+    alvo = f"{int(ult['data'][:4]) - 1}{ult['data'][4:]}"
+    return next((p for p in pts if p["data"] == alvo), None)
+
+
+def _situacao(valor: float) -> str:
+    return "deficit" if valor > 0 else "superavit"
+
+
+def situacao_fiscal_brasil() -> dict:
+    """Situação fiscal em 4 dimensões para o setor público consolidado (séries do Banco Central)."""
+    prim12, fim = _soma_12_meses("primario")
+    nom12, _ = _soma_12_meses("nominal")
+    jur12, _ = _soma_12_meses("juros")
+    prim_pib = _ultimos("primario12", 1)[0]["valor"]
+    nom_pib = _ultimos("nominal12", 1)[0]["valor"]
+    jur_pib = _ultimos("juros12", 1)[0]["valor"]
+    dlsp = _ultimos("dlsp_pib", 1)[0]
+    dlsp_rs = _ultimos("dlsp_rs", 1)[0]
+    dbgg = _ultimos("dbgg_pib", 1)[0]
+    dbgg_ant = _um_ano_antes("dbgg_pib")
+    dlsp_ant = _um_ano_antes("dlsp_pib")
+    selic = _ultimos("selic", 1)[0]
+
+    itens_fluxo = []
+    if prim12 is not None:
+        itens_fluxo.append({"id": "primario", "nome": "Primário (sem juros)", "valor_rs": prim12 * 1e6, "pct_pib": prim_pib, "situacao": _situacao(prim12)})
+    if nom12 is not None:
+        itens_fluxo.append({"id": "nominal", "nome": "Nominal (com juros da dívida)", "valor_rs": nom12 * 1e6, "pct_pib": nom_pib, "situacao": _situacao(nom12)})
+    leitura = None
+    if prim12 is not None and nom12 is not None:
+        if prim12 <= 0 < nom12:
+            leitura = "Sem contar os juros, o setor público arrecadou mais do que gastou, mas a conta de juros da dívida tornou o saldo final negativo."
+        elif prim12 > 0:
+            leitura = "Mesmo sem contar os juros, o setor público gastou mais do que arrecadou, e os juros da dívida aumentam ainda mais o buraco."
+        else:
+            leitura = "O setor público arrecadou mais do que gastou, mesmo depois de pagar os juros da dívida."
+
+    variacao = round(dbgg["valor"] - dbgg_ant["valor"], 2) if dbgg_ant else None
+    tendencia = None if variacao is None else ("alta" if variacao > 0.05 else "queda" if variacao < -0.05 else "estavel")
+
+    custo_impl = round(jur_pib / dlsp["valor"] * 100, 1) if dlsp["valor"] else None
+    return {
+        "universo": "Setor público consolidado (União, estados, municípios e estatais; Banco Central)",
+        "referencia": fim,
+        "fluxo": {"periodo": f"12 meses até {fim[5:7]}/{fim[:4]}" if fim else None, "itens": itens_fluxo, "leitura": leitura},
+        "estoque": {
+            "itens": [
+                {"id": "dbgg", "nome": "Dívida bruta do governo geral", "pct": dbgg["valor"], "rotulo_pct": "% do PIB", "data": dbgg["data"],
+                 "variacao_pp": variacao},
+                {"id": "dlsp", "nome": "Dívida líquida do setor público", "pct": dlsp["valor"], "rotulo_pct": "% do PIB", "data": dlsp["data"],
+                 "valor_rs": dlsp_rs["valor"] * 1e6,
+                 "variacao_pp": round(dlsp["valor"] - dlsp_ant["valor"], 2) if dlsp_ant else None},
+            ],
+            "tendencia": tendencia,
+            "variacao_pp": variacao,
+        },
+        "custo": {
+            "itens": [
+                {"id": "juros12", "nome": "Juros nominais acumulados (12 meses)", "valor_rs": jur12 * 1e6 if jur12 is not None else None,
+                 "pct": jur_pib, "rotulo_pct": "% do PIB"},
+                {"id": "selic", "nome": "Meta Selic hoje", "pct": selic["valor"], "rotulo_pct": "% ao ano"},
+                {"id": "implicito", "nome": "Custo implícito da dívida líquida (aprox.)", "pct": custo_impl, "rotulo_pct": "% ao ano",
+                 "nota": "Cálculo nosso: juros dos últimos 12 meses ÷ dívida líquida, ambos em % do PIB."},
+            ],
+            "leitura": "Quanto da riqueza do país vai apenas para remunerar a dívida. Os juros acompanham a Selic: quando ela sobe, a dívida fica mais cara.",
+        },
+        "fonte": {"nome": "Banco Central do Brasil — SGS (séries 4649, 4583, 4616, 5793, 5727, 5760, 13762, 4513, 4478, 432)",
+                  "url": "https://dadosabertos.bcb.gov.br/"},
+    }
+
+
+def pib_12_meses(ano: int) -> float | None:
+    """PIB acumulado em 12 meses (R$) até dezembro de `ano`, derivado do saldo da dívida líquida em R$ e em % do PIB."""
+    rs = {p["data"]: p["valor"] for p in serie("dlsp_rs")["pontos"]}
+    pc = {p["data"]: p["valor"] for p in serie("dlsp_pib")["pontos"]}
+    chave = f"{ano}-12-01"
+    if chave in rs and chave in pc and pc[chave]:
+        return rs[chave] * 1e6 / (pc[chave] / 100)
+    return None
 
 
 def reservas() -> dict:

@@ -83,6 +83,34 @@
       "explicacao_simples": "Programa do Tesouro Nacional que vende títulos da dívida pública a pessoas físicas pela internet. Quem compra empresta dinheiro ao governo.",
       "icone": "🪪",
       "categoria": "Dívida Pública"
+    },
+    "FLUXO": {
+      "termo_tecnico": "Fluxo (variável de fluxo)",
+      "nome_cidadao": "O que entra e sai no período",
+      "explicacao_simples": "É a movimentação do mês ou do ano, como o seu salário menos as contas do mês. Superávit e déficit são fluxos.",
+      "icone": "🌊",
+      "categoria": "Conceitos"
+    },
+    "ESTOQUE": {
+      "termo_tecnico": "Estoque (variável de estoque)",
+      "nome_cidadao": "O tamanho acumulado",
+      "explicacao_simples": "É o saldo acumulado até hoje, como o saldo devedor do financiamento da casa. A dívida pública é um estoque: mesmo com sobra no mês, ela continua existindo e rendendo juros.",
+      "icone": "🏢",
+      "categoria": "Conceitos"
+    },
+    "DBGG": {
+      "termo_tecnico": "Dívida Bruta do Governo Geral (DBGG) / PIB",
+      "nome_cidadao": "Dívida total do governo, sem descontar nada",
+      "explicacao_simples": "Soma do que União, estados e municípios devem, sem descontar os ativos, comparada com o PIB. É a medida mais usada em comparações com outros países.",
+      "icone": "🧱",
+      "categoria": "Dívida Pública"
+    },
+    "CUSTO_DIVIDA": {
+      "termo_tecnico": "Custo da dívida (juros nominais / dívida)",
+      "nome_cidadao": "Quanto a dívida custa por ano",
+      "explicacao_simples": "Parte da riqueza ou da receita que vai apenas para remunerar quem emprestou ao governo. Sobe e desce com a Selic.",
+      "icone": "💳",
+      "categoria": "Dívida Pública"
     }
   },
   "reservas_e_fmi": {
