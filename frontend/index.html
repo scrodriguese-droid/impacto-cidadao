@@ -57,6 +57,13 @@
 
 <main id="conteudo" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full space-y-14">
 
+    <!-- ========================= MAPA DOS MÓDULOS ========================= -->
+    <section id="modulos" class="scroll-mt-20" aria-labelledby="tModulos">
+        <h2 id="tModulos" class="text-2xl font-bold text-slate-900 dark:text-white">O que você encontra aqui</h2>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Sete módulos, do seu perfil ao Congresso. Cada um diz com clareza o que já está pronto e o que ainda falta.</p>
+        <div id="modulosGrid" class="mt-4 grid sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+    </section>
+
     <!-- ========================= PLANOS DE GOVERNO ========================= -->
     <section id="candidatos" class="scroll-mt-20" aria-labelledby="tCandidatos">
         <div class="mb-5">
@@ -162,6 +169,43 @@
  * ====================================================================== */
 
 renderLayout('planos'); // cabeçalho/rodapé compartilhados (assets/comum.js)
+
+/* ---------- mapa dos 7 módulos (arquitetura do site) ---------- */
+const MODULOS = [
+    { n: 1, icone: 'fa-user-gear', titulo: 'Perfil e cidade', status: 'ok', href: '#perfilGrid',
+      texto: 'Adapta a linguagem e o conteúdo ao seu perfil (CLT, MEI, estudante, aposentado…) e à sua cidade pelo código do IBGE. Vale para todas as páginas.' },
+    { n: 2, icone: 'fa-landmark', titulo: 'Leis e projetos de lei', status: 'ok', href: 'politicas.html',
+      texto: 'Leis, medidas provisórias e projetos da Câmara e do Senado traduzidos sem juridiquês, com efeito por perfil.' },
+    { n: 3, icone: 'fa-magnifying-glass-chart', titulo: 'Radar de realidade', status: 'parcial', href: '#candidatos',
+      texto: 'Hoje: planos de governo resumidos com o trecho original. Falta: avaliar se cada promessa exige lei ou PEC, de qual esfera é e se tem fonte na LOA.' },
+    { n: 4, icone: 'fa-calculator', titulo: 'Ciclo orçamentário e calculadora', status: 'parcial', href: 'economia.html#n3',
+      texto: 'Hoje: execução do orçamento (previsto, empenhado, pago) e simuladores de IR e MEI. Falta: PPA, LDO e LOA como documentos e a calculadora “para onde vai o meu imposto”.' },
+    { n: 5, icone: 'fa-hand-holding-dollar', titulo: 'Emendas e execução local', status: 'planejado', href: 'economia.html#n4',
+      texto: 'Verbas indicadas por parlamentares para a sua cidade. Hoje só há links para o Portal da Transparência; a lista própria depende de chave gratuita da CGU.' },
+    { n: 6, icone: 'fa-chart-pie', titulo: 'Economia e saúde fiscal', status: 'ok', href: 'economia.html',
+      texto: 'Município, estado e União: arrecadação, folha contra o limite da LRF, déficits, reservas internacionais e dívida pública, com indicadores do Banco Central e do Tesouro.', extra: { href: 'macro.html', rotulo: 'Indicadores macro' } },
+    { n: 7, icone: 'fa-people-group', titulo: 'Composição partidária e bancadas', status: 'planejado', href: null,
+      texto: 'Cadeiras por partido na Câmara, no Senado e nas câmaras municipais, para mostrar se uma proposta tem votos. Ainda não construído.' },
+];
+const ROTULO_STATUS = {
+    ok: ['Disponível', 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'],
+    parcial: ['Parcial', 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'],
+    planejado: ['Em construção', 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300'],
+};
+$('modulosGrid').innerHTML = MODULOS.map((m) => {
+    const [rot, cls] = ROTULO_STATUS[m.status];
+    const corpo = `<div class="flex items-start justify-between gap-2">
+            <span class="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-brand-50 dark:bg-brand-950 text-brand-700 dark:text-brand-300"><i class="fa-solid ${m.icone}" aria-hidden="true"></i></span>
+            <span class="px-2.5 py-1 rounded-full text-[11px] font-bold ${cls}">${rot}</span></div>
+        <p class="mt-3 text-xs font-bold text-slate-400">MÓDULO ${m.n}</p>
+        <h3 class="font-bold text-slate-900 dark:text-white">${esc(m.titulo)}</h3>
+        <p class="mt-1 text-xs text-slate-600 dark:text-slate-400 leading-relaxed">${esc(m.texto)}</p>`;
+    const caixa = 'rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 shadow-sm';
+    const extra = m.extra ? `<a href="${esc(m.extra.href)}" class="inline-block mt-2 text-xs font-semibold text-brand-700 dark:text-brand-400 hover:underline">${esc(m.extra.rotulo)} →</a>` : '';
+    return m.href
+        ? `<div class="${caixa} hover:border-brand-500"><a href="${esc(m.href)}" class="block">${corpo}</a>${extra}</div>`
+        : `<div class="${caixa} opacity-80">${corpo}</div>`;
+}).join('');
 
 /* ---------- estado ---------- */
 const prefs = ler('ic_prefs', {});

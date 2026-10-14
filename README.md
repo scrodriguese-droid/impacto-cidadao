@@ -204,3 +204,15 @@ Limitações: a dívida da DPF é bruta e só da União (não é a dívida líqu
 é cálculo próprio aproximado; mínimos constitucionais de Saúde/Educação não estão na API aberta do SICONFI; os
 arquivos do Tesouro (10–15 MB) são baixados na primeira consulta e ficam em cache por 6 h. Em redes com inspeção
 TLS, instale `truststore` (já em `requirements.txt`) para usar o repositório de certificados do sistema.
+
+## Arquitetura do site (7 módulos)
+
+| # | Módulo | Estado | Onde |
+|---|--------|--------|------|
+| 1 | Filtro de perfil e cidade (IBGE) | Disponível | topo de `index.html`; preferências compartilhadas (`ic_prefs`) |
+| 2 | Leis e projetos de lei (Câmara/Senado) | Disponível | `politicas.html` |
+| 3 | Radar de realidade (promessas × Constituição e LRF) | Parcial: planos de governo com citação; falta a avaliação de lei/PEC, esfera e fonte na LOA | `index.html#candidatos` |
+| 4 | Ciclo orçamentário e calculadora de imposto | Parcial: execução do orçamento e simuladores IR/MEI; faltam PPA/LDO/LOA e “para onde vai o meu imposto” | `economia.html#n3`, `index.html#simuladores` |
+| 5 | Emendas parlamentares e execução local | Planejado: só links oficiais (lista própria exige chave gratuita da CGU) | `economia.html#n4` |
+| 6 | Economia do setor público e saúde fiscal | Disponível: arrecadação, LRF, déficits, reservas, dívida | `economia.html`, `macro.html` |
+| 7 | Composição partidária e bancadas | Planejado | — |
