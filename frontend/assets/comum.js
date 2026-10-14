@@ -49,6 +49,7 @@ const NAVEGACAO = [
     { id: 'economia', href: 'economia.html', icone: 'fa-chart-pie', rotulo: 'Economia' },
     { id: 'macro', href: 'macro.html', icone: 'fa-chart-line', rotulo: 'Indicadores' },
     { id: 'bancadas', href: 'bancadas.html', icone: 'fa-people-group', rotulo: 'Bancadas' },
+    { id: 'glossario', href: 'glossario.html', icone: 'fa-book', rotulo: 'Glossário' },
 ];
 
 function renderLayout(paginaAtual) {
