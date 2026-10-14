@@ -216,6 +216,16 @@ def test_extrair_json_com_cercas():
     assert json.loads(_extrair_json('Aqui está: {"a": 2} fim')) == {"a": 2}
 
 
+def test_busca_por_tema_cobre_todas_as_categorias_exceto_outros():
+    import main
+    assert set(main.TERMOS_TEMA) == set(CATEGORIAS) - {"outros"}
+
+
+def test_limpar_texto_remove_nul_e_surrogates():
+    from coletor_candidatos import _limpar_texto
+    assert _limpar_texto("sa\x00úde\ud800 pública") == "saúde pública"
+
+
 def test_html_para_texto_ignora_scripts():
     html = "<html><head><title>x</title></head><body><script>alert(1)</script><p>Art. 1º Fica criado.</p></body></html>"
     assert html_para_texto(html) == "Art. 1º Fica criado."

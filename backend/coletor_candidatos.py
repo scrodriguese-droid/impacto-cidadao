@@ -164,10 +164,16 @@ def gravar_candidato(conn, c: dict) -> None:
     )
 
 
+def _limpar_texto(texto: str) -> str:
+    """O PostgreSQL rejeita NUL (\\x00) e UTF-8 inválido; PDFs às vezes trazem ambos."""
+    return texto.replace("\x00", "").encode("utf-8", "ignore").decode("utf-8")
+
+
 def gravar_plano(conn, c: dict, arquivo: dict, *, status: str, erro: str | None = None,
                  paginas: int | None = None, caracteres: int | None = None, sha: str | None = None,
                  analise: AnalisePlano | None = None, temas: list[dict] | None = None,
-                 descartadas: int = 0, modelo: str | None = None) -> None:
+                 descartadas: int = 0, modelo: str | None = None,
+                 paginas_texto: list[str] | None = None) -> None:
     linha = conn.execute(
         """
         INSERT INTO planos_governo (sq_candidato, arquivo_id, nome_arquivo, url_pdf, paginas, caracteres,
@@ -194,6 +200,13 @@ def gravar_plano(conn, c: dict, arquivo: dict, *, status: str, erro: str | None 
     conn.execute("DELETE FROM planos_governo WHERE sq_candidato = %s AND id <> %s", (c["sq_candidato"], plano_id))
     conn.execute("DELETE FROM temas_candidato WHERE plano_id = %s", (plano_id,))
     conn.execute("DELETE FROM propostas_candidato WHERE plano_id = %s", (plano_id,))
+
+    # Texto integral por página: base da busca por palavra-chave (funciona sem IA).
+    if paginas_texto is not None:
+        conn.execute("DELETE FROM paginas_plano WHERE plano_id = %s", (plano_id,))
+        linhas = [(plano_id, n, _limpar_texto(t)) for n, t in enumerate(paginas_texto, start=1) if t and t.strip()]
+        with conn.cursor() as cur:
+            cur.executemany("INSERT INTO paginas_plano (plano_id, pagina, texto) VALUES (%s, %s, %s)", linhas)
 
     for tema in temas or []:
         conn.execute(
@@ -279,14 +292,16 @@ def processar(c: dict, tse: Tse, args: argparse.Namespace, placar: Placar) -> No
     if caracteres > cfg.max_chars_plano:
         with db.conexao_avulsa() as conn:
             gravar_plano(conn, c, arquivo, status="texto_longo", paginas=len(paginas), caracteres=caracteres,
-                         sha=sha, erro=f"{caracteres:,} caracteres excedem MAX_CHARS_PLANO ({cfg.max_chars_plano:,}).")
+                         sha=sha, erro=f"{caracteres:,} caracteres excedem MAX_CHARS_PLANO ({cfg.max_chars_plano:,}).",
+                         paginas_texto=paginas)
         placar.pendentes += 1
         placar.detalhes.append(f"{nome}: plano muito longo ({caracteres:,} caracteres)")
         return
 
     if args.sem_ia:
         with db.conexao_avulsa() as conn:
-            gravar_plano(conn, c, arquivo, status="pendente", paginas=len(paginas), caracteres=caracteres, sha=sha)
+            gravar_plano(conn, c, arquivo, status="pendente", paginas=len(paginas), caracteres=caracteres, sha=sha,
+                         paginas_texto=paginas)
         placar.pendentes += 1
         log.info("+ %s: PDF lido (%d páginas), análise pendente (--sem-ia).", nome, len(paginas))
         return
@@ -302,7 +317,7 @@ def processar(c: dict, tse: Tse, args: argparse.Namespace, placar: Placar) -> No
     except (RecusaLLM, ErroLLM) as exc:
         with db.conexao_avulsa() as conn:
             gravar_plano(conn, c, arquivo, status="falha", paginas=len(paginas), caracteres=caracteres, sha=sha,
-                         erro=str(exc)[:500], modelo=modelo_em_uso())
+                         erro=str(exc)[:500], modelo=modelo_em_uso(), paginas_texto=paginas)
         placar.falhas += 1
         placar.detalhes.append(f"{nome}: análise falhou — {exc}")
         log.error("x %s: %s", nome, exc)
@@ -311,7 +326,8 @@ def processar(c: dict, tse: Tse, args: argparse.Namespace, placar: Placar) -> No
     temas, descartadas = verificar_citacoes(analise, paginas)
     with db.conexao_avulsa() as conn:
         gravar_plano(conn, c, arquivo, status="ok", paginas=len(paginas), caracteres=caracteres, sha=sha,
-                     analise=analise, temas=temas, descartadas=descartadas, modelo=info.get("modelo"))
+                     analise=analise, temas=temas, descartadas=descartadas, modelo=info.get("modelo"),
+                     paginas_texto=paginas)
     total = sum(len(t["propostas"]) for t in temas)
     placar.ok += 1
     placar.descartadas += descartadas

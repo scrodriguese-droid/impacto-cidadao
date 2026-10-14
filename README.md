@@ -15,7 +15,8 @@ impacto-cidadao/
 ├── docker-compose.yml         # PostgreSQL local (aplica o schema sozinho)
 ├── database/
 │   └── schema.sql             # usuarios, perfis, proposicoes_analisadas, votos_comunitarios,
-│                              # notificacoes + candidatos, planos_governo, temas/propostas
+│                              # notificacoes + candidatos, planos_governo, temas/propostas,
+│                              # paginas_plano (texto por página, busca sem acento)
 ├── backend/
 │   ├── main.py                # API FastAPI (rotas /api/...) + serve o front-end
 │   ├── coletor.py             # Câmara/Senado -> filtro -> IA -> banco   (leis e MPs)
@@ -65,6 +66,21 @@ Sem Docker? Crie um projeto no [Supabase](https://supabase.com), cole `database/
 ponha a *connection string* do pooler em `DATABASE_URL`.
 
 Testes: `cd backend && python -m pytest -q`
+
+### Funciona sem IA
+
+Mesmo sem chave de IA, o app é útil: `coletor_candidatos.py --sem-ia` baixa os planos, grava o **texto
+de cada página** e a tela de planos passa a oferecer **busca por palavra** (ou por tema) com o trecho
+literal e a página de cada candidato (`GET /api/candidatos/buscar`). A regra é igual para todos, em
+ordem alfabética, sem interpretação. A busca ignora acentos (`saude` acha `saúde`).
+
+Já tinha o banco criado antes dessa mudança? O schema é idempotente — reaplique:
+
+```powershell
+docker cp database\schema.sql impacto-db:/tmp/schema.sql
+docker exec impacto-db psql -U impacto -d impacto -v ON_ERROR_STOP=1 -q -f /tmp/schema.sql
+python backend\coletor_candidatos.py --sem-ia --forcar    # regrava o texto das páginas
+```
 
 ### Modos úteis dos coletores
 

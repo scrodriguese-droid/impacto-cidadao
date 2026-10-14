@@ -520,6 +520,93 @@ def comparar_candidatos(
     }
 
 
+# Termos usados na busca por tema (sem IA). Sintaxe do websearch_to_tsquery: "a or b".
+# São palavras-chave deliberadamente simples e iguais para todos os candidatos.
+TERMOS_TEMA: dict[str, str] = {
+    "impostos": "imposto or tributo or tributária or isenção or alíquota or \"imposto de renda\"",
+    "economia": "inflação or juros or crédito or fiscal or \"contas públicas\" or dívida or câmbio",
+    "emprego": "emprego or trabalho or salário or desemprego or trabalhador or empreendedor",
+    "previdencia": "previdência or aposentadoria or aposentado or INSS or pensão or idoso",
+    "assistencia": "\"bolsa família\" or assistência or pobreza or fome or \"transferência de renda\" or BPC",
+    "saude": "saúde or SUS or hospital or médico or medicamento or vacina",
+    "educacao": "educação or escola or creche or professor or universidade or ensino",
+    "seguranca": "segurança or polícia or crime or violência or facção or presídio",
+    "habitacao": "moradia or habitação or saneamento or \"minha casa\" or esgoto",
+    "transporte": "transporte or ferrovia or rodovia or porto or aeroporto or mobilidade or infraestrutura",
+    "meio_ambiente": "ambiente or clima or desmatamento or amazônia or sustentável or carbono",
+    "agro": "agropecuária or agricultura or agricultor or rural or safra or pecuária",
+}
+AVISO_BUSCA = ("Busca por palavra-chave no texto integral dos planos, sem inteligência artificial e sem "
+               "interpretação: são mostrados os trechos literais com maior relevância, na mesma regra para "
+               "todos os candidatos. A quantidade de trechos não indica prioridade nem qualidade do plano.")
+_OPCOES_TRECHO = 'StartSel="⟦", StopSel="⟧", MaxWords=45, MinWords=20, MaxFragments=1, ShortWord=2'
+
+
+@router.get("/candidatos/buscar", tags=["candidatos"])
+def buscar_nos_planos(
+    q: Annotated[str | None, Query(max_length=100, description="palavra(s) a procurar nos planos")] = None,
+    categoria: Annotated[str | None, Query(description="tema: busca pelos termos padrão do tema")] = None,
+    trechos: Annotated[int, Query(ge=1, le=10, description="trechos por candidato")] = 5,
+    turno2: bool = False,
+    todos: bool = False,
+) -> dict:
+    """Trechos literais dos planos que mencionam a palavra ou o tema (sem IA).
+
+    Igual para todos: mesma consulta, mesmo número de trechos, ordem alfabética.
+    Os `trecho` vêm com ⟦marcadores⟧ nas palavras encontradas (o cliente deve escapar o HTML).
+    """
+    categoria = _validar_categoria(categoria)
+    termo = (q or "").strip()
+    if termo:
+        consulta, modo = termo, "palavra"
+    elif categoria in TERMOS_TEMA:
+        consulta, modo = TERMOS_TEMA[categoria], "tema"
+    else:
+        raise HTTPException(status_code=422,
+                            detail="Informe uma palavra (q) ou um tema que tenha termos de busca padrão.")
+
+    linhas = db.consultar(
+        f"""
+        WITH q AS (SELECT websearch_to_tsquery('pt_busca', %(consulta)s) AS tsq)
+        SELECT c.sq_candidato, c.nome_urna, c.numero, c.sigla_partido, c.situacao_candidatura,
+               c.totalizacao, c.vice,
+               p.id AS plano_id, p.status AS plano_status, p.url_pdf, p.paginas,
+               (SELECT count(*) FROM paginas_plano x WHERE x.plano_id = p.id) AS n_texto,
+               r.pagina, r.trecho
+          FROM candidatos c
+          LEFT JOIN planos_governo p ON p.sq_candidato = c.sq_candidato
+          LEFT JOIN LATERAL (
+                SELECT g.pagina, ts_headline('pt_busca', g.texto, q.tsq, %(opcoes)s) AS trecho
+                  FROM paginas_plano g, q
+                 WHERE g.plano_id = p.id AND NOT g.indice AND g.busca @@ q.tsq
+                 ORDER BY ts_rank_cd(g.busca, q.tsq) DESC, g.pagina
+                 LIMIT %(n)s
+          ) r ON true
+         WHERE {_FILTRO_CANDIDATOS}
+         ORDER BY c.nome_urna, r.pagina
+        """,
+        {"consulta": consulta, "opcoes": _OPCOES_TRECHO, "n": trechos,
+         "ano": cfg.tse_ano, "todos": todos, "turno2": turno2},
+    )
+
+    por_candidato: dict[int, dict] = {}
+    for r in linhas:
+        item = por_candidato.setdefault(r["sq_candidato"], {
+            **_candidato_json(r),
+            "plano_status": r["plano_status"] or "sem_plano",
+            "url_pdf": r["url_pdf"],
+            "paginas_do_plano": r["paginas"],
+            "texto_disponivel": bool(r["n_texto"]),
+            "trechos": [],
+        })
+        if r["pagina"] is not None:
+            item["trechos"].append({"pagina": r["pagina"], "trecho": r["trecho"]})
+
+    return {"consulta": termo or consulta, "modo": modo, "categoria": categoria,
+            "ordenacao": "alfabética por nome de urna (sem ranking)", "aviso": AVISO_BUSCA,
+            "candidatos": list(por_candidato.values())}
+
+
 @router.get("/candidatos/{sq_candidato}", tags=["candidatos"])
 def obter_candidato(sq_candidato: int) -> dict:
     cand = db.consultar_um(

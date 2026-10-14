@@ -21,6 +21,29 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- -----------------------------------------------------------------------------
+-- 0b. Configuração de busca textual em português, insensível a acentos
+--     ("saude" encontra "saúde"). Usa a extensão `unaccent` quando disponível
+--     (Docker/Supabase têm); sem ela, cai para o dicionário português padrão.
+-- -----------------------------------------------------------------------------
+DO $$
+BEGIN
+    CREATE EXTENSION IF NOT EXISTS unaccent;
+EXCEPTION WHEN OTHERS THEN
+    RAISE NOTICE 'Extensão unaccent indisponível (%); a busca ficará sensível a acentos.', SQLERRM;
+END $$;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_ts_config WHERE cfgname = 'pt_busca') THEN
+        CREATE TEXT SEARCH CONFIGURATION pt_busca (COPY = portuguese);
+        IF EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'unaccent') THEN
+            ALTER TEXT SEARCH CONFIGURATION pt_busca
+                ALTER MAPPING FOR hword, hword_part, word WITH unaccent, portuguese_stem;
+        END IF;
+    END IF;
+END $$;
+
+-- -----------------------------------------------------------------------------
 -- 1. Tabelas de referência
 -- -----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS perfis (
@@ -318,6 +341,20 @@ CREATE TABLE IF NOT EXISTS propostas_candidato (
 CREATE INDEX IF NOT EXISTS ix_propcand_plano   ON propostas_candidato (plano_id, categoria_id);
 CREATE INDEX IF NOT EXISTS ix_propcand_perfis  ON propostas_candidato USING gin (perfis_beneficiados);
 
+-- Texto integral de cada plano, página a página: permite buscar por palavra-chave
+-- (com trecho literal e número da página) mesmo sem análise por IA.
+CREATE TABLE IF NOT EXISTS paginas_plano (
+    plano_id  bigint NOT NULL REFERENCES planos_governo(id) ON DELETE CASCADE,
+    pagina    integer NOT NULL,
+    texto     text NOT NULL,
+    busca     tsvector GENERATED ALWAYS AS (to_tsvector('pt_busca', texto)) STORED,
+    PRIMARY KEY (plano_id, pagina)
+);
+-- Página de sumário/índice (linhas "Título ........ 43"): fica fora da busca por palavra.
+ALTER TABLE paginas_plano ADD COLUMN IF NOT EXISTS indice boolean
+    GENERATED ALWAYS AS (texto ~ '\.{6,}[^.]{0,150}\.{6,}[^.]{0,150}\.{6,}') STORED;
+CREATE INDEX IF NOT EXISTS ix_paginas_busca ON paginas_plano USING gin (busca);
+
 -- -----------------------------------------------------------------------------
 -- 7. Row Level Security
 --    O backend conecta com o dono das tabelas (ignora RLS). Se as tabelas forem
@@ -330,14 +367,16 @@ DECLARE
 BEGIN
     FOREACH t IN ARRAY ARRAY['perfis', 'categorias', 'usuarios', 'proposicoes_analisadas',
                              'votos_comunitarios', 'notificacoes', 'candidatos',
-                             'planos_governo', 'temas_candidato', 'propostas_candidato']
+                             'planos_governo', 'temas_candidato', 'propostas_candidato',
+                             'paginas_plano']
     LOOP
         EXECUTE format('ALTER TABLE %I ENABLE ROW LEVEL SECURITY', t);
     END LOOP;
 
     IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'anon') THEN
         FOREACH t IN ARRAY ARRAY['perfis', 'categorias', 'proposicoes_analisadas', 'candidatos',
-                                 'planos_governo', 'temas_candidato', 'propostas_candidato']
+                                 'planos_governo', 'temas_candidato', 'propostas_candidato',
+                                 'paginas_plano']
         LOOP
             EXECUTE format('DROP POLICY IF EXISTS leitura_publica ON %I', t);
             EXECUTE format('CREATE POLICY leitura_publica ON %I FOR SELECT TO anon, authenticated USING (true)', t);

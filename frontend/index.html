@@ -100,7 +100,7 @@
 
         <div class="rounded-xl border border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 text-xs p-3.5 flex items-start space-x-2.5 mb-5" role="note">
             <i class="fa-solid fa-triangle-exclamation mt-0.5" aria-hidden="true"></i>
-            <p><b>Isto é informação, não recomendação de voto.</b> Os resumos são gerados por inteligência artificial a partir dos planos oficiais e conferidos automaticamente contra o PDF, mas podem conter imprecisões — confira sempre o trecho original. O que um plano promete não é garantia de execução: depende do Congresso, do orçamento e, muitas vezes, de estados e prefeituras.</p>
+            <p><b>Isto é informação, não recomendação de voto.</b> Quando existe resumo, ele é gerado por inteligência artificial a partir do plano oficial e conferido automaticamente contra o PDF, mas pode conter imprecisões. A busca por palavra mostra apenas trechos literais, sem interpretação. Confira sempre o trecho original. O que um plano promete não é garantia de execução: depende do Congresso, do orçamento e, muitas vezes, de estados e prefeituras.</p>
         </div>
 
         <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 mb-5">
@@ -110,6 +110,17 @@
                 <span>Somente candidatos no <b>2º turno</b></span>
             </label>
         </div>
+
+        <form id="formBuscaPlano" class="flex gap-2 mb-5" role="search">
+            <div class="relative flex-grow">
+                <label for="buscaPlano" class="sr-only">Buscar nos planos de governo</label>
+                <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-slate-400 text-xs" aria-hidden="true"></i>
+                <input id="buscaPlano" type="search" maxlength="100" autocomplete="off"
+                       placeholder="Buscar nos planos por palavra: creche, aposentadoria, SUS…"
+                       class="w-full pl-9 pr-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+            </div>
+            <button type="submit" class="px-4 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold">Buscar</button>
+        </form>
 
         <div id="candidatosGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5" aria-live="polite"></div>
     </section>
@@ -279,7 +290,7 @@ const prefs = ler('ic_prefs', {});
 const S = {
     perfil: prefs.perfil || '', municipio: prefs.municipio || null, tema: prefs.tema || 'saude',
     turno2: prefs.turno2 !== undefined ? prefs.turno2 : true,
-    categoria: 'all', status: 'all', q: '', ordem: 'recentes', pagina: 1, total: 0, itens: [],
+    buscaPlano: '', categoria: 'all', status: 'all', q: '', ordem: 'recentes', pagina: 1, total: 0, itens: [],
     perfis: [], categorias: [], statusLista: [], candidatosResumo: {},
 };
 const salvarPrefs = () => guardar('ic_prefs', { perfil: S.perfil, municipio: S.municipio, tema: S.tema, turno2: S.turno2 });
@@ -416,15 +427,33 @@ function cartaoProposta(p) {
     </li>`;
 }
 
-function cartaoCandidato(c) {
+/* Trechos literais (busca por palavra-chave, sem IA). Os ⟦marcadores⟧ vêm do servidor; o texto é escapado antes. */
+function marcar(txt) {
+    const limpo = esc(String(txt).replace(/\s+/g, ' ').trim());
+    return limpo.replace(/⟦/g, '<mark class="bg-amber-200 dark:bg-amber-500/40 text-inherit rounded px-0.5">').replace(/⟧/g, '</mark>');
+}
+function trechosHtml(b, pdf) {
+    if (!b) return '';
+    if (!b.texto_disponivel) return '<p class="text-xs text-slate-500">O texto deste plano ainda não foi carregado.</p>';
+    if (!b.trechos.length) return '<p class="text-sm text-slate-600 dark:text-slate-400">Nenhum trecho encontrado para esta busca neste plano.</p>';
+    return `<ul class="space-y-3">${b.trechos.map((t) => `<li class="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-900/50 p-3.5">
+            <p class="text-sm leading-relaxed text-slate-700 dark:text-slate-300">“… ${marcar(t.trecho)} …”</p>
+            <p class="mt-1.5 text-[11px] text-slate-500">página ${esc(t.pagina)}${pdf ? ` · <a class="text-brand-700 dark:text-brand-400 hover:underline" target="_blank" rel="noopener" href="${esc(urlSegura(pdf))}#page=${esc(t.pagina)}">abrir no PDF</a>` : ''}</p></li>`).join('')}</ul>`;
+}
+
+function cartaoCandidato(c, b, modo) {
     const seg = (c.totalizacao || '').toLowerCase().startsWith('2');
     const r = S.candidatosResumo[c.sq_candidato];
     const plano = r ? r.plano : null;
     const pdf = c.url_pdf || (plano && plano.url_pdf);
     let corpo;
-    if (c.plano_status !== 'ok') {
-        corpo = `<p class="text-sm text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-900/60 rounded-xl p-3.5">
-            <i class="fa-solid fa-hourglass-half mr-1.5" aria-hidden="true"></i>${esc(STATUS_PLANO[c.plano_status] || 'Análise indisponível.')}</p>`;
+    if (modo === 'palavra') {
+        corpo = trechosHtml(b, pdf) || '<p class="text-xs text-slate-500">Busca indisponível.</p>';
+    } else if (c.plano_status !== 'ok') {
+        const aviso = b && b.texto_disponivel
+            ? `<p class="text-[11px] text-slate-500 mb-3"><i class="fa-solid fa-info-circle mr-1" aria-hidden="true"></i>${esc(STATUS_PLANO[c.plano_status] || 'Análise indisponível.')} Abaixo, os trechos do plano que mencionam este tema (busca por palavras-chave, sem interpretação).</p>`
+            : `<p class="text-sm text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-900/60 rounded-xl p-3.5"><i class="fa-solid fa-hourglass-half mr-1.5" aria-hidden="true"></i>${esc(STATUS_PLANO[c.plano_status] || 'Análise indisponível.')} Use a caixa de busca para procurar uma palavra no plano.</p>`;
+        corpo = aviso + (b && b.texto_disponivel ? trechosHtml(b, pdf) : '');
     } else if (!c.mencionado) {
         corpo = `<p class="text-sm text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-900/60 rounded-xl p-3.5">
             <i class="fa-solid fa-circle-minus mr-1.5" aria-hidden="true"></i>Nenhuma proposta sobre este tema foi identificada na análise automática. Confira o documento original.</p>`;
@@ -458,22 +487,35 @@ async function carregarCandidatos() {
     const grade = $('candidatosGrid');
     const minha = ++reqCandidatos;
     grade.innerHTML = '<p class="text-sm text-slate-500 col-span-full"><i class="fa-solid fa-spinner fa-spin mr-2" aria-hidden="true"></i>Carregando planos…</p>';
+    const modo = S.buscaPlano ? 'palavra' : 'tema';
     const params = new URLSearchParams({ categoria: S.tema, turno2: S.turno2 });
     if (S.perfil) params.set('perfil', S.perfil);
     if (S.municipio) params.set('municipio', S.municipio.codigo);
+    const pBusca = new URLSearchParams({ turno2: S.turno2 });
+    if (modo === 'palavra') pBusca.set('q', S.buscaPlano); else pBusca.set('categoria', S.tema);
     try {
-        const [cmp, resumo] = await Promise.all([
-            api('/api/candidatos/comparar?' + params), api('/api/candidatos?turno2=' + S.turno2),
+        const [cmp, resumo, busca] = await Promise.all([
+            modo === 'tema' ? api('/api/candidatos/comparar?' + params) : Promise.resolve(null),
+            api('/api/candidatos?turno2=' + S.turno2),
+            api('/api/candidatos/buscar?' + pBusca).catch((e) => (modo === 'palavra' ? { erro: e } : null)),
         ]);
         if (minha !== reqCandidatos) return; // resposta antiga
         S.candidatosResumo = Object.fromEntries(resumo.itens.map((i) => [i.sq_candidato, i]));
-        if (!cmp.candidatos.length) {
+        if (busca && busca.erro) throw busca.erro;
+        const buscaPorSq = Object.fromEntries(((busca && busca.candidatos) || []).map((x) => [x.sq_candidato, x]));
+        const lista = modo === 'tema' ? cmp.candidatos : ((busca && busca.candidatos) || []).map((x) => ({
+            sq_candidato: x.sq_candidato, nome: x.nome, numero: x.numero, partido: x.partido, totalizacao: x.totalizacao,
+            vice: x.vice, plano_status: x.plano_status, url_pdf: x.url_pdf }));
+        if (!lista.length) {
             grade.innerHTML = '<p class="text-sm text-slate-500 col-span-full">Nenhum candidato encontrado. Rode o coletor de candidatos (veja o README).</p>';
             return;
         }
-        const dicaCidade = S.municipio ? '' : `<p class="col-span-full text-xs text-slate-500 dark:text-slate-400"><i class="fa-solid fa-location-dot mr-1" aria-hidden="true"></i>Escolha sua cidade no topo para ver como cada proposta chegaria até você.</p>`;
-        grade.innerHTML = dicaCidade + cmp.candidatos.map(cartaoCandidato).join('');
-        if (cmp.municipio && cmp.municipio.populacao) {
+        const dicaCidade = (S.municipio || modo === 'palavra') ? '' : `<p class="col-span-full text-xs text-slate-500 dark:text-slate-400"><i class="fa-solid fa-location-dot mr-1" aria-hidden="true"></i>Escolha sua cidade no topo para ver como cada proposta chegaria até você (disponível nos planos já analisados).</p>`;
+        const cabecalhoBusca = modo === 'palavra'
+            ? `<div class="col-span-full text-xs text-slate-600 dark:text-slate-400"><p><b>Resultados para “${esc(S.buscaPlano)}”.</b> ${esc((busca && busca.aviso) || '')}</p>
+               <button type="button" class="mt-1 underline text-brand-700 dark:text-brand-400" data-acao="limpar-busca">Limpar busca</button></div>` : '';
+        grade.innerHTML = cabecalhoBusca + dicaCidade + lista.map((c) => cartaoCandidato(c, buscaPorSq[c.sq_candidato], modo)).join('');
+        if (cmp && cmp.municipio && cmp.municipio.populacao) {
             const pop = cmp.municipio.populacao;
             grade.insertAdjacentHTML('afterbegin', `<p class="col-span-full text-xs text-slate-500 dark:text-slate-400"><i class="fa-solid fa-city mr-1" aria-hidden="true"></i>${esc(cmp.municipio.nome)}/${esc(cmp.municipio.uf)} — ${esc(cmp.municipio.regiao)} · ${pop.valor.toLocaleString('pt-BR')} habitantes (estimativa IBGE ${esc(pop.ano)}).</p>`);
         }
@@ -481,6 +523,15 @@ async function carregarCandidatos() {
 }
 $('candidatosGrid').addEventListener('click', (ev) => {
     if (ev.target.closest('[data-acao="todos-perfis"]')) { S.perfil = ''; salvarPrefs(); renderPerfis(); carregarCandidatos(); recarregarLeis(); }
+    if (ev.target.closest('[data-acao="limpar-busca"]')) { S.buscaPlano = ''; $('buscaPlano').value = ''; carregarCandidatos(); }
+});
+$('formBuscaPlano').addEventListener('submit', (ev) => {
+    ev.preventDefault();
+    S.buscaPlano = $('buscaPlano').value.trim();
+    carregarCandidatos();
+});
+$('buscaPlano').addEventListener('search', () => { // clicar no "x" do campo
+    if (!$('buscaPlano').value.trim() && S.buscaPlano) { S.buscaPlano = ''; carregarCandidatos(); }
 });
 
 /* ====================================================================== *
