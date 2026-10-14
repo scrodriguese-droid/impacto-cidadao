@@ -44,6 +44,17 @@ class AcessoNegado(ErroFonte):
 # --------------------------------------------------------------------------- #
 # HTTP com retry
 # --------------------------------------------------------------------------- #
+def _verificacao_tls():
+    """Usa o repositório de certificados do sistema (completa cadeias incompletas, como a do IBGE)."""
+    try:
+        import ssl
+
+        import truststore
+        return truststore.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+    except ImportError:
+        return True
+
+
 class ClienteHTTP:
     def __init__(self, base_url: str = "", *, pausa: float = 0.15, timeout: float = 45.0) -> None:
         self._cliente = httpx.Client(
@@ -51,6 +62,7 @@ class ClienteHTTP:
             headers={"User-Agent": cfg.user_agent, "Accept": "application/json"},
             timeout=timeout,
             follow_redirects=True,
+            verify=_verificacao_tls(),
         )
         self._pausa = pausa
 
