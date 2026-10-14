@@ -221,6 +221,22 @@ def test_busca_por_tema_cobre_todas_as_categorias_exceto_outros():
     assert set(main.TERMOS_TEMA) == set(CATEGORIAS) - {"outros"}
 
 
+def test_cobertura_cobre_a_matriz_poder_x_nivel():
+    import main
+    esperado = {(n, i) for n, _ in main.NIVEIS for i, _ in main.INSTANCIAS}
+    assert set(main.COBERTURA) == esperado
+    assert main.COBERTURA[("municipal", "judiciario")][0] is False   # não há Judiciário municipal
+    assert main.COBERTURA[("federal", "executivo")][1] is True       # fonte realmente conectada
+    assert main.COBERTURA[("federal", "judiciario")][1] is False     # ainda sem fonte: não fingir cobertura
+
+
+def test_instancia_do_item_segue_a_origem():
+    from coletor import Item
+    base = dict(fonte="camara", id_externo="1", sigla_tipo="PL", numero=1, ano=2026, ementa="x")
+    assert Item(origem="executivo", **base).instancia == "executivo"
+    assert Item(origem="alto_impacto", **base).instancia == "legislativo"
+
+
 def test_limpar_texto_remove_nul_e_surrogates():
     from coletor_candidatos import _limpar_texto
     assert _limpar_texto("sa\x00úde\ud800 pública") == "saúde pública"

@@ -140,7 +140,15 @@ def _proposicao_json(r: dict) -> dict:
         "id": r["id"],
         "identificacao": r["identificacao"],
         "sigla_tipo": r["sigla_tipo"],
-        "titulo": r["titulo_simples"],
+        "instancia": r["instancia"],
+        "nivel": r["nivel"],
+        "uf": r["uf"],
+        "municipio_ibge": r["municipio_ibge"],
+        "autoria": r["autoria"],
+        "traduzida": r["analise_status"] == "ok",
+        "situacao_oficial": r["situacao_atual"],
+        # Sem tradução (IA indisponível): o título cai para a identificação oficial.
+        "titulo": r["titulo_simples"] or r["identificacao"],
         "resumo": r["resumo_cidadao"],
         "perfis": r["perfis_impactados"],
         "categorias": r["categorias"],
@@ -166,7 +174,8 @@ _COLUNAS_PROPOSICAO = """
     p.id, p.identificacao, p.sigla_tipo, p.titulo_simples, p.resumo_cidadao, p.perfis_impactados,
     p.categorias, p.impacto_pratico, p.ponto_positivo, p.ponto_atencao, p.status_tramitacao,
     p.relevancia_bolso, p.data_apresentacao, p.origem, p.ementa_oficial, p.url_fonte,
-    p.linha_do_tempo, p.texto_fonte,
+    p.linha_do_tempo, p.texto_fonte, p.instancia, p.nivel, p.uf, p.municipio_ibge, p.autoria,
+    p.analise_status, p.situacao_atual,
     COALESCE(v.concordo, 0)             AS v_concordo,
     COALESCE(v.concordo_com_ajustes, 0) AS v_ajustes,
     COALESCE(v.discordo, 0)             AS v_discordo,
@@ -210,6 +219,14 @@ def listar_proposicoes(
     status: Annotated[str | None, Query()] = None,
     q: Annotated[str | None, Query(max_length=120, description="busca por texto ou número (ex.: 'FGTS', 'MPV 1394')")] = None,
     ordem: Literal["recentes", "impacto"] = "recentes",
+    instancia: Annotated[Literal["executivo", "legislativo", "judiciario"] | None, Query(
+        description="poder de origem do ato")] = None,
+    nivel: Annotated[Literal["federal", "estadual", "municipal"] | None, Query(
+        description="nível administrativo")] = None,
+    incluir_pendentes: Annotated[bool, Query(
+        description="inclui itens ainda sem tradução (só com dados oficiais); ignorado se houver filtro de perfil/área"
+    )] = False,
+    agrupar: Annotated[bool, Query(description="ordena por nível e poder antes da ordenação escolhida")] = False,
     pagina: Annotated[int, Query(ge=1, le=1000)] = 1,
     por_pagina: Annotated[int, Query(ge=1, le=50)] = 20,
 ) -> dict:
@@ -226,11 +243,19 @@ def listar_proposicoes(
         "p.data_apresentacao DESC NULLS LAST, p.id DESC"
         if ordem == "impacto" else "p.data_apresentacao DESC NULLS LAST, p.id DESC"
     )
+    if agrupar:
+        ordenacao = (
+            "CASE p.nivel WHEN 'federal' THEN 0 WHEN 'estadual' THEN 1 ELSE 2 END, "
+            "CASE p.instancia WHEN 'executivo' THEN 0 WHEN 'legislativo' THEN 1 ELSE 2 END, " + ordenacao
+        )
     sql = f"""
         SELECT {_COLUNAS_PROPOSICAO}, count(*) OVER() AS total_geral
           FROM proposicoes_analisadas p
           LEFT JOIN vw_placar_votos v ON v.proposicao_id = p.id
-         WHERE p.analise_status = 'ok'
+         WHERE (p.analise_status = 'ok'
+                OR (%(pendentes)s AND %(perfil)s::text IS NULL AND %(categoria)s::text IS NULL))
+           AND (%(instancia)s::text IS NULL OR p.instancia = %(instancia)s::text)
+           AND (%(nivel)s::text IS NULL OR p.nivel = %(nivel)s::text)
            AND (%(perfil)s::text IS NULL OR %(perfil)s::text = ANY (p.perfis_impactados) OR 'todos' = ANY (p.perfis_impactados))
            AND (%(categoria)s::text IS NULL OR %(categoria)s::text = ANY (p.categorias))
            AND (%(status)s::text IS NULL OR p.status_tramitacao = %(status)s::text)
@@ -243,6 +268,7 @@ def listar_proposicoes(
     linhas = db.consultar(sql, {
         "perfil": perfil, "categoria": categoria, "status": status, "q": termo,
         "q_like": _escapar_like(termo) if termo else None,
+        "instancia": instancia, "nivel": nivel, "pendentes": incluir_pendentes,
         "limite": por_pagina, "deslocamento": (pagina - 1) * por_pagina,
     })
     total = linhas[0]["total_geral"] if linhas else 0
@@ -255,12 +281,65 @@ def obter_proposicao(proposicao_id: int) -> dict:
     linha = db.consultar_um(
         f"SELECT {_COLUNAS_PROPOSICAO} FROM proposicoes_analisadas p "
         "LEFT JOIN vw_placar_votos v ON v.proposicao_id = p.id "
-        "WHERE p.id = %s AND p.analise_status = 'ok'",
+        "WHERE p.id = %s",
         (proposicao_id,),
     )
     if not linha:
         raise HTTPException(status_code=404, detail="Proposição não encontrada.")
     return _proposicao_json(linha)
+
+
+# --- Cobertura por poder (instância) e nível administrativo ----------------- #
+NIVEIS = [("federal", "Federal"), ("estadual", "Estadual"), ("municipal", "Municipal")]
+INSTANCIAS = [("executivo", "Executivo"), ("legislativo", "Legislativo"), ("judiciario", "Judiciário")]
+_FORA = "Fonte a conectar."
+# (aplicável?, fonte conectada?, fonte, observação) — declarado aqui para a tela nunca fingir cobertura.
+COBERTURA: dict[tuple[str, str], tuple[bool, bool, str, str]] = {
+    ("federal", "executivo"): (True, True, "Câmara dos Deputados e Senado Federal (dados abertos)",
+                               "Medidas provisórias e projetos de lei de autoria do Executivo. "
+                               "Decretos (Diário Oficial da União) ainda não são coletados."),
+    ("federal", "legislativo"): (True, True, "Câmara dos Deputados (dados abertos)",
+                                 "Amostra: projetos do Congresso selecionados por mencionarem vários temas de "
+                                 "impacto no bolso — não é o universo de proposições."),
+    ("federal", "judiciario"): (True, False, "STF — ADPF e ADI",
+                                "O STF não tem API oficial confirmada; o portal Corte Aberta oferece arquivos CSV. " + _FORA),
+    ("estadual", "executivo"): (True, False, "Diários Oficiais estaduais",
+                                "Não há API única: cada estado publica de um jeito. " + _FORA),
+    ("estadual", "legislativo"): (True, False, "Assembleias Legislativas", "Cada assembleia tem seu próprio portal. " + _FORA),
+    ("estadual", "judiciario"): (True, False, "Tribunais de Justiça estaduais",
+                                 "Ex.: representações de inconstitucionalidade estaduais. " + _FORA),
+    ("municipal", "executivo"): (True, False, "Diários Oficiais municipais (Querido Diário, Open Knowledge Brasil)",
+                                 "A API pública não completou a conexão no último teste. " + _FORA),
+    ("municipal", "legislativo"): (True, False, "Câmaras Municipais e Diários Oficiais municipais", _FORA),
+    ("municipal", "judiciario"): (False, False, "—",
+                                  "Não se aplica: o Judiciário brasileiro não tem nível municipal."),
+}
+
+
+@router.get("/politicas/resumo", tags=["proposicoes"])
+def resumo_politicas() -> dict:
+    """Matriz poder × nível: quantos atos há e se a fonte de dados está conectada."""
+    contagens = {
+        (r["nivel"], r["instancia"]): r
+        for r in db.consultar(
+            "SELECT nivel, instancia, count(*) AS total, "
+            "count(*) FILTER (WHERE analise_status = 'ok') AS traduzidas "
+            "FROM proposicoes_analisadas GROUP BY nivel, instancia"
+        )
+    }
+    celulas = []
+    for nivel, nome_nivel in NIVEIS:
+        for instancia, nome_instancia in INSTANCIAS:
+            aplicavel, conectada, fonte, obs = COBERTURA[(nivel, instancia)]
+            c = contagens.get((nivel, instancia))
+            celulas.append({
+                "nivel": nivel, "instancia": instancia,
+                "nome_nivel": nome_nivel, "nome_instancia": nome_instancia,
+                "aplicavel": aplicavel, "fonte_conectada": conectada, "fonte": fonte, "observacao": obs,
+                "total": c["total"] if c else 0, "traduzidas": c["traduzidas"] if c else 0,
+            })
+    return {"niveis": [{"id": i, "nome": n} for i, n in NIVEIS],
+            "instancias": [{"id": i, "nome": n} for i, n in INSTANCIAS], "celulas": celulas}
 
 
 # --- Votação -------------------------------------------------------------- #
@@ -306,9 +385,7 @@ def votar(proposicao_id: int, entrada: VotoEntrada) -> dict:
     Um voto por token; o token é guardado apenas como hash com sal. É uma consulta
     de opinião informal — NÃO é pesquisa eleitoral nem representa a população.
     """
-    existe = db.consultar_um(
-        "SELECT 1 AS ok FROM proposicoes_analisadas WHERE id = %s AND analise_status = 'ok'", (proposicao_id,)
-    )
+    existe = db.consultar_um("SELECT 1 AS ok FROM proposicoes_analisadas WHERE id = %s", (proposicao_id,))
     if not existe:
         raise HTTPException(status_code=404, detail="Proposição não encontrada.")
     anon_hash = hashlib.sha256(f"{cfg.voto_sal}:{entrada.token}".encode()).hexdigest()

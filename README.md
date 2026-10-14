@@ -28,7 +28,10 @@ impacto-cidadao/
 │   ├── simuladores.py         # IR (Lei 15.270/2025) e MEI — sem IA, parâmetros documentados
 │   ├── db.py, config.py
 │   └── tests/                 # 26 testes unitários (rodam sem rede, banco ou IA)
-├── frontend/index.html        # Tailwind + JS puro; consome a API
+├── frontend/
+│   ├── index.html             # planos de governo (por tema/cidade) + simuladores
+│   ├── politicas.html         # políticas públicas: leis e MPs por poder × nível de governo
+│   └── assets/                # comum.js (utilidades, cabeçalho/rodapé), tailwind-config.js
 └── dados/
     ├── candidatos_presidente_2026.json   # snapshot de contingência (campos mínimos)
     └── planos/                           # coloque PDFs aqui se o download for bloqueado
@@ -81,6 +84,22 @@ docker cp database\schema.sql impacto-db:/tmp/schema.sql
 docker exec impacto-db psql -U impacto -d impacto -v ON_ERROR_STOP=1 -q -f /tmp/schema.sql
 python backend\coletor_candidatos.py --sem-ia --forcar    # regrava o texto das páginas
 ```
+
+### Políticas públicas: poder × nível de governo
+
+A página `politicas.html` organiza os atos por **poder** (Executivo, Legislativo, Judiciário) e por
+**nível** (federal, estadual, municipal). O estado de cada célula da matriz vem de `COBERTURA` em
+`backend/main.py` — a tela nunca finge cobertura:
+
+| | Executivo | Legislativo | Judiciário |
+|---|---|---|---|
+| **Federal** | ✅ MPs e projetos do Executivo (Câmara/Senado) | ✅ amostra de alto impacto (Câmara) | ⏳ STF (ADPF/ADI): sem API oficial confirmada |
+| **Estadual** | ⏳ Diários Oficiais estaduais | ⏳ Assembleias Legislativas | ⏳ Tribunais de Justiça |
+| **Municipal** | ⏳ Diários municipais (Querido Diário) | ⏳ Câmaras Municipais | — não se aplica |
+
+Para conectar uma fonte nova: (1) faça o coletor gravar `instancia`, `nivel` (e `uf`/`municipio_ibge`) em
+`proposicoes_analisadas`; (2) troque `fonte_conectada` para `True` na célula em `COBERTURA`.
+Atos ainda sem tradução de IA aparecem com a ementa oficial, a tramitação e o link da fonte.
 
 ### Modos úteis dos coletores
 

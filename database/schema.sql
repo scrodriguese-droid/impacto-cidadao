@@ -128,6 +128,14 @@ CREATE TABLE IF NOT EXISTS proposicoes_analisadas (
     ementa_oficial     text NOT NULL DEFAULT '',
     origem             text NOT NULL DEFAULT 'executivo'
                        CHECK (origem IN ('executivo', 'alto_impacto')),
+    -- Onde a norma/ato nasce: poder (instância) e nível administrativo.
+    instancia          text NOT NULL DEFAULT 'executivo'
+                       CHECK (instancia IN ('executivo', 'legislativo', 'judiciario')),
+    nivel              text NOT NULL DEFAULT 'federal'
+                       CHECK (nivel IN ('federal', 'estadual', 'municipal')),
+    uf                 char(2),                               -- preenchido em atos estaduais/municipais
+    municipio_ibge     integer,                               -- preenchido em atos municipais
+    autoria            text,                                  -- ex.: "Poder Executivo", nomes de parlamentares
     url_fonte          text,                                  -- página oficial da proposição
     url_inteiro_teor   text,
     data_apresentacao  date,
@@ -175,6 +183,20 @@ CREATE INDEX IF NOT EXISTS ix_prop_perfis     ON proposicoes_analisadas USING gi
 CREATE INDEX IF NOT EXISTS ix_prop_categorias ON proposicoes_analisadas USING gin (categorias);
 CREATE INDEX IF NOT EXISTS ix_prop_status     ON proposicoes_analisadas (analise_status, status_tramitacao);
 CREATE INDEX IF NOT EXISTS ix_prop_data       ON proposicoes_analisadas (data_apresentacao DESC NULLS LAST);
+
+-- Bancos criados antes da página "Políticas públicas": acrescenta as colunas de classificação.
+ALTER TABLE proposicoes_analisadas
+    ADD COLUMN IF NOT EXISTS instancia text NOT NULL DEFAULT 'executivo'
+        CHECK (instancia IN ('executivo', 'legislativo', 'judiciario')),
+    ADD COLUMN IF NOT EXISTS nivel text NOT NULL DEFAULT 'federal'
+        CHECK (nivel IN ('federal', 'estadual', 'municipal')),
+    ADD COLUMN IF NOT EXISTS uf char(2),
+    ADD COLUMN IF NOT EXISTS municipio_ibge integer,
+    ADD COLUMN IF NOT EXISTS autoria text;
+-- Propostas do Congresso (selecionadas por alto impacto) pertencem ao Legislativo.
+UPDATE proposicoes_analisadas SET instancia = 'legislativo'
+ WHERE origem = 'alto_impacto' AND instancia = 'executivo';
+CREATE INDEX IF NOT EXISTS ix_prop_nivel_instancia ON proposicoes_analisadas (nivel, instancia);
 
 DROP TRIGGER IF EXISTS trg_prop_atualizado ON proposicoes_analisadas;
 CREATE TRIGGER trg_prop_atualizado BEFORE UPDATE ON proposicoes_analisadas

@@ -8,15 +8,7 @@
 
     <!-- Tailwind via CDN: ótimo para desenvolvimento. Em produção, compile o CSS (tailwindcss CLI). -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: { extend: {
-                colors: { brand: { 50: '#f0f9ff', 100: '#e0f2fe', 400: '#38bdf8', 500: '#0ea5e9', 600: '#0284c7', 700: '#0369a1', 800: '#075985', 900: '#0c4a6e', 950: '#082f49' } },
-                fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] }
-            } }
-        }
-    </script>
+    <script src="assets/tailwind-config.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -35,31 +27,7 @@
 
 <a href="#conteudo" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-white focus:text-slate-900 focus:p-3">Ir para o conteúdo</a>
 
-<!-- ========================= CABEÇALHO ========================= -->
-<header class="sticky top-0 z-40 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-sm">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex items-center justify-between h-16">
-            <a href="#" class="flex items-center space-x-3" aria-label="ImpactoCidadão — início">
-                <div class="bg-gradient-to-tr from-brand-700 to-teal-500 text-white p-2.5 rounded-xl shadow-md">
-                    <i class="fa-solid fa-scale-balanced text-xl" aria-hidden="true"></i>
-                </div>
-                <div>
-                    <span class="font-extrabold text-xl tracking-tight bg-gradient-to-r from-brand-700 via-teal-600 to-sky-600 bg-clip-text text-transparent">ImpactoCidadão</span>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 hidden sm:block">O que muda na sua vida, em linguagem simples</p>
-                </div>
-            </a>
-            <nav class="hidden md:flex space-x-1 font-medium text-sm" aria-label="Seções">
-                <a href="#candidatos" class="px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"><i class="fa-solid fa-flag mr-1.5 text-slate-400" aria-hidden="true"></i>Planos de governo</a>
-                <a href="#leis" class="px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"><i class="fa-solid fa-newspaper mr-1.5 text-slate-400" aria-hidden="true"></i>Leis e MPs</a>
-                <a href="#simuladores" class="px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"><i class="fa-solid fa-calculator mr-1.5 text-slate-400" aria-hidden="true"></i>Simuladores</a>
-            </nav>
-            <button id="btnTema" type="button" class="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl" aria-label="Alternar tema claro/escuro">
-                <i class="fa-solid fa-moon dark:hidden text-lg" aria-hidden="true"></i>
-                <i class="fa-solid fa-sun hidden dark:block text-amber-400 text-lg" aria-hidden="true"></i>
-            </button>
-        </div>
-    </div>
-</header>
+<div id="cabecalho"></div>
 
 <!-- ========================= HERO: PERFIL + CIDADE ========================= -->
 <section class="bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 text-white py-10 px-4 sm:px-6 lg:px-8">
@@ -125,52 +93,6 @@
         <div id="candidatosGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5" aria-live="polite"></div>
     </section>
 
-    <!-- ========================= LEIS E MPs ========================= -->
-    <section id="leis" class="scroll-mt-20" aria-labelledby="tLeis">
-        <div class="lg:grid lg:grid-cols-12 lg:gap-8">
-            <aside class="lg:col-span-3 mb-6 lg:mb-0">
-                <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-200 dark:border-slate-700/80 shadow-sm lg:sticky lg:top-20 space-y-5">
-                    <h3 class="text-sm font-bold uppercase tracking-wider flex items-center justify-between">
-                        <span><i class="fa-solid fa-filter text-brand-500 mr-2" aria-hidden="true"></i>Filtros</span>
-                        <button id="btnLimpar" type="button" class="text-xs text-brand-600 dark:text-brand-400 hover:underline normal-case font-normal">Limpar</button>
-                    </h3>
-                    <div class="relative">
-                        <label for="busca" class="sr-only">Buscar</label>
-                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-400 text-xs" aria-hidden="true"></i>
-                        <input id="busca" type="search" placeholder="FGTS, MEI, imposto, MPV 1394…" maxlength="120"
-                               class="w-full pl-9 pr-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-2">Área de impacto</label>
-                        <div id="catFiltros" class="space-y-1"></div>
-                    </div>
-                    <div>
-                        <label for="filtroStatus" class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-2">Situação</label>
-                        <select id="filtroStatus" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs"></select>
-                    </div>
-                </div>
-            </aside>
-
-            <div class="lg:col-span-9">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
-                    <div>
-                        <h2 id="tLeis" class="text-xl font-bold flex items-center"><i class="fa-solid fa-newspaper text-brand-600 mr-2.5" aria-hidden="true"></i>Leis e medidas provisórias do Executivo</h2>
-                        <p class="text-xs text-slate-500 dark:text-slate-400" id="contagemLeis" aria-live="polite">Carregando…</p>
-                    </div>
-                    <div class="flex items-center space-x-2 text-xs">
-                        <label for="ordem" class="text-slate-500">Ordenar por</label>
-                        <select id="ordem" class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1.5 font-medium">
-                            <option value="recentes">Mais recentes</option>
-                            <option value="impacto">Maior impacto no bolso</option>
-                        </select>
-                    </div>
-                </div>
-                <div id="leisLista" class="space-y-5"></div>
-                <div class="text-center mt-6"><button id="btnMais" type="button" class="hidden px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold">Carregar mais</button></div>
-            </div>
-        </div>
-    </section>
-
     <!-- ========================= SIMULADORES ========================= -->
     <section id="simuladores" class="scroll-mt-20 bg-white dark:bg-slate-800 rounded-2xl p-6 sm:p-8 border border-slate-200 dark:border-slate-700/80 shadow-sm" aria-labelledby="tSim">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 border-b border-slate-100 dark:border-slate-700/60 pb-5">
@@ -229,61 +151,17 @@
     </section>
 </main>
 
-<!-- ========================= RODAPÉ ========================= -->
-<footer class="bg-slate-900 text-slate-400 py-10 border-t border-slate-800 text-xs">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-            <div>
-                <h4 class="text-white font-semibold mb-3 uppercase tracking-wider">Fontes oficiais</h4>
-                <ul class="space-y-2">
-                    <li><a class="hover:text-white" target="_blank" rel="noopener" href="https://divulgacandcontas.tse.jus.br/">TSE — DivulgaCandContas (planos de governo)</a></li>
-                    <li><a class="hover:text-white" target="_blank" rel="noopener" href="https://dadosabertos.camara.leg.br/">Câmara dos Deputados — Dados Abertos</a></li>
-                    <li><a class="hover:text-white" target="_blank" rel="noopener" href="https://www12.senado.leg.br/dados-abertos">Senado Federal — Dados Abertos</a></li>
-                    <li><a class="hover:text-white" target="_blank" rel="noopener" href="https://www.in.gov.br/">Diário Oficial da União</a></li>
-                    <li><a class="hover:text-white" target="_blank" rel="noopener" href="https://servicodados.ibge.gov.br/api/docs">IBGE — municípios e população</a></li>
-                </ul>
-            </div>
-            <div>
-                <h4 class="text-white font-semibold mb-3 uppercase tracking-wider">Compromisso editorial</h4>
-                <p class="leading-relaxed">Descrevemos, não avaliamos. Todos os candidatos passam pelo mesmo roteiro, em ordem alfabética, sem ranking. Cada proposta cita o texto original, e citações que não existem no PDF são descartadas automaticamente. O conteúdo é gerado por IA e pode conter erros: consulte o documento oficial.</p>
-            </div>
-            <div>
-                <h4 class="text-white font-semibold mb-3 uppercase tracking-wider">Sobre as votações</h4>
-                <p class="leading-relaxed">A consulta de opinião vale apenas para leis e medidas provisórias. É informal, anônima e <b>não é pesquisa eleitoral</b> nem representa a população. Não coletamos CPF, e-mail ou endereço IP para votar.</p>
-            </div>
-        </div>
-        <p class="pt-6 border-t border-slate-800 text-slate-500">Projeto independente e sem vínculo com governo, partidos ou candidaturas.</p>
-    </div>
-</footer>
+<div id="rodape"></div>
 
+<script src="assets/comum.js"></script>
 <script>
 /* ====================================================================== *
  *  ImpactoCidadão — front-end (JavaScript puro, sem build)
  *  Toda a informação vem da API (/api/...). Texto vindo do servidor é
  *  sempre escapado antes de ir para o HTML (função esc).
  * ====================================================================== */
-const API = location.protocol.startsWith('http') ? '' : 'http://localhost:8000';
 
-/* ---------- utilidades ---------- */
-const $ = (id) => document.getElementById(id);
-const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-const urlSegura = (u) => (/^https?:\/\//i.test(u || '') ? u : '#');
-const brl = (n) => Number(n || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-const fmtData = (iso) => { if (!iso) return ''; const d = new Date(iso.slice(0, 10) + 'T00:00:00'); return isNaN(d) ? '' : d.toLocaleDateString('pt-BR'); };
-const debounce = (fn, ms) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
-const guardar = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (_) { /* navegação privada */ } };
-const ler = (k, padrao) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : padrao; } catch (_) { return padrao; } };
-
-async function api(caminho, opcoes) {
-    const resp = await fetch(API + caminho, opcoes);
-    if (!resp.ok) {
-        let detalhe = '';
-        try { const j = await resp.json(); detalhe = typeof j.detail === 'string' ? j.detail : ''; } catch (_) { /* sem corpo */ }
-        throw new Error(detalhe || `Erro ${resp.status}`);
-    }
-    return resp.json();
-}
-const mensagemErro = (e) => `<div class="p-4 rounded-xl border border-rose-300 dark:border-rose-800 bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-200 text-sm"><i class="fa-solid fa-circle-exclamation mr-2" aria-hidden="true"></i>${esc(e.message || e)} <span class="block text-xs mt-1 opacity-80">Verifique se o servidor está no ar (uvicorn) e tente novamente.</span></div>`;
+renderLayout('planos'); // cabeçalho/rodapé compartilhados (assets/comum.js)
 
 /* ---------- estado ---------- */
 const prefs = ler('ic_prefs', {});
@@ -316,16 +194,6 @@ const RELEVANCIA = { alta: ['Impacto alto no bolso', 'bg-rose-100 text-rose-800 
                      baixa: ['Impacto baixo', 'bg-sky-100 text-sky-800 dark:bg-sky-950/70 dark:text-sky-300'],
                      nenhuma: ['Sem efeito direto', 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300'] };
 
-/* ---------- tema claro/escuro ---------- */
-$('btnTema').addEventListener('click', () => {
-    const escuro = document.documentElement.classList.toggle('dark');
-    guardar('ic_tema', escuro ? 'dark' : 'light');
-});
-(function iniciarTema() {
-    const salvo = ler('ic_tema', null);
-    const escuro = salvo ? salvo === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
-    document.documentElement.classList.toggle('dark', escuro);
-})();
 
 /* ====================================================================== *
  *  Perfil
@@ -346,7 +214,7 @@ $('perfilGrid').addEventListener('click', (ev) => {
     const b = ev.target.closest('[data-perfil]');
     if (!b) return;
     S.perfil = b.dataset.perfil;
-    salvarPrefs(); renderPerfis(); carregarCandidatos(); recarregarLeis();
+    salvarPrefs(); renderPerfis(); carregarCandidatos();
 });
 
 /* ====================================================================== *
@@ -497,7 +365,9 @@ async function carregarCandidatos() {
         const [cmp, resumo, busca] = await Promise.all([
             modo === 'tema' ? api('/api/candidatos/comparar?' + params) : Promise.resolve(null),
             api('/api/candidatos?turno2=' + S.turno2),
-            api('/api/candidatos/buscar?' + pBusca).catch((e) => (modo === 'palavra' ? { erro: e } : null)),
+            // "Outros temas" não tem termos padrão de busca: só a busca por palavra se aplica.
+            (modo === 'tema' && S.tema === 'outros') ? Promise.resolve(null)
+                : api('/api/candidatos/buscar?' + pBusca).catch((e) => (modo === 'palavra' ? { erro: e } : null)),
         ]);
         if (minha !== reqCandidatos) return; // resposta antiga
         S.candidatosResumo = Object.fromEntries(resumo.itens.map((i) => [i.sq_candidato, i]));
@@ -522,7 +392,7 @@ async function carregarCandidatos() {
     } catch (e) { if (minha === reqCandidatos) grade.innerHTML = `<div class="col-span-full">${mensagemErro(e)}</div>`; }
 }
 $('candidatosGrid').addEventListener('click', (ev) => {
-    if (ev.target.closest('[data-acao="todos-perfis"]')) { S.perfil = ''; salvarPrefs(); renderPerfis(); carregarCandidatos(); recarregarLeis(); }
+    if (ev.target.closest('[data-acao="todos-perfis"]')) { S.perfil = ''; salvarPrefs(); renderPerfis(); carregarCandidatos(); }
     if (ev.target.closest('[data-acao="limpar-busca"]')) { S.buscaPlano = ''; $('buscaPlano').value = ''; carregarCandidatos(); }
 });
 $('formBuscaPlano').addEventListener('submit', (ev) => {
@@ -532,158 +402,6 @@ $('formBuscaPlano').addEventListener('submit', (ev) => {
 });
 $('buscaPlano').addEventListener('search', () => { // clicar no "x" do campo
     if (!$('buscaPlano').value.trim() && S.buscaPlano) { S.buscaPlano = ''; carregarCandidatos(); }
-});
-
-/* ====================================================================== *
- *  Leis e MPs
- * ====================================================================== */
-function renderFiltrosLeis() {
-    const todas = [{ id: 'all', nome: 'Todas as áreas', icone: 'fa-layer-group' }, ...S.categorias];
-    $('catFiltros').innerHTML = todas.map((c) => {
-        const ativo = c.id === S.categoria;
-        return `<button type="button" data-cat="${esc(c.id)}" aria-pressed="${ativo}"
-            class="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition ${ativo
-            ? 'bg-brand-100 dark:bg-brand-950 text-brand-700 dark:text-brand-300 font-bold' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900'}">
-            <span class="flex items-center space-x-2"><i class="fa-solid ${esc(c.icone)} text-slate-400 w-4" aria-hidden="true"></i><span>${esc(c.nome)}</span></span></button>`;
-    }).join('');
-    $('filtroStatus').innerHTML = '<option value="all">Todas as situações</option>' + S.statusLista.map((s) => `<option value="${esc(s)}">${esc(s)}</option>`).join('');
-    $('filtroStatus').value = S.status;
-}
-$('catFiltros').addEventListener('click', (ev) => {
-    const b = ev.target.closest('[data-cat]'); if (!b) return;
-    S.categoria = b.dataset.cat; renderFiltrosLeis(); recarregarLeis();
-});
-$('filtroStatus').addEventListener('change', (ev) => { S.status = ev.target.value; recarregarLeis(); });
-$('ordem').addEventListener('change', (ev) => { S.ordem = ev.target.value; recarregarLeis(); });
-$('busca').addEventListener('input', debounce((ev) => { S.q = ev.target.value.trim(); recarregarLeis(); }, 300));
-$('btnLimpar').addEventListener('click', () => {
-    S.categoria = 'all'; S.status = 'all'; S.q = ''; $('busca').value = ''; renderFiltrosLeis(); recarregarLeis();
-});
-$('btnMais').addEventListener('click', () => { S.pagina += 1; carregarLeis(true); });
-
-function placarHtml(v) {
-    const t = v.total || 0;
-    const pct = (n) => (t ? Math.round((n / t) * 100) : 0);
-    if (!t) return '<p class="text-[11px] text-slate-500">Ainda sem votos. Seja o primeiro a opinar.</p>';
-    return `<div class="flex h-2.5 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-700" role="img" aria-label="${pct(v.concordo)}% concordam, ${pct(v.concordo_com_ajustes)}% concordam com ajustes, ${pct(v.discordo)}% discordam">
-            <div class="bg-emerald-500" style="width:${pct(v.concordo)}%"></div><div class="bg-amber-400" style="width:${pct(v.concordo_com_ajustes)}%"></div><div class="bg-rose-500" style="width:${pct(v.discordo)}%"></div></div>
-        <p class="text-[11px] text-slate-500 mt-1.5">${t} opinião(ões) · ${pct(v.concordo)}% concordam · ${pct(v.concordo_com_ajustes)}% com ajustes · ${pct(v.discordo)}% discordam</p>`;
-}
-const meusVotos = ler('ic_votos', {});
-function tokenAnonimo() {
-    let t = ler('ic_token', null);
-    if (!t) {
-        const b = new Uint8Array(24); crypto.getRandomValues(b);
-        t = Array.from(b, (x) => x.toString(16).padStart(2, '0')).join('');
-        guardar('ic_token', t);
-    }
-    return t;
-}
-
-function linhaDoTempo(ev) {
-    if (!ev || !ev.length) return '<p class="text-xs text-slate-500">Sem andamentos registrados.</p>';
-    return `<ol class="relative border-l-2 border-slate-200 dark:border-slate-700 ml-2 space-y-3">${ev.map((e) => `
-        <li class="ml-4"><span class="absolute -left-[7px] mt-1 w-3 h-3 rounded-full ${e.status === 'current' ? 'bg-brand-500 ring-4 ring-brand-500/20' : 'bg-emerald-500'}"></span>
-            <p class="text-xs font-semibold">${esc(e.etapa)} <span class="font-normal text-slate-500">· ${esc(e.orgao)} · ${esc(fmtData(e.data))}</span></p>
-            ${e.detalhe ? `<p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">${esc(e.detalhe)}</p>` : ''}</li>`).join('')}</ol>`;
-}
-
-const OPCOES_VOTO = [
-    ['concordo', 'Concordo', 'fa-thumbs-up', { base: 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:border-emerald-800 dark:text-emerald-300', ativo: 'border-emerald-600 bg-emerald-600 text-white' }],
-    ['concordo_com_ajustes', 'Com ajustes', 'fa-sliders', { base: 'border-amber-200 bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:border-amber-800 dark:text-amber-300', ativo: 'border-amber-500 bg-amber-500 text-white' }],
-    ['discordo', 'Discordo', 'fa-thumbs-down', { base: 'border-rose-200 bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:border-rose-800 dark:text-rose-300', ativo: 'border-rose-600 bg-rose-600 text-white' }],
-];
-function botoesVoto(id) {
-    const meu = meusVotos[id];
-    return OPCOES_VOTO.map(([valor, rotulo, icone, cor]) => `<button type="button" data-voto="${valor}" data-id="${id}" aria-pressed="${meu === valor}"
-        class="p-2 rounded-lg border text-xs font-semibold transition ${meu === valor ? cor.ativo : cor.base}"><i class="fa-solid ${icone} block mb-1" aria-hidden="true"></i>${rotulo}</button>`).join('');
-}
-
-function cartaoLei(p) {
-    const [rotRel, clsRel] = RELEVANCIA[p.relevancia] || RELEVANCIA.nenhuma;
-    const nomesPerfis = (p.perfis || []).map((id) => (id === 'todos' ? 'Todos' : (S.perfis.find((x) => x.id === id) || {}).nome || id));
-    const nomesCats = (p.categorias || []).map((id) => (S.categorias.find((x) => x.id === id) || {}).nome || id);
-    return `<article class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-sm overflow-hidden">
-        <div class="p-5 sm:p-6">
-            <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
-                <div class="flex flex-wrap items-center gap-2">
-                    <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold border bg-sky-100 text-sky-800 border-sky-300 dark:bg-sky-950/80 dark:text-sky-300 dark:border-sky-800">${esc(p.status || 'Situação não informada')}</span>
-                    <span class="text-xs text-slate-400 font-mono">${esc(p.identificacao)}</span>
-                    <span class="px-2 py-0.5 rounded-full text-[11px] font-semibold ${clsRel}">${esc(rotRel)}</span>
-                </div>
-                <span class="text-xs text-slate-400">${p.data_apresentacao ? `<i class="fa-regular fa-calendar mr-1" aria-hidden="true"></i>${esc(fmtData(p.data_apresentacao))}` : ''}</span>
-            </div>
-            <h3 class="text-lg font-bold leading-snug">${esc(p.titulo)}</h3>
-            <p class="mt-2 text-sm text-slate-600 dark:text-slate-300 leading-relaxed">${esc(p.resumo)}</p>
-            <div class="mt-4 p-4 bg-slate-50 dark:bg-slate-900/80 rounded-xl border-l-4 border-brand-500">
-                <span class="text-xs font-bold uppercase tracking-wider block"><i class="fa-solid fa-bolt text-brand-600 mr-1" aria-hidden="true"></i>Como afeta o seu dia a dia</span>
-                <p class="text-sm text-slate-700 dark:text-slate-300 font-medium mt-1">${esc(p.impacto_pratico)}</p>
-            </div>
-            <p class="mt-3 text-[11px] text-slate-500">${nomesPerfis.length ? `<b>Quem é afetado:</b> ${esc(nomesPerfis.join(', '))} · ` : ''}${nomesCats.length ? `<b>Áreas:</b> ${esc(nomesCats.join(', '))}` : ''}</p>
-        </div>
-        <details class="border-t border-slate-200 dark:border-slate-700">
-            <summary class="px-5 sm:px-6 py-3 flex items-center justify-between text-xs font-bold text-brand-700 dark:text-brand-400 hover:bg-slate-50 dark:hover:bg-slate-900/40">
-                <span>Ver análise, tramitação e opinar</span><i class="fa-solid fa-chevron-down text-[10px] chev" aria-hidden="true"></i></summary>
-            <div class="bg-slate-50/80 dark:bg-slate-900/50 p-5 sm:p-6 space-y-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-                    <div class="bg-emerald-50/70 dark:bg-emerald-950/30 p-3.5 rounded-xl border border-emerald-200 dark:border-emerald-800/50">
-                        <span class="font-bold text-emerald-800 dark:text-emerald-300 block mb-1.5"><i class="fa-solid fa-circle-check mr-1.5" aria-hidden="true"></i>Argumento geralmente apresentado a favor</span>
-                        <p class="text-slate-700 dark:text-slate-300">${esc(p.ponto_positivo)}</p></div>
-                    <div class="bg-amber-50/70 dark:bg-amber-950/30 p-3.5 rounded-xl border border-amber-200 dark:border-amber-800/50">
-                        <span class="font-bold text-amber-800 dark:text-amber-300 block mb-1.5"><i class="fa-solid fa-triangle-exclamation mr-1.5" aria-hidden="true"></i>Ponto de atenção geralmente apontado</span>
-                        <p class="text-slate-700 dark:text-slate-300">${esc(p.ponto_atencao)}</p></div>
-                </div>
-                <div><h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3"><i class="fa-solid fa-timeline text-brand-500 mr-1.5" aria-hidden="true"></i>Linha do tempo de tramitação</h4>${linhaDoTempo(p.linha_do_tempo)}</div>
-                <div class="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 text-xs">
-                    <span class="font-bold text-slate-500 block mb-1">Ementa oficial</span>
-                    <p class="font-mono text-slate-600 dark:text-slate-400">${esc(p.ementa_oficial)}</p>
-                    <p class="mt-2 text-[11px] text-slate-400">${p.texto_analisado === 'ementa' ? 'A análise usou apenas a ementa (texto integral indisponível).' : 'A análise usou o texto integral publicado.'}</p></div>
-                <div>
-                    <span class="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-2">Opinião da comunidade <span class="normal-case font-normal">(consulta informal, não é pesquisa)</span></span>
-                    <div id="votos-${p.id}" class="mb-3">${placarHtml(p.votos)}</div>
-                    <div id="botoes-${p.id}" class="grid grid-cols-3 gap-2 max-w-md">${botoesVoto(p.id)}</div>
-                </div>
-                <p class="text-xs">${p.url_fonte ? `<a href="${esc(urlSegura(p.url_fonte))}" target="_blank" rel="noopener" class="text-brand-700 dark:text-brand-400 font-semibold hover:underline"><i class="fa-solid fa-landmark mr-1" aria-hidden="true"></i>Ver no site oficial<i class="fa-solid fa-arrow-up-right-from-square text-[9px] ml-1" aria-hidden="true"></i></a>` : ''}</p>
-            </div>
-        </details>
-    </article>`;
-}
-
-let reqLeis = 0;
-async function carregarLeis(acrescentar = false) {
-    const minha = ++reqLeis;
-    const params = new URLSearchParams({ ordem: S.ordem, pagina: S.pagina, por_pagina: 10 });
-    if (S.perfil) params.set('perfil', S.perfil);
-    if (S.categoria !== 'all') params.set('categoria', S.categoria);
-    if (S.status !== 'all') params.set('status', S.status);
-    if (S.q) params.set('q', S.q);
-    try {
-        const r = await api('/api/proposicoes?' + params);
-        if (minha !== reqLeis) return;
-        S.total = r.total;
-        S.itens = acrescentar ? S.itens.concat(r.itens) : r.itens;
-        $('contagemLeis').textContent = `Mostrando ${S.itens.length} de ${r.total} proposição(ões) analisada(s)`;
-        $('leisLista').innerHTML = S.itens.length ? S.itens.map(cartaoLei).join('') : `<div class="text-center py-12 bg-white dark:bg-slate-800 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700">
-            <i class="fa-solid fa-folder-open text-4xl text-slate-300 mb-3" aria-hidden="true"></i><h4 class="font-semibold">Nenhuma proposição encontrada</h4>
-            <p class="text-xs text-slate-500 mt-1">Ajuste os filtros — ou rode o coletor (<code>python backend/coletor.py</code>) para trazer dados.</p></div>`;
-        $('btnMais').classList.toggle('hidden', S.itens.length >= r.total);
-    } catch (e) { if (minha === reqLeis) { $('leisLista').innerHTML = mensagemErro(e); $('contagemLeis').textContent = ''; } }
-}
-function recarregarLeis() { S.pagina = 1; carregarLeis(false); }
-
-$('leisLista').addEventListener('click', async (ev) => {
-    const b = ev.target.closest('[data-voto]'); if (!b) return;
-    const id = Number(b.dataset.id), voto = b.dataset.voto;
-    try {
-        const r = await api(`/api/proposicoes/${id}/voto`, {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ voto, token: tokenAnonimo(), perfil: S.perfil || null }),
-        });
-        meusVotos[id] = voto; guardar('ic_votos', meusVotos);
-        const placar = $('votos-' + id); if (placar) placar.innerHTML = placarHtml(r.placar);
-        const botoes = $('botoes-' + id); if (botoes) botoes.innerHTML = botoesVoto(id);
-        const item = S.itens.find((x) => x.id === id); if (item) item.votos = r.placar;
-    } catch (e) { alert('Não foi possível registrar o voto: ' + e.message); }
 });
 
 /* ====================================================================== *
@@ -764,11 +482,10 @@ async function iniciar() {
         if (!categorias.some((c) => c.id === S.tema)) S.tema = categorias[0].id;
     } catch (e) {
         $('candidatosGrid').innerHTML = `<div class="col-span-full">${mensagemErro(e)}</div>`;
-        $('leisLista').innerHTML = mensagemErro(e); $('contagemLeis').textContent = '';
         return;
     }
-    renderPerfis(); renderTemaChips(); renderFiltrosLeis();
-    carregarCandidatos(); carregarLeis();
+    renderPerfis(); renderTemaChips();
+    carregarCandidatos();
 }
 iniciar();
 </script>

@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Políticas públicas — ImpactoCidadão</title>
+    <meta name="description" content="Leis, medidas provisórias e decisões que mudam a vida do cidadão, organizadas por poder (Executivo, Legislativo, Judiciário) e por nível de governo.">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="assets/tailwind-config.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Inter', system-ui, sans-serif; }
+        details > summary { list-style: none; cursor: pointer; }
+        details > summary::-webkit-details-marker { display: none; }
+        details[open] > summary .chev { transform: rotate(180deg); }
+        .chev { transition: transform .15s ease; }
+        :focus-visible { outline: 2px solid #0284c7; outline-offset: 2px; }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-full flex flex-col transition-colors duration-200">
+
+<a href="#conteudo" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-white focus:text-slate-900 focus:p-3">Ir para o conteúdo</a>
+<div id="cabecalho"></div>
+
+<section class="bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 text-white py-9 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+        <span class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-slate-800/80 border border-slate-700 text-xs font-semibold text-brand-400 mb-3">
+            <i class="fa-solid fa-landmark text-teal-400" aria-hidden="true"></i><span>Poderes e níveis de governo</span>
+        </span>
+        <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight">Políticas públicas</h1>
+        <p class="mt-2 text-slate-300 text-sm sm:text-base max-w-3xl">Leis, medidas provisórias e decisões que afetam o seu dia a dia, organizadas por <b>poder</b> (Executivo, Legislativo e Judiciário) e por <b>nível</b> (federal, estadual e municipal). Onde ainda não há fonte de dados conectada, mostramos isso com clareza.</p>
+        <div class="mt-5 flex flex-col sm:flex-row sm:items-center gap-3 text-sm">
+            <label class="flex items-center gap-2">
+                <span class="text-slate-300">Seu perfil:</span>
+                <select id="perfilSelect" class="bg-slate-800 border border-slate-600 rounded-xl px-3 py-2 text-sm text-white focus:ring-2 focus:ring-brand-500"></select>
+            </label>
+            <span id="cidadeInfo" class="text-slate-300"></span>
+        </div>
+    </div>
+</section>
+
+<main id="conteudo" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full space-y-8">
+
+    <!-- Matriz poder × nível -->
+    <section aria-labelledby="tMatriz">
+        <div class="flex items-end justify-between gap-3 mb-3">
+            <div>
+                <h2 id="tMatriz" class="text-lg font-bold">Onde estamos olhando</h2>
+                <p class="text-xs text-slate-500 dark:text-slate-400">Clique em uma célula, em um nível (linha) ou em um poder (coluna) para filtrar. Os números contam os atos já coletados.</p>
+            </div>
+        </div>
+        <div id="matriz" class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-sm p-3 sm:p-4 overflow-x-auto"></div>
+    </section>
+
+    <!-- Filtros + lista -->
+    <section aria-labelledby="tLista">
+        <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-4 mb-4">
+            <div>
+                <h2 id="tLista" class="text-lg font-bold flex items-center"><i class="fa-solid fa-newspaper text-brand-600 mr-2.5" aria-hidden="true"></i>Leis, medidas provisórias e decisões</h2>
+                <p id="contagem" class="text-xs text-slate-500 dark:text-slate-400" aria-live="polite">Carregando…</p>
+            </div>
+            <div class="flex flex-wrap items-center gap-2 text-xs">
+                <div class="relative">
+                    <label for="busca" class="sr-only">Buscar</label>
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400" aria-hidden="true"></i>
+                    <input id="busca" type="search" maxlength="120" placeholder="FGTS, MEI, imposto, MPV 1394…"
+                           class="w-56 pl-8 pr-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                </div>
+                <label class="sr-only" for="filtroCategoria">Área de impacto</label>
+                <select id="filtroCategoria" class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-2"></select>
+                <label class="sr-only" for="filtroStatus">Situação</label>
+                <select id="filtroStatus" class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-2"></select>
+                <label class="sr-only" for="ordem">Ordenar por</label>
+                <select id="ordem" class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-2">
+                    <option value="recentes">Mais recentes</option>
+                    <option value="impacto">Maior impacto no bolso</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="chipsFiltro" class="flex flex-wrap gap-2 mb-3"></div>
+        <p id="notaFiltros" class="hidden text-[11px] text-slate-500 dark:text-slate-400 mb-3"><i class="fa-solid fa-circle-info mr-1" aria-hidden="true"></i>Atos que ainda não têm tradução em linguagem simples não podem ser classificados por perfil ou área; por isso não aparecem quando um desses filtros está ativo.</p>
+
+        <div id="lista" class="space-y-5"></div>
+        <div class="text-center mt-6"><button id="btnMais" type="button" class="hidden px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold">Carregar mais</button></div>
+    </section>
+</main>
+
+<div id="rodape"></div>
+
+<script src="assets/comum.js"></script>
+<script>
+renderLayout('politicas');
+
+/* ---------- estado ---------- */
+const prefs = lerPrefs();
+const P = {
+    perfil: prefs.perfil || '', municipio: prefs.municipio || null,
+    nivel: '', instancia: '', categoria: 'all', status: 'all', q: '', ordem: 'recentes',
+    pagina: 1, total: 0, itens: [], perfis: [], categorias: [], statusLista: [], resumo: null,
+};
+const NOME_NIVEL = { federal: 'Federal', estadual: 'Estadual', municipal: 'Municipal' };
+const NOME_INST = { executivo: 'Executivo', legislativo: 'Legislativo', judiciario: 'Judiciário' };
+const ICONE_INST = { executivo: 'fa-building-columns', legislativo: 'fa-gavel', judiciario: 'fa-scale-balanced' };
+const NOME_TIPO = {
+    MPV: 'Medida Provisória', PL: 'Projeto de Lei', PLP: 'Projeto de Lei Complementar',
+    PEC: 'Proposta de Emenda à Constituição', PLN: 'Projeto de Lei do Congresso Nacional',
+    ADPF: 'ADPF', ADI: 'ADI',
+};
+const RELEVANCIA = {
+    alta: ['Impacto alto no bolso', 'bg-rose-100 text-rose-800 dark:bg-rose-950/70 dark:text-rose-300'],
+    media: ['Impacto médio', 'bg-amber-100 text-amber-800 dark:bg-amber-950/70 dark:text-amber-300'],
+    baixa: ['Impacto baixo', 'bg-sky-100 text-sky-800 dark:bg-sky-950/70 dark:text-sky-300'],
+    nenhuma: ['Sem efeito direto', 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300'],
+};
+
+/* ====================================================================== *
+ *  Matriz poder × nível
+ * ====================================================================== */
+const celula = (n, i) => (P.resumo ? P.resumo.celulas.find((c) => c.nivel === n && c.instancia === i) : null);
+
+function renderMatriz() {
+    const r = P.resumo;
+    if (!r) return;
+    const filtrando = P.nivel || P.instancia;
+    const marcada = (n, i) => filtrando && (!P.nivel || P.nivel === n) && (!P.instancia || P.instancia === i);
+    const cabecalhoCol = r.instancias.map((i) => `<th scope="col" class="p-1.5 font-semibold">
+        <button type="button" data-inst="${i.id}" aria-pressed="${P.instancia === i.id}"
+            class="w-full px-2 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 ${P.instancia === i.id ? 'bg-brand-100 dark:bg-brand-950 text-brand-800 dark:text-brand-300' : ''}">
+            <i class="fa-solid ${ICONE_INST[i.id]} mr-1 text-slate-400" aria-hidden="true"></i>${esc(i.nome)}</button></th>`).join('');
+    const linhas = r.niveis.map((n) => `<tr>
+        <th scope="row" class="p-1.5 text-left font-semibold align-middle">
+            <button type="button" data-nivel="${n.id}" aria-pressed="${P.nivel === n.id}"
+                class="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 ${P.nivel === n.id ? 'bg-brand-100 dark:bg-brand-950 text-brand-800 dark:text-brand-300' : ''}">${esc(n.nome)}</button></th>
+        ${r.instancias.map((i) => {
+            const c = celula(n.id, i.id);
+            if (!c.aplicavel) {
+                return `<td class="p-1.5"><div class="rounded-xl border border-dashed border-slate-200 dark:border-slate-700 p-3 text-center text-[11px] text-slate-400" title="${esc(c.observacao)}">Não se aplica</div></td>`;
+            }
+            const cor = c.fonte_conectada
+                ? 'border-emerald-300 dark:border-emerald-800 bg-emerald-50/60 dark:bg-emerald-950/20'
+                : 'border-amber-300 dark:border-amber-800 bg-amber-50/60 dark:bg-amber-950/20';
+            return `<td class="p-1.5"><button type="button" data-nivel="${n.id}" data-inst="${i.id}" aria-pressed="${marcada(n.id, i.id)}"
+                class="w-full text-left rounded-xl border p-3 transition hover:shadow ${cor} ${marcada(n.id, i.id) ? 'ring-2 ring-brand-500' : ''}">
+                <span class="block text-2xl font-extrabold leading-none">${c.total}</span>
+                <span class="block text-[11px] text-slate-500 dark:text-slate-400 mt-1">${c.traduzidas} traduzido(s)</span>
+                <span class="block mt-1.5 text-[10px] font-bold uppercase tracking-wide ${c.fonte_conectada ? 'text-emerald-700 dark:text-emerald-400' : 'text-amber-700 dark:text-amber-400'}">
+                    <i class="fa-solid ${c.fonte_conectada ? 'fa-plug-circle-check' : 'fa-plug-circle-xmark'} mr-1" aria-hidden="true"></i>${c.fonte_conectada ? 'fonte conectada' : 'fonte a conectar'}</span>
+            </button></td>`;
+        }).join('')}</tr>`).join('');
+    $('matriz').innerHTML = `<table class="w-full text-sm min-w-[560px]"><thead><tr><th class="p-1.5"><span class="sr-only">Nível</span></th>${cabecalhoCol}</tr></thead><tbody>${linhas}</tbody></table>`;
+}
+
+$('matriz').addEventListener('click', (ev) => {
+    const b = ev.target.closest('button[data-nivel], button[data-inst]');
+    if (!b) return;
+    const n = b.dataset.nivel || '', i = b.dataset.inst || '';
+    if (n && i) { // célula: alterna o par
+        const igual = P.nivel === n && P.instancia === i;
+        P.nivel = igual ? '' : n; P.instancia = igual ? '' : i;
+    } else if (n) { P.nivel = P.nivel === n ? '' : n; P.instancia = ''; } // linha
+    else { P.instancia = P.instancia === i ? '' : i; P.nivel = ''; }      // coluna
+    atualizarFiltros();
+});
+
+/* ====================================================================== *
+ *  Filtros
+ * ====================================================================== */
+function renderChips() {
+    const chips = [];
+    if (P.nivel) chips.push(['nivel', `Nível: ${NOME_NIVEL[P.nivel]}`]);
+    if (P.instancia) chips.push(['instancia', `Poder: ${NOME_INST[P.instancia]}`]);
+    if (P.perfil) chips.push(['perfil', `Perfil: ${(P.perfis.find((p) => p.id === P.perfil) || {}).nome || P.perfil}`]);
+    if (P.categoria !== 'all') chips.push(['categoria', `Área: ${(P.categorias.find((c) => c.id === P.categoria) || {}).nome || P.categoria}`]);
+    if (P.status !== 'all') chips.push(['status', `Situação: ${P.status}`]);
+    if (P.q) chips.push(['q', `Busca: “${P.q}”`]);
+    $('chipsFiltro').innerHTML = chips.map(([k, t]) => `<button type="button" data-remover="${k}"
+        class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-brand-100 dark:bg-brand-950 text-brand-800 dark:text-brand-300 hover:opacity-80">
+        ${esc(t)}<i class="fa-solid fa-xmark text-[10px]" aria-hidden="true"></i><span class="sr-only">remover filtro</span></button>`).join('');
+    $('notaFiltros').classList.toggle('hidden', !(P.perfil || P.categoria !== 'all'));
+}
+$('chipsFiltro').addEventListener('click', (ev) => {
+    const b = ev.target.closest('[data-remover]');
+    if (!b) return;
+    const k = b.dataset.remover;
+    if (k === 'nivel') P.nivel = '';
+    else if (k === 'instancia') P.instancia = '';
+    else if (k === 'perfil') { P.perfil = ''; salvarPrefsParciais({ perfil: '' }); $('perfilSelect').value = ''; }
+    else if (k === 'categoria') { P.categoria = 'all'; $('filtroCategoria').value = 'all'; }
+    else if (k === 'status') { P.status = 'all'; $('filtroStatus').value = 'all'; }
+    else if (k === 'q') { P.q = ''; $('busca').value = ''; }
+    atualizarFiltros();
+});
+$('perfilSelect').addEventListener('change', (ev) => { P.perfil = ev.target.value; salvarPrefsParciais({ perfil: P.perfil }); atualizarFiltros(); });
+$('filtroCategoria').addEventListener('change', (ev) => { P.categoria = ev.target.value; atualizarFiltros(); });
+$('filtroStatus').addEventListener('change', (ev) => { P.status = ev.target.value; atualizarFiltros(); });
+$('ordem').addEventListener('change', (ev) => { P.ordem = ev.target.value; atualizarFiltros(); });
+$('busca').addEventListener('input', debounce((ev) => { P.q = ev.target.value.trim(); atualizarFiltros(); }, 300));
+$('btnMais').addEventListener('click', () => { P.pagina += 1; carregar(true); });
+
+function atualizarFiltros() { renderMatriz(); renderChips(); P.pagina = 1; carregar(false); }
+
+/* ====================================================================== *
+ *  Cartões
+ * ====================================================================== */
+const meusVotos = ler('ic_votos', {});
+function tokenAnonimo() {
+    let t = ler('ic_token', null);
+    if (!t) {
+        const b = new Uint8Array(24); crypto.getRandomValues(b);
+        t = Array.from(b, (x) => x.toString(16).padStart(2, '0')).join('');
+        guardar('ic_token', t);
+    }
+    return t;
+}
+function placarHtml(v) {
+    const t = v.total || 0;
+    const pct = (n) => (t ? Math.round((n / t) * 100) : 0);
+    if (!t) return '<p class="text-[11px] text-slate-500">Ainda sem votos. Seja o primeiro a opinar.</p>';
+    return `<div class="flex h-2.5 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-700" role="img" aria-label="${pct(v.concordo)}% concordam, ${pct(v.concordo_com_ajustes)}% concordam com ajustes, ${pct(v.discordo)}% discordam">
+            <div class="bg-emerald-500" style="width:${pct(v.concordo)}%"></div><div class="bg-amber-400" style="width:${pct(v.concordo_com_ajustes)}%"></div><div class="bg-rose-500" style="width:${pct(v.discordo)}%"></div></div>
+        <p class="text-[11px] text-slate-500 mt-1.5">${t} opinião(ões) · ${pct(v.concordo)}% concordam · ${pct(v.concordo_com_ajustes)}% com ajustes · ${pct(v.discordo)}% discordam</p>`;
+}
+const OPCOES_VOTO = [
+    ['concordo', 'Concordo', 'fa-thumbs-up', { base: 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:border-emerald-800 dark:text-emerald-300', ativo: 'border-emerald-600 bg-emerald-600 text-white' }],
+    ['concordo_com_ajustes', 'Com ajustes', 'fa-sliders', { base: 'border-amber-200 bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:border-amber-800 dark:text-amber-300', ativo: 'border-amber-500 bg-amber-500 text-white' }],
+    ['discordo', 'Discordo', 'fa-thumbs-down', { base: 'border-rose-200 bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:border-rose-800 dark:text-rose-300', ativo: 'border-rose-600 bg-rose-600 text-white' }],
+];
+function botoesVoto(id) {
+    const meu = meusVotos[id];
+    return OPCOES_VOTO.map(([valor, rotulo, icone, cor]) => `<button type="button" data-voto="${valor}" data-id="${id}" aria-pressed="${meu === valor}"
+        class="p-2 rounded-lg border text-xs font-semibold transition ${meu === valor ? cor.ativo : cor.base}"><i class="fa-solid ${icone} block mb-1" aria-hidden="true"></i>${rotulo}</button>`).join('');
+}
+function linhaDoTempo(ev) {
+    if (!ev || !ev.length) return '<p class="text-xs text-slate-500">Sem andamentos registrados.</p>';
+    return `<ol class="relative border-l-2 border-slate-200 dark:border-slate-700 ml-2 space-y-3">${ev.map((e) => `
+        <li class="ml-4"><span class="absolute -left-[7px] mt-1 w-3 h-3 rounded-full ${e.status === 'current' ? 'bg-brand-500 ring-4 ring-brand-500/20' : 'bg-emerald-500'}"></span>
+            <p class="text-xs font-semibold">${esc(e.etapa)} <span class="font-normal text-slate-500">· ${esc(e.orgao)} · ${esc(fmtData(e.data))}</span></p>
+            ${e.detalhe ? `<p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">${esc(e.detalhe)}</p>` : ''}</li>`).join('')}</ol>`;
+}
+
+function cartao(p) {
+    const [rotRel, clsRel] = RELEVANCIA[p.relevancia] || RELEVANCIA.nenhuma;
+    const nomesPerfis = (p.perfis || []).map((id) => (id === 'todos' ? 'Todos' : (P.perfis.find((x) => x.id === id) || {}).nome || id));
+    const nomesCats = (p.categorias || []).map((id) => (P.categorias.find((x) => x.id === id) || {}).nome || id);
+    const traduzida = p.traduzida;
+    return `<article class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-sm overflow-hidden">
+        <div class="p-5 sm:p-6">
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                <div class="flex flex-wrap items-center gap-2">
+                    <span class="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200">
+                        <i class="fa-solid ${ICONE_INST[p.instancia] || 'fa-landmark'} mr-1 text-slate-400" aria-hidden="true"></i>${esc(NOME_NIVEL[p.nivel] || p.nivel)} · ${esc(NOME_INST[p.instancia] || p.instancia)}</span>
+                    ${p.status ? `<span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold border bg-sky-100 text-sky-800 border-sky-300 dark:bg-sky-950/80 dark:text-sky-300 dark:border-sky-800">${esc(p.status)}</span>` : ''}
+                    <span class="text-xs text-slate-400 font-mono">${esc(p.identificacao)}</span>
+                    ${traduzida ? `<span class="px-2 py-0.5 rounded-full text-[11px] font-semibold ${clsRel}">${esc(rotRel)}</span>` : ''}
+                </div>
+                <span class="text-xs text-slate-400">${p.data_apresentacao ? `<i class="fa-regular fa-calendar mr-1" aria-hidden="true"></i>${esc(fmtData(p.data_apresentacao))}` : ''}</span>
+            </div>
+            ${traduzida ? `
+                <h3 class="text-lg font-bold leading-snug">${esc(p.titulo)}</h3>
+                <p class="mt-2 text-sm text-slate-600 dark:text-slate-300 leading-relaxed">${esc(p.resumo)}</p>
+                <div class="mt-4 p-4 bg-slate-50 dark:bg-slate-900/80 rounded-xl border-l-4 border-brand-500">
+                    <span class="text-xs font-bold uppercase tracking-wider block"><i class="fa-solid fa-bolt text-brand-600 mr-1" aria-hidden="true"></i>Como afeta o seu dia a dia</span>
+                    <p class="text-sm text-slate-700 dark:text-slate-300 font-medium mt-1">${esc(p.impacto_pratico)}</p>
+                </div>
+                <p class="mt-3 text-[11px] text-slate-500">${nomesPerfis.length ? `<b>Quem é afetado:</b> ${esc(nomesPerfis.join(', '))} · ` : ''}${nomesCats.length ? `<b>Áreas:</b> ${esc(nomesCats.join(', '))}` : ''}</p>`
+            : `
+                <h3 class="text-base font-bold leading-snug">${esc(NOME_TIPO[p.sigla_tipo] || p.sigla_tipo)} ${esc((p.identificacao.split(' ')[1]) || '')}</h3>
+                <p class="mt-2 text-sm text-slate-700 dark:text-slate-300 leading-relaxed">${esc(p.ementa_oficial)}</p>
+                <p class="mt-3 text-[11px] text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 rounded-lg px-3 py-2">
+                    <i class="fa-solid fa-hourglass-half mr-1" aria-hidden="true"></i>Tradução em linguagem simples ainda não gerada. Acima, o texto oficial (ementa).</p>`}
+            ${p.autoria ? `<p class="mt-3 text-[11px] text-slate-500"><b>Autoria:</b> ${esc(p.autoria)}</p>` : ''}
+        </div>
+        <details class="border-t border-slate-200 dark:border-slate-700">
+            <summary class="px-5 sm:px-6 py-3 flex items-center justify-between text-xs font-bold text-brand-700 dark:text-brand-400 hover:bg-slate-50 dark:hover:bg-slate-900/40">
+                <span>Ver tramitação${traduzida ? ', análise' : ''} e opinar</span><i class="fa-solid fa-chevron-down text-[10px] chev" aria-hidden="true"></i></summary>
+            <div class="bg-slate-50/80 dark:bg-slate-900/50 p-5 sm:p-6 space-y-6">
+                ${traduzida ? `<div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                    <div class="bg-emerald-50/70 dark:bg-emerald-950/30 p-3.5 rounded-xl border border-emerald-200 dark:border-emerald-800/50">
+                        <span class="font-bold text-emerald-800 dark:text-emerald-300 block mb-1.5"><i class="fa-solid fa-circle-check mr-1.5" aria-hidden="true"></i>Argumento geralmente apresentado a favor</span>
+                        <p class="text-slate-700 dark:text-slate-300">${esc(p.ponto_positivo)}</p></div>
+                    <div class="bg-amber-50/70 dark:bg-amber-950/30 p-3.5 rounded-xl border border-amber-200 dark:border-amber-800/50">
+                        <span class="font-bold text-amber-800 dark:text-amber-300 block mb-1.5"><i class="fa-solid fa-triangle-exclamation mr-1.5" aria-hidden="true"></i>Ponto de atenção geralmente apontado</span>
+                        <p class="text-slate-700 dark:text-slate-300">${esc(p.ponto_atencao)}</p></div>
+                </div>` : ''}
+                <div><h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3"><i class="fa-solid fa-timeline text-brand-500 mr-1.5" aria-hidden="true"></i>Linha do tempo de tramitação</h4>${linhaDoTempo(p.linha_do_tempo)}</div>
+                ${traduzida ? `<div class="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 text-xs">
+                    <span class="font-bold text-slate-500 block mb-1">Ementa oficial</span>
+                    <p class="font-mono text-slate-600 dark:text-slate-400">${esc(p.ementa_oficial)}</p>
+                    <p class="mt-2 text-[11px] text-slate-400">${p.texto_analisado === 'ementa' ? 'A análise usou apenas a ementa (texto integral indisponível).' : 'A análise usou o texto integral publicado.'}</p></div>` : ''}
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-2">Opinião da comunidade <span class="normal-case font-normal">(consulta informal, não é pesquisa)</span></span>
+                    <div id="votos-${p.id}" class="mb-3">${placarHtml(p.votos)}</div>
+                    <div id="botoes-${p.id}" class="grid grid-cols-3 gap-2 max-w-md">${botoesVoto(p.id)}</div>
+                </div>
+                <p class="text-xs">${p.url_fonte ? `<a href="${esc(urlSegura(p.url_fonte))}" target="_blank" rel="noopener" class="text-brand-700 dark:text-brand-400 font-semibold hover:underline"><i class="fa-solid fa-landmark mr-1" aria-hidden="true"></i>Ver no site oficial<i class="fa-solid fa-arrow-up-right-from-square text-[9px] ml-1" aria-hidden="true"></i></a>` : ''}</p>
+            </div>
+        </details>
+    </article>`;
+}
+
+/* ====================================================================== *
+ *  Lista agrupada por nível e poder
+ * ====================================================================== */
+function cabecalhoGrupo(nivel, instancia) {
+    const c = celula(nivel, instancia);
+    return `<div class="pt-2 flex flex-wrap items-baseline gap-x-3 border-b border-slate-200 dark:border-slate-700 pb-2">
+        <h3 class="text-sm font-extrabold uppercase tracking-wider text-slate-700 dark:text-slate-200">
+            <i class="fa-solid ${ICONE_INST[instancia] || 'fa-landmark'} mr-1.5 text-brand-600" aria-hidden="true"></i>${esc(NOME_NIVEL[nivel] || nivel)} · ${esc(NOME_INST[instancia] || instancia)}</h3>
+        ${c ? `<span class="text-[11px] text-slate-500">${c.total} ato(s) · fonte: ${esc(c.fonte)}</span>` : ''}</div>`;
+}
+
+function painelSemFonte(celulas) {
+    const itens = celulas.map((c) => `<li class="mt-3"><p class="text-sm font-semibold">${esc(c.nome_nivel)} · ${esc(c.nome_instancia)}</p>
+        <p class="text-xs text-slate-600 dark:text-slate-400 mt-0.5"><b>Fonte prevista:</b> ${esc(c.fonte)}</p>
+        <p class="text-xs text-slate-600 dark:text-slate-400">${esc(c.observacao)}</p></li>`).join('');
+    return `<div class="rounded-2xl border border-dashed border-amber-300 dark:border-amber-800 bg-amber-50/60 dark:bg-amber-950/20 p-6">
+        <h4 class="font-bold text-amber-900 dark:text-amber-200"><i class="fa-solid fa-plug-circle-xmark mr-2" aria-hidden="true"></i>Ainda não há fonte de dados conectada para esta seleção</h4>
+        <p class="text-xs text-amber-900/80 dark:text-amber-200/80 mt-1">Preferimos mostrar esta lacuna a preencher a tela com dados incompletos. Quando a fonte for conectada, os atos aparecerão aqui.</p>
+        <ul>${itens}</ul></div>`;
+}
+
+function celulasSelecionadas() {
+    if (!P.resumo) return [];
+    return P.resumo.celulas.filter((c) => c.aplicavel && (!P.nivel || c.nivel === P.nivel) && (!P.instancia || c.instancia === P.instancia));
+}
+
+let reqLista = 0;
+async function carregar(acrescentar = false) {
+    const minha = ++reqLista;
+    const params = new URLSearchParams({ ordem: P.ordem, pagina: P.pagina, por_pagina: 10, incluir_pendentes: true, agrupar: true });
+    if (P.nivel) params.set('nivel', P.nivel);
+    if (P.instancia) params.set('instancia', P.instancia);
+    if (P.perfil) params.set('perfil', P.perfil);
+    if (P.categoria !== 'all') params.set('categoria', P.categoria);
+    if (P.status !== 'all') params.set('status', P.status);
+    if (P.q) params.set('q', P.q);
+    try {
+        const r = await api('/api/proposicoes?' + params);
+        if (minha !== reqLista) return;
+        P.total = r.total;
+        P.itens = acrescentar ? P.itens.concat(r.itens) : r.itens;
+        $('contagem').textContent = `Mostrando ${P.itens.length} de ${r.total} ato(s)`;
+
+        if (!P.itens.length) {
+            const sel = celulasSelecionadas();
+            const semFonte = sel.filter((c) => !c.fonte_conectada);
+            $('lista').innerHTML = (sel.length && semFonte.length === sel.length)
+                ? painelSemFonte(semFonte)
+                : `<div class="text-center py-12 bg-white dark:bg-slate-800 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700">
+                    <i class="fa-solid fa-folder-open text-4xl text-slate-300 mb-3" aria-hidden="true"></i><h4 class="font-semibold">Nenhum ato encontrado</h4>
+                    <p class="text-xs text-slate-500 mt-1">Ajuste os filtros — ou rode o coletor (<code>python backend/coletor.py</code>) para trazer dados.</p></div>`;
+            $('btnMais').classList.add('hidden');
+            return;
+        }
+
+        let html = '', anterior = '';
+        for (const p of P.itens) {
+            const chave = p.nivel + '|' + p.instancia;
+            if (chave !== anterior) { html += cabecalhoGrupo(p.nivel, p.instancia); anterior = chave; }
+            html += cartao(p);
+        }
+        // Se a seleção inclui células sem fonte, avisa no fim (sem esconder o que existe).
+        const semFonte = celulasSelecionadas().filter((c) => !c.fonte_conectada);
+        if (semFonte.length && S_MOSTRAR_AVISO_PARCIAL()) html += painelSemFonte(semFonte);
+        $('lista').innerHTML = html;
+        $('btnMais').classList.toggle('hidden', P.itens.length >= r.total);
+    } catch (e) { if (minha === reqLista) { $('lista').innerHTML = mensagemErro(e); $('contagem').textContent = ''; } }
+}
+// O aviso de "fontes a conectar" aparece quando há filtro de nível/poder (visão focada); na visão geral a matriz já informa.
+const S_MOSTRAR_AVISO_PARCIAL = () => Boolean(P.nivel || P.instancia);
+
+$('lista').addEventListener('click', async (ev) => {
+    const b = ev.target.closest('[data-voto]');
+    if (!b) return;
+    const id = Number(b.dataset.id), voto = b.dataset.voto;
+    try {
+        const r = await api(`/api/proposicoes/${id}/voto`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ voto, token: tokenAnonimo(), perfil: P.perfil || null }),
+        });
+        meusVotos[id] = voto; guardar('ic_votos', meusVotos);
+        const placar = $('votos-' + id); if (placar) placar.innerHTML = placarHtml(r.placar);
+        const botoes = $('botoes-' + id); if (botoes) botoes.innerHTML = botoesVoto(id);
+        const item = P.itens.find((x) => x.id === id); if (item) item.votos = r.placar;
+    } catch (e) { alert('Não foi possível registrar o voto: ' + e.message); }
+});
+
+/* ====================================================================== *
+ *  Inicialização
+ * ====================================================================== */
+async function iniciar() {
+    if (P.municipio) {
+        $('cidadeInfo').innerHTML = `<i class="fa-solid fa-location-dot mr-1" aria-hidden="true"></i>Sua cidade: <b>${esc(P.municipio.nome)}/${esc(P.municipio.uf)}</b> · <a class="underline" href="index.html">alterar</a>`;
+    } else {
+        $('cidadeInfo').innerHTML = `<i class="fa-solid fa-location-dot mr-1" aria-hidden="true"></i>Cidade não escolhida · <a class="underline" href="index.html">escolher</a>`;
+    }
+    try {
+        const [perfis, categorias, statusLista, resumo] = await Promise.all([
+            api('/api/perfis'), api('/api/categorias'), api('/api/status'), api('/api/politicas/resumo'),
+        ]);
+        P.perfis = perfis; P.categorias = categorias; P.statusLista = statusLista; P.resumo = resumo;
+        if (P.perfil && !perfis.some((p) => p.id === P.perfil)) P.perfil = '';
+    } catch (e) {
+        $('matriz').innerHTML = mensagemErro(e); $('lista').innerHTML = ''; $('contagem').textContent = '';
+        return;
+    }
+    $('perfilSelect').innerHTML = '<option value="">Todos os perfis</option>' + P.perfis.map((p) => `<option value="${esc(p.id)}">${esc(p.nome)}</option>`).join('');
+    $('perfilSelect').value = P.perfil;
+    $('filtroCategoria').innerHTML = '<option value="all">Todas as áreas</option>' + P.categorias.map((c) => `<option value="${esc(c.id)}">${esc(c.nome)}</option>`).join('');
+    $('filtroStatus').innerHTML = '<option value="all">Todas as situações</option>' + P.statusLista.map((s) => `<option value="${esc(s)}">${esc(s)}</option>`).join('');
+
+    // Link direto: politicas.html#municipal-executivo, #federal, #judiciario …
+    const h = location.hash.replace('#', '');
+    const [a, b] = h.split('-');
+    if (NOME_NIVEL[a]) P.nivel = a;
+    if (NOME_INST[b || a]) P.instancia = b || a;
+
+    renderMatriz(); renderChips(); carregar(false);
+}
+iniciar();
+</script>
+</body>
+</html>

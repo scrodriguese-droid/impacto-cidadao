@@ -64,6 +64,8 @@ class Item:
     ementa: str
     origem: str                     # executivo | alto_impacto
     data_apresentacao: date | None = None
+    autoria: str = ""               # ex.: "Poder Executivo", nomes de parlamentares
+    nivel: str = "federal"          # federal | estadual | municipal (hoje só há fontes federais)
     url_fonte: str = ""
     url_inteiro_teor: str = ""
     situacao: str = ""
@@ -77,6 +79,12 @@ class Item:
         if self.numero and self.ano:
             return f"{self.sigla_tipo} {self.numero}/{self.ano}"
         return f"{self.sigla_tipo} {self.id_externo}"
+
+    @property
+    def instancia(self) -> str:
+        """Poder de origem: o que nasce no Executivo é do Executivo; propostas do Congresso, do Legislativo.
+        (Judiciário — ex.: ADPF/ADI do STF — entrará quando houver fonte conectada.)"""
+        return "executivo" if self.origem == "executivo" else "legislativo"
 
 
 @dataclass
@@ -170,15 +178,20 @@ def descobrir_camara(camara: Camara, tipos: list[str], desde: date, args: argpar
                     continue
 
                 origem = "executivo"
-                if ("camara", id_ext) not in conhecidos and tipo != "MPV":
+                autoria = "Poder Executivo (Presidência da República)"  # MPV é sempre do Executivo
+                if tipo != "MPV":
                     try:
-                        executivo = Camara.autoria_executivo(camara.autores(id_ext))
+                        autores = camara.autores(id_ext)
                     except ErroFonte as exc:
                         log.warning("Câmara: autores de %s indisponíveis: %s", id_ext, exc)
                         continue
-                    if not executivo:
+                    nomes = [a.get("nome") for a in autores if a.get("nome")]
+                    autoria = ", ".join(nomes[:3]) + (f" e outros {len(nomes) - 3}" if len(nomes) > 3 else "")
+                    if not Camara.autoria_executivo(autores):
                         score = len(set(m.lower() for m in _ALTO_IMPACTO.findall(ementa)))
-                        if (tipo in TIPOS_QUE_PODEM_SER_ALTO_IMPACTO and score >= 2
+                        if ("camara", id_ext) in conhecidos:
+                            origem = "alto_impacto"          # já aceita antes: mantém
+                        elif (tipo in TIPOS_QUE_PODEM_SER_ALTO_IMPACTO and score >= 2
                                 and alto_impacto < args.max_alto_impacto):
                             origem = "alto_impacto"
                             alto_impacto += 1
@@ -187,7 +200,7 @@ def descobrir_camara(camara: Camara, tipos: list[str], desde: date, args: argpar
                 achados.append(Item(
                     fonte="camara", id_externo=id_ext, sigla_tipo=r.get("siglaTipo", tipo),
                     numero=r.get("numero"), ano=r.get("ano"), ementa=ementa, origem=origem,
-                    data_apresentacao=_data(r.get("dataApresentacao")),
+                    data_apresentacao=_data(r.get("dataApresentacao")), autoria=autoria,
                 ))
     return achados
 
@@ -218,6 +231,7 @@ def descobrir_senado(senado: Senado, tipos: list[str], desde: date, args: argpar
                     sigla_tipo=m.group(1) if m else tipo,
                     numero=int(m.group(2)) if m else None, ano=int(m.group(3)) if m else ano,
                     ementa=ementa, origem="executivo", data_apresentacao=apresentada,
+                    autoria=(p.get("autoria") or "Poder Executivo"),
                     url_fonte=Senado.url_pagina(p), url_inteiro_teor=p.get("urlDocumento") or "",
                     situacao=p.get("situacaoAtual") or "", descricao_tipo=p.get("tipoDocumento") or "",
                 ))
@@ -267,7 +281,8 @@ def gravar(item: Item, *, analise: AnaliseProposicao | None, status: str, erro: 
     dados: dict[str, Any] = {
         "fonte": item.fonte, "id_externo": item.id_externo, "sigla_tipo": item.sigla_tipo,
         "numero": item.numero, "ano": item.ano, "identificacao": item.identificacao,
-        "ementa_oficial": item.ementa, "origem": item.origem, "url_fonte": item.url_fonte or None,
+        "ementa_oficial": item.ementa, "origem": item.origem, "instancia": item.instancia,
+        "nivel": item.nivel, "autoria": item.autoria or None, "url_fonte": item.url_fonte or None,
         "url_inteiro_teor": item.url_inteiro_teor or None, "data_apresentacao": item.data_apresentacao,
         "situacao_atual": item.situacao or None, "linha_do_tempo": Jsonb(montar_linha_do_tempo(item.tramitacoes)),
         "titulo_simples": analise.titulo_simples if analise else None,
@@ -286,8 +301,14 @@ def gravar(item: Item, *, analise: AnaliseProposicao | None, status: str, erro: 
     }
     colunas = ", ".join(dados)
     marcadores = ", ".join(f"%({c})s" for c in dados)
-    # `origem` é decidida só na primeira coleta (reprocessar não deve reclassificar).
-    atualizar = ", ".join(f"{c} = EXCLUDED.{c}" for c in dados if c not in ("fonte", "id_externo", "origem"))
+    # origem/instância/nível são decididos na primeira coleta (reprocessar não reclassifica);
+    # a autoria só é sobrescrita quando a nova coleta traz um valor.
+    fixos = {"fonte", "id_externo", "origem", "instancia", "nivel"}
+    atualizar = ", ".join(
+        "autoria = COALESCE(EXCLUDED.autoria, proposicoes_analisadas.autoria)" if c == "autoria"
+        else f"{c} = EXCLUDED.{c}"
+        for c in dados if c not in fixos
+    )
     with db.conexao_avulsa() as conn:
         conn.execute(
             f"INSERT INTO proposicoes_analisadas ({colunas}) VALUES ({marcadores}) "
