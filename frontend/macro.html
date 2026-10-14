@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Indicadores macro — ImpactoCidadão</title>
+    <meta name="description" content="Inflação, juros, desemprego, resultado fiscal e dívida pública do Brasil, com dados oficiais do Banco Central, IBGE e Tesouro Nacional.">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="assets/tailwind-config.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <style>
+        body { font-family: 'Inter', system-ui, sans-serif; }
+        :focus-visible { outline: 2px solid #0284c7; outline-offset: 2px; }
+        details > summary { cursor: pointer; }
+        .grafico { position: relative; height: 320px; }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-full flex flex-col transition-colors duration-200">
+
+<a href="#conteudo" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-white focus:text-slate-900 focus:p-3">Ir para o conteúdo</a>
+<div id="cabecalho"></div>
+
+<main id="conteudo" class="max-w-6xl mx-auto px-4 sm:px-6 pt-6 pb-10 flex-grow w-full space-y-10">
+    <header>
+        <h1 class="text-2xl font-extrabold tracking-tight">Indicadores macroeconômicos do Brasil</h1>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Séries oficiais do Banco Central, do IBGE e do Tesouro Nacional, exatamente como publicadas. Nada aqui é estimado por nós.</p>
+    </header>
+
+    <!-- 1. Cartões -->
+    <section aria-labelledby="h-cartoes">
+        <h2 id="h-cartoes" class="sr-only">Valores mais recentes</h2>
+        <div id="cartoes" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"></div>
+        <p id="cartoesInfo" class="text-[11px] text-slate-400 mt-2"></p>
+    </section>
+
+    <!-- 2. Explorador -->
+    <section aria-labelledby="h-explorador">
+        <h2 id="h-explorador" class="text-xl font-bold">Explorar e comparar</h2>
+        <p class="text-sm text-slate-500 dark:text-slate-400">Escolha indicadores, o período e veja a série histórica. Dá para comparar até duas unidades diferentes no mesmo gráfico (eixo esquerdo e direito).</p>
+
+        <div class="mt-3 flex flex-wrap gap-2" id="atalhos"></div>
+
+        <div class="mt-4 grid lg:grid-cols-[18rem_1fr] gap-4">
+            <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 space-y-4 self-start">
+                <label class="block text-xs font-semibold">Frequência
+                    <select id="filtroFreq" class="mt-1 w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-2 text-sm font-normal"></select></label>
+                <fieldset>
+                    <legend class="text-xs font-semibold">Indicadores</legend>
+                    <div id="listaIndicadores" class="mt-2 space-y-3 max-h-80 overflow-auto pr-1"></div>
+                </fieldset>
+                <div>
+                    <p class="text-xs font-semibold">Período</p>
+                    <div class="mt-1 grid grid-cols-4 gap-1" id="presets"></div>
+                    <div class="mt-2 flex items-center gap-1.5 text-xs">
+                        <label class="sr-only" for="dtIni">De</label><input id="dtIni" type="date" class="flex-1 min-w-0 px-2 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700">
+                        <span class="text-slate-400">até</span>
+                        <label class="sr-only" for="dtFim">Até</label><input id="dtFim" type="date" class="flex-1 min-w-0 px-2 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700">
+                    </div>
+                </div>
+            </div>
+
+            <div class="min-w-0 space-y-4">
+                <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
+                    <div id="avisoGrafico" class="hidden mb-2 text-xs text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 rounded-lg px-3 py-2"></div>
+                    <div class="grafico"><canvas id="grafico" role="img" aria-label="Gráfico de linhas dos indicadores selecionados"></canvas></div>
+                    <p id="statusGrafico" class="text-xs text-slate-500 mt-2" aria-live="polite"></p>
+                </div>
+                <div id="fichas" class="space-y-3"></div>
+                <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <h3 class="font-bold">Dados originais</h3>
+                        <label class="sr-only" for="tabelaDe">Tabela de</label>
+                        <select id="tabelaDe" class="ml-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-sm"></select>
+                        <button id="btnCsv" type="button" class="ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold">
+                            <i class="fa-solid fa-file-csv" aria-hidden="true"></i>Exportar CSV (filtrado)</button>
+                    </div>
+                    <div class="mt-3 max-h-80 overflow-auto rounded-lg border border-slate-100 dark:border-slate-700">
+                        <table class="w-full text-sm"><thead class="sticky top-0 bg-slate-100 dark:bg-slate-700 text-left text-xs"><tr id="tabelaCab"></tr></thead><tbody id="tabelaCorpo"></tbody></table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. Resultado fiscal: explicação -->
+    <section aria-labelledby="h-fiscal">
+        <h2 id="h-fiscal" class="text-xl font-bold">Resultado fiscal: como ler</h2>
+        <div class="mt-3 grid sm:grid-cols-2 gap-4 text-sm">
+            <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4"><p class="font-bold">Resultado primário</p><p class="text-slate-600 dark:text-slate-400 mt-1">Receitas menos despesas <b>sem contar os juros</b> da dívida. Déficit primário significa que o governo gasta mais do que arrecada antes mesmo de pagar juros.</p></div>
+            <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4"><p class="font-bold">Juros nominais</p><p class="text-slate-600 dark:text-slate-400 mt-1">Quanto a dívida rendeu para quem a detém no período, incluindo a correção monetária. É uma despesa financeira, não um “déficit” por si só.</p></div>
+            <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4"><p class="font-bold">Resultado nominal</p><p class="text-slate-600 dark:text-slate-400 mt-1">Primário <b>+</b> juros nominais. É a necessidade total de financiamento do período — o que faz a dívida crescer. Nas séries do Banco Central, positivo é déficit.</p></div>
+            <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4"><p class="font-bold">Estoque da dívida</p><p class="text-slate-600 dark:text-slate-400 mt-1">É o saldo acumulado, não o fluxo do mês. Há medidas diferentes: dívida <b>líquida</b> do setor público (desconta ativos) e a <b>Dívida Pública Federal</b> (bruta, só da União) — veja a seção abaixo.</p></div>
+        </div>
+        <p class="text-[11px] text-slate-400 mt-2">Não calculamos aqui déficit operacional nem de pleno emprego como se fossem séries oficiais atuais. O cálculo aproximado do déficit operacional de municípios, estados e União está na página <a class="underline" href="economia.html">Economia</a>, rotulado como cálculo próprio.</p>
+    </section>
+
+    <!-- 4. Dívida pública -->
+    <section aria-labelledby="h-divida">
+        <h2 id="h-divida" class="text-xl font-bold">Dívida pública federal e títulos</h2>
+        <p class="text-sm text-slate-500 dark:text-slate-400">Fonte: Tesouro Transparente (Tesouro Nacional). Estoque bruto da Dívida Pública Federal (DPF), composição, vencimentos, emissões e resgates.</p>
+        <div id="dividaEstado" class="mt-3"></div>
+        <div id="dividaConteudo" class="hidden mt-3 space-y-4">
+            <div class="grid sm:grid-cols-3 gap-4" id="dividaCartoes"></div>
+            <div class="grid lg:grid-cols-2 gap-4">
+                <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4"><h3 class="font-bold text-sm">Evolução do estoque da DPF</h3><div class="grafico"><canvas id="gDpf"></canvas></div></div>
+                <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4"><h3 class="font-bold text-sm">Composição por tipo de título</h3><div class="grafico"><canvas id="gComp"></canvas></div></div>
+                <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4"><h3 class="font-bold text-sm">Perfil de vencimentos (por ano)</h3><div class="grafico"><canvas id="gVenc"></canvas></div></div>
+                <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4"><h3 class="font-bold text-sm">Emissões e resgates (R$ milhões, por mês)</h3><div class="grafico"><canvas id="gEmi"></canvas></div></div>
+            </div>
+            <div id="dividaFontes" class="text-[11px] text-slate-400 space-y-0.5"></div>
+
+            <div class="rounded-2xl border-2 border-teal-200 dark:border-teal-900 bg-white dark:bg-slate-800 p-4">
+                <h3 class="font-bold"><i class="fa-solid fa-piggy-bank text-teal-600 mr-1.5" aria-hidden="true"></i>Tesouro Direto <span class="text-xs font-normal text-slate-500">— só a parcela vendida a pessoas físicas</span></h3>
+                <p id="tdResumo" class="text-sm text-slate-600 dark:text-slate-400 mt-1"></p>
+                <div class="grid lg:grid-cols-2 gap-4 mt-3">
+                    <div><div class="grafico"><canvas id="gTd"></canvas></div></div>
+                    <div>
+                        <p class="text-xs font-semibold" id="tdTaxasTitulo"></p>
+                        <div class="mt-1 max-h-72 overflow-auto rounded-lg border border-slate-100 dark:border-slate-700">
+                            <table class="w-full text-xs"><thead class="sticky top-0 bg-slate-100 dark:bg-slate-700 text-left"><tr><th class="p-2">Título</th><th class="p-2">Vencimento</th><th class="p-2 text-right">Taxa compra</th><th class="p-2 text-right">PU compra</th></tr></thead><tbody id="tdTaxas"></tbody></table>
+                        </div>
+                    </div>
+                </div>
+                <div id="tdFontes" class="text-[11px] text-slate-400 mt-2"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. Metodologia -->
+    <section class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 text-sm">
+        <h2 class="text-lg font-bold">Metodologia e limitações</h2>
+        <ul class="mt-2 list-disc pl-5 space-y-1 text-slate-600 dark:text-slate-400">
+            <li>Valores e unidades são preservados como na fonte; lacunas ficam como lacunas (sem interpolar ou preencher).</li>
+            <li>Séries fiscais do Banco Central: <b>setor público consolidado</b>, NFSP “sem desvalorização cambial”. Não são o resultado do Governo Central (Tesouro).</li>
+            <li>Os códigos do SGS foram conferidos nos metadados do Banco Central e entre si (nominal = primário + juros).</li>
+            <li>Desemprego: PNAD Contínua do IBGE (tabela 6381), por trimestre móvel; o rótulo mostra o trimestre de cada ponto.</li>
+            <li>Dívida Pública Federal e Tesouro Direto vêm de arquivos CSV/XLSX do Tesouro Transparente e podem ser revistos pela fonte. A DPF <b>não</b> é a dívida líquida do setor público nem a dívida bruta do governo geral.</li>
+            <li>Dados em cache por até 6 horas no servidor. Se uma fonte estiver fora do ar, a seção correspondente avisa e as demais continuam.</li>
+        </ul>
+    </section>
+</main>
+
+<div id="rodape"></div>
+
+<script src="assets/comum.js"></script>
+<script>
+renderLayout('macro');
+
+/* ---------- estado ---------- */
+const M = { catalogo: [], series: {}, escolhidos: ['ipca12', 'selic'], freq: 'todas', ini: '', fim: '', grafico: null, graficos: {} };
+const CORES = ['#0284c7', '#e11d48', '#059669', '#d97706', '#7c3aed', '#0891b2'];
+const num = (v, d = 2) => Number(v).toLocaleString('pt-BR', { minimumFractionDigits: d, maximumFractionDigits: d });
+const fmtValor = (v, unidade) => {
+    if (v == null) return '—';
+    if (/R\$ milhões/.test(unidade)) return `${Number(v).toLocaleString('pt-BR', { maximumFractionDigits: 0 })} mi`;
+    return num(v, 2);
+};
+const fmtMes = (iso) => { const [a, m] = iso.split('-'); return `${m}/${a}`; };
+const reais = (n) => {
+    const v = Math.abs(Number(n)); const s = n < 0 ? '−' : '';
+    if (v >= 1e12) return `${s}R$ ${(v / 1e12).toLocaleString('pt-BR', { maximumFractionDigits: 2 })} tri`;
+    if (v >= 1e9) return `${s}R$ ${(v / 1e9).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} bi`;
+    if (v >= 1e6) return `${s}R$ ${(v / 1e6).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} mi`;
+    return `${s}${brl(v)}`;
+};
+const ehEscuro = () => document.documentElement.classList.contains('dark');
+const corTexto = () => (ehEscuro() ? '#cbd5e1' : '#475569');
+const corGrade = () => (ehEscuro() ? 'rgba(148,163,184,.18)' : 'rgba(100,116,139,.18)');
+
+function destruir(id) { if (M.graficos[id]) { M.graficos[id].destroy(); delete M.graficos[id]; } }
+function criar(id, config) {
+    destruir(id);
+    const c = config; c.options = c.options || {};
+    c.options.responsive = true; c.options.maintainAspectRatio = false;
+    c.options.plugins = { ...(c.options.plugins || {}), legend: { ...(c.options.plugins?.legend || {}), labels: { color: corTexto() } } };
+    for (const eixo of Object.values(c.options.scales || {})) {
+        eixo.ticks = { ...(eixo.ticks || {}), color: corTexto() };
+        eixo.grid = { ...(eixo.grid || {}), color: corGrade() };
+        if (eixo.title) eixo.title.color = corTexto();
+    }
+    M.graficos[id] = new Chart($(id), c);
+    return M.graficos[id];
+}
+
+/* ---------- 1. cartões ---------- */
+async function carregarCartoes() {
+    try {
+        const r = await api('/api/macro/resumo');
+        const ordem = ['ipca', 'ipca12', 'selic', 'desemprego', 'primario12', 'nominal12', 'juros12', 'dlsp_pib'];
+        const por = Object.fromEntries(r.cartoes.map((c) => [c.id, c]));
+        $('cartoes').innerHTML = ordem.filter((k) => por[k]).map((k) => {
+            const c = por[k];
+            const quando = c.referencia ? c.referencia : fmtMes(c.data.slice(0, 7));
+            const dif = c.anterior != null ? c.valor - c.anterior : null;
+            return `<a href="#h-explorador" data-ind="${esc(k)}" class="block rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 hover:border-brand-500">
+                <p class="text-xs font-semibold text-slate-500">${esc(c.nome)}</p>
+                <p class="text-3xl font-extrabold mt-1">${num(c.valor)}</p>
+                <p class="text-xs text-slate-500">${esc(c.unidade)}</p>
+                <p class="text-[11px] text-slate-400 mt-2">Ref.: ${esc(quando)}${dif != null ? ` · anterior ${num(c.anterior)}` : ''}</p></a>`;
+        }).join('');
+        $('cartoesInfo').textContent = `Consultado em ${fmtDataHora(r.consultado_em)}.` + (r.erros.length ? ` Indisponíveis agora: ${r.erros.map((e) => e.id).join(', ')}.` : '');
+        $('cartoes').addEventListener('click', (ev) => {
+            const a = ev.target.closest('[data-ind]'); if (!a) return;
+            M.escolhidos = [a.dataset.ind]; desenharSeletor(); atualizarGrafico();
+        });
+    } catch (e) { $('cartoes').innerHTML = `<div class="col-span-full">${mensagemErro(e)}</div>`; }
+}
+
+/* ---------- 2. explorador ---------- */
+const ATALHOS = [
+    { rot: 'Inflação', ids: ['ipca', 'ipca12'] },
+    { rot: 'Juros × inflação', ids: ['selic', 'ipca12'] },
+    { rot: 'Painel fiscal (% do PIB, 12 meses)', ids: ['primario12', 'nominal12', 'juros12'] },
+    { rot: 'Resultado mensal (R$)', ids: ['primario', 'juros', 'nominal'] },
+    { rot: 'Dívida líquida × desemprego', ids: ['dlsp_pib', 'desemprego'] },
+];
+const PRESETS = [{ r: '1 ano', a: 1 }, { r: '5 anos', a: 5 }, { r: '10 anos', a: 10 }, { r: 'Tudo', a: 0 }];
+
+function desenharAtalhos() {
+    $('atalhos').innerHTML = ATALHOS.map((a, i) => `<button type="button" data-atalho="${i}" class="px-3 py-1.5 rounded-full text-xs font-semibold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-brand-500">${esc(a.rot)}</button>`).join('');
+    $('presets').innerHTML = PRESETS.map((p, i) => `<button type="button" data-preset="${i}" class="px-1 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600">${p.r}</button>`).join('');
+}
+$('atalhos').addEventListener('click', (ev) => {
+    const b = ev.target.closest('[data-atalho]'); if (!b) return;
+    M.escolhidos = [...ATALHOS[Number(b.dataset.atalho)].ids]; M.freq = 'todas'; $('filtroFreq').value = 'todas'; desenharSeletor(); atualizarGrafico();
+});
+$('presets').addEventListener('click', (ev) => {
+    const b = ev.target.closest('[data-preset]'); if (!b) return;
+    const a = PRESETS[Number(b.dataset.preset)].a;
+    if (a === 0) { M.ini = ''; } else { const d = new Date(); d.setFullYear(d.getFullYear() - a); M.ini = d.toISOString().slice(0, 10); }
+    M.fim = ''; $('dtIni').value = M.ini; $('dtFim').value = ''; atualizarGrafico();
+});
+$('dtIni').addEventListener('change', (e) => { M.ini = e.target.value; atualizarGrafico(); });
+$('dtFim').addEventListener('change', (e) => { M.fim = e.target.value; atualizarGrafico(); });
+$('filtroFreq').addEventListener('change', (e) => { M.freq = e.target.value; desenharSeletor(); });
+
+const grupoFreq = (f) => (f.startsWith('diária') ? 'diária' : f.startsWith('trimestre') ? 'trimestre móvel' : 'mensal');
+
+function desenharSeletor() {
+    const freqs = ['todas', ...new Set(M.catalogo.map((c) => grupoFreq(c.frequencia)))];
+    $('filtroFreq').innerHTML = freqs.map((f) => `<option value="${esc(f)}" ${f === M.freq ? 'selected' : ''}>${f === 'todas' ? 'Todas' : esc(f)}</option>`).join('');
+    const grupos = {};
+    for (const c of M.catalogo) if (M.freq === 'todas' || grupoFreq(c.frequencia) === M.freq || M.escolhidos.includes(c.id)) (grupos[c.grupo] ||= []).push(c);
+    $('listaIndicadores').innerHTML = Object.entries(grupos).map(([g, itens]) => `<div><p class="text-[11px] uppercase tracking-wider text-slate-400 font-bold">${esc(g)}</p>
+        ${itens.map((c) => `<label class="flex items-start gap-2 py-1 text-sm"><input type="checkbox" class="mt-1" data-ind="${esc(c.id)}" ${M.escolhidos.includes(c.id) ? 'checked' : ''}><span>${esc(c.nome)}<span class="block text-[11px] text-slate-400">${esc(c.unidade)} · ${esc(c.frequencia)}</span></span></label>`).join('')}</div>`).join('');
+}
+$('listaIndicadores').addEventListener('change', (ev) => {
+    const id = ev.target.dataset.ind; if (!id) return;
+    M.escolhidos = ev.target.checked ? [...M.escolhidos, id] : M.escolhidos.filter((x) => x !== id);
+    atualizarGrafico();
+});
+
+async function obterSerie(id) {
+    if (!M.series[id]) M.series[id] = await api(`/api/macro/serie/${encodeURIComponent(id)}`);
+    return M.series[id];
+}
+const filtrar = (pontos) => pontos.filter((p) => (!M.ini || p.data >= M.ini) && (!M.fim || p.data <= M.fim));
+
+async function atualizarGrafico() {
+    const aviso = $('avisoGrafico'); aviso.classList.add('hidden');
+    const ids = M.escolhidos.slice(0, 6);
+    if (!ids.length) { destruir('grafico'); $('statusGrafico').textContent = 'Escolha ao menos um indicador.'; $('fichas').innerHTML = ''; renderTabela([]); return; }
+    $('statusGrafico').textContent = 'Carregando séries…';
+    let series;
+    try { series = await Promise.all(ids.map(obterSerie)); }
+    catch (e) { $('statusGrafico').innerHTML = mensagemErro(e); return; }
+
+    const unidades = [...new Set(series.map((s) => s.unidade))];
+    if (unidades.length > 2) {
+        aviso.textContent = `Você escolheu ${unidades.length} unidades diferentes (${unidades.join('; ')}). O gráfico suporta até 2: mostrando só as séries das duas primeiras.`;
+        aviso.classList.remove('hidden');
+        series = series.filter((s) => unidades.slice(0, 2).includes(s.unidade));
+    }
+    const un = [...new Set(series.map((s) => s.unidade))];
+    const datasets = series.map((s, i) => ({
+        label: `${s.nome} (${s.unidade})`, data: filtrar(s.pontos).map((p) => ({ x: p.data, y: p.valor })),
+        borderColor: CORES[i % CORES.length], backgroundColor: CORES[i % CORES.length], borderWidth: 2, pointRadius: 0, pointHoverRadius: 4,
+        tension: 0, stepped: s.id === 'selic' ? 'after' : false, yAxisID: un.indexOf(s.unidade) === 0 ? 'y' : 'y1', spanGaps: false,
+    }));
+    const escalas = {
+        x: { type: 'category', labels: undefined, ticks: { maxTicksLimit: 8 } },
+        y: { position: 'left', title: { display: true, text: un[0] } },
+    };
+    if (un[1]) escalas.y1 = { position: 'right', title: { display: true, text: un[1] }, grid: { drawOnChartArea: false } };
+    // eixo de tempo contínuo sem depender de adaptador de datas: usa rótulos ordenados da união das datas
+    const todasDatas = [...new Set(datasets.flatMap((d) => d.data.map((p) => p.x)))].sort();
+    datasets.forEach((d) => { const m = new Map(d.data.map((p) => [p.x, p.y])); d.data = todasDatas.map((x) => (m.has(x) ? m.get(x) : null)); });
+    escalas.x.ticks = { maxTicksLimit: 8, callback(v) { const d = this.getLabelForValue(v); return d ? d.slice(0, 7).split('-').reverse().join('/') : ''; } };
+    criar('grafico', {
+        type: 'line', data: { labels: todasDatas, datasets },
+        options: { interaction: { mode: 'index', intersect: false }, scales: escalas,
+            plugins: { tooltip: { callbacks: { title: (it) => fmtData(it[0].label) } } } },
+    });
+    const faltando = ids.length - series.length;
+    $('statusGrafico').textContent = `${todasDatas.length} datas no período${faltando ? ` · ${faltando} série(s) fora do gráfico por unidade` : ''}. Linhas sem ponto indicam dado ausente na fonte.`;
+    renderFichas(series);
+    renderTabelaSeletor(series);
+}
+
+function renderFichas(series) {
+    $('fichas').innerHTML = series.map((s) => {
+        const pts = filtrar(s.pontos); const ult = pts[pts.length - 1];
+        return `<details class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4"><summary class="font-semibold text-sm">${esc(s.nome)} <span class="text-xs font-normal text-slate-500">· ${esc(s.unidade)} · ${esc(s.frequencia)}</span></summary>
+            <div class="mt-2 text-sm space-y-1.5 text-slate-600 dark:text-slate-400">
+                <p><b>O que mede:</b> ${esc(s.mede)}</p><p><b>Como interpretar:</b> ${esc(s.interpreta)}</p>
+                ${s.nota ? `<p><b>Atenção:</b> ${esc(s.nota)}</p>` : ''}
+                <p class="text-xs">Período dos dados: ${esc(s.periodo_referencia.inicio || '—')} a ${esc(s.periodo_referencia.fim || '—')}${ult ? ` · último valor: ${fmtValor(ult.valor, s.unidade)} (${ult.referencia ? esc(ult.referencia) : esc(fmtData(ult.data))})` : ''}</p>
+                <p class="text-xs">Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(s.url_fonte))}">${esc(s.fonte)}</a> · consultado em ${esc(fmtDataHora(s.consultado_em))}</p>
+            </div></details>`;
+    }).join('');
+}
+
+let _serieTabela = [];
+function renderTabelaSeletor(series) {
+    _serieTabela = series;
+    const atual = $('tabelaDe').value;
+    $('tabelaDe').innerHTML = series.map((s) => `<option value="${esc(s.id)}">${esc(s.nome)}</option>`).join('');
+    if (series.some((s) => s.id === atual)) $('tabelaDe').value = atual;
+    renderTabela(series);
+}
+function renderTabela(series) {
+    const s = series.find((x) => x.id === $('tabelaDe').value) || series[0];
+    if (!s) { $('tabelaCab').innerHTML = ''; $('tabelaCorpo').innerHTML = ''; return; }
+    const comRef = s.pontos.some((p) => p.referencia);
+    $('tabelaCab').innerHTML = `<th class="p-2">Data</th>${comRef ? '<th class="p-2">Referência</th>' : ''}<th class="p-2 text-right">Valor (${esc(s.unidade)})</th>`;
+    $('tabelaCorpo').innerHTML = filtrar(s.pontos).slice().reverse().map((p) => `<tr class="border-t border-slate-100 dark:border-slate-700">
+        <td class="p-2">${esc(fmtData(p.data))}${p.mantida ? ' <span class="text-[11px] text-slate-400">(meta mantida até aqui)</span>' : ''}</td>${comRef ? `<td class="p-2">${esc(p.referencia || '')}</td>` : ''}
+        <td class="p-2 text-right font-medium">${esc(Number(p.valor).toLocaleString('pt-BR', { maximumFractionDigits: 4 }))}</td></tr>`).join('');
+}
+$('tabelaDe').addEventListener('change', () => renderTabela(_serieTabela));
+
+$('btnCsv').addEventListener('click', () => {
+    const linhas = [['indicador', 'codigo_fonte', 'data', 'referencia', 'valor', 'unidade', 'frequencia', 'fonte', 'url_fonte', 'consultado_em']];
+    for (const s of _serieTabela) for (const p of filtrar(s.pontos)) linhas.push([s.nome, s.codigo, p.data, p.referencia || '', p.valor, s.unidade, s.frequencia, s.fonte, s.url_fonte, s.consultado_em]);
+    if (linhas.length === 1) return;
+    const celula = (v) => { const t = String(v ?? ''); return /[",\n]/.test(t) ? `"${t.replace(/"/g, '""')}"` : t; };
+    const blob = new Blob(['﻿' + linhas.map((l) => l.map(celula).join(',')).join('\n')], { type: 'text/csv;charset=utf-8' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `impactocidadao-indicadores-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+});
+
+/* ---------- 4. dívida ---------- */
+async function carregarDivida() {
+    $('dividaEstado').innerHTML = '<p class="text-sm text-slate-500"><i class="fa-solid fa-spinner fa-spin mr-1.5" aria-hidden="true"></i>Baixando arquivos do Tesouro Nacional (pode levar alguns segundos na primeira vez)…</p>';
+    let d;
+    try { d = await api('/api/macro/divida'); } catch (e) { $('dividaEstado').innerHTML = mensagemErro(e); return; }
+    $('dividaEstado').innerHTML = d.erros.length ? `<div class="text-xs text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 rounded-lg px-3 py-2">${d.erros.map(esc).join(' ')}</div>` : '';
+    $('dividaConteudo').classList.remove('hidden');
+    const dpf = d.dpf;
+    if (dpf) {
+        const interna = (dpf.por_tipo.find((t) => /Interna/.test(t.nome)) || {}).valor || 0;
+        $('dividaCartoes').innerHTML = [
+            ['Estoque da DPF (bruto)', reais(dpf.total), `Referência: ${fmtMes(dpf.referencia)}`],
+            ['Dívida interna', reais(interna), `${num(100 * interna / dpf.total, 1)}% do estoque`],
+            ['Dívida externa', reais(dpf.total - interna), `${num(100 * (dpf.total - interna) / dpf.total, 1)}% do estoque`],
+        ].map(([t, v, s]) => `<div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4"><p class="text-xs font-semibold text-slate-500">${t}</p><p class="text-2xl font-extrabold mt-1">${v}</p><p class="text-xs text-slate-500">${s}</p></div>`).join('');
+        criar('gDpf', { type: 'line', data: { labels: dpf.evolucao.map((e) => fmtMes(e.mes)), datasets: [{ label: 'Estoque da DPF (R$ trilhões)', data: dpf.evolucao.map((e) => e.valor / 1e12), borderColor: CORES[0], pointRadius: 0, borderWidth: 2 }] }, options: { scales: { x: { ticks: { maxTicksLimit: 8 } }, y: { title: { display: true, text: 'R$ trilhões' } } } } });
+        criar('gComp', { type: 'doughnut', data: { labels: dpf.composicao.map((c) => c.nome), datasets: [{ data: dpf.composicao.map((c) => c.valor / 1e9), backgroundColor: ['#0284c7', '#059669', '#d97706', '#7c3aed', '#e11d48', '#0891b2', '#65a30d', '#a16207', '#64748b'] }] }, options: { plugins: { tooltip: { callbacks: { label: (c) => `${c.label}: R$ ${num(c.parsed, 0)} bi` } } } } });
+        criar('gVenc', { type: 'bar', data: { labels: dpf.vencimentos.map((v) => v.ano), datasets: [{ label: 'Vencendo no ano (R$ bilhões)', data: dpf.vencimentos.map((v) => v.valor / 1e9), backgroundColor: CORES[0] }] }, options: { scales: { y: { title: { display: true, text: 'R$ bilhões' } }, x: { ticks: { maxTicksLimit: 14 } } } } });
+        $('dividaFontes').innerHTML = `<p>Estoque: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(dpf.pagina))}">Tesouro Transparente — Estoque da DPF</a> · arquivo atualizado em ${esc(fmtData(dpf.atualizado))} · consultado em ${esc(fmtDataHora(d.consultado_em))}</p>`;
+    }
+    const er = d.emissoes_resgates;
+    if (er) {
+        const ult = er.serie.slice(-60);
+        criar('gEmi', { type: 'bar', data: { labels: ult.map((s) => fmtMes(s.mes)), datasets: [
+            { label: 'Emissões', data: ult.map((s) => s.emissoes), backgroundColor: CORES[2] },
+            { label: 'Resgates', data: ult.map((s) => s.resgates), backgroundColor: CORES[1] }] }, options: { scales: { x: { ticks: { maxTicksLimit: 10 } }, y: { title: { display: true, text: 'R$ milhões' } } } } });
+        $('dividaFontes').innerHTML += `<p>Emissões e resgates (últimos 60 meses, ${esc(er.unidade)}): <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(er.pagina))}">Tesouro Transparente</a></p>`;
+    }
+    const td = d.tesouro_direto;
+    if (td) {
+        const p = td.participacao_na_dpf;
+        $('tdResumo').innerHTML = `Estoque do Tesouro Direto em ${fmtMes(td.estoque.referencia)}: <b>${reais(td.estoque.total)}</b>` +
+            (p ? ` — apenas <b>${num(p.pct, 2)}%</b> da DPF (${reais(p.dpf)}). O Tesouro Direto é o canal de venda a pessoas físicas, não a dívida pública inteira.` : '.');
+        const ev = td.estoque.evolucao.slice(-120);
+        criar('gTd', { type: 'line', data: { labels: ev.map((e) => fmtMes(e.mes)), datasets: [{ label: 'Estoque do Tesouro Direto (R$ bilhões)', data: ev.map((e) => e.valor / 1e9), borderColor: '#0d9488', pointRadius: 0, borderWidth: 2 }] }, options: { scales: { x: { ticks: { maxTicksLimit: 8 } }, y: { title: { display: true, text: 'R$ bilhões' } } } } });
+        $('tdTaxasTitulo').textContent = `Taxas e preços ofertados em ${fmtData(td.taxas.data_base)} (manhã)`;
+        $('tdTaxas').innerHTML = td.taxas.titulos.map((t) => `<tr class="border-t border-slate-100 dark:border-slate-700"><td class="p-2">${esc(t.titulo)}</td><td class="p-2">${esc(fmtData(t.vencimento))}</td>
+            <td class="p-2 text-right">${t.taxa_compra == null ? '—' : num(t.taxa_compra)}%</td><td class="p-2 text-right">${t.pu_compra == null ? '—' : brl(t.pu_compra)}</td></tr>`).join('');
+        $('tdFontes').innerHTML = `Fontes: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(td.estoque.pagina))}">Estoque do Tesouro Direto</a> · <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(td.taxas.pagina))}">Taxas dos títulos ofertados</a>`;
+    }
+}
+
+/* ---------- início ---------- */
+(async function iniciar() {
+    desenharAtalhos();
+    carregarCartoes();
+    try {
+        M.catalogo = await api('/api/macro/catalogo');
+        desenharSeletor();
+        const d = new Date(); d.setFullYear(d.getFullYear() - 5); M.ini = d.toISOString().slice(0, 10); $('dtIni').value = M.ini;
+        atualizarGrafico();
+    } catch (e) { $('statusGrafico').innerHTML = mensagemErro(e); }
+    carregarDivida();
+    document.getElementById('btnTema')?.addEventListener('click', () => setTimeout(() => atualizarGrafico(), 50));
+})();
+</script>
+</body>
+</html>

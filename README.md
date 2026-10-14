@@ -186,3 +186,21 @@ Os coletores são **idempotentes**: reexecutar não duplica linhas nem refaz o q
 Login (Supabase Auth) + tela de notificações (a tabela e o *trigger* já existem) · OCR para planos escaneados ·
 compilar o Tailwind em vez do CDN · cache HTTP/CDN na frente da API · revisão editorial por amostragem das
 traduções (a tabela guarda `analise_bruta` e o modelo usado para auditoria).
+
+## Economia e indicadores macro
+
+* **/economia.html** — contas de município, estado e União (SICONFI/Tesouro): saúde fiscal, déficits
+  nominal/primário/operacional, receitas e despesas, execução orçamentária. `GET /api/economia/{codigo}`
+  (1 = União, 2 dígitos = UF, 7 dígitos = município).
+* **/macro.html** — IPCA, Selic, desemprego (PNAD), resultado fiscal e dívida pública, com filtros,
+  comparação, tabela, exportação CSV e fonte/data de consulta em cada série.
+  `GET /api/macro/{catalogo,resumo,serie/{id},divida}`.
+
+Fontes (abertas, sem chave): Banco Central SGS (433, 13522, 432, 4649, 4616, 4583, 5793, 5727, 5760, 4513, 4478),
+IBGE SIDRA (tabela 6381), Tesouro Transparente (estoque da DPF, emissões e resgates, Tesouro Direto) e SICONFI.
+Os códigos do SGS foram conferidos nos metadados do BCB e entre si (nominal = primário + juros).
+
+Limitações: a dívida da DPF é bruta e só da União (não é a dívida líquida do setor público); o déficit operacional
+é cálculo próprio aproximado; mínimos constitucionais de Saúde/Educação não estão na API aberta do SICONFI; os
+arquivos do Tesouro (10–15 MB) são baixados na primeira consulta e ficam em cache por 6 h. Em redes com inspeção
+TLS, instale `truststore` (já em `requirements.txt`) para usar o repositório de certificados do sistema.

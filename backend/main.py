@@ -31,6 +31,7 @@ from pydantic import BaseModel, Field, field_validator
 
 import db
 import economia
+import macro
 import simuladores
 from config import cfg
 from fontes import buscar_municipios, contexto_municipio
@@ -486,6 +487,49 @@ def pesquisar_municipios(q: Annotated[str, Query(min_length=2, max_length=60)]) 
     except Exception as exc:  # noqa: BLE001
         log.warning("IBGE indisponível: %s", exc)
         raise HTTPException(status_code=503, detail="Lista de municípios (IBGE) indisponível no momento.") from exc
+
+
+# --------------------------------------------------------------------------- #
+# Indicadores macroeconômicos (BCB, IBGE, Tesouro Nacional)
+# --------------------------------------------------------------------------- #
+def _fonte_macro_indisponivel(exc: Exception) -> HTTPException:
+    log.warning("Fonte macroeconômica indisponível: %s", exc)
+    return HTTPException(status_code=503, detail="Uma fonte oficial (Banco Central, IBGE ou Tesouro) está indisponível no momento.")
+
+
+@router.get("/macro/catalogo", tags=["macro"])
+def macro_catalogo() -> list[dict]:
+    return macro.catalogo()
+
+
+@router.get("/macro/resumo", tags=["macro"])
+def macro_resumo() -> dict:
+    try:
+        return macro.resumo()
+    except Exception as exc:  # noqa: BLE001
+        raise _fonte_macro_indisponivel(exc) from exc
+
+
+@router.get("/macro/serie/{chave}", tags=["macro"])
+def macro_serie(
+    chave: Annotated[str, Path(pattern=r"^[a-z0-9_]{2,20}$")],
+    inicio: Annotated[date | None, Query(description="AAAA-MM-DD")] = None,
+    fim: Annotated[date | None, Query(description="AAAA-MM-DD")] = None,
+) -> dict:
+    try:
+        return macro.serie(chave, inicio.isoformat() if inicio else None, fim.isoformat() if fim else None)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail="Indicador desconhecido.") from exc
+    except Exception as exc:  # noqa: BLE001
+        raise _fonte_macro_indisponivel(exc) from exc
+
+
+@router.get("/macro/divida", tags=["macro"])
+def macro_divida() -> dict:
+    try:
+        return macro.divida()
+    except Exception as exc:  # noqa: BLE001
+        raise _fonte_macro_indisponivel(exc) from exc
 
 
 # --------------------------------------------------------------------------- #
