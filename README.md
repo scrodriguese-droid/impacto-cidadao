@@ -215,4 +215,4 @@ TLS, instale `truststore` (já em `requirements.txt`) para usar o repositório d
 | 4 | Ciclo orçamentário e calculadora de imposto | Parcial: execução do orçamento e simuladores IR/MEI; faltam PPA/LDO/LOA e “para onde vai o meu imposto” | `economia.html#n3`, `index.html#simuladores` |
 | 5 | Emendas parlamentares e execução local | Planejado: só links oficiais (lista própria exige chave gratuita da CGU) | `economia.html#n4` |
 | 6 | Economia do setor público e saúde fiscal | Disponível: arrecadação, LRF, déficits, reservas, dívida | `economia.html`, `macro.html` |
-| 7 | Composição partidária e bancadas | Planejado | — |
+| 7 | Composição partidária e bancadas | Disponível: Câmara e Senado (cadeiras por partido, limiares de maioria e 3/5); câmaras municipais: lacuna declarada (sem fonte aberta confiável da composição atual) | `bancadas.html`, `GET /api/bancadas` |

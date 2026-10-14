@@ -29,6 +29,7 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field, field_validator
 
+import bancadas
 import db
 import economia
 import macro
@@ -487,6 +488,18 @@ def pesquisar_municipios(q: Annotated[str, Query(min_length=2, max_length=60)]) 
     except Exception as exc:  # noqa: BLE001
         log.warning("IBGE indisponível: %s", exc)
         raise HTTPException(status_code=503, detail="Lista de municípios (IBGE) indisponível no momento.") from exc
+
+
+# --------------------------------------------------------------------------- #
+# Composição partidária (Câmara e Senado)
+# --------------------------------------------------------------------------- #
+@router.get("/bancadas", tags=["bancadas"])
+def bancadas_partidarias() -> dict:
+    try:
+        return bancadas.bancadas()
+    except Exception as exc:  # noqa: BLE001
+        log.warning("Composição partidária indisponível: %s", exc)
+        raise HTTPException(status_code=503, detail="As fontes oficiais da Câmara e do Senado estão indisponíveis no momento.") from exc
 
 
 # --------------------------------------------------------------------------- #

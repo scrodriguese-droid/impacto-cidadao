@@ -47,6 +47,7 @@ const NAVEGACAO = [
     { id: 'simuladores', href: 'index.html#simuladores', icone: 'fa-calculator', rotulo: 'Simuladores' },
     { id: 'economia', href: 'economia.html', icone: 'fa-chart-pie', rotulo: 'Economia' },
     { id: 'macro', href: 'macro.html', icone: 'fa-chart-line', rotulo: 'Indicadores' },
+    { id: 'bancadas', href: 'bancadas.html', icone: 'fa-people-group', rotulo: 'Bancadas' },
 ];
 
 function renderLayout(paginaAtual) {
