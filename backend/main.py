@@ -234,7 +234,8 @@ def listar_proposicoes(
     nivel: Annotated[Literal["federal", "estadual", "municipal"] | None, Query(
         description="nível administrativo")] = None,
     incluir_pendentes: Annotated[bool, Query(
-        description="inclui itens ainda sem tradução (só com dados oficiais); ignorado se houver filtro de perfil"
+        description="inclui itens ainda sem tradução (só com dados oficiais); com um perfil escolhido eles "
+                    "seguem na lista, pois não há como saber a quem afetam"
     )] = False,
     agrupar_por: Annotated[Literal["tema", "nivel_poder"] | None, Query(
         description="ordena por grupos antes da ordenação escolhida")] = None,
@@ -255,18 +256,22 @@ def listar_proposicoes(
         if ordem == "impacto" else "p.data_apresentacao DESC NULLS LAST, p.id DESC"
     )
     if agrupar_por == "tema":
-        # Ordem dos grupos = ordem das categorias; "outros" por último.
-        ordenacao = f"array_position(%(ordem_temas)s::text[], {_TEMA_PRINCIPAL}), " + ordenacao
+        # Ordem dos grupos = ordem das categorias; "outros" por último. Dentro do grupo, os traduzidos primeiro.
+        ordenacao = (f"array_position(%(ordem_temas)s::text[], {_TEMA_PRINCIPAL}), "
+                     "(p.analise_status <> 'ok'), " + ordenacao)
     elif agrupar_por == "nivel_poder":
         ordenacao = (
             "CASE p.nivel WHEN 'federal' THEN 0 WHEN 'estadual' THEN 1 ELSE 2 END, "
             "CASE p.instancia WHEN 'executivo' THEN 0 ELSE 1 END, " + ordenacao
         )
+    # Atos ainda sem tradução não têm perfis classificados: com `incluir_pendentes` eles continuam na
+    # lista (marcados como "não traduzidos" pela tela) em vez de a página ficar vazia ao escolher um perfil.
     filtros = f"""
-         WHERE (p.analise_status = 'ok' OR (%(pendentes)s AND %(perfil)s::text IS NULL))
+         WHERE (p.analise_status = 'ok' OR %(pendentes)s)
            AND (%(instancia)s::text IS NULL OR p.instancia = %(instancia)s::text)
            AND (%(nivel)s::text IS NULL OR p.nivel = %(nivel)s::text)
-           AND (%(perfil)s::text IS NULL OR %(perfil)s::text = ANY (p.perfis_impactados) OR 'todos' = ANY (p.perfis_impactados))
+           AND (%(perfil)s::text IS NULL OR %(perfil)s::text = ANY (p.perfis_impactados) OR 'todos' = ANY (p.perfis_impactados)
+                OR (%(pendentes)s AND p.analise_status <> 'ok'))
            AND (%(categoria)s::text IS NULL OR {_TEMA_PRINCIPAL} = %(categoria)s::text)
            AND (%(status)s::text IS NULL OR p.status_tramitacao = %(status)s::text)
            AND (%(q)s::text IS NULL

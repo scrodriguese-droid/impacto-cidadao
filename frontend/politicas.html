@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Políticas públicas — ImpactoCidadão</title>
-    <meta name="description" content="Leis e medidas provisórias que mudam a vida do cidadão, agrupadas por tema e filtráveis por poder (Executivo, Legislativo) e por nível de governo.">
+    <meta name="description" content="Leis e medidas provisórias que mudam a sua vida, por tema, em linguagem simples.">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="assets/tailwind-config.js"></script>
@@ -16,8 +16,6 @@
         body { font-family: 'Inter', system-ui, sans-serif; }
         details > summary { list-style: none; cursor: pointer; }
         details > summary::-webkit-details-marker { display: none; }
-        details[open] > summary .chev { transform: rotate(180deg); }
-        .chev { transition: transform .15s ease; }
         :focus-visible { outline: 2px solid #0284c7; outline-offset: 2px; }
     </style>
 </head>
@@ -26,70 +24,92 @@
 <a href="#conteudo" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-white focus:text-slate-900 focus:p-3">Ir para o conteúdo</a>
 <div id="cabecalho"></div>
 
-<section class="bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 text-white py-9 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-7xl mx-auto">
-        <span class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-slate-800/80 border border-slate-700 text-xs font-semibold text-brand-400 mb-3">
-            <i class="fa-solid fa-landmark text-teal-400" aria-hidden="true"></i><span>Poderes e níveis de governo</span>
-        </span>
-        <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight">Políticas públicas</h1>
-        <p class="mt-2 text-slate-300 text-sm sm:text-base max-w-3xl">Leis e medidas provisórias que afetam o seu dia a dia, agrupadas por <b>tema</b> (saúde, educação, impostos…) e filtráveis por <b>poder</b> (Executivo e Legislativo) e por <b>nível</b> (federal, estadual e municipal). Onde ainda não há fonte de dados conectada, mostramos isso com clareza.</p>
-        <div class="mt-5 flex flex-col sm:flex-row sm:items-center gap-3 text-sm">
-            <label class="flex items-center gap-2">
-                <span class="text-slate-300">Seu perfil:</span>
-                <select id="perfilSelect" class="bg-slate-800 border border-slate-600 rounded-xl px-3 py-2 text-sm text-white focus:ring-2 focus:ring-brand-500"></select>
+<main id="conteudo" class="max-w-4xl mx-auto px-4 sm:px-6 pt-6 pb-10 flex-grow w-full">
+    <h1 class="text-2xl font-extrabold tracking-tight">Políticas públicas</h1>
+
+    <!-- Barra de contexto: uma linha, sempre visível -->
+    <div class="sticky top-16 z-30 -mx-4 sm:mx-0 px-4 sm:px-0 py-2 mt-3 bg-slate-50/90 dark:bg-slate-900/90 backdrop-blur">
+        <div class="flex flex-wrap items-center gap-x-2 gap-y-2 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 shadow-sm text-sm">
+            <i class="fa-solid fa-location-dot text-rose-500" aria-hidden="true"></i>
+            <span class="font-medium">Mostrando impactos para:</span>
+            <label class="relative inline-block">
+                <span class="sr-only">Seu perfil</span>
+                <select id="perfilSelect" class="appearance-none font-bold bg-brand-50 dark:bg-brand-950 text-brand-800 dark:text-brand-300 border border-brand-200 dark:border-brand-800 rounded-full pl-3.5 pr-8 py-1.5 focus:ring-2 focus:ring-brand-500"></select>
+                <i class="fa-solid fa-chevron-down absolute right-3 top-2.5 text-[10px] text-brand-700 dark:text-brand-300 pointer-events-none" aria-hidden="true"></i>
             </label>
-            <span id="cidadeInfo" class="text-slate-300"></span>
+            <span class="font-medium">em</span>
+            <div class="relative">
+                <button id="btnCidade" type="button" class="inline-flex items-center gap-1.5 font-bold bg-teal-50 dark:bg-teal-950/50 text-teal-800 dark:text-teal-300 border border-teal-200 dark:border-teal-800 rounded-full px-3.5 py-1.5 hover:opacity-90" aria-expanded="false" aria-controls="popCidade">
+                    <i class="fa-solid fa-city text-xs" aria-hidden="true"></i><span id="cidadeRotulo">Escolher cidade</span>
+                </button>
+                <div id="popCidade" class="hidden absolute left-0 top-full mt-2 w-72 z-40 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-xl p-2">
+                    <label for="cidadeBusca" class="sr-only">Buscar município</label>
+                    <input id="cidadeBusca" type="text" autocomplete="off" placeholder="Digite o nome da cidade…"
+                           class="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                    <ul id="cidadeLista" class="mt-1 max-h-60 overflow-auto text-sm" role="listbox"></ul>
+                    <button id="btnSemCidade" type="button" class="hidden w-full mt-1 text-left px-3 py-2 text-xs text-slate-500 hover:underline">Remover cidade</button>
+                </div>
+            </div>
+            <button id="btnFontes" type="button" class="ml-auto inline-flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200">
+                <i class="fa-solid fa-plug" aria-hidden="true"></i><span id="fontesRotulo">Fontes de dados</span>
+            </button>
         </div>
     </div>
-</section>
 
-<main id="conteudo" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full space-y-8">
+    <!-- Nível de governo (segmentado) -->
+    <div id="segNivel" class="mt-4 inline-flex flex-wrap gap-1 p-1 rounded-2xl bg-slate-200/70 dark:bg-slate-800" role="radiogroup" aria-label="Nível de governo"></div>
 
-    <!-- Matriz poder × nível -->
-    <section aria-labelledby="tMatriz">
-        <div class="flex items-end justify-between gap-3 mb-3">
-            <div>
-                <h2 id="tMatriz" class="text-lg font-bold">Onde estamos olhando</h2>
-                <p class="text-xs text-slate-500 dark:text-slate-400">Clique em uma célula, em um nível (linha) ou em um poder (coluna) para filtrar. Os números contam os atos já coletados.</p>
-            </div>
+    <!-- Filtros rápidos -->
+    <div class="mt-3 flex flex-wrap items-center gap-2 text-sm">
+        <label class="sr-only" for="filtroCategoria">Tema</label>
+        <select id="filtroCategoria" class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2"></select>
+        <label class="sr-only" for="filtroInstancia">Poder</label>
+        <select id="filtroInstancia" class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2">
+            <option value="">Todos os poderes</option>
+            <option value="executivo">Executivo</option>
+            <option value="legislativo">Legislativo</option>
+        </select>
+        <div class="relative flex-grow min-w-[10rem] max-w-xs">
+            <label for="busca" class="sr-only">Buscar</label>
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400 text-xs" aria-hidden="true"></i>
+            <input id="busca" type="search" maxlength="120" placeholder="FGTS, MEI, imposto…"
+                   class="w-full pl-8 pr-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 focus:outline-none">
         </div>
-        <div id="matriz" class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-sm p-3 sm:p-4 overflow-x-auto"></div>
-    </section>
-
-    <!-- Filtros + lista -->
-    <section aria-labelledby="tLista">
-        <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-4 mb-4">
-            <div>
-                <h2 id="tLista" class="text-lg font-bold flex items-center"><i class="fa-solid fa-newspaper text-brand-600 mr-2.5" aria-hidden="true"></i>Leis e medidas provisórias, por tema</h2>
-                <p id="contagem" class="text-xs text-slate-500 dark:text-slate-400" aria-live="polite">Carregando…</p>
-                <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1 max-w-2xl">Nos atos já traduzidos, o tema vem da análise da IA. Nos demais, é <b>aproximado por palavras-chave da ementa oficial</b> (marcado como “tema aproximado”) e pode errar; confira a ementa.</p>
+        <details class="relative">
+            <summary class="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300"><i class="fa-solid fa-sliders mr-1.5 text-xs" aria-hidden="true"></i>Mais filtros</summary>
+            <div class="absolute z-20 mt-2 w-64 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg p-3 space-y-3">
+                <label class="block text-xs font-semibold">Situação
+                    <select id="filtroStatus" class="mt-1 w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-2 text-sm font-normal"></select></label>
+                <label class="block text-xs font-semibold">Ordenar por
+                    <select id="ordem" class="mt-1 w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-2 text-sm font-normal">
+                        <option value="recentes">Mais recentes</option>
+                        <option value="impacto">Maior impacto no bolso</option>
+                    </select></label>
             </div>
-            <div class="flex flex-wrap items-center gap-2 text-xs">
-                <div class="relative">
-                    <label for="busca" class="sr-only">Buscar</label>
-                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400" aria-hidden="true"></i>
-                    <input id="busca" type="search" maxlength="120" placeholder="FGTS, MEI, imposto, MPV 1394…"
-                           class="w-56 pl-8 pr-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 focus:outline-none">
-                </div>
-                <label class="sr-only" for="filtroCategoria">Área de impacto</label>
-                <select id="filtroCategoria" class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-2"></select>
-                <label class="sr-only" for="filtroStatus">Situação</label>
-                <select id="filtroStatus" class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-2"></select>
-                <label class="sr-only" for="ordem">Ordenar por</label>
-                <select id="ordem" class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-2">
-                    <option value="recentes">Mais recentes</option>
-                    <option value="impacto">Maior impacto no bolso</option>
-                </select>
-            </div>
-        </div>
+        </details>
+    </div>
 
-        <div id="chipsFiltro" class="flex flex-wrap gap-2 mb-3"></div>
-        <p id="notaFiltros" class="hidden text-[11px] text-slate-500 dark:text-slate-400 mb-3"><i class="fa-solid fa-circle-info mr-1" aria-hidden="true"></i>Atos que ainda não têm tradução em linguagem simples não indicam quais perfis afetam; por isso não aparecem quando um perfil está selecionado.</p>
+    <div id="chipsFiltro" class="flex flex-wrap gap-2 mt-3"></div>
+    <p id="contagem" class="text-xs text-slate-500 dark:text-slate-400 mt-3" aria-live="polite">Carregando…</p>
 
-        <div id="lista" class="space-y-5"></div>
-        <div class="text-center mt-6"><button id="btnMais" type="button" class="hidden px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold">Carregar mais</button></div>
-    </section>
+    <!-- Cartões -->
+    <div id="lista" class="mt-3 space-y-4"></div>
+    <div class="text-center mt-6"><button id="btnMais" type="button" class="hidden px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold">Carregar mais</button></div>
 </main>
+
+<!-- Status das fontes: fora do caminho do cidadão -->
+<dialog id="dlgFontes" class="w-[92vw] max-w-xl rounded-2xl p-0 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 backdrop:bg-black/50">
+    <div class="p-5 sm:p-6">
+        <div class="flex items-start justify-between gap-3">
+            <h2 class="text-lg font-bold"><i class="fa-solid fa-plug mr-2 text-slate-400" aria-hidden="true"></i>Status das fontes de dados</h2>
+            <button id="btnFecharFontes" type="button" class="p-1.5 -m-1.5 text-slate-500 hover:text-slate-800 dark:hover:text-white" aria-label="Fechar"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+        </div>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">De onde vêm os atos mostrados e o que ainda não cobrimos. Preferimos declarar a lacuna a mostrar dados incompletos como se fossem tudo.</p>
+        <ul id="fontesLista" class="mt-3 divide-y divide-slate-100 dark:divide-slate-700"></ul>
+        <h3 class="text-sm font-bold mt-5">Como definimos o tema</h3>
+        <p class="text-xs text-slate-600 dark:text-slate-400 mt-1">Nos atos já traduzidos, o tema vem da análise por IA. Nos demais, é <b>aproximado por palavras-chave da ementa oficial</b> e aparece marcado como “tema aproximado”; pode errar, então confira a ementa em “Ver detalhes”.</p>
+    </div>
+</dialog>
 
 <div id="rodape"></div>
 
@@ -105,11 +125,34 @@ const P = {
     pagina: 1, total: 0, itens: [], perfis: [], categorias: [], statusLista: [], resumo: null, temasContagem: {},
 };
 const NOME_NIVEL = { federal: 'Federal', estadual: 'Estadual', municipal: 'Municipal' };
+const ICONE_NIVEL = { federal: 'fa-landmark', estadual: 'fa-building', municipal: 'fa-house-flag' };
 const NOME_INST = { executivo: 'Executivo', legislativo: 'Legislativo' };
-const ICONE_INST = { executivo: 'fa-building-columns', legislativo: 'fa-gavel' };
 const NOME_TIPO = {
     MPV: 'Medida Provisória', PL: 'Projeto de Lei', PLP: 'Projeto de Lei Complementar',
     PEC: 'Proposta de Emenda à Constituição', PLN: 'Projeto de Lei do Congresso Nacional',
+};
+const STATUS_VISUAL = {
+    'Proposta da Presidência': ['Proposta enviada', 'sky'],
+    'Em análise no Congresso': ['Em análise no Congresso', 'amber'],
+    'Em vigor (MP aguardando votação)': ['Em vigor · aguarda votação', 'green'],
+    'Aprovada pelo Congresso': ['Aprovada pelo Congresso', 'green'],
+    'Sancionada (em vigor)': ['Em vigor', 'green'],
+    'Sancionada com vetos': ['Em vigor, com vetos', 'green'],
+    'Perdeu a eficácia': ['Perdeu a validade', 'slate'],
+    'Arquivada ou rejeitada': ['Arquivada', 'slate'],
+};
+const COR_STATUS = {
+    green: ['bg-emerald-100 text-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-300', 'bg-emerald-500'],
+    amber: ['bg-amber-100 text-amber-800 dark:bg-amber-950/70 dark:text-amber-300', 'bg-amber-500'],
+    sky: ['bg-sky-100 text-sky-800 dark:bg-sky-950/70 dark:text-sky-300', 'bg-sky-500'],
+    slate: ['bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300', 'bg-slate-400'],
+};
+const COR_TEMA = {
+    impostos: 'border-l-amber-400', economia: 'border-l-sky-400', emprego: 'border-l-indigo-400',
+    previdencia: 'border-l-violet-400', assistencia: 'border-l-pink-400', saude: 'border-l-rose-400',
+    educacao: 'border-l-blue-400', seguranca: 'border-l-slate-500', habitacao: 'border-l-orange-400',
+    transporte: 'border-l-cyan-400', meio_ambiente: 'border-l-emerald-400', agro: 'border-l-lime-500',
+    outros: 'border-l-slate-300',
 };
 const RELEVANCIA = {
     alta: ['Impacto alto no bolso', 'bg-rose-100 text-rose-800 dark:bg-rose-950/70 dark:text-rose-300'],
@@ -118,94 +161,121 @@ const RELEVANCIA = {
     nenhuma: ['Sem efeito direto', 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300'],
 };
 
+const celulas = () => (P.resumo ? P.resumo.celulas : []);
+const temaInfo = (id) => P.categorias.find((c) => c.id === id) || { id, nome: 'Outros temas', icone: 'fa-ellipsis' };
+const perfilNome = (id) => (id === 'todos' ? 'Todos' : (P.perfis.find((x) => x.id === id) || {}).nome || id);
+
 /* ====================================================================== *
- *  Matriz poder × nível
+ *  Barra de contexto: perfil · cidade · fontes
  * ====================================================================== */
-const celula = (n, i) => (P.resumo ? P.resumo.celulas.find((c) => c.nivel === n && c.instancia === i) : null);
-
-function renderMatriz() {
-    const r = P.resumo;
-    if (!r) return;
-    const filtrando = P.nivel || P.instancia;
-    const marcada = (n, i) => filtrando && (!P.nivel || P.nivel === n) && (!P.instancia || P.instancia === i);
-    const cabecalhoCol = r.instancias.map((i) => `<th scope="col" class="p-1.5 font-semibold">
-        <button type="button" data-inst="${i.id}" aria-pressed="${P.instancia === i.id}"
-            class="w-full px-2 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 ${P.instancia === i.id ? 'bg-brand-100 dark:bg-brand-950 text-brand-800 dark:text-brand-300' : ''}">
-            <i class="fa-solid ${ICONE_INST[i.id]} mr-1 text-slate-400" aria-hidden="true"></i>${esc(i.nome)}</button></th>`).join('');
-    const linhas = r.niveis.map((n) => `<tr>
-        <th scope="row" class="p-1.5 text-left font-semibold align-middle">
-            <button type="button" data-nivel="${n.id}" aria-pressed="${P.nivel === n.id}"
-                class="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 ${P.nivel === n.id ? 'bg-brand-100 dark:bg-brand-950 text-brand-800 dark:text-brand-300' : ''}">${esc(n.nome)}</button></th>
-        ${r.instancias.map((i) => {
-            const c = celula(n.id, i.id);
-            if (!c.aplicavel) {
-                return `<td class="p-1.5"><div class="rounded-xl border border-dashed border-slate-200 dark:border-slate-700 p-3 text-center text-[11px] text-slate-400" title="${esc(c.observacao)}">Não se aplica</div></td>`;
-            }
-            const cor = c.fonte_conectada
-                ? 'border-emerald-300 dark:border-emerald-800 bg-emerald-50/60 dark:bg-emerald-950/20'
-                : 'border-amber-300 dark:border-amber-800 bg-amber-50/60 dark:bg-amber-950/20';
-            return `<td class="p-1.5"><button type="button" data-nivel="${n.id}" data-inst="${i.id}" aria-pressed="${marcada(n.id, i.id)}"
-                class="w-full text-left rounded-xl border p-3 transition hover:shadow ${cor} ${marcada(n.id, i.id) ? 'ring-2 ring-brand-500' : ''}">
-                <span class="block text-2xl font-extrabold leading-none">${c.total}</span>
-                <span class="block text-[11px] text-slate-500 dark:text-slate-400 mt-1">${c.traduzidas} traduzido(s)</span>
-                <span class="block mt-1.5 text-[10px] font-bold uppercase tracking-wide ${c.fonte_conectada ? 'text-emerald-700 dark:text-emerald-400' : 'text-amber-700 dark:text-amber-400'}">
-                    <i class="fa-solid ${c.fonte_conectada ? 'fa-plug-circle-check' : 'fa-plug-circle-xmark'} mr-1" aria-hidden="true"></i>${c.fonte_conectada ? 'fonte conectada' : 'fonte a conectar'}</span>
-            </button></td>`;
-        }).join('')}</tr>`).join('');
-    $('matriz').innerHTML = `<table class="w-full text-sm min-w-[560px]"><thead><tr><th class="p-1.5"><span class="sr-only">Nível</span></th>${cabecalhoCol}</tr></thead><tbody>${linhas}</tbody></table>`;
+function renderBarra() {
+    $('cidadeRotulo').textContent = P.municipio ? `${P.municipio.nome} – ${P.municipio.uf}` : 'Escolher cidade';
+    $('btnSemCidade').classList.toggle('hidden', !P.municipio);
+    const ativas = celulas().filter((c) => c.aplicavel && c.fonte_conectada).length;
+    $('fontesRotulo').textContent = `Fontes de dados (${ativas} ativa${ativas === 1 ? '' : 's'})`;
 }
+$('perfilSelect').addEventListener('change', (ev) => { P.perfil = ev.target.value; salvarPrefsParciais({ perfil: P.perfil }); atualizar(); });
 
-$('matriz').addEventListener('click', (ev) => {
-    const b = ev.target.closest('button[data-nivel], button[data-inst]');
+const popCidade = $('popCidade');
+function alternarCidade(abrir) {
+    const mostrar = abrir ?? popCidade.classList.contains('hidden');
+    popCidade.classList.toggle('hidden', !mostrar);
+    $('btnCidade').setAttribute('aria-expanded', String(mostrar));
+    if (mostrar) { $('cidadeBusca').value = ''; $('cidadeLista').innerHTML = ''; setTimeout(() => $('cidadeBusca').focus(), 30); }
+}
+$('btnCidade').addEventListener('click', () => alternarCidade());
+document.addEventListener('click', (ev) => { if (!ev.target.closest('#popCidade') && !ev.target.closest('#btnCidade')) alternarCidade(false); });
+document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') alternarCidade(false); });
+const buscarCidade = debounce(async () => {
+    const q = $('cidadeBusca').value.trim();
+    if (q.length < 2) { $('cidadeLista').innerHTML = ''; return; }
+    try {
+        const achados = await api('/api/municipios?q=' + encodeURIComponent(q));
+        $('cidadeLista').innerHTML = achados.length
+            ? achados.map((m) => `<li><button type="button" role="option" data-cod="${m.codigo}" data-nome="${esc(m.nome)}" data-uf="${esc(m.uf)}"
+                class="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700">${esc(m.nome)} <span class="text-slate-400">– ${esc(m.uf)}</span></button></li>`).join('')
+            : '<li class="px-3 py-2 text-slate-500">Nenhum município encontrado.</li>';
+    } catch (e) { $('cidadeLista').innerHTML = `<li class="px-3 py-2 text-rose-600 text-xs">${esc(e.message)}</li>`; }
+}, 250);
+$('cidadeBusca').addEventListener('input', buscarCidade);
+$('cidadeLista').addEventListener('click', (ev) => {
+    const b = ev.target.closest('[data-cod]');
     if (!b) return;
-    const n = b.dataset.nivel || '', i = b.dataset.inst || '';
-    if (n && i) { // célula: alterna o par
-        const igual = P.nivel === n && P.instancia === i;
-        P.nivel = igual ? '' : n; P.instancia = igual ? '' : i;
-    } else if (n) { P.nivel = P.nivel === n ? '' : n; P.instancia = ''; } // linha
-    else { P.instancia = P.instancia === i ? '' : i; P.nivel = ''; }      // coluna
-    atualizarFiltros();
+    P.municipio = { codigo: Number(b.dataset.cod), nome: b.dataset.nome, uf: b.dataset.uf };
+    salvarPrefsParciais({ municipio: P.municipio });
+    alternarCidade(false); renderBarra(); carregar(false);
+});
+$('btnSemCidade').addEventListener('click', () => {
+    P.municipio = null; salvarPrefsParciais({ municipio: null }); alternarCidade(false); renderBarra(); carregar(false);
 });
 
+/* ---------- status das fontes (modal) ---------- */
+function renderFontes() {
+    $('fontesLista').innerHTML = celulas().filter((c) => c.aplicavel).map((c) => `<li class="py-3 flex gap-3">
+        <span class="mt-0.5 ${c.fonte_conectada ? 'text-emerald-600' : 'text-amber-600'}"><i class="fa-solid ${c.fonte_conectada ? 'fa-circle-check' : 'fa-clock'}" aria-hidden="true"></i></span>
+        <div>
+            <p class="text-sm font-semibold">${esc(c.nome_nivel)} · ${esc(c.nome_instancia)}
+                <span class="text-xs font-normal ${c.fonte_conectada ? 'text-emerald-700 dark:text-emerald-400' : 'text-amber-700 dark:text-amber-400'}">· ${c.fonte_conectada ? `${c.total} ato(s)` : 'em breve'}</span></p>
+            <p class="text-xs text-slate-600 dark:text-slate-400">${esc(c.fonte)}</p>
+            <p class="text-xs text-slate-500">${esc(c.observacao)}</p>
+        </div></li>`).join('');
+}
+function abrirFontes() { renderFontes(); const d = $('dlgFontes'); if (typeof d.showModal === 'function') d.showModal(); else d.setAttribute('open', ''); }
+$('btnFontes').addEventListener('click', abrirFontes);
+$('btnFecharFontes').addEventListener('click', () => $('dlgFontes').close());
+$('dlgFontes').addEventListener('click', (ev) => { if (ev.target === $('dlgFontes')) $('dlgFontes').close(); });
+
 /* ====================================================================== *
- *  Filtros
+ *  Nível (segmentado) e filtros
  * ====================================================================== */
+function renderSegNivel() {
+    const niveis = [{ id: '', nome: 'Todos', icone: 'fa-layer-group' }, ...(P.resumo ? P.resumo.niveis : []).map((n) => ({ ...n, icone: ICONE_NIVEL[n.id] }))];
+    $('segNivel').innerHTML = niveis.map((n) => {
+        const ativo = P.nivel === n.id;
+        const emBreve = n.id && !celulas().some((c) => c.nivel === n.id && c.fonte_conectada);
+        return `<button type="button" role="radio" aria-checked="${ativo}" data-nivel="${n.id}"
+            class="px-3.5 py-2 rounded-xl text-sm font-semibold transition ${ativo
+            ? 'bg-white dark:bg-slate-600 text-brand-700 dark:text-white shadow-sm'
+            : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'}">
+            <i class="fa-solid ${n.icone} mr-1.5 text-xs opacity-70" aria-hidden="true"></i>${esc(n.nome)}${emBreve ? ' <span class="ml-1 text-[10px] font-medium uppercase tracking-wide opacity-60">em breve</span>' : ''}</button>`;
+    }).join('');
+}
+$('segNivel').addEventListener('click', (ev) => {
+    const b = ev.target.closest('[data-nivel]');
+    if (!b) return;
+    P.nivel = b.dataset.nivel; atualizar();
+});
+$('filtroCategoria').addEventListener('change', (ev) => { P.categoria = ev.target.value; atualizar(); });
+$('filtroInstancia').addEventListener('change', (ev) => { P.instancia = ev.target.value; atualizar(); });
+$('filtroStatus').addEventListener('change', (ev) => { P.status = ev.target.value; atualizar(); });
+$('ordem').addEventListener('change', (ev) => { P.ordem = ev.target.value; atualizar(); });
+$('busca').addEventListener('input', debounce((ev) => { P.q = ev.target.value.trim(); atualizar(); }, 300));
+$('btnMais').addEventListener('click', () => { P.pagina += 1; carregar(true); });
+
 function renderChips() {
     const chips = [];
-    if (P.nivel) chips.push(['nivel', `Nível: ${NOME_NIVEL[P.nivel]}`]);
+    if (P.categoria !== 'all') chips.push(['categoria', `Tema: ${temaInfo(P.categoria).nome}`]);
     if (P.instancia) chips.push(['instancia', `Poder: ${NOME_INST[P.instancia]}`]);
-    if (P.perfil) chips.push(['perfil', `Perfil: ${(P.perfis.find((p) => p.id === P.perfil) || {}).nome || P.perfil}`]);
-    if (P.categoria !== 'all') chips.push(['categoria', `Área: ${(P.categorias.find((c) => c.id === P.categoria) || {}).nome || P.categoria}`]);
-    if (P.status !== 'all') chips.push(['status', `Situação: ${P.status}`]);
+    if (P.status !== 'all') chips.push(['status', `Situação: ${(STATUS_VISUAL[P.status] || [P.status])[0]}`]);
     if (P.q) chips.push(['q', `Busca: “${P.q}”`]);
     $('chipsFiltro').innerHTML = chips.map(([k, t]) => `<button type="button" data-remover="${k}"
         class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-brand-100 dark:bg-brand-950 text-brand-800 dark:text-brand-300 hover:opacity-80">
         ${esc(t)}<i class="fa-solid fa-xmark text-[10px]" aria-hidden="true"></i><span class="sr-only">remover filtro</span></button>`).join('');
-    $('notaFiltros').classList.toggle('hidden', !P.perfil);
 }
 $('chipsFiltro').addEventListener('click', (ev) => {
     const b = ev.target.closest('[data-remover]');
     if (!b) return;
     const k = b.dataset.remover;
-    if (k === 'nivel') P.nivel = '';
-    else if (k === 'instancia') P.instancia = '';
-    else if (k === 'perfil') { P.perfil = ''; salvarPrefsParciais({ perfil: '' }); $('perfilSelect').value = ''; }
-    else if (k === 'categoria') { P.categoria = 'all'; $('filtroCategoria').value = 'all'; }
+    if (k === 'categoria') { P.categoria = 'all'; $('filtroCategoria').value = 'all'; }
+    else if (k === 'instancia') { P.instancia = ''; $('filtroInstancia').value = ''; }
     else if (k === 'status') { P.status = 'all'; $('filtroStatus').value = 'all'; }
     else if (k === 'q') { P.q = ''; $('busca').value = ''; }
-    atualizarFiltros();
+    atualizar();
 });
-$('perfilSelect').addEventListener('change', (ev) => { P.perfil = ev.target.value; salvarPrefsParciais({ perfil: P.perfil }); atualizarFiltros(); });
-$('filtroCategoria').addEventListener('change', (ev) => { P.categoria = ev.target.value; atualizarFiltros(); });
-$('filtroStatus').addEventListener('change', (ev) => { P.status = ev.target.value; atualizarFiltros(); });
-$('ordem').addEventListener('change', (ev) => { P.ordem = ev.target.value; atualizarFiltros(); });
-$('busca').addEventListener('input', debounce((ev) => { P.q = ev.target.value.trim(); atualizarFiltros(); }, 300));
-$('btnMais').addEventListener('click', () => { P.pagina += 1; carregar(true); });
-
-function atualizarFiltros() { renderMatriz(); renderChips(); P.pagina = 1; carregar(false); }
+function atualizar() { renderSegNivel(); renderChips(); P.pagina = 1; carregar(false); }
 
 /* ====================================================================== *
- *  Cartões
+ *  Cartões de impacto
  * ====================================================================== */
 const meusVotos = ler('ic_votos', {});
 function tokenAnonimo() {
@@ -242,45 +312,74 @@ function linhaDoTempo(ev) {
             <p class="text-xs font-semibold">${esc(e.etapa)} <span class="font-normal text-slate-500">· ${esc(e.orgao)} · ${esc(fmtData(e.data))}</span></p>
             ${e.detalhe ? `<p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">${esc(e.detalhe)}</p>` : ''}</li>`).join('')}</ol>`;
 }
+function tituloCurto(ementa) {
+    const t = String(ementa || '').replace(/\s+/g, ' ').trim();
+    if (t.length <= 140) return t;
+    const corte = t.slice(0, 140);
+    return corte.slice(0, corte.lastIndexOf(' ')) + '…';
+}
+function statusPilula(p) {
+    // Sem status mapeado, não exibimos o jargão cru da tramitação: "Em tramitação" + o texto oficial no tooltip.
+    const [rot, cor] = STATUS_VISUAL[p.status] || ['Em tramitação', 'sky'];
+    const [cls, ponto] = COR_STATUS[cor];
+    const dica = p.situacao_oficial ? ` title="Situação oficial: ${esc(p.situacao_oficial)}"` : '';
+    return `<span${dica} class="shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold ${cls}"><span class="w-1.5 h-1.5 rounded-full ${ponto}"></span>${esc(rot)}</span>`;
+}
+function chipsCartao(p) {
+    const tema = temaInfo(p.tema);
+    const lista = [];
+    if (p.traduzida) {
+        const afeta = P.perfil && ((p.perfis || []).includes(P.perfil) || (p.perfis || []).includes('todos'));
+        const nomes = (p.perfis || []).map(perfilNome);
+        const texto = afeta ? `Afeta: ${perfilNome(P.perfil)}` : (nomes.length ? `Perfil: ${nomes.slice(0, 2).join(', ')}${nomes.length > 2 ? ` +${nomes.length - 2}` : ''}` : '');
+        if (texto) lista.push(`<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full ${afeta ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300' : 'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-200'} font-medium"><i class="fa-solid fa-user text-[10px]" aria-hidden="true"></i>${esc(texto)}</span>`);
+    } else if (P.perfil) {
+        lista.push(`<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-dashed border-slate-300 dark:border-slate-600 text-slate-500" title="Sem a tradução ainda não sabemos quais perfis o ato afeta"><i class="fa-solid fa-user text-[10px]" aria-hidden="true"></i>Perfil ainda não classificado</span>`);
+    }
+    lista.push(`<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-200 font-medium"><i class="fa-solid ${esc(tema.icone)} text-[10px]" aria-hidden="true"></i>${esc(tema.nome)}</span>`);
+    if (p.tema_origem === 'palavras_chave') {
+        lista.push('<span class="px-2 py-1 rounded-full border border-dashed border-slate-300 dark:border-slate-600 text-slate-500 text-[10px]" title="Tema definido por palavras-chave da ementa oficial, não pela IA">tema aproximado</span>');
+    }
+    if (p.traduzida && p.relevancia) {
+        const [rot, cls] = RELEVANCIA[p.relevancia] || RELEVANCIA.nenhuma;
+        lista.push(`<span class="px-2.5 py-1 rounded-full font-semibold ${cls}">${esc(rot)}</span>`);
+    }
+    return lista.join('');
+}
 
 function cartao(p) {
-    const [rotRel, clsRel] = RELEVANCIA[p.relevancia] || RELEVANCIA.nenhuma;
-    const nomesPerfis = (p.perfis || []).map((id) => (id === 'todos' ? 'Todos' : (P.perfis.find((x) => x.id === id) || {}).nome || id));
-    const nomesCats = (p.categorias || []).map((id) => (P.categorias.find((x) => x.id === id) || {}).nome || id);
-    const traduzida = p.traduzida;
-    return `<article class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-sm overflow-hidden">
-        <div class="p-5 sm:p-6">
-            <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
-                <div class="flex flex-wrap items-center gap-2">
-                    <span class="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200">
-                        <i class="fa-solid ${ICONE_INST[p.instancia] || 'fa-landmark'} mr-1 text-slate-400" aria-hidden="true"></i>${esc(NOME_NIVEL[p.nivel] || p.nivel)} · ${esc(NOME_INST[p.instancia] || p.instancia)}</span>
-                    ${p.status ? `<span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold border bg-sky-100 text-sky-800 border-sky-300 dark:bg-sky-950/80 dark:text-sky-300 dark:border-sky-800">${esc(p.status)}</span>` : ''}
-                    <span class="text-xs text-slate-400 font-mono">${esc(p.identificacao)}</span>
-                    ${traduzida ? `<span class="px-2 py-0.5 rounded-full text-[11px] font-semibold ${clsRel}">${esc(rotRel)}</span>` : ''}
-                    ${p.tema_origem === 'palavras_chave' ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-medium border border-dashed border-slate-300 dark:border-slate-600 text-slate-500" title="Tema definido por palavras-chave da ementa oficial, não pela IA">tema aproximado</span>' : ''}
-                </div>
-                <span class="text-xs text-slate-400">${p.data_apresentacao ? `<i class="fa-regular fa-calendar mr-1" aria-hidden="true"></i>${esc(fmtData(p.data_apresentacao))}` : ''}</span>
+    const tipo = NOME_TIPO[p.sigla_tipo] || p.sigla_tipo;
+    const numero = (p.identificacao.split(' ')[1]) || '';
+    const titulo = p.traduzida ? p.titulo : tituloCurto(p.ementa_oficial);
+    const mudanca = p.traduzida
+        ? `<p class="text-sm leading-relaxed">${esc(p.impacto_pratico)}</p>`
+        : `<p class="text-sm text-slate-500 dark:text-slate-400 italic">Explicação em linguagem simples a caminho. Por enquanto, veja a ementa oficial em “Ver detalhes”.</p>`;
+    return `<article class="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 border-l-4 ${COR_TEMA[p.tema] || COR_TEMA.outros} shadow-sm overflow-hidden">
+        <div class="p-5">
+            <div class="flex items-start justify-between gap-3">
+                <p class="text-[11px] font-bold tracking-wide uppercase text-slate-500 dark:text-slate-400">
+                    <i class="fa-solid ${ICONE_NIVEL[p.nivel] || 'fa-landmark'} mr-1" aria-hidden="true"></i>${esc(NOME_NIVEL[p.nivel] || p.nivel)} · ${esc(tipo)} ${esc(numero)} · ${esc(NOME_INST[p.instancia] || p.instancia)}</p>
+                ${statusPilula(p)}
             </div>
-            ${traduzida ? `
-                <h3 class="text-lg font-bold leading-snug">${esc(p.titulo)}</h3>
-                <p class="mt-2 text-sm text-slate-600 dark:text-slate-300 leading-relaxed">${esc(p.resumo)}</p>
-                <div class="mt-4 p-4 bg-slate-50 dark:bg-slate-900/80 rounded-xl border-l-4 border-brand-500">
-                    <span class="text-xs font-bold uppercase tracking-wider block"><i class="fa-solid fa-bolt text-brand-600 mr-1" aria-hidden="true"></i>Como afeta o seu dia a dia</span>
-                    <p class="text-sm text-slate-700 dark:text-slate-300 font-medium mt-1">${esc(p.impacto_pratico)}</p>
-                </div>
-                <p class="mt-3 text-[11px] text-slate-500">${nomesPerfis.length ? `<b>Quem é afetado:</b> ${esc(nomesPerfis.join(', '))} · ` : ''}${nomesCats.length ? `<b>Áreas:</b> ${esc(nomesCats.join(', '))}` : ''}</p>`
-            : `
-                <h3 class="text-base font-bold leading-snug">${esc(NOME_TIPO[p.sigla_tipo] || p.sigla_tipo)} ${esc((p.identificacao.split(' ')[1]) || '')}</h3>
-                <p class="mt-2 text-sm text-slate-700 dark:text-slate-300 leading-relaxed">${esc(p.ementa_oficial)}</p>
-                <p class="mt-3 text-[11px] text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 rounded-lg px-3 py-2">
-                    <i class="fa-solid fa-hourglass-half mr-1" aria-hidden="true"></i>Tradução em linguagem simples ainda não gerada. Acima, o texto oficial (ementa).</p>`}
-            ${p.autoria ? `<p class="mt-3 text-[11px] text-slate-500"><b>Autoria:</b> ${esc(p.autoria)}</p>` : ''}
+            <h3 class="mt-2 text-base sm:text-lg font-bold leading-snug">${esc(titulo)}</h3>
+            <div class="mt-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 px-4 py-3">
+                <p class="text-[11px] font-bold uppercase tracking-wide text-brand-700 dark:text-brand-400 mb-1"><i class="fa-solid fa-comment-dots mr-1" aria-hidden="true"></i>O que muda pra você</p>
+                ${mudanca}
+            </div>
+            <div class="mt-3 flex flex-wrap items-center gap-2 text-xs">${chipsCartao(p)}</div>
         </div>
-        <details class="border-t border-slate-200 dark:border-slate-700">
-            <summary class="px-5 sm:px-6 py-3 flex items-center justify-between text-xs font-bold text-brand-700 dark:text-brand-400 hover:bg-slate-50 dark:hover:bg-slate-900/40">
-                <span>Ver tramitação${traduzida ? ', análise' : ''} e opinar</span><i class="fa-solid fa-chevron-down text-[10px] chev" aria-hidden="true"></i></summary>
-            <div class="bg-slate-50/80 dark:bg-slate-900/50 p-5 sm:p-6 space-y-6">
-                ${traduzida ? `<div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+        <details class="group border-t border-slate-100 dark:border-slate-700">
+            <summary class="px-5 py-2.5 text-right text-xs font-bold text-brand-700 dark:text-brand-400 hover:bg-slate-50 dark:hover:bg-slate-900/40">
+                <span class="group-open:hidden">Ver detalhes <i class="fa-solid fa-arrow-right ml-1" aria-hidden="true"></i></span>
+                <span class="hidden group-open:inline">Fechar <i class="fa-solid fa-xmark ml-1" aria-hidden="true"></i></span></summary>
+            <div class="bg-slate-50/80 dark:bg-slate-900/50 p-5 space-y-6">
+                <div class="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 text-xs">
+                    <span class="font-bold text-slate-500 block mb-1">Ementa oficial</span>
+                    <p class="font-mono text-slate-600 dark:text-slate-400">${esc(p.ementa_oficial)}</p>
+                    ${p.autoria ? `<p class="mt-2 text-[11px] text-slate-500"><b>Autoria:</b> ${esc(p.autoria)}</p>` : ''}
+                    ${p.traduzida ? `<p class="mt-1 text-[11px] text-slate-400">${p.texto_analisado === 'ementa' ? 'A tradução usou apenas a ementa (texto integral indisponível).' : 'A tradução usou o texto integral publicado.'}</p>` : ''}
+                </div>
+                ${p.traduzida ? `<div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                     <div class="bg-emerald-50/70 dark:bg-emerald-950/30 p-3.5 rounded-xl border border-emerald-200 dark:border-emerald-800/50">
                         <span class="font-bold text-emerald-800 dark:text-emerald-300 block mb-1.5"><i class="fa-solid fa-circle-check mr-1.5" aria-hidden="true"></i>Argumento geralmente apresentado a favor</span>
                         <p class="text-slate-700 dark:text-slate-300">${esc(p.ponto_positivo)}</p></div>
@@ -288,48 +387,43 @@ function cartao(p) {
                         <span class="font-bold text-amber-800 dark:text-amber-300 block mb-1.5"><i class="fa-solid fa-triangle-exclamation mr-1.5" aria-hidden="true"></i>Ponto de atenção geralmente apontado</span>
                         <p class="text-slate-700 dark:text-slate-300">${esc(p.ponto_atencao)}</p></div>
                 </div>` : ''}
-                <div><h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3"><i class="fa-solid fa-timeline text-brand-500 mr-1.5" aria-hidden="true"></i>Linha do tempo de tramitação</h4>${linhaDoTempo(p.linha_do_tempo)}</div>
-                ${traduzida ? `<div class="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 text-xs">
-                    <span class="font-bold text-slate-500 block mb-1">Ementa oficial</span>
-                    <p class="font-mono text-slate-600 dark:text-slate-400">${esc(p.ementa_oficial)}</p>
-                    <p class="mt-2 text-[11px] text-slate-400">${p.texto_analisado === 'ementa' ? 'A análise usou apenas a ementa (texto integral indisponível).' : 'A análise usou o texto integral publicado.'}</p></div>` : ''}
+                <div><h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3"><i class="fa-solid fa-timeline text-brand-500 mr-1.5" aria-hidden="true"></i>Por onde o ato já passou</h4>${linhaDoTempo(p.linha_do_tempo)}</div>
                 <div>
-                    <span class="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-2">Opinião da comunidade <span class="normal-case font-normal">(consulta informal, não é pesquisa)</span></span>
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-2">O que a comunidade acha <span class="normal-case font-normal">(consulta informal, não é pesquisa)</span></span>
                     <div id="votos-${p.id}" class="mb-3">${placarHtml(p.votos)}</div>
                     <div id="botoes-${p.id}" class="grid grid-cols-3 gap-2 max-w-md">${botoesVoto(p.id)}</div>
                 </div>
-                <p class="text-xs">${p.url_fonte ? `<a href="${esc(urlSegura(p.url_fonte))}" target="_blank" rel="noopener" class="text-brand-700 dark:text-brand-400 font-semibold hover:underline"><i class="fa-solid fa-landmark mr-1" aria-hidden="true"></i>Ver no site oficial<i class="fa-solid fa-arrow-up-right-from-square text-[9px] ml-1" aria-hidden="true"></i></a>` : ''}</p>
+                ${p.url_fonte ? `<p class="text-xs"><a href="${esc(urlSegura(p.url_fonte))}" target="_blank" rel="noopener" class="text-brand-700 dark:text-brand-400 font-semibold hover:underline"><i class="fa-solid fa-landmark mr-1" aria-hidden="true"></i>Ver no site oficial<i class="fa-solid fa-arrow-up-right-from-square text-[9px] ml-1" aria-hidden="true"></i></a></p>` : ''}
             </div>
         </details>
     </article>`;
 }
 
 /* ====================================================================== *
- *  Lista agrupada por nível e poder
+ *  Lista agrupada por tema
  * ====================================================================== */
-/* Grupos por tema: o servidor ordena os atos por tema e devolve a contagem de cada tema sob os filtros atuais. */
 function cabecalhoGrupo(temaId) {
-    const t = P.categorias.find((c) => c.id === temaId) || { nome: 'Outros temas', icone: 'fa-ellipsis' };
+    const t = temaInfo(temaId);
     const n = P.temasContagem[temaId];
-    return `<div id="tema-${esc(temaId)}" class="pt-3 flex flex-wrap items-baseline gap-x-3 border-b border-slate-200 dark:border-slate-700 pb-2 scroll-mt-20">
-        <h3 class="text-sm font-extrabold uppercase tracking-wider text-slate-700 dark:text-slate-200">
-            <i class="fa-solid ${esc(t.icone)} mr-1.5 text-brand-600" aria-hidden="true"></i>${esc(t.nome)}</h3>
-        ${n ? `<span class="text-[11px] text-slate-500">${n} ato(s)</span>` : ''}</div>`;
+    return `<div class="pt-4 flex items-baseline gap-x-2 text-slate-700 dark:text-slate-200">
+        <h2 class="text-base font-extrabold"><i class="fa-solid ${esc(t.icone)} mr-2 text-brand-600" aria-hidden="true"></i>${esc(t.nome)}</h2>
+        ${n ? `<span class="text-xs text-slate-500">${n} ato${n === 1 ? '' : 's'}</span>` : ''}</div>`;
 }
 
-function painelSemFonte(celulas) {
-    const itens = celulas.map((c) => `<li class="mt-3"><p class="text-sm font-semibold">${esc(c.nome_nivel)} · ${esc(c.nome_instancia)}</p>
-        <p class="text-xs text-slate-600 dark:text-slate-400 mt-0.5"><b>Fonte prevista:</b> ${esc(c.fonte)}</p>
-        <p class="text-xs text-slate-600 dark:text-slate-400">${esc(c.observacao)}</p></li>`).join('');
-    return `<div class="rounded-2xl border border-dashed border-amber-300 dark:border-amber-800 bg-amber-50/60 dark:bg-amber-950/20 p-6">
-        <h4 class="font-bold text-amber-900 dark:text-amber-200"><i class="fa-solid fa-plug-circle-xmark mr-2" aria-hidden="true"></i>Ainda não há fonte de dados conectada para esta seleção</h4>
-        <p class="text-xs text-amber-900/80 dark:text-amber-200/80 mt-1">Preferimos mostrar esta lacuna a preencher a tela com dados incompletos. Quando a fonte for conectada, os atos aparecerão aqui.</p>
-        <ul>${itens}</ul></div>`;
-}
-
-function celulasSelecionadas() {
-    if (!P.resumo) return [];
-    return P.resumo.celulas.filter((c) => c.aplicavel && (!P.nivel || c.nivel === P.nivel) && (!P.instancia || c.instancia === P.instancia));
+function painelVazio() {
+    const sel = celulas().filter((c) => c.aplicavel && (!P.nivel || c.nivel === P.nivel) && (!P.instancia || c.instancia === P.instancia));
+    const semFonte = sel.length > 0 && sel.every((c) => !c.fonte_conectada);
+    if (semFonte && P.nivel) {
+        const plural = { federal: 'federais', estadual: 'estaduais', municipal: 'municipais' }[P.nivel];
+        return `<div class="text-center py-12 px-6 bg-white dark:bg-slate-800 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700">
+            <i class="fa-solid ${ICONE_NIVEL[P.nivel]} text-3xl text-slate-300 mb-3" aria-hidden="true"></i>
+            <h3 class="font-bold">Ainda não temos atos ${plural} por aqui</h3>
+            <p class="text-sm text-slate-500 mt-1 max-w-md mx-auto">${P.nivel === 'municipal' && P.municipio ? `Para ${esc(P.municipio.nome)}, as fontes oficiais municipais ainda estão em implantação.` : 'As fontes oficiais desse nível ainda estão em implantação.'}</p>
+            <button type="button" data-acao="fontes" class="mt-4 text-xs font-semibold text-brand-700 dark:text-brand-400 hover:underline"><i class="fa-solid fa-plug mr-1" aria-hidden="true"></i>Ver status das fontes</button></div>`;
+    }
+    return `<div class="text-center py-12 bg-white dark:bg-slate-800 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700">
+        <i class="fa-solid fa-folder-open text-4xl text-slate-300 mb-3" aria-hidden="true"></i><h3 class="font-semibold">Nenhum ato encontrado</h3>
+        <p class="text-xs text-slate-500 mt-1">Ajuste os filtros — ou rode o coletor (<code>python backend/coletor.py</code>) para trazer dados.</p></div>`;
 }
 
 let reqLista = 0;
@@ -348,36 +442,22 @@ async function carregar(acrescentar = false) {
         P.total = r.total;
         P.temasContagem = r.temas || {};
         P.itens = acrescentar ? P.itens.concat(r.itens) : r.itens;
-        $('contagem').textContent = `Mostrando ${P.itens.length} de ${r.total} ato(s)`;
-
-        if (!P.itens.length) {
-            const sel = celulasSelecionadas();
-            const semFonte = sel.filter((c) => !c.fonte_conectada);
-            $('lista').innerHTML = (sel.length && semFonte.length === sel.length)
-                ? painelSemFonte(semFonte)
-                : `<div class="text-center py-12 bg-white dark:bg-slate-800 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700">
-                    <i class="fa-solid fa-folder-open text-4xl text-slate-300 mb-3" aria-hidden="true"></i><h4 class="font-semibold">Nenhum ato encontrado</h4>
-                    <p class="text-xs text-slate-500 mt-1">Ajuste os filtros — ou rode o coletor (<code>python backend/coletor.py</code>) para trazer dados.</p></div>`;
-            $('btnMais').classList.add('hidden');
-            return;
-        }
-
+        $('contagem').textContent = r.total
+            ? `${r.total} ato${r.total === 1 ? '' : 's'}${P.perfil ? ` · os ainda sem tradução aparecem marcados, pois não sabemos se afetam ${perfilNome(P.perfil)}` : ''}`
+            : '';
+        if (!P.itens.length) { $('lista').innerHTML = painelVazio(); $('btnMais').classList.add('hidden'); return; }
         let html = '', anterior = '';
         for (const p of P.itens) {
             if (p.tema !== anterior) { html += cabecalhoGrupo(p.tema); anterior = p.tema; }
             html += cartao(p);
         }
-        // Se a seleção inclui células sem fonte, avisa no fim (sem esconder o que existe).
-        const semFonte = celulasSelecionadas().filter((c) => !c.fonte_conectada);
-        if (semFonte.length && S_MOSTRAR_AVISO_PARCIAL()) html += painelSemFonte(semFonte);
         $('lista').innerHTML = html;
         $('btnMais').classList.toggle('hidden', P.itens.length >= r.total);
     } catch (e) { if (minha === reqLista) { $('lista').innerHTML = mensagemErro(e); $('contagem').textContent = ''; } }
 }
-// O aviso de "fontes a conectar" aparece quando há filtro de nível/poder (visão focada); na visão geral a matriz já informa.
-const S_MOSTRAR_AVISO_PARCIAL = () => Boolean(P.nivel || P.instancia);
 
 $('lista').addEventListener('click', async (ev) => {
+    if (ev.target.closest('[data-acao="fontes"]')) { abrirFontes(); return; }
     const b = ev.target.closest('[data-voto]');
     if (!b) return;
     const id = Number(b.dataset.id), voto = b.dataset.voto;
@@ -397,11 +477,6 @@ $('lista').addEventListener('click', async (ev) => {
  *  Inicialização
  * ====================================================================== */
 async function iniciar() {
-    if (P.municipio) {
-        $('cidadeInfo').innerHTML = `<i class="fa-solid fa-location-dot mr-1" aria-hidden="true"></i>Sua cidade: <b>${esc(P.municipio.nome)}/${esc(P.municipio.uf)}</b> · <a class="underline" href="index.html">alterar</a>`;
-    } else {
-        $('cidadeInfo').innerHTML = `<i class="fa-solid fa-location-dot mr-1" aria-hidden="true"></i>Cidade não escolhida · <a class="underline" href="index.html">escolher</a>`;
-    }
     try {
         const [perfis, categorias, statusLista, resumo] = await Promise.all([
             api('/api/perfis'), api('/api/categorias'), api('/api/status'), api('/api/politicas/resumo'),
@@ -409,21 +484,20 @@ async function iniciar() {
         P.perfis = perfis; P.categorias = categorias; P.statusLista = statusLista; P.resumo = resumo;
         if (P.perfil && !perfis.some((p) => p.id === P.perfil)) P.perfil = '';
     } catch (e) {
-        $('matriz').innerHTML = mensagemErro(e); $('lista').innerHTML = ''; $('contagem').textContent = '';
+        $('lista').innerHTML = mensagemErro(e); $('contagem').textContent = '';
         return;
     }
     $('perfilSelect').innerHTML = '<option value="">Todos os perfis</option>' + P.perfis.map((p) => `<option value="${esc(p.id)}">${esc(p.nome)}</option>`).join('');
     $('perfilSelect').value = P.perfil;
-    $('filtroCategoria').innerHTML = '<option value="all">Todas as áreas</option>' + P.categorias.map((c) => `<option value="${esc(c.id)}">${esc(c.nome)}</option>`).join('');
-    $('filtroStatus').innerHTML = '<option value="all">Todas as situações</option>' + P.statusLista.map((s) => `<option value="${esc(s)}">${esc(s)}</option>`).join('');
+    $('filtroCategoria').innerHTML = '<option value="all">Todos os temas</option>' + P.categorias.map((c) => `<option value="${esc(c.id)}">${esc(c.nome)}</option>`).join('');
+    $('filtroStatus').innerHTML = '<option value="all">Todas as situações</option>' + P.statusLista.map((s) => `<option value="${esc(s)}">${esc((STATUS_VISUAL[s] || [s])[0])}</option>`).join('');
 
-    // Link direto: politicas.html#municipal-executivo, #federal, #judiciario …
-    const h = location.hash.replace('#', '');
-    const [a, b] = h.split('-');
+    // Link direto: politicas.html#federal, #municipal, #federal-executivo …
+    const [a, b] = location.hash.replace('#', '').split('-');
     if (NOME_NIVEL[a]) P.nivel = a;
-    if (NOME_INST[b || a]) P.instancia = b || a;
+    if (NOME_INST[b || a]) { P.instancia = b || a; $('filtroInstancia').value = P.instancia; }
 
-    renderMatriz(); renderChips(); carregar(false);
+    renderBarra(); renderSegNivel(); renderChips(); carregar(false);
 }
 iniciar();
 </script>
