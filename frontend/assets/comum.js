@@ -44,6 +44,7 @@ function salvarPrefsParciais(parcial) { guardar('ic_prefs', { ...lerPrefs(), ...
 const NAVEGACAO = [
     { id: 'planos', href: 'index.html#candidatos', icone: 'fa-flag', rotulo: 'Planos de governo' },
     { id: 'politicas', href: 'politicas.html', icone: 'fa-landmark', rotulo: 'Políticas públicas' },
+    { id: 'economia', href: 'economia.html', icone: 'fa-chart-pie', rotulo: 'Economia' },
     { id: 'simuladores', href: 'index.html#simuladores', icone: 'fa-calculator', rotulo: 'Simuladores' },
 ];
 
@@ -88,6 +89,7 @@ function renderLayout(paginaAtual) {
                     <li><a class="hover:text-white" target="_blank" rel="noopener" href="https://www12.senado.leg.br/dados-abertos">Senado Federal — Dados Abertos</a></li>
                     <li><a class="hover:text-white" target="_blank" rel="noopener" href="https://www.in.gov.br/">Diário Oficial da União</a></li>
                     <li><a class="hover:text-white" target="_blank" rel="noopener" href="https://servicodados.ibge.gov.br/api/docs">IBGE — municípios e população</a></li>
+                    <li><a class="hover:text-white" target="_blank" rel="noopener" href="https://siconfi.tesouro.gov.br/">Tesouro Nacional — SICONFI (contas dos municípios)</a></li>
                 </ul>
             </div>
             <div>

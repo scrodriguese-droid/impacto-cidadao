@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Economia do setor público — ImpactoCidadão</title>
+    <meta name="description" content="As contas da sua cidade em linguagem simples: saúde fiscal, de onde vem e para onde vai o dinheiro, orçamento e transparência.">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="assets/tailwind-config.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Inter', system-ui, sans-serif; }
+        :focus-visible { outline: 2px solid #0284c7; outline-offset: 2px; }
+        .barra { transition: width .6s ease; }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-full flex flex-col transition-colors duration-200">
+
+<a href="#conteudo" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-white focus:text-slate-900 focus:p-3">Ir para o conteúdo</a>
+<div id="cabecalho"></div>
+
+<main id="conteudo" class="max-w-4xl mx-auto px-4 sm:px-6 pt-6 pb-10 flex-grow w-full">
+    <h1 class="text-2xl font-extrabold tracking-tight">Economia do setor público</h1>
+    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">As contas da sua cidade, da visão geral ao detalhe. Dados oficiais do Tesouro Nacional (SICONFI).</p>
+
+    <!-- Cidade -->
+    <div class="sticky top-16 z-30 -mx-4 sm:mx-0 px-4 sm:px-0 py-2 mt-3 bg-slate-50/90 dark:bg-slate-900/90 backdrop-blur">
+        <div class="flex flex-wrap items-center gap-x-2 gap-y-2 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 shadow-sm text-sm">
+            <i class="fa-solid fa-location-dot text-rose-500" aria-hidden="true"></i>
+            <span class="font-medium">Contas de:</span>
+            <div class="relative">
+                <button id="btnCidade" type="button" class="inline-flex items-center gap-1.5 font-bold bg-teal-50 dark:bg-teal-950/50 text-teal-800 dark:text-teal-300 border border-teal-200 dark:border-teal-800 rounded-full px-3.5 py-1.5 hover:opacity-90" aria-expanded="false" aria-controls="popCidade">
+                    <i class="fa-solid fa-city text-xs" aria-hidden="true"></i><span id="cidadeRotulo">Escolher cidade</span>
+                </button>
+                <div id="popCidade" class="hidden absolute left-0 top-full mt-2 w-72 z-40 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-xl p-2">
+                    <label for="cidadeBusca" class="sr-only">Buscar município</label>
+                    <input id="cidadeBusca" type="text" autocomplete="off" placeholder="Digite o nome da cidade…"
+                           class="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                    <ul id="cidadeLista" class="mt-1 max-h-60 overflow-auto text-sm" role="listbox"></ul>
+                </div>
+            </div>
+            <span id="periodoRotulo" class="ml-auto text-xs text-slate-500 dark:text-slate-400"></span>
+        </div>
+    </div>
+
+    <div id="estado" class="mt-4"></div>
+    <div id="painel" class="hidden mt-4 space-y-8"></div>
+</main>
+
+<div id="rodape"></div>
+
+<script src="assets/comum.js"></script>
+<script>
+renderLayout('economia');
+
+const E = { municipio: lerPrefs().municipio || null, dados: null, aba: 'receitas' };
+const pct = (v) => (v == null ? '—' : `${Number(v).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%`);
+const brlCurto = (n) => {
+    const v = Math.abs(Number(n || 0)), s = n < 0 ? '−' : '';
+    if (v >= 1e9) return `${s}R$ ${(v / 1e9).toLocaleString('pt-BR', { maximumFractionDigits: 2 })} bi`;
+    if (v >= 1e6) return `${s}R$ ${(v / 1e6).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} mi`;
+    if (v >= 1e3) return `${s}R$ ${(v / 1e3).toLocaleString('pt-BR', { maximumFractionDigits: 0 })} mil`;
+    return `${s}${brl(v)}`;
+};
+const barra = (p, cor = 'bg-brand-500') => `<div class="h-2.5 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden"><div class="barra h-full ${cor}" style="width:${Math.max(0, Math.min(100, Number(p) || 0))}%"></div></div>`;
+const cartao = (inner, extra = '') => `<div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 ${extra}">${inner}</div>`;
+const titulo = (n, t, sub) => `<div class="mb-3"><p class="text-xs font-bold uppercase tracking-wider text-brand-700 dark:text-brand-400">Nível ${n}</p>
+    <h2 class="text-xl font-bold">${esc(t)}</h2><p class="text-sm text-slate-500 dark:text-slate-400">${esc(sub)}</p></div>`;
+
+/* ---------- cidade ---------- */
+const pop = $('popCidade');
+function alternarCidade(abrir) {
+    const mostrar = abrir ?? pop.classList.contains('hidden');
+    pop.classList.toggle('hidden', !mostrar);
+    $('btnCidade').setAttribute('aria-expanded', String(mostrar));
+    if (mostrar) { $('cidadeBusca').value = ''; $('cidadeLista').innerHTML = ''; setTimeout(() => $('cidadeBusca').focus(), 30); }
+}
+$('btnCidade').addEventListener('click', () => alternarCidade());
+document.addEventListener('click', (ev) => { if (!ev.target.closest('#popCidade') && !ev.target.closest('#btnCidade')) alternarCidade(false); });
+document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') alternarCidade(false); });
+$('cidadeBusca').addEventListener('input', debounce(async () => {
+    const q = $('cidadeBusca').value.trim();
+    if (q.length < 2) { $('cidadeLista').innerHTML = ''; return; }
+    try {
+        const achados = await api('/api/municipios?q=' + encodeURIComponent(q));
+        $('cidadeLista').innerHTML = achados.length
+            ? achados.map((m) => `<li><button type="button" role="option" data-cod="${esc(m.codigo)}" data-nome="${esc(m.nome)}" data-uf="${esc(m.uf)}"
+                class="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700">${esc(m.nome)} <span class="text-slate-400">– ${esc(m.uf)}</span></button></li>`).join('')
+            : '<li class="px-3 py-2 text-slate-500">Nenhum município encontrado.</li>';
+    } catch (e) { $('cidadeLista').innerHTML = `<li class="px-3 py-2 text-rose-600 text-xs">${esc(e.message)}</li>`; }
+}, 250));
+$('cidadeLista').addEventListener('click', (ev) => {
+    const b = ev.target.closest('[data-cod]');
+    if (!b) return;
+    E.municipio = { codigo: Number(b.dataset.cod), nome: b.dataset.nome, uf: b.dataset.uf };
+    salvarPrefsParciais({ municipio: E.municipio });
+    alternarCidade(false); carregar();
+});
+
+/* ---------- níveis ---------- */
+function nivel1(d) {
+    const n = d.nivel1, b = n.balanco, p = n.lrf_pessoal;
+    const sup = b.situacao === 'superavit';
+    const corBal = sup ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400';
+    const nivelLrf = {
+        ok: ['Dentro do limite', 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300', 'bg-emerald-500'],
+        alerta: ['Em alerta', 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300', 'bg-amber-500'],
+        prudencial: ['Acima do limite prudencial', 'bg-orange-100 text-orange-800 dark:bg-orange-950 dark:text-orange-300', 'bg-orange-500'],
+        acima_limite: ['Acima do limite legal', 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300', 'bg-rose-500'],
+        indefinido: ['Sem limite informado', 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300', 'bg-slate-400'],
+    };
+    const lrf = p ? (() => {
+        const [rot, cls, cor] = nivelLrf[p.nivel] || nivelLrf.indefinido;
+        return cartao(`<p class="text-xs font-semibold text-slate-500">Folha de pagamento (LRF)</p>
+            <p class="text-3xl font-extrabold mt-1">${pct(p.pct_rcl)} <span class="text-sm font-medium text-slate-500">da receita</span></p>
+            <div class="mt-3 relative">${barra(p.limite_maximo ? (p.pct_rcl / p.limite_maximo) * 100 : 0, cor)}</div>
+            <p class="text-xs text-slate-500 mt-2">Limite legal: <b>${pct(p.limite_maximo)}</b> · alerta a partir de ${pct(p.limite_alerta)}</p>
+            <span class="inline-block mt-2 px-2.5 py-1 rounded-full text-xs font-bold ${cls}">${rot}</span>
+            <p class="text-[11px] text-slate-400 mt-2">${esc(p.referencia)} · Poder Executivo</p>`);
+    })() : cartao('<p class="text-xs font-semibold text-slate-500">Folha de pagamento (LRF)</p><p class="text-sm text-slate-500 mt-2">O município não publicou o RGF mais recente.</p>');
+    const fatia = (f, rot, icone) => f ? cartao(`<p class="text-xs font-semibold text-slate-500"><i class="fa-solid ${icone} mr-1" aria-hidden="true"></i>${rot}</p>
+            <p class="text-3xl font-extrabold mt-1">${pct(f.pct)} <span class="text-sm font-medium text-slate-500">da despesa</span></p>
+            <div class="mt-3">${barra(f.pct * 2, 'bg-brand-500')}</div>
+            <p class="text-xs text-slate-500 mt-2">${brlCurto(f.valor)} liquidados no período</p>`)
+        : cartao(`<p class="text-xs font-semibold text-slate-500">${rot}</p><p class="text-sm text-slate-500 mt-2">Sem dado por função.</p>`);
+    return `<section aria-labelledby="n1">${titulo(1, 'Saúde fiscal', 'Responde em 3 segundos: as contas estão em dia?').replace('<h2', '<h2 id="n1"')}
+        <div class="grid sm:grid-cols-2 gap-4">
+            ${cartao(`<p class="text-xs font-semibold text-slate-500">Resultado do período</p>
+                <p class="text-3xl font-extrabold mt-1 ${corBal}"><i class="fa-solid ${sup ? 'fa-circle-check' : 'fa-triangle-exclamation'} mr-1.5 text-2xl" aria-hidden="true"></i>${sup ? 'Superávit' : 'Déficit'}</p>
+                <p class="text-lg font-bold mt-1">${brlCurto(b.resultado)}</p>
+                <p class="text-xs text-slate-500 mt-2">Arrecadou ${brlCurto(b.receita_arrecadada)} e comprometeu (empenhou) ${brlCurto(b.despesa_empenhada)}.</p>
+                ${sup ? '' : '<p class="text-[11px] text-slate-400 mt-2">Durante o ano o resultado oscila e pode ser coberto por saldo de anos anteriores.</p>'}`)}
+            ${lrf}
+            ${fatia(n.saude, 'Saúde', 'fa-heart-pulse')}
+            ${fatia(n.educacao, 'Educação', 'fa-graduation-cap')}
+        </div>
+        <p class="text-[11px] text-slate-400 mt-2">Saúde e Educação: fatia da despesa liquidada por função. Os mínimos constitucionais (15% e 25% da receita de impostos) são apurados em demonstrativos próprios — confira no portal oficial do município.</p>
+    </section>`;
+}
+
+function listaGrupo(itens, total) {
+    return itens.map((g) => `<li class="py-3">
+        <div class="flex items-baseline justify-between gap-3"><span class="font-semibold">${esc(g.nome)}</span>
+            <span class="text-sm font-bold whitespace-nowrap">${brlCurto(g.valor)} <span class="text-slate-400 font-normal">· ${pct(g.pct)}</span></span></div>
+        <div class="mt-1.5">${barra(g.pct)}</div>
+        ${(g.detalhe || []).length ? `<ul class="mt-2 grid sm:grid-cols-2 gap-x-6 gap-y-0.5 text-xs text-slate-600 dark:text-slate-400">
+            ${g.detalhe.map((x) => `<li class="flex justify-between"><span>${esc(x.nome)}</span><span class="font-medium">${brlCurto(x.valor)}</span></li>`).join('')}</ul>
+            <p class="text-[11px] text-slate-400 mt-1">Valores ${esc(g.detalhe_periodo)}.</p>` : ''}
+    </li>`).join('');
+}
+
+function nivel2(d) {
+    const r = d.nivel2.receitas, de = d.nivel2.despesas;
+    const abaRec = `<p class="text-sm text-slate-500 mb-1">Total arrecadado: <b>${brlCurto(r.total)}</b></p><ul class="divide-y divide-slate-100 dark:divide-slate-700">${listaGrupo(r.grupos)}</ul>`;
+    const tipos = de.tipos.map((t) => ({ ...t, detalhe: t.extra ? [{ nome: 'Só folha e encargos sociais', valor: t.extra.pessoal }] : [], detalhe_periodo: 'acumulado no exercício' }));
+    const abaDes = `<p class="text-sm text-slate-500 mb-1">Total gasto (liquidado): <b>${brlCurto(de.total_liquidado)}</b></p>
+        <h3 class="font-bold mt-3">Por tipo de custo</h3><ul class="divide-y divide-slate-100 dark:divide-slate-700">${listaGrupo(tipos)}</ul>
+        <h3 class="font-bold mt-5">Por área</h3>
+        <ul class="divide-y divide-slate-100 dark:divide-slate-700">${de.funcoes.slice(0, 12).map((f) => `<li class="py-2.5">
+            <div class="flex items-baseline justify-between gap-3"><span class="font-medium"><i class="fa-solid ${esc(f.icone)} w-5 text-slate-400" aria-hidden="true"></i>${esc(f.nome)}</span>
+            <span class="text-sm font-bold whitespace-nowrap">${brlCurto(f.valor)} <span class="text-slate-400 font-normal">· ${pct(f.pct)}</span></span></div>
+            <div class="mt-1.5">${barra(f.pct * 2)}</div></li>`).join('')}</ul>`;
+    const tab = (id, rot, ic) => `<button type="button" role="tab" data-aba="${id}" aria-selected="${E.aba === id}"
+        class="flex-1 px-4 py-2 rounded-xl text-sm font-semibold ${E.aba === id ? 'bg-white dark:bg-slate-700 shadow text-brand-700 dark:text-brand-300' : 'text-slate-500'}">
+        <i class="fa-solid ${ic} mr-1.5" aria-hidden="true"></i>${rot}</button>`;
+    return `<section aria-labelledby="n2">${titulo(2, 'Fluxo do caixa', 'De onde vem e para onde vai o dinheiro.').replace('<h2', '<h2 id="n2"')}
+        <div role="tablist" class="flex gap-1 p-1 rounded-2xl bg-slate-200/70 dark:bg-slate-800 mb-3">${tab('receitas', 'De onde vem', 'fa-arrow-down')}${tab('despesas', 'Para onde vai', 'fa-arrow-up')}</div>
+        ${cartao(E.aba === 'receitas' ? abaRec : abaDes)}</section>`;
+}
+
+function nivel3(d) {
+    const x = d.nivel3.execucao;
+    const linhas = [
+        ['Dotado (previsto na LOA)', x.dotado, 100, 'bg-slate-400'],
+        ['Empenhado (já contratado/reservado)', x.empenhado, x.dotado ? (x.empenhado / x.dotado) * 100 : 0, 'bg-brand-500'],
+        ['Liquidado (serviço/obra entregue)', x.liquidado, x.dotado ? (x.liquidado / x.dotado) * 100 : 0, 'bg-teal-500'],
+        ['Pago (saiu do caixa)', x.pago, x.dotado ? (x.pago / x.dotado) * 100 : 0, 'bg-emerald-500'],
+    ];
+    const leis = [
+        ['PPA', 'Plano Plurianual · 4 anos', 'Os grandes programas e metas do governo para o mandato.', 'fa-binoculars'],
+        ['LDO', 'Lei de Diretrizes Orçamentárias', 'As metas e regras que valem para o orçamento do ano seguinte.', 'fa-list-check'],
+        ['LOA', 'Lei Orçamentária Anual', 'Quanto, em reais, cada secretaria pode gastar no ano.', 'fa-file-invoice-dollar'],
+    ];
+    return `<section aria-labelledby="n3">${titulo(3, 'Ciclo orçamentário', 'Da promessa política ao dinheiro que realmente sai.').replace('<h2', '<h2 id="n3"')}
+        <div class="grid sm:grid-cols-3 gap-3 mb-4">${leis.map(([s, t, dsc, ic]) => cartao(`<p class="font-extrabold text-brand-700 dark:text-brand-400"><i class="fa-solid ${ic} mr-1.5" aria-hidden="true"></i>${s}</p>
+            <p class="text-xs font-semibold mt-1">${t}</p><p class="text-xs text-slate-500 mt-1">${dsc}</p>`)).join('')}</div>
+        ${cartao(`<h3 class="font-bold mb-3">Execução do orçamento deste ano</h3><ul class="space-y-4">${linhas.map(([r, v, p, c]) => `<li>
+            <div class="flex justify-between gap-3 text-sm"><span>${r}</span><span class="font-bold whitespace-nowrap">${brlCurto(v)}${r.startsWith('Dotado') ? '' : ` <span class="text-slate-400 font-normal">· ${pct(p)}</span>`}</span></div>
+            <div class="mt-1.5">${barra(p, c)}</div></li>`).join('')}</ul>
+            <p class="text-[11px] text-slate-400 mt-3">Percentuais calculados sobre a dotação atualizada. A diferença entre empenhado e pago costuma virar “restos a pagar”.</p>`)}</section>`;
+}
+
+function nivel4(d) {
+    const cod = esc(d.ente);
+    const link = (href, ic, t, dsc) => `<a href="${esc(urlSegura(href))}" target="_blank" rel="noopener" class="block rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 hover:border-brand-500">
+        <p class="font-bold"><i class="fa-solid ${ic} mr-1.5 text-brand-600" aria-hidden="true"></i>${t} <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-slate-400" aria-hidden="true"></i></p>
+        <p class="text-xs text-slate-500 mt-1">${dsc}</p></a>`;
+    return `<section aria-labelledby="n4">${titulo(4, 'Transparência aplicada', 'Emendas, contratos e fornecedores: confira nas fontes oficiais.').replace('<h2', '<h2 id="n4"')}
+        <div class="grid sm:grid-cols-2 gap-3">
+            ${link(`https://portaldatransparencia.gov.br/localidades/${cod}`, 'fa-map-location-dot', 'Dinheiro federal na sua cidade', 'Portal da Transparência (CGU): repasses, benefícios e despesas da União no município.')}
+            ${link('https://portaldatransparencia.gov.br/emendas', 'fa-hand-holding-dollar', 'Emendas parlamentares', 'Quem indicou, quanto, para qual órgão e em que fase está (indicada, empenhada, paga).')}
+            ${link('https://obrasgov.gestao.gov.br/', 'fa-helmet-safety', 'Obras públicas', 'ObrasGov.br: obras financiadas com recursos federais e seu andamento.')}
+            ${link('https://siconfi.tesouro.gov.br/siconfi/pages/public/consulta_finbra/finbra_list.jsf', 'fa-file-lines', 'Balanços completos', 'SICONFI: demonstrativos contábeis do município, com todos os anexos.')}
+        </div>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-3 px-3 py-2 rounded-lg bg-slate-100 dark:bg-slate-800"><i class="fa-solid fa-circle-info mr-1" aria-hidden="true"></i>
+        Estamos preparando a lista de emendas por parlamentar e o ranking dos 10 maiores fornecedores aqui dentro (exige chave gratuita do Portal da Transparência). Até lá, os links acima levam à fonte oficial.</p>
+    </section>`;
+}
+
+function desenhar() {
+    const d = E.dados;
+    $('periodoRotulo').textContent = d ? `Dados: ${d.periodo.rotulo}` : '';
+    const painel = $('painel');
+    painel.classList.toggle('hidden', !d);
+    if (!d) return;
+    painel.innerHTML = nivel1(d) + nivel2(d) + nivel3(d) + nivel4(d) +
+        `<p class="text-[11px] text-slate-400">Fonte: ${esc(d.fonte)}. Os valores são declarados pelos próprios entes e podem ser retificados.</p>`;
+}
+
+$('painel').addEventListener('click', (ev) => {
+    const b = ev.target.closest('[data-aba]');
+    if (b) { E.aba = b.dataset.aba; desenhar(); }
+});
+
+async function carregar() {
+    const m = E.municipio;
+    $('cidadeRotulo').textContent = m ? `${m.nome} – ${m.uf}` : 'Escolher cidade';
+    E.dados = null; desenhar();
+    if (!m) {
+        $('estado').innerHTML = cartao('<p class="text-center text-slate-500"><i class="fa-solid fa-city text-2xl mb-2 block text-slate-300" aria-hidden="true"></i>Escolha uma cidade para ver as contas.</p>');
+        return;
+    }
+    $('estado').innerHTML = '<p class="text-sm text-slate-500" aria-live="polite"><i class="fa-solid fa-spinner fa-spin mr-1.5" aria-hidden="true"></i>Consultando o Tesouro Nacional…</p>';
+    try {
+        E.dados = await api('/api/economia/' + encodeURIComponent(m.codigo));
+        $('estado').innerHTML = '';
+        desenhar();
+    } catch (e) { $('estado').innerHTML = mensagemErro(e); }
+}
+carregar();
+</script>
+</body>
+</html>

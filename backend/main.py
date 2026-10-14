@@ -23,13 +23,14 @@ from datetime import date
 from typing import Annotated, Any, Literal
 
 import psycopg
-from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, FastAPI, HTTPException, Path, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field, field_validator
 
 import db
+import economia
 import simuladores
 from config import cfg
 from fontes import buscar_municipios, contexto_municipio
@@ -485,6 +486,27 @@ def pesquisar_municipios(q: Annotated[str, Query(min_length=2, max_length=60)]) 
     except Exception as exc:  # noqa: BLE001
         log.warning("IBGE indisponível: %s", exc)
         raise HTTPException(status_code=503, detail="Lista de municípios (IBGE) indisponível no momento.") from exc
+
+
+# --------------------------------------------------------------------------- #
+# Economia do setor público (SICONFI)
+# --------------------------------------------------------------------------- #
+@router.get("/economia/{codigo_ibge}", tags=["economia"])
+def economia_municipio(codigo_ibge: Annotated[int, Path(ge=1000000, le=5999999)]) -> dict:
+    """Saúde fiscal, receitas, despesas e execução orçamentária do município (código IBGE de 7 dígitos)."""
+    try:
+        painel = economia.painel_economia(codigo_ibge)
+    except Exception as exc:  # noqa: BLE001
+        log.warning("SICONFI indisponível: %s", exc)
+        raise HTTPException(status_code=503, detail="O SICONFI (Tesouro Nacional) está indisponível no momento.") from exc
+    if painel is None:
+        raise HTTPException(status_code=404, detail="Este município ainda não publicou relatórios no SICONFI.")
+    contexto = None
+    try:
+        contexto = contexto_municipio(codigo_ibge)
+    except Exception:  # noqa: BLE001
+        pass
+    return {**painel, "municipio": contexto}
 
 
 # --------------------------------------------------------------------------- #
