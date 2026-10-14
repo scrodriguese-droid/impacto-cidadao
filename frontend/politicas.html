@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Políticas públicas — ImpactoCidadão</title>
-    <meta name="description" content="Leis, medidas provisórias e decisões que mudam a vida do cidadão, organizadas por poder (Executivo, Legislativo, Judiciário) e por nível de governo.">
+    <meta name="description" content="Leis e medidas provisórias que mudam a vida do cidadão, agrupadas por tema e filtráveis por poder (Executivo, Legislativo) e por nível de governo.">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="assets/tailwind-config.js"></script>
@@ -32,7 +32,7 @@
             <i class="fa-solid fa-landmark text-teal-400" aria-hidden="true"></i><span>Poderes e níveis de governo</span>
         </span>
         <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight">Políticas públicas</h1>
-        <p class="mt-2 text-slate-300 text-sm sm:text-base max-w-3xl">Leis, medidas provisórias e decisões que afetam o seu dia a dia, organizadas por <b>poder</b> (Executivo, Legislativo e Judiciário) e por <b>nível</b> (federal, estadual e municipal). Onde ainda não há fonte de dados conectada, mostramos isso com clareza.</p>
+        <p class="mt-2 text-slate-300 text-sm sm:text-base max-w-3xl">Leis e medidas provisórias que afetam o seu dia a dia, agrupadas por <b>tema</b> (saúde, educação, impostos…) e filtráveis por <b>poder</b> (Executivo e Legislativo) e por <b>nível</b> (federal, estadual e municipal). Onde ainda não há fonte de dados conectada, mostramos isso com clareza.</p>
         <div class="mt-5 flex flex-col sm:flex-row sm:items-center gap-3 text-sm">
             <label class="flex items-center gap-2">
                 <span class="text-slate-300">Seu perfil:</span>
@@ -60,8 +60,9 @@
     <section aria-labelledby="tLista">
         <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-4 mb-4">
             <div>
-                <h2 id="tLista" class="text-lg font-bold flex items-center"><i class="fa-solid fa-newspaper text-brand-600 mr-2.5" aria-hidden="true"></i>Leis, medidas provisórias e decisões</h2>
+                <h2 id="tLista" class="text-lg font-bold flex items-center"><i class="fa-solid fa-newspaper text-brand-600 mr-2.5" aria-hidden="true"></i>Leis e medidas provisórias, por tema</h2>
                 <p id="contagem" class="text-xs text-slate-500 dark:text-slate-400" aria-live="polite">Carregando…</p>
+                <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1 max-w-2xl">Nos atos já traduzidos, o tema vem da análise da IA. Nos demais, é <b>aproximado por palavras-chave da ementa oficial</b> (marcado como “tema aproximado”) e pode errar; confira a ementa.</p>
             </div>
             <div class="flex flex-wrap items-center gap-2 text-xs">
                 <div class="relative">
@@ -83,7 +84,7 @@
         </div>
 
         <div id="chipsFiltro" class="flex flex-wrap gap-2 mb-3"></div>
-        <p id="notaFiltros" class="hidden text-[11px] text-slate-500 dark:text-slate-400 mb-3"><i class="fa-solid fa-circle-info mr-1" aria-hidden="true"></i>Atos que ainda não têm tradução em linguagem simples não podem ser classificados por perfil ou área; por isso não aparecem quando um desses filtros está ativo.</p>
+        <p id="notaFiltros" class="hidden text-[11px] text-slate-500 dark:text-slate-400 mb-3"><i class="fa-solid fa-circle-info mr-1" aria-hidden="true"></i>Atos que ainda não têm tradução em linguagem simples não indicam quais perfis afetam; por isso não aparecem quando um perfil está selecionado.</p>
 
         <div id="lista" class="space-y-5"></div>
         <div class="text-center mt-6"><button id="btnMais" type="button" class="hidden px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold">Carregar mais</button></div>
@@ -101,15 +102,14 @@ const prefs = lerPrefs();
 const P = {
     perfil: prefs.perfil || '', municipio: prefs.municipio || null,
     nivel: '', instancia: '', categoria: 'all', status: 'all', q: '', ordem: 'recentes',
-    pagina: 1, total: 0, itens: [], perfis: [], categorias: [], statusLista: [], resumo: null,
+    pagina: 1, total: 0, itens: [], perfis: [], categorias: [], statusLista: [], resumo: null, temasContagem: {},
 };
 const NOME_NIVEL = { federal: 'Federal', estadual: 'Estadual', municipal: 'Municipal' };
-const NOME_INST = { executivo: 'Executivo', legislativo: 'Legislativo', judiciario: 'Judiciário' };
-const ICONE_INST = { executivo: 'fa-building-columns', legislativo: 'fa-gavel', judiciario: 'fa-scale-balanced' };
+const NOME_INST = { executivo: 'Executivo', legislativo: 'Legislativo' };
+const ICONE_INST = { executivo: 'fa-building-columns', legislativo: 'fa-gavel' };
 const NOME_TIPO = {
     MPV: 'Medida Provisória', PL: 'Projeto de Lei', PLP: 'Projeto de Lei Complementar',
     PEC: 'Proposta de Emenda à Constituição', PLN: 'Projeto de Lei do Congresso Nacional',
-    ADPF: 'ADPF', ADI: 'ADI',
 };
 const RELEVANCIA = {
     alta: ['Impacto alto no bolso', 'bg-rose-100 text-rose-800 dark:bg-rose-950/70 dark:text-rose-300'],
@@ -181,7 +181,7 @@ function renderChips() {
     $('chipsFiltro').innerHTML = chips.map(([k, t]) => `<button type="button" data-remover="${k}"
         class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-brand-100 dark:bg-brand-950 text-brand-800 dark:text-brand-300 hover:opacity-80">
         ${esc(t)}<i class="fa-solid fa-xmark text-[10px]" aria-hidden="true"></i><span class="sr-only">remover filtro</span></button>`).join('');
-    $('notaFiltros').classList.toggle('hidden', !(P.perfil || P.categoria !== 'all'));
+    $('notaFiltros').classList.toggle('hidden', !P.perfil);
 }
 $('chipsFiltro').addEventListener('click', (ev) => {
     const b = ev.target.closest('[data-remover]');
@@ -257,6 +257,7 @@ function cartao(p) {
                     ${p.status ? `<span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold border bg-sky-100 text-sky-800 border-sky-300 dark:bg-sky-950/80 dark:text-sky-300 dark:border-sky-800">${esc(p.status)}</span>` : ''}
                     <span class="text-xs text-slate-400 font-mono">${esc(p.identificacao)}</span>
                     ${traduzida ? `<span class="px-2 py-0.5 rounded-full text-[11px] font-semibold ${clsRel}">${esc(rotRel)}</span>` : ''}
+                    ${p.tema_origem === 'palavras_chave' ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-medium border border-dashed border-slate-300 dark:border-slate-600 text-slate-500" title="Tema definido por palavras-chave da ementa oficial, não pela IA">tema aproximado</span>' : ''}
                 </div>
                 <span class="text-xs text-slate-400">${p.data_apresentacao ? `<i class="fa-regular fa-calendar mr-1" aria-hidden="true"></i>${esc(fmtData(p.data_apresentacao))}` : ''}</span>
             </div>
@@ -306,12 +307,14 @@ function cartao(p) {
 /* ====================================================================== *
  *  Lista agrupada por nível e poder
  * ====================================================================== */
-function cabecalhoGrupo(nivel, instancia) {
-    const c = celula(nivel, instancia);
-    return `<div class="pt-2 flex flex-wrap items-baseline gap-x-3 border-b border-slate-200 dark:border-slate-700 pb-2">
+/* Grupos por tema: o servidor ordena os atos por tema e devolve a contagem de cada tema sob os filtros atuais. */
+function cabecalhoGrupo(temaId) {
+    const t = P.categorias.find((c) => c.id === temaId) || { nome: 'Outros temas', icone: 'fa-ellipsis' };
+    const n = P.temasContagem[temaId];
+    return `<div id="tema-${esc(temaId)}" class="pt-3 flex flex-wrap items-baseline gap-x-3 border-b border-slate-200 dark:border-slate-700 pb-2 scroll-mt-20">
         <h3 class="text-sm font-extrabold uppercase tracking-wider text-slate-700 dark:text-slate-200">
-            <i class="fa-solid ${ICONE_INST[instancia] || 'fa-landmark'} mr-1.5 text-brand-600" aria-hidden="true"></i>${esc(NOME_NIVEL[nivel] || nivel)} · ${esc(NOME_INST[instancia] || instancia)}</h3>
-        ${c ? `<span class="text-[11px] text-slate-500">${c.total} ato(s) · fonte: ${esc(c.fonte)}</span>` : ''}</div>`;
+            <i class="fa-solid ${esc(t.icone)} mr-1.5 text-brand-600" aria-hidden="true"></i>${esc(t.nome)}</h3>
+        ${n ? `<span class="text-[11px] text-slate-500">${n} ato(s)</span>` : ''}</div>`;
 }
 
 function painelSemFonte(celulas) {
@@ -332,7 +335,7 @@ function celulasSelecionadas() {
 let reqLista = 0;
 async function carregar(acrescentar = false) {
     const minha = ++reqLista;
-    const params = new URLSearchParams({ ordem: P.ordem, pagina: P.pagina, por_pagina: 10, incluir_pendentes: true, agrupar: true });
+    const params = new URLSearchParams({ ordem: P.ordem, pagina: P.pagina, por_pagina: 10, incluir_pendentes: true, agrupar_por: 'tema' });
     if (P.nivel) params.set('nivel', P.nivel);
     if (P.instancia) params.set('instancia', P.instancia);
     if (P.perfil) params.set('perfil', P.perfil);
@@ -343,6 +346,7 @@ async function carregar(acrescentar = false) {
         const r = await api('/api/proposicoes?' + params);
         if (minha !== reqLista) return;
         P.total = r.total;
+        P.temasContagem = r.temas || {};
         P.itens = acrescentar ? P.itens.concat(r.itens) : r.itens;
         $('contagem').textContent = `Mostrando ${P.itens.length} de ${r.total} ato(s)`;
 
@@ -360,8 +364,7 @@ async function carregar(acrescentar = false) {
 
         let html = '', anterior = '';
         for (const p of P.itens) {
-            const chave = p.nivel + '|' + p.instancia;
-            if (chave !== anterior) { html += cabecalhoGrupo(p.nivel, p.instancia); anterior = chave; }
+            if (p.tema !== anterior) { html += cabecalhoGrupo(p.tema); anterior = p.tema; }
             html += cartao(p);
         }
         // Se a seleção inclui células sem fonte, avisa no fim (sem esconder o que existe).

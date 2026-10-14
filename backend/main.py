@@ -33,6 +33,7 @@ import simuladores
 from config import cfg
 from fontes import buscar_municipios, contexto_municipio
 from schemas import CATEGORIAS, PERFIS, STATUS
+from temas import TERMOS_POR_TEMA, consulta_tsquery
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)-7s %(name)s: %(message)s")
 log = logging.getLogger("impacto.api")
@@ -145,6 +146,8 @@ def _proposicao_json(r: dict) -> dict:
         "uf": r["uf"],
         "municipio_ibge": r["municipio_ibge"],
         "autoria": r["autoria"],
+        "tema": r["tema_principal"],
+        "tema_origem": r["tema_origem"],   # "ia" (áreas definidas pela tradução) | "palavras_chave" (aproximado)
         "traduzida": r["analise_status"] == "ok",
         "situacao_oficial": r["situacao_atual"],
         # Sem tradução (IA indisponível): o título cai para a identificação oficial.
@@ -170,12 +173,19 @@ def _proposicao_json(r: dict) -> dict:
     }
 
 
-_COLUNAS_PROPOSICAO = """
+# Temas efetivos de um ato: as áreas definidas pela IA, se houver; senão, as aproximadas por
+# palavras-chave (backend/temas.py). O tema principal é o primeiro da lista ("outros" se vazia).
+_TEMAS_EFETIVOS = "(CASE WHEN cardinality(p.categorias) > 0 THEN p.categorias ELSE p.temas_palavras_chave END)"
+_TEMA_PRINCIPAL = f"COALESCE({_TEMAS_EFETIVOS}[1], 'outros')"
+
+_COLUNAS_PROPOSICAO = f"""
     p.id, p.identificacao, p.sigla_tipo, p.titulo_simples, p.resumo_cidadao, p.perfis_impactados,
     p.categorias, p.impacto_pratico, p.ponto_positivo, p.ponto_atencao, p.status_tramitacao,
     p.relevancia_bolso, p.data_apresentacao, p.origem, p.ementa_oficial, p.url_fonte,
     p.linha_do_tempo, p.texto_fonte, p.instancia, p.nivel, p.uf, p.municipio_ibge, p.autoria,
     p.analise_status, p.situacao_atual,
+    {_TEMA_PRINCIPAL} AS tema_principal,
+    CASE WHEN cardinality(p.categorias) > 0 THEN 'ia' ELSE 'palavras_chave' END AS tema_origem,
     COALESCE(v.concordo, 0)             AS v_concordo,
     COALESCE(v.concordo_com_ajustes, 0) AS v_ajustes,
     COALESCE(v.discordo, 0)             AS v_discordo,
@@ -219,14 +229,15 @@ def listar_proposicoes(
     status: Annotated[str | None, Query()] = None,
     q: Annotated[str | None, Query(max_length=120, description="busca por texto ou número (ex.: 'FGTS', 'MPV 1394')")] = None,
     ordem: Literal["recentes", "impacto"] = "recentes",
-    instancia: Annotated[Literal["executivo", "legislativo", "judiciario"] | None, Query(
+    instancia: Annotated[Literal["executivo", "legislativo"] | None, Query(
         description="poder de origem do ato")] = None,
     nivel: Annotated[Literal["federal", "estadual", "municipal"] | None, Query(
         description="nível administrativo")] = None,
     incluir_pendentes: Annotated[bool, Query(
-        description="inclui itens ainda sem tradução (só com dados oficiais); ignorado se houver filtro de perfil/área"
+        description="inclui itens ainda sem tradução (só com dados oficiais); ignorado se houver filtro de perfil"
     )] = False,
-    agrupar: Annotated[bool, Query(description="ordena por nível e poder antes da ordenação escolhida")] = False,
+    agrupar_por: Annotated[Literal["tema", "nivel_poder"] | None, Query(
+        description="ordena por grupos antes da ordenação escolhida")] = None,
     pagina: Annotated[int, Query(ge=1, le=1000)] = 1,
     por_pagina: Annotated[int, Query(ge=1, le=50)] = 20,
 ) -> dict:
@@ -243,36 +254,50 @@ def listar_proposicoes(
         "p.data_apresentacao DESC NULLS LAST, p.id DESC"
         if ordem == "impacto" else "p.data_apresentacao DESC NULLS LAST, p.id DESC"
     )
-    if agrupar:
+    if agrupar_por == "tema":
+        # Ordem dos grupos = ordem das categorias; "outros" por último.
+        ordenacao = f"array_position(%(ordem_temas)s::text[], {_TEMA_PRINCIPAL}), " + ordenacao
+    elif agrupar_por == "nivel_poder":
         ordenacao = (
             "CASE p.nivel WHEN 'federal' THEN 0 WHEN 'estadual' THEN 1 ELSE 2 END, "
-            "CASE p.instancia WHEN 'executivo' THEN 0 WHEN 'legislativo' THEN 1 ELSE 2 END, " + ordenacao
+            "CASE p.instancia WHEN 'executivo' THEN 0 ELSE 1 END, " + ordenacao
         )
-    sql = f"""
-        SELECT {_COLUNAS_PROPOSICAO}, count(*) OVER() AS total_geral
-          FROM proposicoes_analisadas p
-          LEFT JOIN vw_placar_votos v ON v.proposicao_id = p.id
-         WHERE (p.analise_status = 'ok'
-                OR (%(pendentes)s AND %(perfil)s::text IS NULL AND %(categoria)s::text IS NULL))
+    filtros = f"""
+         WHERE (p.analise_status = 'ok' OR (%(pendentes)s AND %(perfil)s::text IS NULL))
            AND (%(instancia)s::text IS NULL OR p.instancia = %(instancia)s::text)
            AND (%(nivel)s::text IS NULL OR p.nivel = %(nivel)s::text)
            AND (%(perfil)s::text IS NULL OR %(perfil)s::text = ANY (p.perfis_impactados) OR 'todos' = ANY (p.perfis_impactados))
-           AND (%(categoria)s::text IS NULL OR %(categoria)s::text = ANY (p.categorias))
+           AND (%(categoria)s::text IS NULL OR {_TEMA_PRINCIPAL} = %(categoria)s::text)
            AND (%(status)s::text IS NULL OR p.status_tramitacao = %(status)s::text)
            AND (%(q)s::text IS NULL
                 OR p.busca @@ websearch_to_tsquery('portuguese', %(q)s::text)
                 OR p.identificacao ILIKE '%%' || %(q_like)s::text || '%%')
-         ORDER BY {ordenacao}
-         LIMIT %(limite)s OFFSET %(deslocamento)s
     """
-    linhas = db.consultar(sql, {
+    parametros = {
         "perfil": perfil, "categoria": categoria, "status": status, "q": termo,
         "q_like": _escapar_like(termo) if termo else None,
         "instancia": instancia, "nivel": nivel, "pendentes": incluir_pendentes,
-        "limite": por_pagina, "deslocamento": (pagina - 1) * por_pagina,
-    })
+        "ordem_temas": list(CATEGORIAS),
+    }
+    linhas = db.consultar(
+        f"""
+        SELECT {_COLUNAS_PROPOSICAO}, count(*) OVER() AS total_geral
+          FROM proposicoes_analisadas p
+          LEFT JOIN vw_placar_votos v ON v.proposicao_id = p.id
+          {filtros}
+         ORDER BY {ordenacao}
+         LIMIT %(limite)s OFFSET %(deslocamento)s
+        """,
+        {**parametros, "limite": por_pagina, "deslocamento": (pagina - 1) * por_pagina},
+    )
+    # Quantos atos há em cada tema, sob os mesmos filtros (para os cabeçalhos dos grupos).
+    por_tema = db.consultar(
+        f"SELECT {_TEMA_PRINCIPAL} AS tema, count(*) AS n FROM proposicoes_analisadas p {filtros} GROUP BY 1",
+        parametros,
+    )
     total = linhas[0]["total_geral"] if linhas else 0
     return {"total": total, "pagina": pagina, "por_pagina": por_pagina,
+            "temas": {r["tema"]: r["n"] for r in por_tema},
             "itens": [_proposicao_json(r) for r in linhas]}
 
 
@@ -291,7 +316,7 @@ def obter_proposicao(proposicao_id: int) -> dict:
 
 # --- Cobertura por poder (instância) e nível administrativo ----------------- #
 NIVEIS = [("federal", "Federal"), ("estadual", "Estadual"), ("municipal", "Municipal")]
-INSTANCIAS = [("executivo", "Executivo"), ("legislativo", "Legislativo"), ("judiciario", "Judiciário")]
+INSTANCIAS = [("executivo", "Executivo"), ("legislativo", "Legislativo")]
 _FORA = "Fonte a conectar."
 # (aplicável?, fonte conectada?, fonte, observação) — declarado aqui para a tela nunca fingir cobertura.
 COBERTURA: dict[tuple[str, str], tuple[bool, bool, str, str]] = {
@@ -301,18 +326,12 @@ COBERTURA: dict[tuple[str, str], tuple[bool, bool, str, str]] = {
     ("federal", "legislativo"): (True, True, "Câmara dos Deputados (dados abertos)",
                                  "Amostra: projetos do Congresso selecionados por mencionarem vários temas de "
                                  "impacto no bolso — não é o universo de proposições."),
-    ("federal", "judiciario"): (True, False, "STF — ADPF e ADI",
-                                "O STF não tem API oficial confirmada; o portal Corte Aberta oferece arquivos CSV. " + _FORA),
     ("estadual", "executivo"): (True, False, "Diários Oficiais estaduais",
                                 "Não há API única: cada estado publica de um jeito. " + _FORA),
     ("estadual", "legislativo"): (True, False, "Assembleias Legislativas", "Cada assembleia tem seu próprio portal. " + _FORA),
-    ("estadual", "judiciario"): (True, False, "Tribunais de Justiça estaduais",
-                                 "Ex.: representações de inconstitucionalidade estaduais. " + _FORA),
     ("municipal", "executivo"): (True, False, "Diários Oficiais municipais (Querido Diário, Open Knowledge Brasil)",
                                  "A API pública não completou a conexão no último teste. " + _FORA),
     ("municipal", "legislativo"): (True, False, "Câmaras Municipais e Diários Oficiais municipais", _FORA),
-    ("municipal", "judiciario"): (False, False, "—",
-                                  "Não se aplica: o Judiciário brasileiro não tem nível municipal."),
 }
 
 
@@ -597,22 +616,9 @@ def comparar_candidatos(
     }
 
 
-# Termos usados na busca por tema (sem IA). Sintaxe do websearch_to_tsquery: "a or b".
-# São palavras-chave deliberadamente simples e iguais para todos os candidatos.
-TERMOS_TEMA: dict[str, str] = {
-    "impostos": "imposto or tributo or tributária or isenção or alíquota or \"imposto de renda\"",
-    "economia": "inflação or juros or crédito or fiscal or \"contas públicas\" or dívida or câmbio",
-    "emprego": "emprego or trabalho or salário or desemprego or trabalhador or empreendedor",
-    "previdencia": "previdência or aposentadoria or aposentado or INSS or pensão or idoso",
-    "assistencia": "\"bolsa família\" or assistência or pobreza or fome or \"transferência de renda\" or BPC",
-    "saude": "saúde or SUS or hospital or médico or medicamento or vacina",
-    "educacao": "educação or escola or creche or professor or universidade or ensino",
-    "seguranca": "segurança or polícia or crime or violência or facção or presídio",
-    "habitacao": "moradia or habitação or saneamento or \"minha casa\" or esgoto",
-    "transporte": "transporte or ferrovia or rodovia or porto or aeroporto or mobilidade or infraestrutura",
-    "meio_ambiente": "ambiente or clima or desmatamento or amazônia or sustentável or carbono",
-    "agro": "agropecuária or agricultura or agricultor or rural or safra or pecuária",
-}
+# Termos da busca por tema (sem IA): mesma lista usada para agrupar os atos (backend/temas.py),
+# na sintaxe do websearch_to_tsquery ("a or b"), iguais para todos os candidatos.
+TERMOS_TEMA: dict[str, str] = {tema: consulta_tsquery(tema) for tema in TERMOS_POR_TEMA}
 AVISO_BUSCA = ("Busca por palavra-chave no texto integral dos planos, sem inteligência artificial e sem "
                "interpretação: são mostrados os trechos literais com maior relevância, na mesma regra para "
                "todos os candidatos. A quantidade de trechos não indica prioridade nem qualidade do plano.")

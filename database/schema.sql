@@ -136,6 +136,9 @@ CREATE TABLE IF NOT EXISTS proposicoes_analisadas (
     uf                 char(2),                               -- preenchido em atos estaduais/municipais
     municipio_ibge     integer,                               -- preenchido em atos municipais
     autoria            text,                                  -- ex.: "Poder Executivo", nomes de parlamentares
+    -- Temas aproximados por palavras-chave da ementa (ver backend/temas.py), do mais para o menos relevante.
+    -- Usados para agrupar atos ainda sem tradução; as `categorias` da IA têm precedência.
+    temas_palavras_chave text[] NOT NULL DEFAULT '{}',
     url_fonte          text,                                  -- página oficial da proposição
     url_inteiro_teor   text,
     data_apresentacao  date,
@@ -192,7 +195,9 @@ ALTER TABLE proposicoes_analisadas
         CHECK (nivel IN ('federal', 'estadual', 'municipal')),
     ADD COLUMN IF NOT EXISTS uf char(2),
     ADD COLUMN IF NOT EXISTS municipio_ibge integer,
-    ADD COLUMN IF NOT EXISTS autoria text;
+    ADD COLUMN IF NOT EXISTS autoria text,
+    ADD COLUMN IF NOT EXISTS temas_palavras_chave text[] NOT NULL DEFAULT '{}';
+CREATE INDEX IF NOT EXISTS ix_prop_temas_chave ON proposicoes_analisadas USING gin (temas_palavras_chave);
 -- Propostas do Congresso (selecionadas por alto impacto) pertencem ao Legislativo.
 UPDATE proposicoes_analisadas SET instancia = 'legislativo'
  WHERE origem = 'alto_impacto' AND instancia = 'executivo';

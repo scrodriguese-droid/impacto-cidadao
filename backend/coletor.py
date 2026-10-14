@@ -35,6 +35,7 @@ from fontes import Camara, ErroFonte, Senado, baixar_documento
 from llm import ErroConfiguracaoLLM, ErroLLM, RecusaLLM, analisar, modelo_em_uso
 from prompts import PROMPT_PROPOSICAO, montar_usuario_proposicao
 from schemas import AnaliseProposicao
+from temas import TERMOS_POR_TEMA, consulta_tsquery
 
 log = logging.getLogger("impacto.coletor")
 
@@ -317,6 +318,37 @@ def gravar(item: Item, *, analise: AnaliseProposicao | None, status: str, erro: 
         )
 
 
+def reclassificar_temas() -> int:
+    """Recalcula o tema aproximado de TODOS os atos pelas palavras-chave da ementa (ver temas.py).
+
+    Idempotente e barato (centenas de linhas). O primeiro tema da lista é o de maior relevância
+    textual. Quem decide o tema exibido é a API: áreas da IA, se houver; senão, estas.
+    """
+    temas = list(TERMOS_POR_TEMA)
+    consultas = [consulta_tsquery(t) for t in temas]
+    with db.conexao_avulsa() as conn:
+        conn.execute("UPDATE proposicoes_analisadas SET temas_palavras_chave = '{}' "
+                     "WHERE temas_palavras_chave <> '{}'")
+        cur = conn.execute(
+            """
+            UPDATE proposicoes_analisadas p SET temas_palavras_chave = s.temas
+              FROM (
+                SELECT p2.id,
+                       array_agg(t.tema ORDER BY
+                           ts_rank(to_tsvector('pt_busca', p2.ementa_oficial), websearch_to_tsquery('pt_busca', t.q)) DESC,
+                           t.ordem) AS temas
+                  FROM proposicoes_analisadas p2
+                 CROSS JOIN unnest(%(temas)s::text[], %(consultas)s::text[]) WITH ORDINALITY AS t(tema, q, ordem)
+                 WHERE to_tsvector('pt_busca', p2.ementa_oficial) @@ websearch_to_tsquery('pt_busca', t.q)
+                 GROUP BY p2.id
+              ) s
+             WHERE p.id = s.id
+            """,
+            {"temas": temas, "consultas": consultas},
+        )
+        return cur.rowcount
+
+
 def atualizar_andamento(item: Item) -> None:
     """Atualiza só situação/linha do tempo/status de uma proposição já analisada (sem IA)."""
     status_det = inferir_status(item.sigla_tipo, item.situacao, item.tramitacoes)
@@ -424,6 +456,8 @@ def interpretar_argumentos(argv: list[str] | None = None) -> argparse.Namespace:
     p.add_argument("--sem-ia", action="store_true", help="apenas coleta; deixa a análise como 'pendente'")
     p.add_argument("--forcar", action="store_true", help="reanalisa mesmo as já analisadas")
     p.add_argument("--id", help="processa apenas esta proposição da Câmara (id numérico)")
+    p.add_argument("--so-temas", action="store_true",
+                   help="não coleta nada: apenas recalcula o tema aproximado (palavras-chave) dos atos no banco")
     p.add_argument("-v", "--verbose", action="store_true")
     return p.parse_args(argv)
 
@@ -433,6 +467,11 @@ def main(argv: list[str] | None = None) -> int:
     logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO,
                         format="%(asctime)s %(levelname)-7s %(message)s", datefmt="%H:%M:%S")
     logging.getLogger("httpx").setLevel(logging.WARNING)
+
+    if args.so_temas:
+        n = reclassificar_temas()
+        log.info("Temas por palavras-chave recalculados: %d ato(s) com ao menos um tema.", n)
+        return 0
 
     desde = date.today() - timedelta(days=args.dias)
     tipos = [t.strip().upper() for t in args.tipos.split(",") if t.strip()]
@@ -470,6 +509,11 @@ def main(argv: list[str] | None = None) -> int:
         return 1
     except KeyboardInterrupt:
         log.warning("Interrompido pelo usuário.")
+
+    try:
+        reclassificar_temas()
+    except Exception as exc:  # noqa: BLE001 - a classificação aproximada nunca deve derrubar a coleta
+        log.warning("Não foi possível recalcular os temas por palavras-chave: %s", exc)
 
     log.info("Resumo: %d novas | %d atualizadas | %d só andamento | %d pendentes | %d falhas",
              placar.novos, placar.atualizados, placar.pulados, placar.pendentes, placar.falhas)

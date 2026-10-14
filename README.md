@@ -85,17 +85,23 @@ docker exec impacto-db psql -U impacto -d impacto -v ON_ERROR_STOP=1 -q -f /tmp/
 python backend\coletor_candidatos.py --sem-ia --forcar    # regrava o texto das páginas
 ```
 
-### Políticas públicas: poder × nível de governo
+### Políticas públicas: por tema, poder e nível de governo
 
-A página `politicas.html` organiza os atos por **poder** (Executivo, Legislativo, Judiciário) e por
-**nível** (federal, estadual, municipal). O estado de cada célula da matriz vem de `COBERTURA` em
-`backend/main.py` — a tela nunca finge cobertura:
+A página `politicas.html` agrupa os atos por **tema** (saúde, educação, impostos…) e permite filtrar por
+**poder** (Executivo, Legislativo) e por **nível** (federal, estadual, municipal). O estado de cada célula
+da matriz vem de `COBERTURA` em `backend/main.py` — a tela nunca finge cobertura:
 
-| | Executivo | Legislativo | Judiciário |
-|---|---|---|---|
-| **Federal** | ✅ MPs e projetos do Executivo (Câmara/Senado) | ✅ amostra de alto impacto (Câmara) | ⏳ STF (ADPF/ADI): sem API oficial confirmada |
-| **Estadual** | ⏳ Diários Oficiais estaduais | ⏳ Assembleias Legislativas | ⏳ Tribunais de Justiça |
-| **Municipal** | ⏳ Diários municipais (Querido Diário) | ⏳ Câmaras Municipais | — não se aplica |
+| | Executivo | Legislativo |
+|---|---|---|
+| **Federal** | ✅ MPs e projetos do Executivo (Câmara/Senado) | ✅ amostra de alto impacto (Câmara) |
+| **Estadual** | ⏳ Diários Oficiais estaduais | ⏳ Assembleias Legislativas |
+| **Municipal** | ⏳ Diários municipais (Querido Diário) | ⏳ Câmaras Municipais |
+
+(O Judiciário — ADPF/ADI — foi retirado do escopo por ora; o STF não tem API oficial confirmada.)
+
+**Como o tema é definido:** nos atos traduzidos, pelas áreas da IA; nos demais, por palavras-chave da
+ementa oficial (`backend/temas.py`, a mesma lista da busca nos planos), marcado na tela como "tema
+aproximado". Para recalcular sem coletar: `python backend\coletor.py --so-temas`.
 
 Para conectar uma fonte nova: (1) faça o coletor gravar `instancia`, `nivel` (e `uf`/`municipio_ibge`) em
 `proposicoes_analisadas`; (2) troque `fonte_conectada` para `True` na célula em `COBERTURA`.

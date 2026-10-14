@@ -225,9 +225,17 @@ def test_cobertura_cobre_a_matriz_poder_x_nivel():
     import main
     esperado = {(n, i) for n, _ in main.NIVEIS for i, _ in main.INSTANCIAS}
     assert set(main.COBERTURA) == esperado
-    assert main.COBERTURA[("municipal", "judiciario")][0] is False   # não há Judiciário municipal
-    assert main.COBERTURA[("federal", "executivo")][1] is True       # fonte realmente conectada
-    assert main.COBERTURA[("federal", "judiciario")][1] is False     # ainda sem fonte: não fingir cobertura
+    assert {i for i, _ in main.INSTANCIAS} == {"executivo", "legislativo"}   # Judiciário fora do escopo
+    assert main.COBERTURA[("federal", "executivo")][1] is True               # fonte realmente conectada
+    assert main.COBERTURA[("estadual", "legislativo")][1] is False           # ainda sem fonte: não fingir cobertura
+
+
+def test_temas_por_palavras_chave_cobrem_as_categorias_exceto_outros():
+    from temas import TERMOS_POR_TEMA, consulta_tsquery
+    assert set(TERMOS_POR_TEMA) == set(CATEGORIAS) - {"outros"}
+    consulta = consulta_tsquery("impostos")
+    assert '"imposto de renda"' in consulta      # expressões entre aspas
+    assert " or " in consulta and "isenção" in consulta
 
 
 def test_instancia_do_item_segue_a_origem():
