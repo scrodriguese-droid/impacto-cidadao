@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orçamento e seu imposto — ImpactoCidadão</title>
+    <meta name="description" content="Para onde vai o seu imposto, em ilustração proporcional, e o ciclo orçamentário (PPA, LDO e LOA) com links para os documentos oficiais.">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="assets/tailwind-config.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Inter', system-ui, sans-serif; }
+        :focus-visible { outline: 2px solid #0284c7; outline-offset: 2px; }
+        .barra { transition: width .6s ease; }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-full flex flex-col transition-colors duration-200">
+
+<a href="#conteudo" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-white focus:text-slate-900 focus:p-3">Ir para o conteúdo</a>
+<div id="cabecalho"></div>
+
+<main id="conteudo" class="max-w-4xl mx-auto px-4 sm:px-6 pt-6 pb-10 flex-grow w-full">
+    <h1 class="text-2xl font-extrabold tracking-tight">Orçamento e o seu imposto</h1>
+    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Para onde vai o dinheiro que você paga e como o orçamento nasce: PPA, LDO e LOA. Fontes oficiais, sem estimativas nossas.</p>
+
+    <div class="sticky top-16 z-30 -mx-4 sm:mx-0 px-4 sm:px-0 py-2 mt-3 bg-slate-50/90 dark:bg-slate-900/90 backdrop-blur">
+        <div class="flex flex-wrap items-center gap-x-2 gap-y-2 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 shadow-sm text-sm">
+            <i class="fa-solid fa-location-dot text-rose-500" aria-hidden="true"></i>
+            <span class="font-medium">Cidade:</span>
+            <div class="relative">
+                <button id="btnCidade" type="button" class="inline-flex items-center gap-1.5 font-bold bg-teal-50 dark:bg-teal-950/50 text-teal-800 dark:text-teal-300 border border-teal-200 dark:border-teal-800 rounded-full px-3.5 py-1.5 hover:opacity-90" aria-expanded="false" aria-controls="popCidade">
+                    <i class="fa-solid fa-city text-xs" aria-hidden="true"></i><span id="cidadeRotulo">Escolher cidade</span>
+                </button>
+                <div id="popCidade" class="hidden absolute left-0 top-full mt-2 w-72 z-40 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-xl p-2">
+                    <label for="cidadeBusca" class="sr-only">Buscar município</label>
+                    <input id="cidadeBusca" type="text" autocomplete="off" placeholder="Digite o nome da cidade…"
+                           class="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                    <ul id="cidadeLista" class="mt-1 max-h-60 overflow-auto text-sm" role="listbox"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="segEsfera" class="mt-3 inline-flex flex-wrap gap-1 p-1 rounded-2xl bg-slate-200/70 dark:bg-slate-800" role="radiogroup" aria-label="Esfera de governo"></div>
+
+    <!-- ========================= A. CALCULADORA ========================= -->
+    <section class="mt-6" aria-labelledby="tCalc">
+        <h2 id="tCalc" class="text-xl font-bold flex items-center"><i class="fa-solid fa-calculator text-teal-500 mr-2.5" aria-hidden="true"></i>Para onde vai o meu imposto</h2>
+        <div class="mt-2 rounded-xl border border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 text-xs p-3.5 flex items-start gap-2.5" role="note">
+            <i class="fa-solid fa-triangle-exclamation mt-0.5" aria-hidden="true"></i>
+            <p><b>É uma ilustração proporcional, não um extrato.</b> Imposto não é carimbado por área: tudo vai para um caixa comum e o orçamento decide. Repartimos o valor na mesma proporção da despesa liquidada por função da esfera escolhida. <b>Cada tributo abastece uma esfera:</b> Imposto de Renda é da União; ICMS e IPVA, dos estados; IPTU e ISS, dos municípios. Escolha a esfera que corresponde ao que você paga. Estados e municípios também recebem parte do IR por repasses (FPE, FPM).</p>
+        </div>
+
+        <div class="mt-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5">
+            <div class="grid sm:grid-cols-2 gap-4">
+                <div>
+                    <label for="valorImposto" class="block text-xs font-semibold mb-1">Quanto você paga de imposto por ano (R$)</label>
+                    <input id="valorImposto" type="number" inputmode="decimal" min="0" max="100000000" step="100" placeholder="ex.: 3000"
+                           class="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                </div>
+                <div>
+                    <label for="salarioIR" class="block text-xs font-semibold mb-1">…ou use o simulador de IR: salário bruto mensal (R$)</label>
+                    <div class="flex gap-2">
+                        <input id="salarioIR" type="number" inputmode="decimal" min="0" max="1000000" step="50" placeholder="ex.: 7000"
+                               class="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                        <button id="btnIR" type="button" class="px-3 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-700 text-xs font-semibold shrink-0 hover:opacity-90">Calcular IR</button>
+                    </div>
+                    <p id="irNota" class="text-[11px] text-slate-500 mt-1"></p>
+                </div>
+            </div>
+            <button id="btnDistribuir" type="button" class="mt-4 px-4 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold">Distribuir</button>
+        </div>
+        <div id="resCalc" class="mt-4" aria-live="polite"></div>
+    </section>
+
+    <!-- ========================= B. CICLO ========================= -->
+    <section class="mt-10" aria-labelledby="tCiclo">
+        <h2 id="tCiclo" class="text-xl font-bold flex items-center"><i class="fa-solid fa-rotate text-brand-600 mr-2.5" aria-hidden="true"></i>PPA, LDO e LOA</h2>
+        <p class="text-sm text-slate-500 dark:text-slate-400">As três leis do ciclo orçamentário, da meta de 4 anos ao orçamento do ano.</p>
+        <div id="resCiclo" class="mt-3" aria-live="polite"></div>
+    </section>
+</main>
+
+<div id="rodape"></div>
+
+<script src="assets/comum.js"></script>
+<script>
+renderLayout('orcamento');
+
+const ESFERAS = [
+    { id: 'municipio', rotulo: 'Município', icone: 'fa-city' },
+    { id: 'estado', rotulo: 'Estado', icone: 'fa-map' },
+    { id: 'uniao', rotulo: 'União', icone: 'fa-flag' },
+];
+const E = { municipio: lerPrefs().municipio || null, esfera: ler('ic_esfera_economia', 'municipio') };
+if (!ESFERAS.some((x) => x.id === E.esfera)) E.esfera = 'municipio';
+const codigoEnte = () => {
+    if (E.esfera === 'uniao') return 1;
+    if (!E.municipio) return null;
+    return E.esfera === 'estado' ? Math.floor(E.municipio.codigo / 100000) : E.municipio.codigo;
+};
+const cartao = (inner, extra = '') => `<div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 ${extra}">${inner}</div>`;
+const pct = (v) => `${Number(v).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%`;
+const pedirCidade = () => cartao(`<p class="text-center text-slate-500"><i class="fa-solid fa-city text-2xl mb-2 block text-slate-300" aria-hidden="true"></i>Escolha uma cidade${E.esfera === 'estado' ? ' para identificar o seu estado' : ''}.</p>`);
+const carregando = (t) => `<p class="text-sm text-slate-500"><i class="fa-solid fa-spinner fa-spin mr-1.5" aria-hidden="true"></i>${esc(t)}</p>`;
+const rodapeFonte = (r) => `<p class="text-[11px] text-slate-400 mt-3">Fonte: ${esc(r.fonte && r.fonte.nome ? r.fonte.nome : r.fonte || '')}. Consultado em ${esc(fmtDataHora(r.consultado_em))}.</p>`;
+
+function desenharEsfera() {
+    $('segEsfera').innerHTML = ESFERAS.map((x) => `<button type="button" role="radio" aria-checked="${E.esfera === x.id}" data-esfera="${x.id}"
+        class="px-3.5 py-2 rounded-xl text-sm font-semibold ${E.esfera === x.id ? 'bg-white dark:bg-slate-700 shadow text-brand-700 dark:text-brand-300' : 'text-slate-500'}">
+        <i class="fa-solid ${x.icone} mr-1.5 text-xs" aria-hidden="true"></i>${x.rotulo}</button>`).join('');
+}
+$('segEsfera').addEventListener('click', (ev) => {
+    const b = ev.target.closest('[data-esfera]');
+    if (!b || b.dataset.esfera === E.esfera) return;
+    E.esfera = b.dataset.esfera; guardar('ic_esfera_economia', E.esfera); atualizar();
+});
+
+/* ---------- cidade ---------- */
+const pop = $('popCidade');
+function alternarCidade(abrir) {
+    const mostrar = abrir ?? pop.classList.contains('hidden');
+    pop.classList.toggle('hidden', !mostrar);
+    $('btnCidade').setAttribute('aria-expanded', String(mostrar));
+    if (mostrar) { $('cidadeBusca').value = ''; $('cidadeLista').innerHTML = ''; setTimeout(() => $('cidadeBusca').focus(), 30); }
+}
+$('btnCidade').addEventListener('click', () => alternarCidade());
+document.addEventListener('click', (ev) => { if (!ev.target.closest('#popCidade') && !ev.target.closest('#btnCidade')) alternarCidade(false); });
+document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') alternarCidade(false); });
+$('cidadeBusca').addEventListener('input', debounce(async () => {
+    const q = $('cidadeBusca').value.trim();
+    if (q.length < 2) { $('cidadeLista').innerHTML = ''; return; }
+    try {
+        const achados = await api('/api/municipios?q=' + encodeURIComponent(q));
+        $('cidadeLista').innerHTML = achados.length
+            ? achados.map((m) => `<li><button type="button" role="option" data-cod="${esc(m.codigo)}" data-nome="${esc(m.nome)}" data-uf="${esc(m.uf)}"
+                class="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700">${esc(m.nome)} <span class="text-slate-400">– ${esc(m.uf)}</span></button></li>`).join('')
+            : '<li class="px-3 py-2 text-slate-500">Nenhum município encontrado.</li>';
+    } catch (e) { $('cidadeLista').innerHTML = `<li class="px-3 py-2 text-rose-600 text-xs">${esc(e.message)}</li>`; }
+}, 250));
+$('cidadeLista').addEventListener('click', (ev) => {
+    const b = ev.target.closest('[data-cod]');
+    if (!b) return;
+    E.municipio = { codigo: Number(b.dataset.cod), nome: b.dataset.nome, uf: b.dataset.uf };
+    salvarPrefsParciais({ municipio: E.municipio });
+    alternarCidade(false); atualizar();
+});
+
+/* ---------- A. calculadora ---------- */
+$('btnIR').addEventListener('click', async () => {
+    const sal = Number($('salarioIR').value);
+    if (!(sal > 0)) { $('irNota').textContent = 'Informe o salário bruto mensal.'; return; }
+    $('irNota').textContent = 'Calculando…';
+    try {
+        const r = await api('/api/simulador/ir', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ salario_bruto: sal, dependentes: 0, outras_deducoes: 0 }) });
+        const anual = r.regra_2026.imposto_mensal * 12;
+        $('valorImposto').value = anual.toFixed(2);
+        $('irNota').textContent = `IR retido na fonte pela regra de 2026: ${brl(r.regra_2026.imposto_mensal)}/mês × 12 = ${brl(anual)}/ano (sem dependentes). É imposto da União: use a esfera “União”.`;
+        if (E.esfera !== 'uniao') { E.esfera = 'uniao'; guardar('ic_esfera_economia', E.esfera); desenharEsfera(); atualizar(); }
+    } catch (e) { $('irNota').textContent = e.message; }
+});
+$('btnDistribuir').addEventListener('click', distribuir);
+$('valorImposto').addEventListener('keydown', (ev) => { if (ev.key === 'Enter') distribuir(); });
+
+async function distribuir() {
+    const valor = Number($('valorImposto').value);
+    const ente = codigoEnte();
+    if (ente == null) { $('resCalc').innerHTML = pedirCidade(); return; }
+    if (!(valor > 0)) { $('resCalc').innerHTML = cartao('<p class="text-sm text-slate-500">Informe um valor de imposto maior que zero.</p>'); return; }
+    $('resCalc').innerHTML = carregando('Consultando as despesas por função no Tesouro Nacional…');
+    try {
+        const r = await api(`/api/orcamento/imposto/${encodeURIComponent(ente)}?valor=${encodeURIComponent(valor)}`);
+        if (!r.areas.length) { $('resCalc').innerHTML = cartao(`<p class="text-sm">${esc(r.lacuna || 'Sem dados para distribuir.')}</p>`); return; }
+        const maior = Math.max(...r.areas.map((a) => a.pct));
+        $('resCalc').innerHTML = cartao(`
+            <p class="text-sm"><b>${esc(brl(r.valor_anual))}</b> por ano, repartidos como ${esc(r.instituicao || 'o ente')} gasta (${esc(r.periodo.rotulo)}):</p>
+            <ul class="mt-3 space-y-3">${r.areas.map((a) => `<li>
+                <div class="flex justify-between gap-3 text-sm"><span><i class="fa-solid ${esc(a.icone)} w-5 text-slate-400" aria-hidden="true"></i>${esc(a.nome)}</span>
+                <span class="font-semibold whitespace-nowrap">${esc(brl(a.valor))} <span class="text-xs font-normal text-slate-500">(${esc(pct(a.pct))})</span></span></div>
+                <div class="mt-1 h-2.5 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden"><div class="barra h-full bg-brand-500" style="width:${Math.max(1, a.pct / maior * 100)}%"></div></div></li>`).join('')}</ul>
+            <p class="text-xs text-slate-600 dark:text-slate-400 mt-4"><b>Como ler:</b> ${esc(r.aviso)}</p>
+            <p class="text-xs text-slate-600 dark:text-slate-400 mt-1">${esc(r.nota_funcoes)}</p>
+            ${rodapeFonte(r)}`);
+    } catch (e) { $('resCalc').innerHTML = mensagemErro(e); }
+}
+
+/* ---------- B. ciclo orçamentário ---------- */
+function docCard(d) {
+    const selo = d.virou_lei ? ['Virou lei', 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300']
+        : ['Em tramitação', 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'];
+    const alt = d.alteracoes_no_congresso ? ` · ${d.alteracoes_no_congresso} projeto(s) de alteração no Congresso` : '';
+    return `<li class="rounded-xl border border-slate-200 dark:border-slate-700 p-3.5">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+            <p class="font-semibold text-sm">${esc(d.tipo)} ${esc(d.referencia)} <span class="font-normal text-slate-500">· ${esc(d.proposicao)}</span></p>
+            <span class="px-2.5 py-1 rounded-full text-[11px] font-bold ${selo[1]}">${esc(selo[0])}</span></div>
+        <p class="text-xs text-slate-600 dark:text-slate-400 mt-1">${esc(d.situacao)}${d.lei ? ` — ${esc(d.lei)}` : ''}${d.ultima_movimentacao ? ` · última movimentação em ${esc(fmtData(d.ultima_movimentacao))}` : ''}${esc(alt)}</p>
+        <p class="text-xs mt-2 space-x-3">
+            ${d.url_texto ? `<a class="underline text-brand-700 dark:text-brand-400" target="_blank" rel="noopener" href="${esc(urlSegura(d.url_texto))}">Texto do projeto</a>` : ''}
+            <a class="underline text-brand-700 dark:text-brand-400" target="_blank" rel="noopener" href="${esc(urlSegura(d.url_tramitacao))}">Tramitação na Câmara</a></p></li>`;
+}
+async function carregarCiclo() {
+    const ente = codigoEnte();
+    if (ente == null) { $('resCiclo').innerHTML = pedirCidade(); return; }
+    $('resCiclo').innerHTML = carregando('Consultando as fontes oficiais…');
+    try {
+        const r = await api('/api/orcamento/ciclo/' + encodeURIComponent(ente));
+        const tipos = `<ul class="grid sm:grid-cols-3 gap-3 text-xs">${r.tipos.map((t) => `<li class="rounded-xl bg-slate-100 dark:bg-slate-900 p-3"><p class="font-bold text-sm">${esc(t.tipo)}</p><p class="text-slate-600 dark:text-slate-400">${esc(t.sentido)}</p></li>`).join('')}</ul>`;
+        const docs = r.documentos.length
+            ? `<h3 class="font-bold mt-5 mb-2">Documentos da União no Congresso <span class="text-xs font-normal text-slate-500">(${esc(r.janela)})</span></h3>
+               <ul class="space-y-2">${r.documentos.map(docCard).join('')}</ul>` : '';
+        const lacuna = r.lacuna ? `<div class="mt-5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 p-4 text-sm" role="note">
+            <p class="font-bold"><i class="fa-solid fa-circle-info mr-1.5 text-slate-400" aria-hidden="true"></i>Lacuna declarada</p><p class="mt-1 text-slate-700 dark:text-slate-300">${esc(r.lacuna)}</p></div>` : '';
+        const links = `<h3 class="font-bold mt-5 mb-2">Onde conferir nos documentos oficiais</h3>
+            <ul class="space-y-1.5 text-sm">${r.links.map((l) => `<li><a class="underline text-brand-700 dark:text-brand-400" target="_blank" rel="noopener" href="${esc(urlSegura(l.url))}">${esc(l.nome)}</a></li>`).join('')}</ul>`;
+        const obs = r.observacao ? `<p class="text-xs text-slate-600 dark:text-slate-400 mt-4">${esc(r.observacao)}</p>` : '';
+        $('resCiclo').innerHTML = cartao(`${tipos}${docs}${lacuna}${links}${obs}${rodapeFonte(r)}`)
+            + (r.esfera !== 'uniao' ? `<div id="loaExec" class="mt-4"></div>` : '');
+        if (r.esfera !== 'uniao') carregarDotacao(ente);
+    } catch (e) { $('resCiclo').innerHTML = mensagemErro(e); }
+}
+async function carregarDotacao(ente) {
+    const box = $('loaExec');
+    try {
+        const d = await api('/api/economia/' + encodeURIComponent(ente));
+        const x = d.nivel3 && d.nivel3.execucao;
+        if (!box || !x || !x.dotacao_inicial) return;
+        const linha = (r, v) => `<li class="flex justify-between gap-3"><span>${esc(r)}</span><span class="font-semibold whitespace-nowrap">${esc(brl(v))}</span></li>`;
+        box.innerHTML = cartao(`<h3 class="font-bold">O que a LOA fixou, segundo o RREO</h3>
+            <p class="text-xs text-slate-500">${esc(d.instituicao || '')} — ${esc(d.periodo.rotulo)}. Valores declarados pelo ente ao Tesouro (SICONFI, RREO Anexo 01).</p>
+            <ul class="mt-2 space-y-1.5 text-sm">${linha('Despesa autorizada na LOA (dotação inicial)', x.dotacao_inicial)}
+            ${linha('Dotação atualizada (com créditos adicionais)', x.dotado)}${linha('Empenhado até o bimestre', x.empenhado)}</ul>
+            <p class="text-[11px] text-slate-400 mt-2">Isto é o valor da LOA, não o documento: para o texto e os anexos, consulte o portal do próprio ente.</p>`);
+    } catch (_) { /* a seção principal já informa a lacuna */ }
+}
+
+function atualizar() {
+    const m = E.municipio;
+    $('cidadeRotulo').textContent = m ? `${m.nome} – ${m.uf}` : 'Escolher cidade';
+    desenharEsfera();
+    $('resCalc').innerHTML = '';
+    carregarCiclo();
+}
+atualizar();
+</script>
+</body>
+</html>

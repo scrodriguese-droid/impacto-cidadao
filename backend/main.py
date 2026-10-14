@@ -33,6 +33,7 @@ import bancadas
 import db
 import economia
 import macro
+import orcamento
 import simuladores
 from config import cfg
 from fontes import buscar_municipios, contexto_municipio
@@ -572,6 +573,35 @@ def economia_municipio(codigo_ibge: Annotated[int, Path(ge=1, le=5999999)]) -> d
     except Exception:  # noqa: BLE001
         pass
     return {**painel, "municipio": contexto}
+
+
+# --------------------------------------------------------------------------- #
+# Ciclo orçamentário (PPA, LDO, LOA) e "para onde vai o meu imposto"
+# --------------------------------------------------------------------------- #
+@router.get("/orcamento/ciclo/{codigo}", tags=["orcamento"])
+def orcamento_ciclo(codigo: Annotated[int, Path(ge=1, le=5999999)]) -> dict:
+    """PPA, LDO e LOA da esfera do ente (1 = União, 2 dígitos = UF, 7 dígitos = município)."""
+    try:
+        return orcamento.ciclo(codigo)
+    except Exception as exc:  # noqa: BLE001
+        log.warning("Fonte do ciclo orçamentário indisponível: %s", exc)
+        raise HTTPException(status_code=503, detail="A fonte dos documentos orçamentários está indisponível no momento.") from exc
+
+
+@router.get("/orcamento/imposto/{codigo}", tags=["orcamento"])
+def orcamento_imposto(
+    codigo: Annotated[int, Path(ge=1, le=5999999)],
+    valor: Annotated[float, Query(gt=0, le=100_000_000, description="imposto pago no ano, em R$")],
+) -> dict:
+    """Distribui `valor` pelas áreas de governo, proporcional à despesa liquidada por função (ilustração)."""
+    try:
+        res = orcamento.distribuir_imposto(codigo, valor)
+    except Exception as exc:  # noqa: BLE001
+        log.warning("SICONFI indisponível: %s", exc)
+        raise HTTPException(status_code=503, detail="O SICONFI (Tesouro Nacional) está indisponível no momento.") from exc
+    if res is None:
+        raise HTTPException(status_code=404, detail="Este ente ainda não publicou relatórios no SICONFI.")
+    return res
 
 
 # --------------------------------------------------------------------------- #

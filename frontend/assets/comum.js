@@ -45,6 +45,7 @@ const NAVEGACAO = [
     { id: 'politicas', href: 'politicas.html', icone: 'fa-landmark', rotulo: 'Leis e projetos' },
     { id: 'planos', href: 'index.html#candidatos', icone: 'fa-flag', rotulo: 'Planos de governo' },
     { id: 'simuladores', href: 'index.html#simuladores', icone: 'fa-calculator', rotulo: 'Simuladores' },
+    { id: 'orcamento', href: 'orcamento.html', icone: 'fa-receipt', rotulo: 'Seu imposto' },
     { id: 'economia', href: 'economia.html', icone: 'fa-chart-pie', rotulo: 'Economia' },
     { id: 'macro', href: 'macro.html', icone: 'fa-chart-line', rotulo: 'Indicadores' },
     { id: 'bancadas', href: 'bancadas.html', icone: 'fa-people-group', rotulo: 'Bancadas' },

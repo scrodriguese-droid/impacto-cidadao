@@ -212,7 +212,19 @@ TLS, instale `truststore` (já em `requirements.txt`) para usar o repositório d
 | 1 | Filtro de perfil e cidade (IBGE) | Disponível | topo de `index.html`; preferências compartilhadas (`ic_prefs`) |
 | 2 | Leis e projetos de lei (Câmara/Senado) | Disponível | `politicas.html` |
 | 3 | Radar de realidade (promessas × Constituição e LRF) | Parcial: planos de governo com citação; falta a avaliação de lei/PEC, esfera e fonte na LOA | `index.html#candidatos` |
-| 4 | Ciclo orçamentário e calculadora de imposto | Parcial: execução do orçamento e simuladores IR/MEI; faltam PPA/LDO/LOA e “para onde vai o meu imposto” | `economia.html#n3`, `index.html#simuladores` |
+| 4 | Ciclo orçamentário e calculadora de imposto | Disponível: “para onde vai o meu imposto” (ilustração proporcional) e PPA/LDO/LOA da União (Câmara, PLN); estados e municípios: lacuna declarada (sem base aberta) + dotação inicial do RREO | `orcamento.html`, `economia.html#n3`, `index.html#simuladores` |
 | 5 | Emendas parlamentares e execução local | Planejado: só links oficiais (lista própria exige chave gratuita da CGU) | `economia.html#n4` |
 | 6 | Economia do setor público e saúde fiscal | Disponível: arrecadação, LRF, déficits, reservas, dívida | `economia.html`, `macro.html` |
 | 7 | Composição partidária e bancadas | Disponível: Câmara e Senado (cadeiras por partido, limiares de maioria e 3/5); câmaras municipais: lacuna declarada (sem fonte aberta confiável da composição atual) | `bancadas.html`, `GET /api/bancadas` |
+
+### Módulo 4 — `orcamento.html`
+
+* `GET /api/orcamento/imposto/{codigo}?valor=` — reparte um valor anual de imposto pelas funções de governo,
+  proporcional à despesa liquidada (RREO Anexo 02). É ilustração: imposto não é carimbado por área, e cada
+  tributo abastece uma esfera (IR → União; ICMS/IPVA → estado; IPTU/ISS → município). Pode usar o resultado do
+  simulador de IR (regra 2026 × 12).
+* `GET /api/orcamento/ciclo/{codigo}` — União: PPA, LDO e LOA como proposições PLN da Câmara (situação, lei,
+  link do texto e da tramitação; cache 6 h). Verificado: o SICONFI (`extrato_entregas`) só tem DCA, MSC, RREO
+  e RGF, então estados e municípios aparecem como lacuna; mostramos a dotação inicial (LOA) do RREO.
+* Não vem da fonte: os valores da LOA federal por área/ação (SIOP exige o sistema próprio; Portal da
+  Transparência exige chave para API) — a página aponta para eles.
