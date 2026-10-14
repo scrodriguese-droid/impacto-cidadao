@@ -126,6 +126,43 @@ $('cidadeLista').addEventListener('click', (ev) => {
     alternarCidade(false); carregar();
 });
 
+/* ---------- déficits (nominal, primário, operacional) ---------- */
+function deficits(d) {
+    const x = d.deficits;
+    if (!x) return '';
+    const linha = (rot, v) => `<li class="flex justify-between gap-3"><span>${rot}</span><span class="font-semibold whitespace-nowrap">${v == null ? '—' : brlCurto(v)}</span></li>`;
+    const caixa = (rot, v, dica, detalhe) => {
+        const tem = v != null;
+        const def = tem && v >= 0;
+        const cor = !tem ? 'text-slate-400' : def ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400';
+        return cartao(`<p class="text-xs font-semibold text-slate-500">${rot}</p>
+            <p class="text-2xl font-extrabold mt-1 ${cor}">${tem ? brlCurto(Math.abs(v)) : 'Indisponível'}</p>
+            <p class="text-xs font-bold ${cor}">${tem ? (def ? 'Déficit' : 'Superávit') : ''}</p>
+            <p class="text-xs text-slate-500 mt-2">${dica}</p>
+            <details class="mt-2 text-xs text-slate-600 dark:text-slate-400"><summary class="cursor-pointer text-brand-700 dark:text-brand-400 font-semibold">Como foi calculado</summary>
+                <ul class="mt-2 space-y-1">${detalhe}</ul></details>`);
+    };
+    const n = x.nominal, p = x.primario, o = x.operacional;
+    const detOper = o.valor != null
+        ? linha('Déficit primário', p.valor) + linha(`Juros nominais (${esc(o.juros_base)})`, o.juros_nominais)
+          + linha(`(−) Correção monetária (IPCA ${pct(o.ipca_acumulado_pct)} × dívida de ${brlCurto(o.divida_inicio_ano)})`, o.correcao_monetaria)
+          + linha('= Juros reais', o.juros_reais) + linha('Primário + juros reais', o.valor)
+          + '<li class="text-[11px] text-slate-400">Cálculo nosso, aproximado — não é série oficial. A correção usa o IPCA e o estoque da dívida no início do ano.</li>'
+        : `<li>${esc(o.indisponivel_motivo || 'Dados insuficientes.')}</li>`;
+    return `<div class="mt-6">
+        <h3 class="font-bold">Déficits <span class="text-xs font-normal text-slate-500">· ${esc(x.periodo)}</span></h3>
+        <div class="grid sm:grid-cols-3 gap-4 mt-2">
+            ${caixa('Déficit nominal', n.valor, 'Gastos totais − receitas totais. Inclui juros, amortizações e empréstimos.',
+                linha('Gastos totais (empenhados)', n.gastos_totais) + linha('Receitas totais (arrecadadas)', n.receitas_totais) + linha('Gastos − receitas', n.valor))}
+            ${caixa('Déficit primário', p.valor, 'Gastos − receitas não financeiros. Exclui juros e amortização da dívida, entre outros itens financeiros.',
+                linha('Gastos não financeiros', p.gastos_nao_financeiros) + linha('Receitas não financeiras', p.receitas_nao_financeiras) + linha('Gastos − receitas', p.valor)
+                + `<li class="text-[11px] text-slate-400">Base: ${esc(p.base)}.</li>`)}
+            ${caixa('Déficit operacional', o.valor, 'Primário + juros reais: tira dos juros nominais o efeito da inflação.', detOper)}
+        </div>
+        <p class="text-[11px] text-slate-400 mt-2">Positivo = déficit; negativo = superávit. Valores do exercício até o período, conforme declarados pelo ente (RREO/SICONFI).</p>
+    </div>`;
+}
+
 /* ---------- níveis ---------- */
 function nivel1(d) {
     const n = d.nivel1, b = n.balanco, p = n.lrf_pessoal;
@@ -163,6 +200,7 @@ function nivel1(d) {
             ${fatia(n.saude, 'Saúde', 'fa-heart-pulse')}
             ${fatia(n.educacao, 'Educação', 'fa-graduation-cap')}
         </div>
+        ${deficits(d)}
         <p class="text-[11px] text-slate-400 mt-2">Saúde e Educação: fatia da despesa liquidada por função. Os mínimos constitucionais (15% e 25% da receita de impostos) são apurados em demonstrativos próprios — confira no portal oficial do município.</p>
     </section>`;
 }

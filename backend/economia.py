@@ -263,6 +263,105 @@ def _alerta_lrf(p: dict | None) -> dict | None:
 
 
 # --------------------------------------------------------------------------- #
+# Déficits: nominal, primário e operacional
+# --------------------------------------------------------------------------- #
+BCB_SGS = "https://api.bcb.gov.br/dados/serie/bcdata.sgs"
+IPCA_MENSAL = 433  # IPCA — variação mensal (%), IBGE/BCB
+
+
+def _ipca_acumulado(ano: int, mes_fim: int) -> float | None:
+    """IPCA acumulado de janeiro até `mes_fim` (em %), pela composição das variações mensais (SGS 433)."""
+    chave = ("ipca", ano, mes_fim)
+    agora = time.time()
+    if chave in _cache and agora - _cache[chave][0] < TTL_S:
+        return _cache[chave][1]
+    try:
+        serie = _http.json(f"{BCB_SGS}.{IPCA_MENSAL}/dados", {
+            "formato": "json", "dataInicial": f"01/01/{ano}", "dataFinal": f"28/{mes_fim:02d}/{ano}"})
+    except ErroFonte:
+        return None
+    if not isinstance(serie, list) or len(serie) < mes_fim:
+        return None  # série incompleta: não estimamos os meses que faltam
+    fator = 1.0
+    for ponto in serie[:mes_fim]:
+        fator *= 1 + float(ponto["valor"]) / 100
+    resultado = round((fator - 1) * 100, 2)
+    _cache[chave] = (agora, resultado)
+    return resultado
+
+
+def _deficits(a1: list[dict], a6: list[dict], ano: int, bim: int) -> dict:
+    """Déficit nominal, primário e operacional (positivo = déficit; negativo = superávit).
+
+    * nominal    = despesa total empenhada − receita total arrecadada (RREO Anexo 01);
+    * primário   = despesa primária empenhada − receita primária realizada (RREO Anexo 06, a
+                   classificação oficial de receitas e despesas financeiras). Sem o Anexo 06,
+                   aproxima pelo Anexo 01 excluindo crédito, juros, amortização e inversões financeiras;
+    * operacional = primário + juros reais, com juros reais = juros nominais − correção monetária
+                   (IPCA acumulado do ano × dívida consolidada no início do ano). Cálculo NOSSO, não
+                   é série oficial; fica indisponível quando falta a dívida consolidada ou o IPCA.
+    """
+    def r1(cod: str) -> float:
+        return _num(_valor(a1, cod, "Até o Bimestre"))
+
+    def d1(cod: str) -> float:
+        return _num(_valor(a1, cod, "DESPESAS EMPENHADAS ATÉ"))
+
+    receita, despesa = r1("TotalReceitas"), d1("TotalDespesas")
+    nominal = round(despesa - receita, 2)
+
+    rec_prim = _valor(a6, "RREO6TotalReceitaPrimaria", "RECEITAS REALIZADAS")
+    des_prim = _valor(a6, "RREO6TotalDespesaPrimaria", "DESPESAS EMPENHADAS")
+    if rec_prim is not None and des_prim is not None:
+        primario = round(float(des_prim) - float(rec_prim), 2)
+        base_primario = "RREO Anexo 06 (receitas e despesas primárias, classificação oficial)"
+        receitas_nf, gastos_nf = round(float(rec_prim), 2), round(float(des_prim), 2)
+    else:
+        rec_fin = (r1("ReceitasDeOperacoesDeCredito") + r1("OperacoesDeCreditoRefinanciamento")
+                   + r1("AmortizacoesDeEmprestimos") + r1("ReceitasDeValoresMobiliarios"))
+        des_fin = (d1("JurosEEncargosDaDivida") + d1("JurosEEncargosDaDividaIntra") + d1("AmortizacaoDaDivida")
+                   + d1("AmortizacaoDaDividaIntra") + d1("AmortizacaoRefinanciamentoDaDivida")
+                   + d1("InversoesFinanceiras") + d1("InversoesFinanceirasIntra"))
+        receitas_nf, gastos_nf = round(receita - rec_fin, 2), round(despesa - des_fin, 2)
+        primario = round(gastos_nf - receitas_nf, 2)
+        base_primario = "aproximação pelo RREO Anexo 01 (o Anexo 06 não está disponível)"
+
+    # Juros nominais: preferimos os "incorridos, incluindo variações monetárias" (Anexo 06), que são
+    # comparáveis à correção monetária; sem eles, usamos os juros empenhados (Anexo 01).
+    incorridos = _valor(a6, "JurosEncargosEVariacoesMonetariasPassivosExcetoRPPS", "VALOR INCORRIDO")
+    if incorridos is not None:
+        juros, juros_base = round(float(incorridos), 2), "juros, encargos e variações monetárias incorridos (RREO Anexo 06)"
+    else:
+        juros = round(d1("JurosEEncargosDaDivida") + d1("JurosEEncargosDaDividaIntra"), 2)
+        juros_base = "juros e encargos empenhados (RREO Anexo 01; não inclui variação monetária)"
+    divida = None
+    for r in a6:
+        if r.get("cod_conta") == "DividaConsolidada" and normalizar(r.get("coluna", "")).startswith(normalizar("Em 31/12")):
+            divida = r.get("valor")
+            break
+    ipca = _ipca_acumulado(ano, bim * 2)
+    operacional = None
+    componentes: dict[str, Any] = {"juros_nominais": juros, "juros_base": juros_base, "divida_inicio_ano": divida, "ipca_acumulado_pct": ipca}
+    motivo = None
+    if divida is None:
+        motivo = "Sem o saldo da dívida consolidada no início do ano nesta fonte, não é possível separar os juros reais."
+    elif ipca is None:
+        motivo = "A série do IPCA (Banco Central) está indisponível ou incompleta para o período."
+    else:
+        correcao = round(float(divida) * ipca / 100, 2)
+        juros_reais = round(juros - correcao, 2)
+        operacional = round(primario + juros_reais, 2)
+        componentes.update({"correcao_monetaria": correcao, "juros_reais": juros_reais})
+    return {
+        "periodo": f"acumulado até o {bim}º bimestre de {ano}",
+        "nominal": {"valor": nominal, "gastos_totais": despesa, "receitas_totais": receita},
+        "primario": {"valor": primario, "gastos_nao_financeiros": gastos_nf,
+                     "receitas_nao_financeiras": receitas_nf, "base": base_primario},
+        "operacional": {"valor": operacional, "indisponivel_motivo": motivo, **componentes},
+    }
+
+
+# --------------------------------------------------------------------------- #
 # API pública do módulo
 # --------------------------------------------------------------------------- #
 def painel_economia(ente: int) -> dict | None:
@@ -279,6 +378,10 @@ def painel_economia(ente: int) -> dict | None:
         a3 = _rreo(ente, ano, bim, "RREO-Anexo 03")
     except ErroFonte:
         a3 = []
+    try:
+        a6 = _rreo(ente, ano, bim, "RREO-Anexo 06")
+    except ErroFonte:
+        a6 = []
     try:
         pessoal = _alerta_lrf(_pessoal(ente, ano))
     except ErroFonte:
@@ -299,6 +402,7 @@ def painel_economia(ente: int) -> dict | None:
             "saude": funcoes.get("Saúde"),
             "educacao": funcoes.get("Educação"),
         },
+        "deficits": _deficits(a1, a6, ano, bim),
         "nivel2": {"receitas": _receitas(a1, a3, esfera), "despesas": despesas},
         "nivel3": {"execucao": _execucao(a1)},
         "fonte": "SICONFI / Tesouro Nacional (RREO e RGF declarados pelos próprios entes)",
