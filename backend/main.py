@@ -80,6 +80,9 @@ async def cabecalhos_de_seguranca(request: Request, call_next):
     resposta = await call_next(request)
     resposta.headers.setdefault("X-Content-Type-Options", "nosniff")
     resposta.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+    if not request.url.path.startswith("/api"):
+        # páginas e scripts estáticos: o navegador revalida (ETag) em vez de reaproveitar uma cópia antiga
+        resposta.headers.setdefault("Cache-Control", "no-cache")
     return resposta
 
 
