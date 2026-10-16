@@ -209,10 +209,10 @@ TLS, instale `truststore` (já em `requirements.txt`) para usar o repositório d
 
 | # | Módulo | Estado | Onde |
 |---|--------|--------|------|
-| 1 | Filtro de perfil e cidade (IBGE) | Disponível | topo de `index.html`; preferências compartilhadas (`ic_prefs`) |
+| 1 | Filtro de perfil e cidade (IBGE) | Disponível | barra de contexto (`assets/comum.js`: `montarBarraContexto`); preferências compartilhadas (`ic_prefs`) |
 | 2 | Leis e projetos de lei (Câmara/Senado) | Disponível | `politicas.html` |
-| 3 | Radar de realidade (promessas × Constituição e LRF) | Parcial: planos de governo com citação; falta a avaliação de lei/PEC, esfera e fonte na LOA | `index.html#candidatos` |
-| 4 | Ciclo orçamentário e calculadora de imposto | Disponível: “para onde vai o meu imposto” (ilustração proporcional) e PPA/LDO/LOA da União (Câmara, PLN); estados e municípios: lacuna declarada (sem base aberta) + dotação inicial do RREO | `orcamento.html`, `economia.html#n3`, `index.html#simuladores` |
+| 3 | Radar de realidade (promessas × Constituição e LRF) | Parcial: planos de governo com citação; falta a avaliação de lei/PEC, esfera e fonte na LOA | `planos.html` |
+| 4 | Ciclo orçamentário e calculadora de imposto | Disponível: “para onde vai o meu imposto” (ilustração proporcional) e PPA/LDO/LOA da União (Câmara, PLN); estados e municípios: lacuna declarada (sem base aberta) + dotação inicial do RREO | `orcamento.html`, `orcamento.html`, `simuladores.html` |
 | 5 | Emendas parlamentares e execução local | Planejado: só links oficiais (lista própria exige chave gratuita da CGU) | `economia.html#n4` |
 | 6 | Economia do setor público e saúde fiscal | Disponível: arrecadação, LRF, déficits, reservas, dívida | `economia.html`, `macro.html` |
 | 7 | Composição partidária e bancadas | Disponível: Câmara e Senado (cadeiras por partido, limiares de maioria e 3/5); câmaras municipais: lacuna declarada (sem fonte aberta confiável da composição atual) | `bancadas.html`, `GET /api/bancadas` |
@@ -243,3 +243,18 @@ aberta e é declarado como indisponível (Relatório Mensal da Dívida). A NFSP 
 produção industrial (8888), vendas do varejo (8880), IPCA, e relação com contas públicas (Resultado do Tesouro
 Nacional e séries fiscais do BCB). A leitura “expansão / desaceleração / possível contração” usa disseminação,
 duração e intensidade com limiares explícitos, é interpretativa e não substitui a datação do CODACE/FGV IBRE.
+
+### Telas do aplicativo
+
+O menu lateral tem seis áreas, cada uma com telas focadas (abas no topo da página):
+
+| Menu | Telas |
+|------|-------|
+| Início | `index.html`: destaques para o perfil e a cidade (leis recentes, contas da cidade, indicadores, planos) |
+| Leis e projetos | `politicas.html` |
+| Eleições: planos de governo | `planos.html` |
+| Seu imposto e orçamento | `orcamento.html` (para onde vai o imposto) · `simuladores.html` (IR e MEI) |
+| Saúde fiscal e dívida | `economia.html` · `macro.html` · `financiamento.html` · `ciclo.html` |
+| Bancadas | `bancadas.html` |
+
+O estado de desenvolvimento de cada módulo (tabela acima) é documentação interna e não aparece na interface.

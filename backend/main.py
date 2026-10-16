@@ -16,6 +16,7 @@ from __future__ import annotations
 import hashlib
 import logging
 import re
+import threading
 import time
 from collections import defaultdict, deque
 from contextlib import asynccontextmanager
@@ -50,12 +51,21 @@ PerfilQuery = Annotated[str | None, Query(description="id do perfil (ex.: clt, m
 # --------------------------------------------------------------------------- #
 # Aplicação
 # --------------------------------------------------------------------------- #
+def _aquecer_cache() -> None:
+    try:
+        macro.resumo()
+    except Exception as exc:  # noqa: BLE001 — é só otimização; a primeira consulta refaz o trabalho
+        log.info("Aquecimento do cache macro não concluído: %s", exc)
+
+
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     try:
         db.abrir_pool()
     except Exception as exc:  # noqa: BLE001
         log.error("Banco indisponível na inicialização: %s", exc)
+    # Aquece o cache dos indicadores em segundo plano: a página inicial não espera 30–60 s na primeira visita.
+    threading.Thread(target=_aquecer_cache, name="aquecer-cache", daemon=True).start()
     yield
     db.fechar_pool()
 
