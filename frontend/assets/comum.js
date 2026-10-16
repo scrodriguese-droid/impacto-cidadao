@@ -45,7 +45,7 @@ const NAVEGACAO = [
     { id: 'inicio', paginas: ['inicio'], href: 'index.html', icone: 'fa-house', rotulo: 'Início' },
     { id: 'politicas', paginas: ['politicas'], href: 'politicas.html', icone: 'fa-landmark', rotulo: 'Leis e projetos' },
     { id: 'planos', paginas: ['planos'], href: 'planos.html', icone: 'fa-flag', rotulo: 'Eleições: planos de governo' },
-    { id: 'imposto', paginas: ['orcamento', 'simuladores'], href: 'orcamento.html', icone: 'fa-receipt', rotulo: 'Seu imposto e orçamento' },
+    { id: 'imposto', paginas: ['orcamento', 'tributos', 'simuladores'], href: 'orcamento.html', icone: 'fa-receipt', rotulo: 'Seu imposto e orçamento' },
     { id: 'saude', paginas: ['economia', 'macro', 'financiamento', 'ciclo'], href: 'economia.html', icone: 'fa-chart-pie', rotulo: 'Saúde fiscal e dívida' },
     { id: 'bancadas', paginas: ['bancadas'], href: 'bancadas.html', icone: 'fa-people-group', rotulo: 'Bancadas' },
 ];
@@ -54,6 +54,7 @@ const NAV_GLOSSARIO = { id: 'glossario', paginas: ['glossario'], href: 'glossari
 const SUBNAVEGACAO = {
     imposto: [
         { id: 'orcamento', href: 'orcamento.html', rotulo: 'Para onde vai o seu imposto' },
+        { id: 'tributos', href: 'tributos.html', rotulo: 'Inventário de tributos' },
         { id: 'simuladores', href: 'simuladores.html', rotulo: 'Simuladores de IR e MEI' },
     ],
     saude: [
