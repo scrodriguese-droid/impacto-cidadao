@@ -210,10 +210,12 @@ const IC_TIPO = { PPA: 'fa-binoculars', LDO: 'fa-list-check', LOA: 'fa-file-invo
 function linhaDoTempo(r) {
     const nos = r.linha_do_tempo.map((n) => {
         const [chip, ponto] = ESTADO_COR[n.estado] || ESTADO_COR.sem_fonte;
+        const def = (r.tipos.find((t) => t.tipo === n.tipo) || {}).sentido;
         return `<li class="flex-1 min-w-[12rem] rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
             <div class="flex items-center justify-between gap-2">
                 <p class="font-bold"><i class="fa-solid ${IC_TIPO[n.tipo] || 'fa-file'} mr-1.5 text-slate-400" aria-hidden="true"></i>${esc(n.tipo)} <span class="font-normal text-slate-500 text-sm">${esc(n.periodo)}</span></p>
                 <span class="w-2.5 h-2.5 rounded-full ${ponto}" aria-hidden="true"></span></div>
+            ${def ? `<p class="text-xs text-slate-500 dark:text-slate-400 mt-1"><span aria-hidden="true">📖</span> <b>O que é:</b> ${esc(def)}</p>` : ''}
             <span class="inline-block mt-2 px-2.5 py-1 rounded-full text-[11px] font-bold ${chip}">${esc(n.estado_rotulo)}</span>
             ${n.detalhe ? `<p class="text-xs text-slate-600 dark:text-slate-400 mt-2">${esc(n.detalhe)}</p>` : ''}
             ${n.url_tramitacao ? `<a class="inline-block mt-2 text-xs underline text-brand-700 dark:text-brand-400" target="_blank" rel="noopener" href="${esc(urlSegura(n.url_tramitacao))}">${esc(n.proposicao)} na Câmara</a>` : ''}</li>`;
@@ -280,13 +282,12 @@ function cartaoLocal(r) {
 }
 
 function detalhes(r) {
-    const tipos = `<ul class="grid sm:grid-cols-3 gap-3 text-xs">${r.tipos.map((t) => `<li class="rounded-xl bg-slate-100 dark:bg-slate-900 p-3"><p class="font-bold text-sm">${esc(t.tipo)} · ${esc(t.nome)}</p><p class="mt-1 text-slate-600 dark:text-slate-300">${esc(t.sentido)}</p></li>`).join('')}</ul>`;
     const prazos = `<ul class="space-y-1 text-sm">${r.prazos.itens.map((i) => `<li><b>${esc(i.tipo)}:</b> ${esc(i.texto)}</li>`).join('')}</ul><p class="text-[11px] text-slate-400 mt-1">${esc(r.prazos.fonte)}</p>`;
     const docs = r.documentos.length ? `<ul class="space-y-2">${r.documentos.map(docCard).join('')}</ul>` : '';
     const lacuna = r.lacuna ? `<p class="text-sm text-slate-700 dark:text-slate-300" role="note"><b>Lacuna declarada:</b> ${esc(r.lacuna)}</p>` : '';
     const links = `<ul class="space-y-1.5 text-sm">${r.links.map((l) => `<li><a class="underline text-brand-700 dark:text-brand-400" target="_blank" rel="noopener" href="${esc(urlSegura(l.nome ? l.url : '#'))}">${esc(l.nome)}</a></li>`).join('')}</ul>`;
     const bloco = (titulo, corpo) => `<details class="mt-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4"><summary class="cursor-pointer font-semibold">${titulo}</summary><div class="mt-3">${corpo}</div></details>`;
-    return bloco('Entenda PPA, LDO e LOA', tipos) + bloco('Prazos constitucionais', prazos)
+    return bloco('Prazos constitucionais', prazos)
         + bloco('Documentos oficiais e fontes', `${docs}${lacuna}<h4 class="font-bold mt-4 mb-2 text-sm">Onde conferir</h4>${links}${r.observacao ? `<p class="text-xs text-slate-600 dark:text-slate-400 mt-3">${esc(r.observacao)}</p>` : ''}${rodapeFonte(r)}`);
 }
 
