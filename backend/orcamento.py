@@ -346,16 +346,20 @@ def _dotacao_inicial(ente: int) -> dict | None:
     despesa = economia._valor(a1, "TotalDespesas", "DOTAÇÃO INICIAL")
     receita = economia._valor(a1, "TotalReceitas", "PREVISÃO INICIAL")
     funcoes: dict[str, float] = {}
+    subfuncoes: dict[str, float] = {}
     for r in a2:
         if r.get("cod_conta") != "RREO2TotalDespesas" or not economia.normalizar(r.get("coluna", "")).startswith(economia.normalizar("DOTAÇÃO INICIAL")):
             continue
         nome = economia.FUNCOES.get(economia.normalizar(r.get("conta", "")))
         if nome and nome not in funcoes and r.get("valor"):
             funcoes[nome] = float(r["valor"])
+        elif not nome and r.get("valor") and not r.get("conta", "").startswith(("FU", "DESPESAS")):
+            subfuncoes.setdefault(economia.normalizar(r["conta"]), float(r["valor"]))
     soma = sum(funcoes.values())
     instituicao = next((r.get("instituicao") for r in a1 if r.get("instituicao")), None)
     return {
         "ano": ano, "instituicao": instituicao, "periodo": f"{bim}º bimestre de {ano}",
+        "subfuncoes": subfuncoes,
         "receita_prevista": float(receita) if receita is not None else None,
         "despesa_autorizada": float(despesa) if despesa is not None else None,
         "funcoes": sorted(({"nome": n, "valor": v, "pct": round(100 * v / soma, 1) if soma else None,

@@ -13,8 +13,11 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
     <style>
         body { font-family: 'Inter', system-ui, sans-serif; }
+        #mapa { height: 460px; z-index: 0; border-radius: 1rem; }
         :focus-visible { outline: 2px solid #0284c7; outline-offset: 2px; }
     </style>
 </head>
@@ -30,6 +33,35 @@
     </header>
 
     <div id="barraContexto"></div>
+
+    <!-- Quem resolve o quê? -->
+    <section class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5" aria-labelledby="tQuem">
+        <h2 id="tQuem" class="font-bold text-lg flex items-center gap-2"><i class="fa-solid fa-magnifying-glass-location text-brand-600" aria-hidden="true"></i>Quem resolve o quê?</h2>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Conte o seu problema e descubra quem é o responsável, a quem cobrar e quanto dinheiro foi previsto para isso.</p>
+        <form id="formQuem" class="mt-3 flex gap-2" role="search">
+            <label for="qQuem" class="sr-only">Descreva o seu problema</label>
+            <input id="qQuem" type="search" maxlength="120" autocomplete="off" placeholder="Ex.: preciso de vaga na creche, buraco na rua, demora para cirurgia…"
+                   class="flex-grow px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+            <button type="submit" class="px-4 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold">Buscar</button>
+        </form>
+        <div id="sugestoesQuem" class="mt-2 flex flex-wrap gap-2"></div>
+        <div id="respQuem" class="mt-4 space-y-4" aria-live="polite"></div>
+    </section>
+
+    <!-- Mapa dos equipamentos públicos -->
+    <section id="mapaSec" class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 scroll-mt-4" aria-labelledby="tMapa">
+        <h2 id="tMapa" class="font-bold text-lg flex items-center gap-2"><i class="fa-solid fa-map-location-dot text-teal-600" aria-hidden="true"></i>Mapa dos equipamentos públicos</h2>
+        <p id="mapaSub" class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Postos de saúde, UPAs, hospitais, escolas, delegacias e outros serviços perto de você, com a esfera responsável.</p>
+        <div id="filtrosMapa" class="mt-3 flex flex-wrap gap-2" role="group" aria-label="Tipos de equipamento"></div>
+        <div id="legendaMapa" class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs"></div>
+        <div id="mapaEstado" class="mt-3"></div>
+        <div class="mt-3 grid lg:grid-cols-[1fr_20rem] gap-4">
+            <div id="mapa" role="application" aria-label="Mapa interativo dos equipamentos públicos"></div>
+            <aside id="fichaLocal" class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/40 p-4 text-sm" aria-live="polite">
+                <p class="text-slate-500">Clique em um ponto do mapa para ver a ficha do local.</p></aside>
+        </div>
+        <p id="mapaFontes" class="text-[11px] text-slate-400 mt-3"></p>
+    </section>
 
     <div class="grid lg:grid-cols-2 gap-5">
         <section class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5" aria-labelledby="tLeis">
@@ -151,7 +183,166 @@ async function carregarPlanos() {
     } catch (_) { $('planos').textContent = 'Compare as propostas dos candidatos tema a tema, com o trecho original do plano registrado no TSE.'; }
 }
 
-function recarregar() { atualizarSubtitulo(); carregarLeis(); carregarCidade(); }
+/* ---------- Quem resolve o quê? ---------- */
+const COR_ESFERA = { Municipal: '#16a34a', Estadual: '#2563eb', Federal: '#eab308', 'Conveniado ao SUS': '#9333ea', 'Pública (esfera não informada)': '#0891b2', 'Não informada': '#94a3b8', Pública: '#0891b2' };
+const CHIP_ESFERA = { Municipal: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300', Estadual: 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300',
+    Federal: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-950 dark:text-yellow-300' };
+const nomeEnte = (esfera) => {
+    const m = contexto && contexto.municipio;
+    return esfera === 'Municipal' ? (m ? `Prefeitura de ${m.nome}` : 'a Prefeitura') : esfera === 'Estadual' ? (m ? `Governo do Estado (${m.uf})` : 'o Governo do Estado') : 'o Governo Federal';
+};
+const reaisCurto = (n) => {
+    if (n == null) return '—';
+    const v = Math.abs(n);
+    if (v >= 1e12) return `R$ ${(v / 1e12).toLocaleString('pt-BR', { maximumFractionDigits: 2 })} tri`;
+    if (v >= 1e9) return `R$ ${(v / 1e9).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} bi`;
+    if (v >= 1e6) return `R$ ${(v / 1e6).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} mi`;
+    return brl(n);
+};
+function linhaVerba(v) {
+    const sub = v.subfuncao && v.valor_subfuncao != null ? `, dos quais <b>${esc(reaisCurto(v.valor_subfuncao))}</b> em ${esc(v.subfuncao)}` : '';
+    return `<li><b>${esc(v.instituicao)}</b> autorizou na LOA ${esc(v.ano)}: <b>${esc(reaisCurto(v.valor_funcao))}</b> para ${esc(v.funcao)}${sub}.</li>`;
+}
+function cartaoResposta(r) {
+    const esferas = r.esferas.map((e) => `<span class="px-2.5 py-1 rounded-full text-xs font-bold ${CHIP_ESFERA[e]}">${esc(e)}</span>`).join(' ');
+    const responsaveis = r.esferas.map(nomeEnte).join(' · ');
+    return `<article class="rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+        <header class="px-4 py-3 bg-slate-100 dark:bg-slate-700/60"><p class="text-xs font-bold text-slate-500">RESPONSÁVEL</p>
+            <p class="font-bold"><span aria-hidden="true">🏛️</span> ${esc(responsaveis)} <span class="ml-1">${esferas}</span></p></header>
+        <div class="p-4 space-y-3 text-sm">
+            <p><b>${esc(r.servico)}</b><span class="block text-xs text-slate-500">${esc(r.equipamento_tipico)}</span></p>
+            <div><p class="font-semibold"><span aria-hidden="true">📌</span> Quem você deve cobrar?</p>
+                <ul class="list-disc pl-5 text-slate-700 dark:text-slate-300">${r.quem_cobrar.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
+                <p class="text-xs text-slate-500 mt-1">Órgão: ${esc(r.orgao_responsavel)}</p></div>
+            ${r.verba.length ? `<div><p class="font-semibold"><span aria-hidden="true">💰</span> Quanto foi previsto no orçamento?</p>
+                <ul class="list-disc pl-5 text-slate-700 dark:text-slate-300">${r.verba.map(linhaVerba).join('')}</ul>
+                <p class="text-[11px] text-slate-400 mt-1">Dotação inicial da LOA declarada ao Tesouro Nacional (RREO). É o valor da área, não de um serviço específico.</p></div>`
+                : (r.funcao_orcamento && !(contexto && contexto.municipio) ? '<p class="text-xs text-slate-500"><span aria-hidden="true">💰</span> Escolha a sua cidade para ver quanto cada esfera autorizou para esta área.</p>' : '')}
+            ${r.observacao ? `<p class="text-xs text-slate-600 dark:text-slate-400"><span aria-hidden="true">💡</span> ${esc(r.observacao)}</p>` : ''}
+            ${r.base ? `<p class="text-[11px] text-slate-400">Base legal: ${esc(r.base)}</p>` : ''}
+            <button type="button" data-mapa="${esc(r.mapa)}" class="px-3 py-1.5 rounded-lg bg-teal-50 dark:bg-teal-950/40 text-teal-800 dark:text-teal-300 text-xs font-semibold border border-teal-200 dark:border-teal-800">
+                <i class="fa-solid fa-map-pin mr-1" aria-hidden="true"></i>Ver no mapa</button></div></article>`;
+}
+async function buscarQuem(texto) {
+    const q = (texto || '').trim();
+    if (q.length < 2) { $('respQuem').innerHTML = ''; return; }
+    $('respQuem').innerHTML = '<p class="text-sm text-slate-500"><i class="fa-solid fa-spinner fa-spin mr-1.5" aria-hidden="true"></i>Procurando o responsável…</p>';
+    try {
+        const par = new URLSearchParams({ q }); if (contexto && contexto.municipio) par.set('municipio', contexto.municipio.codigo);
+        const r = await api('/api/competencias/buscar?' + par);
+        $('respQuem').innerHTML = r.resultados.length ? r.resultados.map(cartaoResposta).join('')
+            : `<p class="text-sm text-slate-600 dark:text-slate-300">Não encontramos um responsável direto para “${esc(q)}”. Tente: ${r.sugestoes.map((x) => `<button type="button" data-q="${esc(x)}" class="underline text-brand-700 dark:text-brand-400">${esc(x)}</button>`).join(', ')}.</p>`;
+    } catch (e) { $('respQuem').innerHTML = mensagemErro(e); }
+}
+$('formQuem').addEventListener('submit', (ev) => { ev.preventDefault(); buscarQuem($('qQuem').value); });
+['respQuem', 'sugestoesQuem'].forEach((id) => $(id).addEventListener('click', (ev) => {
+    const q = ev.target.closest('[data-q]');
+    if (q) { $('qQuem').value = q.dataset.q; buscarQuem(q.dataset.q); return; }
+    const m = ev.target.closest('[data-mapa]');
+    if (m) { M.categoria = m.dataset.mapa; desenharFiltros(); desenharPontos(); $('mapaSec').scrollIntoView({ behavior: 'smooth' }); }
+}));
+$('sugestoesQuem').innerHTML = ['vaga na creche', 'buraco na rua', 'demora para cirurgia', 'remédio no posto', 'assalto', 'aposentadoria no INSS']
+    .map((x) => `<button type="button" data-q="${esc(x)}" class="px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600">${esc(x)}</button>`).join('');
+
+/* ---------- Mapa dos equipamentos públicos ---------- */
+const M = { mapa: null, camada: null, dados: null, categoria: 'todos', esferas: new Set(['Municipal', 'Estadual', 'Federal', 'Conveniado ao SUS']), tentativas: 0, timer: null, selecionado: null };
+const CATEGORIAS = [['todos', 'Todos', 'fa-layer-group'], ['saude', 'Saúde', 'fa-heart-pulse'], ['educacao', 'Educação', 'fa-graduation-cap'],
+    ['seguranca', 'Segurança', 'fa-shield-halved'], ['assistencia', 'Assistência social', 'fa-hand-holding-heart'], ['outros', 'Outros', 'fa-building-columns']];
+function desenharFiltros() {
+    $('filtrosMapa').innerHTML = CATEGORIAS.map(([id, rot, ic]) => `<button type="button" data-cat="${id}" aria-pressed="${M.categoria === id}"
+        class="px-3 py-1.5 rounded-full text-xs font-semibold border ${M.categoria === id ? 'bg-brand-600 border-brand-600 text-white' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700'}">
+        <i class="fa-solid ${ic} mr-1" aria-hidden="true"></i>${rot}</button>`).join('');
+    const cont = (M.dados && M.dados.contagem_por_esfera) || {};
+    const ordem = ['Municipal', 'Estadual', 'Federal', 'Conveniado ao SUS', 'Pública (esfera não informada)', 'Não informada'];
+    $('legendaMapa').innerHTML = ordem.filter((e) => cont[e]).map((e) => `<label class="inline-flex items-center gap-1.5 cursor-pointer">
+        <input type="checkbox" data-esf="${esc(e)}" ${M.esferas.has(e) ? 'checked' : ''}><span class="w-3 h-3 rounded-full" style="background:${COR_ESFERA[e] || '#94a3b8'}"></span>${esc(e)} <span class="text-slate-400">(${cont[e]})</span></label>`).join('');
+}
+$('filtrosMapa').addEventListener('click', (ev) => { const b = ev.target.closest('[data-cat]'); if (b) { M.categoria = b.dataset.cat; desenharFiltros(); desenharPontos(); } });
+$('legendaMapa').addEventListener('change', (ev) => { const e = ev.target.dataset.esf; if (!e) return; ev.target.checked ? M.esferas.add(e) : M.esferas.delete(e); desenharPontos(); });
+
+function iniciarMapa(centro) {
+    if (M.mapa) return;
+    M.mapa = L.map('mapa', { scrollWheelZoom: false }).setView([centro.lat, centro.lon], 12);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>' }).addTo(M.mapa);
+    M.camada = L.layerGroup().addTo(M.mapa);
+    M.mapa.on('click', () => M.mapa.scrollWheelZoom.enable());
+}
+function desenharPontos() {
+    if (!M.mapa || !M.dados) return;
+    M.camada.clearLayers();
+    const itens = M.dados.itens.filter((i) => (M.categoria === 'todos' || i.categoria === M.categoria) && M.esferas.has(i.esfera));
+    const pts = [];
+    for (const i of itens) {
+        const cor = COR_ESFERA[i.esfera] || '#94a3b8';
+        const mk = L.circleMarker([i.lat, i.lon], { radius: 7, color: '#fff', weight: 1.5, fillColor: cor, fillOpacity: 0.95 });
+        mk.bindTooltip(i.nome, { direction: 'top' });
+        mk.on('click', () => abrirFicha(i));
+        mk.addTo(M.camada); pts.push([i.lat, i.lon]);
+    }
+    if (pts.length) M.mapa.fitBounds(pts, { padding: [30, 30], maxZoom: 15 });
+    $('mapaEstado').innerHTML = itens.length ? '' : '<p class="text-sm text-slate-500">Nenhum equipamento com este filtro.</p>';
+}
+async function abrirFicha(i) {
+    const m = contexto.municipio;
+    const botao = (rot, url) => `<a class="underline text-brand-700 dark:text-brand-400" target="_blank" rel="noopener" href="${esc(urlSegura(url))}">${esc(rot)}</a>`;
+    const cab = `<h3 class="font-bold leading-snug">${esc(i.nome)}</h3>
+        <p class="text-xs text-slate-500">${esc(i.tipo)}</p>
+        <p class="mt-2"><span class="px-2.5 py-1 rounded-full text-xs font-bold text-white" style="background:${COR_ESFERA[i.esfera] || '#94a3b8'}">${esc(i.esfera)}</span>
+           <span class="block text-[11px] text-slate-400 mt-1">Esfera: ${esc(i.esfera_origem)}</span></p>
+        <ul class="mt-3 space-y-1 text-xs text-slate-700 dark:text-slate-300">
+            ${i.endereco ? `<li><span aria-hidden="true">📍</span> ${esc(i.endereco)}</li>` : ''}
+            ${i.telefone ? `<li><span aria-hidden="true">📞</span> ${esc(i.telefone)}</li>` : ''}
+            ${i.funcionamento ? `<li><span aria-hidden="true">🕒</span> ${esc(i.funcionamento)}</li>` : ''}</ul>`;
+    const rodape = `<p class="text-[11px] text-slate-400 mt-3">Fonte: ${botao(i.fonte, i.url_fonte)}${i.atualizado_em ? ` · atualizado em ${esc(fmtData(i.atualizado_em))}` : ''}</p>`;
+    $('fichaLocal').innerHTML = cab + '<p class="mt-3 text-xs text-slate-500"><i class="fa-solid fa-spinner fa-spin mr-1" aria-hidden="true"></i>Buscando responsável e orçamento…</p>' + rodape;
+    if (!['Municipal', 'Estadual', 'Federal'].includes(i.esfera)) {
+        const extra = i.conveniado_sus
+            ? '<p class="mt-3 text-xs"><b>Transparência:</b> entidade sem fins lucrativos que atende pelo SUS. O atendimento é financiado por repasses do SUS (Município, Estado e União). Para reclamar do atendimento, use a Ouvidoria do SUS: <b>Disque Saúde 136</b>.</p>'
+            : '<p class="mt-3 text-xs text-slate-500">A esfera deste local não está informada na fonte; por isso não mostramos o orçamento. Consulte o órgão responsável.</p>';
+        $('fichaLocal').innerHTML = cab + extra + rodape; return;
+    }
+    try {
+        const r = await api(`/api/equipamentos/${m.codigo}/verba?categoria=${encodeURIComponent(i.categoria)}&esfera=${encodeURIComponent(i.esfera)}`);
+        const v = r.verba;
+        $('fichaLocal').innerHTML = cab + `<div class="mt-3 border-t border-slate-200 dark:border-slate-700 pt-3 text-xs space-y-2">
+            <p class="font-semibold text-sm"><span aria-hidden="true">💰</span> Transparência e dinheiro público</p>
+            <p><b>Responsável:</b> ${esc(r.orgao)}</p>
+            <p><b>Quem cobrar:</b> ${r.quem_cobrar.map(esc).join(' e ')}</p>
+            ${v && v.valor_funcao != null ? `<p>${esc(v.instituicao)} autorizou na LOA ${esc(v.ano)} <b>${esc(reaisCurto(v.valor_funcao))}</b> para ${esc(v.funcao)} (${(100 * v.valor_funcao / v.despesa_total).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}% da despesa autorizada). <a class="underline" href="orcamento.html">Ver o orçamento</a>.</p>
+              <p class="text-[11px] text-slate-400">É o valor da área na esfera, não o custo desta unidade.</p>` : '<p class="text-slate-500">Sem valor de orçamento para esta área.</p>'}
+            ${i.categoria === 'saude' ? '<p>Reclamações sobre o atendimento: Ouvidoria do SUS, <b>Disque Saúde 136</b>.</p>' : ''}</div>` + rodape;
+    } catch (e) { $('fichaLocal').innerHTML = cab + `<p class="mt-3 text-xs text-slate-500">${esc(e.message)}</p>` + rodape; }
+}
+async function carregarMapa() {
+    const m = contexto && contexto.municipio;
+    clearTimeout(M.timer);
+    if (!m) {
+        $('mapaEstado').innerHTML = '<p class="text-sm text-slate-500">Escolha a sua cidade na barra acima para ver os equipamentos públicos no mapa.</p>';
+        $('filtrosMapa').innerHTML = ''; $('legendaMapa').innerHTML = ''; $('mapaFontes').textContent = '';
+        $('mapa').classList.add('hidden'); $('fichaLocal').classList.add('hidden'); return;
+    }
+    $('mapa').classList.remove('hidden'); $('fichaLocal').classList.remove('hidden');
+    $('mapaSub').textContent = `Equipamentos públicos de ${m.nome} – ${m.uf}, com a esfera responsável por cada um.`;
+    if (!M.dados || M.dados.municipio !== m.codigo) $('mapaEstado').innerHTML = '<p class="text-sm text-slate-500"><i class="fa-solid fa-spinner fa-spin mr-1.5" aria-hidden="true"></i>Consultando o cadastro de unidades de saúde (CNES)…</p>';
+    try {
+        const d = await api('/api/equipamentos/' + encodeURIComponent(m.codigo));
+        const trocou = !M.dados || M.dados.municipio !== d.municipio;
+        M.dados = d;
+        if (!d.centro) { $('mapaEstado').innerHTML = '<p class="text-sm text-slate-500">Nenhum equipamento com localização foi encontrado para esta cidade.</p>'; return; }
+        iniciarMapa(d.centro);
+        if (trocou) M.mapa.setView([d.centro.lat, d.centro.lon], 12);
+        M.mapa.invalidateSize();
+        desenharFiltros(); desenharPontos();
+        const osm = d.fontes.osm;
+        $('mapaFontes').innerHTML = `Fontes: ${esc(d.fontes.cnes.nome)} (${d.fontes.cnes.itens} unidades) · ${esc(osm.nome)} (${osm.itens} locais${osm.estado === 'indisponivel' ? ', indisponível agora' : ''}). ${d.avisos.map(esc).join(' ')}`;
+        if (osm.estado === 'carregando' && M.tentativas < 8) {
+            $('mapaEstado').innerHTML = '<p class="text-xs text-slate-500"><i class="fa-solid fa-spinner fa-spin mr-1.5" aria-hidden="true"></i>Carregando escolas, delegacias e outros serviços do OpenStreetMap (na primeira vez pode levar um minuto)…</p>';
+            M.tentativas += 1; M.timer = setTimeout(carregarMapa, 15000);
+        } else { M.tentativas = 0; }
+    } catch (e) { $('mapaEstado').innerHTML = mensagemErro(e); }
+}
+
+function recarregar() { atualizarSubtitulo(); carregarLeis(); carregarCidade(); M.tentativas = 0; carregarMapa(); if ($('qQuem').value.trim()) buscarQuem($('qQuem').value); }
 
 (async function iniciar() {
     contexto = await montarBarraContexto('barraContexto', recarregar);

@@ -33,7 +33,9 @@ from pydantic import BaseModel, Field, field_validator
 import bancadas
 import db
 import ciclo
+import competencias
 import economia
+import equipamentos
 import macro
 import orcamento
 import simuladores
@@ -550,6 +552,42 @@ def macro_serie(
         raise HTTPException(status_code=404, detail="Indicador desconhecido.") from exc
     except Exception as exc:  # noqa: BLE001
         raise _fonte_macro_indisponivel(exc) from exc
+
+
+@router.get("/competencias/buscar", tags=["competencias"])
+def competencias_buscar(
+    q: Annotated[str, Query(min_length=2, max_length=120, description="problema do dia a dia, ex.: vaga na creche")],
+    municipio: Annotated[int | None, Query(ge=1000000, le=5999999, description="código IBGE do município")] = None,
+) -> dict:
+    try:
+        return competencias.buscar(q, municipio)
+    except Exception as exc:  # noqa: BLE001
+        log.warning("Busca de competências falhou: %s", exc)
+        raise HTTPException(status_code=503, detail="Não foi possível consultar a matriz de competências agora.") from exc
+
+
+@router.get("/equipamentos/{codigo_ibge}", tags=["equipamentos"])
+def equipamentos_municipio(codigo_ibge: Annotated[int, Path(ge=1000000, le=5999999)]) -> dict:
+    """Unidades de saúde (CNES) e outros serviços (OpenStreetMap) de um município, com coordenadas."""
+    try:
+        return equipamentos.listar(codigo_ibge)
+    except Exception as exc:  # noqa: BLE001
+        log.warning("Equipamentos indisponíveis (%s): %s", codigo_ibge, exc)
+        raise HTTPException(status_code=503, detail="O cadastro de equipamentos públicos está indisponível no momento.") from exc
+
+
+@router.get("/equipamentos/{codigo_ibge}/verba", tags=["equipamentos"])
+def equipamentos_verba(
+    codigo_ibge: Annotated[int, Path(ge=1000000, le=5999999)],
+    categoria: Annotated[Literal["saude", "educacao", "seguranca", "assistencia", "outros"], Query()],
+    esfera: Annotated[Literal["Municipal", "Estadual", "Federal"], Query()],
+) -> dict:
+    """Responsável e verba autorizada na LOA (dotação inicial do RREO) para o tipo de equipamento e a esfera dele."""
+    try:
+        return competencias.ficha(codigo_ibge, categoria, esfera)
+    except Exception as exc:  # noqa: BLE001
+        log.warning("Verba do equipamento indisponível: %s", exc)
+        raise HTTPException(status_code=503, detail="Os dados de orçamento estão indisponíveis no momento.") from exc
 
 
 @router.get("/macro/ciclo", tags=["macro"])

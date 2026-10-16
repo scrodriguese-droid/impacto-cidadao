@@ -258,3 +258,13 @@ O menu lateral tem seis áreas, cada uma com telas focadas (abas no topo da pág
 | Bancadas | `bancadas.html` |
 
 O estado de desenvolvimento de cada módulo (tabela acima) é documentação interna e não aparece na interface.
+
+### Quem resolve o quê? e mapa de equipamentos (página inicial)
+
+* `GET /api/competencias/buscar?q=…&municipio=…` — matriz de competências (`dados/competencias.json`, editável) que liga o
+  problema do dia a dia à esfera responsável, a quem cobrar e à verba (dotação inicial da LOA, por função e subfunção, via RREO).
+* `GET /api/equipamentos/{codigo_ibge}` — unidades de saúde do CNES/DATASUS (API de Dados Abertos da Saúde, com coordenadas
+  e esfera) e escolas, delegacias, bombeiros e assistência do OpenStreetMap (esfera inferida pelo nome). O INEP (escolas) e o
+  CadSUAS (CRAS/CREAS) exigem autenticação nas APIs públicas e não foram usados. O OpenStreetMap é baixado em segundo plano
+  na primeira consulta (cerca de um minuto) e guardado em `dados/equipamentos/`.
+* `GET /api/equipamentos/{codigo_ibge}/verba?categoria=…&esfera=…` — responsável e verba da área para a ficha do local.
