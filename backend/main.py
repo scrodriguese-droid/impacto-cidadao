@@ -565,6 +565,16 @@ def tributos_arrecadacao(municipio: Annotated[int | None, Query(ge=1000000, le=5
         raise HTTPException(status_code=503, detail="Os dados de arrecadação estão indisponíveis no momento.") from exc
 
 
+@router.get("/tributos/repasses", tags=["tributos"])
+def tributos_repasses(municipio: Annotated[int | None, Query(ge=1000000, le=5999999)] = None) -> dict:
+    """Repasses entre União, estado e município (SICONFI) e a repartição de receitas da União (Tesouro)."""
+    try:
+        return tributos.repasses(municipio)
+    except Exception as exc:  # noqa: BLE001
+        log.warning("Repasses indisponíveis: %s", exc)
+        raise HTTPException(status_code=503, detail="Os dados de repasses estão indisponíveis no momento.") from exc
+
+
 @router.get("/tributos/fluxo-federal", tags=["tributos"])
 def tributos_fluxo_federal() -> dict:
     try:

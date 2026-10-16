@@ -135,3 +135,75 @@ def fluxo_federal() -> dict:
         "fonte": {"nome": "Tesouro Nacional — Resultado do Tesouro Nacional (Governo Central, caixa)", "url": rtn["pagina"]},
         "nota": "Governo Central: Tesouro Nacional, Previdência Social e Banco Central. Não inclui os juros da dívida (resultado primário) nem as empresas estatais.",
     }
+
+
+# --------------------------------------------------------------------------- #
+# Repasses entre os entes (União → estados e municípios; estados → municípios)
+# --------------------------------------------------------------------------- #
+def _rec(a1: list[dict], conta: str) -> float:
+    return float(economia._valor(a1, conta, "Até o Bimestre") or 0)
+
+
+def _desp(a1: list[dict], conta: str) -> float:
+    return float(economia._valor(a1, conta, "DESPESAS EMPENHADAS ATÉ") or 0)
+
+
+def _anexo1(ente: int) -> tuple[list[dict], int, int, str | None]:
+    per = economia._periodo_mais_recente(ente)
+    if not per:
+        raise ErroFonte("Ente sem relatórios no SICONFI")
+    a1 = economia._rreo(ente, per[0], per[1], "RREO-Anexo 01")
+    return a1, per[0], per[1], next((r.get("instituicao") for r in a1 if r.get("instituicao")), None)
+
+
+UNIAO_CORRENTE, UNIAO_CAPITAL = "TransferenciasCorrentesDaUniaoEDeSuasEntidades", "TransferenciasDeCapitalDaUniaoEDeSuasEntidades"
+ESTADO_CORRENTE, ESTADO_CAPITAL = ("TransferenciasCorrentesDosEstadosEDoDistritoFederalEDeSuasEntidades",
+                                   "TransferenciasDeCapitalDosEstadosEDoDistritoFederalEDeSuasEntidades")
+
+
+def repasses(municipio: int | None) -> dict:
+    """Quanto cada nível de governo repassa ao seguinte (RREO Anexo 01, acumulado no exercício) + a repartição federal (RTN)."""
+    saida: dict[str, Any] = {"uniao": None, "estado": None, "municipio": None, "rtn": None, "erros": []}
+    try:
+        a1, ano, bim, inst = _anexo1(1)
+        saida["uniao"] = {"instituicao": inst, "periodo": f"{bim}º bimestre de {ano}",
+                          "transferido_a_estados_e_municipios": _desp(a1, "TransferenciasAEstadosDistritoFederalEMunicipios"),
+                          "despesa_total": _desp(a1, "TotalDespesas")}
+    except Exception as exc:  # noqa: BLE001
+        log.warning("repasses da União indisponíveis: %s", exc)
+        saida["erros"].append("Repasses da União (SICONFI) indisponíveis no momento.")
+    try:
+        rtn = ciclo._rtn()
+        fim = sorted(rtn["receita_total"])[-1]
+        nomes = {"2.1": "FPM, FPE e IPI-Exportação", "2.2": "Fundos constitucionais", "2.3": "Salário-Educação", "2.4": "Royalties e recursos naturais",
+                 "2.5": "Cide-Combustíveis", "2.6": "Demais repartições"}
+        itens = [{"codigo": c, "nome": n, "valor": _rtn_12m(rtn, c, fim)} for c, n in nomes.items()]
+        saida["rtn"] = {"periodo": _rotulo_periodo(fim), "total": _rtn_12m(rtn, "2", fim), "itens": [i for i in itens if i["valor"]],
+                        "fonte": {"nome": "Tesouro Nacional — Resultado do Tesouro Nacional (transferências por repartição de receita)", "url": rtn["pagina"]}}
+    except Exception as exc:  # noqa: BLE001
+        log.warning("repartição federal indisponível: %s", exc)
+        saida["erros"].append("Repartição de receitas da União (Tesouro) indisponível no momento.")
+    if municipio:
+        try:
+            a1, ano, bim, inst = _anexo1(municipio // 100000)
+            saida["estado"] = {"instituicao": inst, "periodo": f"{bim}º bimestre de {ano}",
+                               "da_uniao": _rec(a1, UNIAO_CORRENTE) + _rec(a1, UNIAO_CAPITAL),
+                               "aos_municipios": _desp(a1, "TransferenciasAMunicipios"),
+                               "receita_total": _rec(a1, "TotalReceitas"), "transferencias_total": _rec(a1, "TransferenciasCorrentes") + _rec(a1, "TransferenciasDeCapital"),
+                               "despesa_total": _desp(a1, "TotalDespesas")}
+        except Exception as exc:  # noqa: BLE001
+            log.warning("repasses do estado indisponíveis: %s", exc)
+            saida["erros"].append("Repasses do estado (SICONFI) indisponíveis no momento.")
+        try:
+            a1, ano, bim, inst = _anexo1(municipio)
+            saida["municipio"] = {"instituicao": inst, "periodo": f"{bim}º bimestre de {ano}",
+                                  "da_uniao": _rec(a1, UNIAO_CORRENTE) + _rec(a1, UNIAO_CAPITAL),
+                                  "do_estado": _rec(a1, ESTADO_CORRENTE) + _rec(a1, ESTADO_CAPITAL),
+                                  "receita_total": _rec(a1, "TotalReceitas"), "transferencias_total": _rec(a1, "TransferenciasCorrentes") + _rec(a1, "TransferenciasDeCapital")}
+        except Exception as exc:  # noqa: BLE001
+            log.warning("repasses do município indisponíveis: %s", exc)
+            saida["erros"].append("Repasses recebidos pelo município (SICONFI) indisponíveis no momento.")
+    saida["nota"] = ("Valores acumulados no exercício, conforme o RREO de cada ente (receita realizada; despesa empenhada). Repasses da União incluem "
+                     "FPE/FPM, SUS, Fundeb e convênios; os do estado aos municípios incluem a cota-parte do ICMS e do IPVA. Cada ente declara o que "
+                     "recebe e o que repassa, e pequenas diferenças de classificação são normais.")
+    return saida

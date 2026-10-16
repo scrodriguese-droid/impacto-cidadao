@@ -276,3 +276,7 @@ Nacional; estadual e municipal pelo RREO Anexo 03 do SICONFI, líquida de repass
 (de onde vêm e para onde vão as receitas do Governo Central). A tela alterna entre tabela e diagrama de Sankey (federal, estadual e
 municipal). A lista de tributos e a base legal continuam manuais em `frontend/assets/tributos.json`; cada tributo com série aberta
 tem um `arrec_id`.
+
+`GET /api/tributos/repasses?municipio=` — repasses entre os entes: União → estados e municípios (RREO Anexo 01 da União),
+União → estado, estado → municípios e o que o município recebe da União e do estado (RREO Anexo 01 de cada ente), mais a
+repartição legal de receitas da União (Resultado do Tesouro Nacional, linhas 2.x).
