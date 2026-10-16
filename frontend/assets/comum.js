@@ -62,28 +62,59 @@ function renderLayout(paginaAtual) {
     }
     const cab = $('cabecalho');
     if (cab) {
-        cab.outerHTML = `<header class="sticky top-0 z-40 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-sm">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex items-center justify-between h-16">
-            <a href="index.html" class="flex items-center space-x-3" aria-label="ImpactoCidadão — início">
-                <img src="assets/logo-icone.png" alt="" width="44" height="44" class="w-11 h-11 rounded-xl shadow-md">
-                <div>
+        const marca = `<img src="assets/logo-icone.png" alt="" width="44" height="44" class="w-11 h-11 rounded-xl shadow-md shrink-0">
+                <div class="min-w-0">
                     <span class="font-extrabold text-xl tracking-tight"><span class="text-[#0b2a5b] dark:text-white">Impacto</span><span class="bg-gradient-to-r from-sky-700 to-teal-500 bg-clip-text text-transparent">Cidadão</span></span>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 hidden sm:block">O que muda na sua vida, em linguagem simples</p>
-                </div>
-            </a>
-            <nav class="flex items-center gap-1 font-medium text-sm" aria-label="Seções">
-                ${NAVEGACAO.map((n) => `<a href="${n.href}" ${n.id === paginaAtual ? 'aria-current="page"' : ''}
-                    class="px-2.5 sm:px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 ${n.id === paginaAtual ? 'bg-slate-100 dark:bg-slate-800 text-brand-700 dark:text-brand-400' : ''}">
-                    <i class="fa-solid ${n.icone} sm:mr-1.5 text-slate-400" aria-hidden="true"></i><span class="hidden sm:inline">${n.rotulo}</span></a>`).join('')}
-                <button id="btnTema" type="button" class="p-2 ml-1 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl" aria-label="Alternar tema claro/escuro">
-                    <i class="fa-solid fa-moon dark:hidden text-lg" aria-hidden="true"></i>
-                    <i class="fa-solid fa-sun hidden dark:block text-amber-400 text-lg" aria-hidden="true"></i>
-                </button>
-            </nav>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 leading-snug">O que muda na sua vida, em linguagem simples</p>
+                </div>`;
+        const itens = NAVEGACAO.map((n) => `<a href="${n.href}" ${n.id === paginaAtual ? 'aria-current="page"' : ''}
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium hover:bg-slate-100 dark:hover:bg-slate-800 ${n.id === paginaAtual ? 'bg-slate-100 dark:bg-slate-800 text-brand-700 dark:text-brand-400' : 'text-slate-700 dark:text-slate-300'}">
+                    <i class="fa-solid ${n.icone} w-5 text-center ${n.id === paginaAtual ? '' : 'text-slate-400'}" aria-hidden="true"></i><span>${n.rotulo}</span></a>`).join('');
+        cab.outerHTML = `<header class="lg:hidden sticky top-0 z-40 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-sm">
+    <div class="flex items-center justify-between h-16 px-4">
+        <a href="index.html" class="flex items-center gap-3 min-w-0" aria-label="ImpactoCidadão — início">${marca}</a>
+        <div class="flex items-center gap-1">
+            <button id="btnTemaMovel" type="button" class="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl" aria-label="Alternar tema claro/escuro">
+                <i class="fa-solid fa-moon dark:hidden text-lg" aria-hidden="true"></i><i class="fa-solid fa-sun hidden dark:block text-amber-400 text-lg" aria-hidden="true"></i></button>
+            <button id="btnMenu" type="button" class="p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl" aria-label="Abrir menu" aria-expanded="false" aria-controls="menuLateral">
+                <i class="fa-solid fa-bars text-lg" aria-hidden="true"></i></button>
         </div>
     </div>
-</header>`;
+</header>
+<div id="menuFundo" class="hidden lg:hidden fixed inset-0 z-40 bg-black/50" aria-hidden="true"></div>
+<aside id="menuLateral" class="fixed inset-y-0 left-0 z-50 w-64 -translate-x-full lg:translate-x-0 transition-transform duration-200 flex flex-col bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 shadow-lg lg:shadow-none">
+    <a href="index.html" class="hidden lg:flex items-center gap-3 px-4 h-20 border-b border-slate-200 dark:border-slate-800 shrink-0" aria-label="ImpactoCidadão — início">${marca}</a>
+    <div class="lg:hidden flex items-center justify-between px-4 h-16 border-b border-slate-200 dark:border-slate-800 shrink-0">
+        <span class="font-bold">Menu</span>
+        <button id="btnFecharMenu" type="button" class="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl" aria-label="Fechar menu"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+    </div>
+    <nav class="flex-1 overflow-y-auto p-3 space-y-1" aria-label="Seções">${itens}</nav>
+    <div class="p-3 border-t border-slate-200 dark:border-slate-800 shrink-0">
+        <button id="btnTema" type="button" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800" aria-label="Alternar tema claro/escuro">
+            <i class="fa-solid fa-moon dark:hidden w-5 text-center" aria-hidden="true"></i><i class="fa-solid fa-sun hidden dark:block text-amber-400 w-5 text-center" aria-hidden="true"></i>
+            <span>Tema claro/escuro</span></button>
+    </div>
+</aside>`;
+        document.body.classList.add('lg:pl-64');
+        // em telas grandes não há cabeçalho fixo: as barras “grudadas” das páginas sobem para o topo
+        if (!document.getElementById('estiloMenuLateral')) {
+            const st = document.createElement('style');
+            st.id = 'estiloMenuLateral';
+            st.textContent = '@media (min-width:1024px){ .top-16.sticky, .sticky.top-16 { top: 0 !important; } }';
+            document.head.appendChild(st);
+        }
+        const menu = $('menuLateral'), fundo = $('menuFundo'), abrir = $('btnMenu');
+        const alternarMenu = (aberto) => {
+            menu.classList.toggle('-translate-x-full', !aberto);
+            fundo.classList.toggle('hidden', !aberto);
+            abrir.setAttribute('aria-expanded', String(aberto));
+        };
+        abrir.addEventListener('click', () => alternarMenu(true));
+        $('btnFecharMenu').addEventListener('click', () => alternarMenu(false));
+        fundo.addEventListener('click', () => alternarMenu(false));
+        menu.querySelectorAll('nav a').forEach((a) => a.addEventListener('click', () => alternarMenu(false)));
+        document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') alternarMenu(false); });
+        $('btnTemaMovel').addEventListener('click', () => $('btnTema').click());
     }
     const rod = $('rodape');
     if (rod) {
