@@ -16,6 +16,8 @@
         body { font-family: 'Inter', system-ui, sans-serif; }
         :focus-visible { outline: 2px solid #0284c7; outline-offset: 2px; }
         .elo { transition: opacity .15s; }
+        .sk-t { paint-order: stroke fill; stroke: #fff; stroke-width: 3px; stroke-linejoin: round; }
+        .dark .sk-t { stroke: #1e293b; }
         .elo:hover { opacity: .85 !important; }
     </style>
 </head>
@@ -57,17 +59,22 @@
 
     <!-- ================= SANKEY ================= -->
     <div id="painelSankey" class="mt-4 hidden">
-        <div class="flex flex-wrap items-center gap-2">
+        <h2 id="tituloSankey" class="text-xl font-bold"></h2>
+        <div id="perguntas" class="mt-3 flex flex-wrap gap-2" role="group" aria-label="Escolha uma pergunta"></div>
+        <div class="mt-2 flex flex-wrap items-center gap-2 text-xs text-slate-500">
+            <span>Ou veja por esfera de governo:</span>
             <div id="seletorEsfera" class="inline-flex rounded-xl p-1 bg-slate-200/70 dark:bg-slate-800" role="radiogroup" aria-label="Esfera de governo"></div>
+            <div id="opcaoDestino" class="hidden inline-flex rounded-xl p-1 bg-slate-200/70 dark:bg-slate-800" role="radiogroup" aria-label="Como mostrar as despesas do estado"></div>
         </div>
+        <p id="respostaSankey" class="mt-3 rounded-xl bg-brand-50 dark:bg-brand-950/40 border border-brand-100 dark:border-brand-900 px-4 py-3 text-sm font-medium" aria-live="polite"></p>
         <div id="estadoSankey" class="mt-3" aria-live="polite"></div>
-        <div id="cadeiaRepasses" class="mt-3"></div>
-        <div id="opcaoDestino" class="mt-3 hidden inline-flex rounded-xl p-1 bg-slate-200/70 dark:bg-slate-800" role="radiogroup" aria-label="Como mostrar as despesas do estado"></div>
+        <div id="caixasSankey" class="mt-3 grid md:grid-cols-2 gap-3"></div>
         <div id="legendaSankey" class="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs"></div>
-        <div class="mt-3 overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-3 text-slate-700 dark:text-slate-200">
+        <div class="mt-3 overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-3 text-slate-800 dark:text-slate-100">
             <div id="sankey" class="min-w-[900px]"></div>
         </div>
-        <p id="notaSankey" class="text-[11px] text-slate-400 mt-2"></p>
+        <p id="notaSankey" class="text-[11px] text-slate-500 dark:text-slate-400 mt-2"></p>
+        <div id="cadeiaRepasses" class="mt-6"></div>
     </div>
 
     <section class="mt-10 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 text-sm">
@@ -99,7 +106,7 @@ const MUNICIPAIS = new Set(['IPTU', 'ISS', 'ITBI']);
 let GRUPOS = [];
 let A = null;                // arrecadação (API)
 let ctx = null;              // barra de contexto
-const F = { tipo: '', esfera: '', q: '', vista: ler('ic_tributos_vista', 'tabela'), sankeyEsfera: 'federal' };
+const F = { tipo: '', esfera: '', q: '', vista: ler('ic_tributos_vista', 'tabela'), sankeyEsfera: 'federal', pergunta: 'origem' };
 const norm = (t) => String(t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 const reaisCurto = (n) => {
     if (n == null) return '—';
@@ -193,21 +200,42 @@ async function carregarArrecadacao() {
     periodos(); desenhar();
 }
 
+/* ---------- dicas em linguagem simples ---------- */
+const DICAS = [
+    ['Cide', 'Contribuição cobrada sobre combustíveis; por lei, financia infraestrutura de transportes e projetos ambientais do setor de petróleo e gás.'],
+    ['ICMS', 'Imposto estadual sobre a venda de mercadorias e alguns serviços. Uma parte vai para as prefeituras.'],
+    ['IPI', 'Imposto federal sobre produtos industrializados.'], ['IOF', 'Imposto federal sobre crédito, câmbio, seguros e investimentos.'],
+    ['Cofins', 'Contribuição federal sobre o faturamento das empresas, para financiar a seguridade social.'],
+    ['PIS/Pasep', 'Contribuição federal sobre o faturamento das empresas; financia o seguro-desemprego e o abono salarial.'],
+    ['CSLL', 'Contribuição sobre o lucro das empresas, para financiar a seguridade social.'],
+    ['FPE', 'Fundos de Participação: parte do Imposto de Renda e do IPI que a lei manda dividir entre estados (FPE) e municípios (FPM).'],
+    ['Fundeb', 'Fundo que reúne verbas de estados e municípios, com complemento da União, para a educação básica.'],
+    ['royalties', 'Pagamento das empresas que exploram petróleo, gás e minérios, dividido com estados e municípios.'],
+    ['Salário-Educação', 'Contribuição das empresas que financia a educação básica pública.'],
+    ['aposentadoria', 'Contribuições de trabalhadores e empresas que pagam as aposentadorias e pensões do INSS.'],
+    ['Conta no vermelho', 'Quando o governo gasta mais do que arrecada (sem contar os juros), a diferença é coberta com dívida pública.'],
+    ['Repasse a Estados', 'Parte da arrecadação federal que a lei obriga a dividir com estados e prefeituras.'],
+    ['Dinheiro reservado', 'Em contabilidade pública, “despesa empenhada”: o governo separou o dinheiro para um gasto, mesmo que ainda não tenha pago.'],
+    ['Dinheiro arrecadado', 'Em contabilidade pública, “receita realizada”: o que já entrou no cofre.'],
+];
+const dicaPara = (nome) => { const n = norm(nome); const d = DICAS.find(([k]) => n.includes(norm(k))); return d ? d[1] : ''; };
+const ajuda = (txt) => (txt ? ` <span class="inline-flex items-center justify-center w-4 h-4 rounded-full bg-slate-200 dark:bg-slate-700 text-[10px] font-bold text-slate-600 dark:text-slate-300 cursor-help align-middle" tabindex="0" role="note" title="${esc(txt)}" aria-label="${esc(txt)}">?</span>` : '');
+
 /* ---------- Sankey (SVG feito à mão: origem → ente → destino) ---------- */
 function sankeySvg(esq, centro, dir, saldo) {
     // esq/dir: [{nome, valor, cor?, detalhe?}]; saldo: {lado:'esq'|'dir', valor, rotulo} opcional (equilibra os dois lados)
-    const L = esq.filter((x) => x.valor > 0), R = dir.filter((x) => x.valor > 0);
-    if (saldo && saldo.valor > 0) (saldo.lado === 'esq' ? L : R).push({ nome: saldo.rotulo, valor: saldo.valor, cor: '#64748b', saldo: true });
-    const somaL = L.reduce((a, x) => a + x.valor, 0), somaR = R.reduce((a, x) => a + x.valor, 0), total = Math.max(somaL, somaR);
+    const L = esq.filter((x) => x.valor > 0), R2 = dir.filter((x) => x.valor > 0);
+    if (saldo && saldo.valor > 0) (saldo.lado === 'esq' ? L : R2).push({ nome: saldo.rotulo, valor: saldo.valor, cor: '#64748b', saldo: true });
+    const somaL = L.reduce((a, x) => a + x.valor, 0), somaR = R2.reduce((a, x) => a + x.valor, 0), total = Math.max(somaL, somaR);
     const W = 1400, xE = 480, xC = 690, xD = 920, nw = 20, gap = 14, pad = 24, hMin = 22;
-    const linhas = Math.max(L.length, R.length);
+    const linhas = Math.max(L.length, R2.length);
     const H0 = Math.max(660, linhas * 44 + 2 * pad);
-    const util = H0 - 2 * pad - gap * (Math.max(L.length, R.length) - 1);
+    const util = H0 - 2 * pad - gap * (Math.max(L.length, R2.length) - 1);
     const esc_ = total > 0 ? util / total : 0;   // px por real (valores em reais: da ordem de 1e-10)
-    const alt = (v) => Math.max(v * esc_, hMin);   // altura mínima: o rótulo de nós pequenos não se sobrepõe
+    const alt = (v) => Math.max(v * esc_, hMin);
     const pct = (v) => `${((v / total) * 100).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%`;
     const empilha = (lista) => { let y = pad; return lista.map((n) => { const h = alt(n.valor); const o = { ...n, y, h }; y += h + gap; return o; }); };
-    const Ln = empilha(L), Rn = empilha(R);
+    const Ln = empilha(L), Rn = empilha(R2);
     const fundo = Math.max(Ln.length ? Ln[Ln.length - 1].y + Ln[Ln.length - 1].h : 0, Rn.length ? Rn[Rn.length - 1].y + Rn[Rn.length - 1].h : 0);
     const H = Math.max(H0, fundo + pad);
     const hCentro = fundo - pad;
@@ -221,114 +249,181 @@ function sankeySvg(esq, centro, dir, saldo) {
     oc = topC;
     for (const n of Rn) {   // centro → direita
         const h = n.h, y0 = oc + h / 2, y1 = n.y + h / 2; oc += h;
-        elos.push(`<path class="elo" d="M${xC + nw},${y0} C${(xC + nw + xD) / 2},${y0} ${(xC + nw + xD) / 2},${y1} ${xD},${y1}" stroke="${n.saldo ? '#64748b' : (n.cor || '#94a3b8')}" stroke-opacity="${n.cor && !n.saldo ? 0.6 : 0.45}" stroke-width="${h}" fill="none"><title>${esc(n.nome)}: ${esc(reaisCurto(n.valor))} (${pct(n.valor)})${n.detalhe ? ' — ' + esc(n.detalhe) : ''}</title></path>`);
+        elos.push(`<path class="elo" d="M${xC + nw},${y0} C${(xC + nw + xD) / 2},${y0} ${(xC + nw + xD) / 2},${y1} ${xD},${y1}" stroke="${n.saldo ? '#64748b' : (n.cor || '#94a3b8')}" stroke-opacity="${n.cor && n.cor !== '#94a3b8' && !n.saldo ? 0.6 : 0.45}" stroke-width="${h}" fill="none"><title>${esc(n.nome)}: ${esc(reaisCurto(n.valor))} (${pct(n.valor)})${n.detalhe ? ' — ' + esc(n.detalhe) : ''}</title></path>`);
     }
-    const rotulo = (x, y, h, ancora, nome, valor) => `<text x="${x}" y="${y + h / 2}" text-anchor="${ancora}" dominant-baseline="middle" fill="currentColor" font-size="14.5"><tspan font-weight="600">${esc(nome.length > 40 ? nome.slice(0, 39) + '…' : nome)}</tspan><tspan dx="8" fill-opacity="0.65" font-size="13">${esc(reaisCurto(valor))} · ${pct(valor)}</tspan></text>`;
-    const nosE = Ln.map((n) => `<rect x="${xE}" y="${n.y}" width="${nw}" height="${n.h}" rx="2" fill="${n.cor}"/>` + rotulo(xE - 8, n.y, n.h, 'end', n.nome, n.valor)).join('');
-    const nosD = Rn.map((n) => `<rect x="${xD}" y="${n.y}" width="${nw}" height="${n.h}" rx="2" fill="${n.saldo ? '#64748b' : (n.cor && n.cor !== '#94a3b8' ? n.cor : '#475569')}"/>` + rotulo(xD + nw + 8, n.y, n.h, 'start', n.nome, n.valor)).join('');
+    const rotulo = (x, y, h, ancora, nome, valor, detalhe) => {
+        const tip = dicaPara(nome) || detalhe || '';
+        return `<text class="sk-t" x="${x}" y="${y + h / 2}" text-anchor="${ancora}" dominant-baseline="middle" fill="currentColor" font-size="14.5"><title>${esc(nome)}: ${esc(reaisCurto(valor))} (${pct(valor)})${tip ? ' — ' + esc(tip) : ''}</title><tspan font-weight="700">${esc(nome.length > 42 ? nome.slice(0, 41) + '…' : nome)}</tspan><tspan dx="8" font-size="13" font-weight="500" fill-opacity="0.9">${esc(reaisCurto(valor))} · ${pct(valor)}</tspan></text>`;
+    };
+    const nosE = Ln.map((n) => `<rect x="${xE}" y="${n.y}" width="${nw}" height="${n.h}" rx="2" fill="${n.cor}"/>` + rotulo(xE - 8, n.y, n.h, 'end', n.nome, n.valor, n.detalhe)).join('');
+    const nosD = Rn.map((n) => `<rect x="${xD}" y="${n.y}" width="${nw}" height="${n.h}" rx="2" fill="${n.saldo ? '#64748b' : (n.cor && n.cor !== '#94a3b8' ? n.cor : '#475569')}"/>` + rotulo(xD + nw + 8, n.y, n.h, 'start', n.nome, n.valor, n.detalhe)).join('');
     const centroSvg = `<rect x="${xC}" y="${topC}" width="${nw}" height="${hCentro}" rx="2" fill="#0f172a"/>
         <text x="${xC + nw / 2}" y="${topC + hCentro / 2}" transform="rotate(-90 ${xC + nw / 2} ${topC + hCentro / 2})" text-anchor="middle" dominant-baseline="middle" fill="#fff" font-size="14" font-weight="700" dy="-0.1">${esc(centro)}</text>`;
-    return `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Diagrama de Sankey: de onde vêm os tributos, ${esc(centro)} e para onde vão">${elos.join('')}${nosE}${nosD}${centroSvg}</svg>`;
+    return `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Diagrama de Sankey: de onde vem o dinheiro, ${esc(centro)} e para onde vai">${elos.join('')}${nosE}${nosD}${centroSvg}</svg>`;
 }
-
-const ESFERAS_SANKEY = [['federal', 'Federal'], ['estadual', 'Estadual'], ['municipal', 'Municipal']];
-function opcoesDestino() {
-    const box = $('opcaoDestino');
-    box.classList.toggle('hidden', F.sankeyEsfera !== 'estadual');
-    if (F.sankeyEsfera !== 'estadual') return;
-    box.innerHTML = [['areas', 'Despesas por área'], ['repasses', 'Repasses aos municípios']].map(([id, rot]) => `<button type="button" role="radio" aria-checked="${destinoEstado === id}" data-dest="${id}"
-        class="px-3 py-1.5 rounded-lg text-xs font-semibold ${destinoEstado === id ? 'bg-white dark:bg-slate-700 shadow text-brand-700 dark:text-brand-300' : 'text-slate-500'}">${rot}</button>`).join('');
-}
-$('opcaoDestino').addEventListener('click', (ev) => { const b = ev.target.closest('[data-dest]'); if (b) { destinoEstado = b.dataset.dest; desenharSankey(); } });
-function seletorEsfera() {
-    $('seletorEsfera').innerHTML = ESFERAS_SANKEY.map(([id, rot]) => `<button type="button" role="radio" aria-checked="${F.sankeyEsfera === id}" data-sk="${id}"
-        class="px-3.5 py-2 rounded-lg text-sm font-semibold ${F.sankeyEsfera === id ? 'bg-white dark:bg-slate-700 shadow text-brand-700 dark:text-brand-300' : 'text-slate-500'}">${rot}</button>`).join('');
-}
-$('seletorEsfera').addEventListener('click', (ev) => { const b = ev.target.closest('[data-sk]'); if (b) { F.sankeyEsfera = b.dataset.sk; desenharSankey(); } });
 
 const COR_UNIAO = '#eab308', COR_ESTADO = '#2563eb';
 let R = null;   // repasses entre os entes (API)
+const FINALIDADES = {
+    '2.1': ['Para prefeituras e estados (FPE e FPM)', 'Parte do Imposto de Renda e do IPI que a lei manda dividir entre estados e municípios (inclui a parcela do IPI das exportações).'],
+    '2.2': ['Para o desenvolvimento regional (Norte, Nordeste e Centro-Oeste)', 'Fundos constitucionais que financiam empreendedores e empresas dessas regiões.'],
+    '2.3': ['Para escolas e educação (Salário-Educação)', 'Contribuição das empresas dividida com estados e municípios para a educação básica.'],
+    '2.4': ['Para quem produz petróleo, gás e minérios (royalties)', 'Parte do que as empresas pagam pela exploração de recursos naturais é dividida com estados e municípios.'],
+    '2.5': ['Para estradas e transportes (Cide-Combustíveis)', 'Parte da contribuição sobre combustíveis repassada a estados e municípios, para infraestrutura de transportes.'],
+    '2.6': ['Outras verbas obrigatórias', 'Demais repartições previstas em lei.'],
+};
 async function carregarRepasses() {
     const m = municipio();
     try { R = await api('/api/tributos/repasses' + (m ? '?municipio=' + encodeURIComponent(m.codigo) : '')); } catch (_) { R = null; }
     cadeia();
 }
-function seta(rot, valor, sub, cor) {
-    return `<div class="flex items-center gap-2"><div class="rounded-2xl border-l-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 py-2" style="border-left-color:${cor}">
-        <p class="text-[11px] text-slate-500">${esc(rot)}</p><p class="text-lg font-extrabold">${esc(reaisCurto(valor))}</p>${sub ? `<p class="text-[11px] text-slate-400">${esc(sub)}</p>` : ''}</div></div>`;
+// cartão em 3 níveis: de onde → para onde · valor · frase
+function cartaoRepasse(origem, destino, valor, frase, cor, tip) {
+    return `<div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 overflow-hidden" style="border-top:4px solid ${cor}">
+        <div class="p-4"><p class="text-[11px] font-bold tracking-wide uppercase text-slate-500 dark:text-slate-400">${esc(origem)} <span aria-hidden="true">➜</span> ${esc(destino)}</p>
+            <p class="text-3xl font-extrabold mt-1">${esc(reaisCurto(valor))}${ajuda(tip)}</p>
+            <p class="text-sm text-slate-700 dark:text-slate-300 mt-2 leading-snug">${frase}</p></div></div>`;
 }
 function cadeia() {
     const box = $('cadeiaRepasses');
     if (!R) { box.innerHTML = ''; return; }
     const m = municipio(), e = R.estado, mu = R.municipio, u = R.uniao;
-    const pctDe = (v, t) => (t ? `${((100 * v) / t).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}% da receita` : '');
-    const linhas = [];
-    if (u) linhas.push(seta('União → todos os estados e municípios', u.transferido_a_estados_e_municipios, `${u.periodo}, despesa empenhada`, COR_UNIAO));
-    if (e) linhas.push(seta(`União → ${e.instituicao}`, e.da_uniao, pctDe(e.da_uniao, e.receita_total) + ' do estado', COR_UNIAO));
-    if (e) linhas.push(seta(`${e.instituicao} → municípios do estado`, e.aos_municipios, `ICMS, IPVA e outros repasses · ${((100 * e.aos_municipios) / e.despesa_total).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}% da despesa`, COR_ESTADO));
-    if (mu) linhas.push(seta(`União → ${mu.instituicao}`, mu.da_uniao, pctDe(mu.da_uniao, mu.receita_total) + ' do município', COR_UNIAO));
-    if (mu) linhas.push(seta(`Estado → ${mu.instituicao}`, mu.do_estado, pctDe(mu.do_estado, mu.receita_total) + ' do município', COR_ESTADO));
-    const rtn = R.rtn && R.rtn.itens.length ? `<div class="mt-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 text-sm">
-        <p class="font-bold">Como a União reparte a arrecadação por lei (Brasil, ${esc(R.rtn.periodo)}): <span class="text-brand-700 dark:text-brand-400">${esc(reaisCurto(R.rtn.total))}</span></p>
-        <ul class="mt-2 grid sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-1">${R.rtn.itens.map((i) => `<li class="flex justify-between gap-3"><span>${esc(i.nome)}</span><span class="font-semibold whitespace-nowrap">${esc(reaisCurto(i.valor))}</span></li>`).join('')}</ul></div>` : '';
-    box.innerHTML = `<div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/40 p-4">
-        <p class="font-bold"><i class="fa-solid fa-arrows-split-up-and-left mr-1.5 text-brand-600" aria-hidden="true"></i>Quem repassa para quem${m ? '' : ' <span class="text-xs font-normal text-slate-500">(escolha a cidade para ver o estado e o município)</span>'}</p>
-        <div class="mt-3 flex flex-wrap gap-3">${linhas.join('')}</div>
-        <p class="text-[11px] text-slate-400 mt-3">${esc(R.nota)}</p></div>${rtn}`;
+    const p1 = (v, t) => `${((100 * v) / t).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%`;
+    const cards = [];
+    if (u) cards.push(cartaoRepasse('Do Governo Federal', 'para estados e prefeituras', u.transferido_a_estados_e_municipios,
+        `Dinheiro que o Governo Federal reservou para repassar a estados e prefeituras (${esc(u.periodo)}).`, COR_UNIAO, 'Inclui as verbas obrigatórias (FPE e FPM), o SUS, o Fundeb e convênios.'));
+    if (e) cards.push(cartaoRepasse('Do Governo Federal', `para ${e.instituicao.replace('Governo do ', 'o ')}`, e.da_uniao,
+        `Isso representa <b>${p1(e.da_uniao, e.receita_total)}</b> de tudo o que o estado arrecadou no período.`, COR_UNIAO, ''));
+    if (e) cards.push(cartaoRepasse(e.instituicao.replace('Governo do ', 'Do '), 'para as prefeituras do estado', e.aos_municipios,
+        `Equivale a <b>${p1(e.aos_municipios, e.despesa_total)}</b> do dinheiro que o estado reservou para gastar (inclui a parte do ICMS e do IPVA das cidades).`, COR_ESTADO, 'A lei manda dividir com as cidades parte do ICMS e do IPVA.'));
+    if (mu) cards.push(cartaoRepasse('Do Governo Federal', `para a ${mu.instituicao.replace('Prefeitura Municipal de ', 'Prefeitura de ')}`, mu.da_uniao,
+        `Isso representa <b>${p1(mu.da_uniao, mu.receita_total)}</b> de tudo o que a cidade arrecadou no período (para saúde, escolas, asfalto…).`, COR_UNIAO, ''));
+    if (mu) cards.push(cartaoRepasse(`Do ${m ? 'Estado de ' + m.uf : 'Estado'}`, `para a ${mu.instituicao.replace('Prefeitura Municipal de ', 'Prefeitura de ')}`, mu.do_estado,
+        `Isso representa <b>${p1(mu.do_estado, mu.receita_total)}</b> de tudo o que a cidade arrecadou no período.`, COR_ESTADO, 'Principalmente a cota-parte do ICMS e do IPVA.'));
+    const total = R.rtn ? R.rtn.total : 0;
+    const finalidade = R.rtn && R.rtn.itens.length ? `<div class="mt-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5">
+        <h3 class="font-bold">Para onde vai a parte da arrecadação federal que a lei manda repartir</h3>
+        <p class="text-xs text-slate-500 dark:text-slate-400">Brasil, ${esc(R.rtn.periodo)} · total <b>${esc(reaisCurto(total))}</b> (Tesouro Nacional)</p>
+        <ul class="mt-3 space-y-3">${R.rtn.itens.slice().sort((a, b) => b.valor - a.valor).map((i) => { const [rot, tip] = FINALIDADES[i.codigo] || [i.nome, '']; const pc = total ? (100 * i.valor) / total : 0;
+            return `<li><div class="flex justify-between gap-3 text-sm"><span class="font-medium">${esc(rot)}${ajuda(tip)}</span>
+                <span class="font-semibold whitespace-nowrap">${esc(reaisCurto(i.valor))} <span class="text-xs font-normal text-slate-500">(${pc.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%)</span></span></div>
+                <div class="mt-1 h-2.5 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden"><div class="h-full bg-amber-500" style="width:${Math.max(1, pc)}%"></div></div></li>`; }).join('')}</ul></div>` : '';
+    box.innerHTML = `<h3 class="text-lg font-bold">Caminho do dinheiro público</h3>
+        <p class="text-sm text-slate-500 dark:text-slate-400">Quanto cada nível de governo repassa ao seguinte${m ? '' : ' (escolha a cidade para ver o seu estado e a sua prefeitura)'}.</p>
+        <div class="mt-3 grid md:grid-cols-2 xl:grid-cols-3 gap-3">${cards.join('')}</div>
+        <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-3">Valores acumulados no exercício: “dinheiro arrecadado” é a receita realizada e “dinheiro reservado” é a despesa empenhada, conforme o relatório (RREO) de cada ente. Os repasses do Governo Federal incluem FPE/FPM, SUS, Fundeb e convênios, e pequenas diferenças de classificação entre os relatórios são normais.</p>${finalidade}`;
 }
 
 let reqSankey = 0;
 let destinoEstado = 'areas';
+const PERGUNTAS = () => [['cidade', `Quanto ${municipio() ? municipio().nome : 'a minha cidade'} recebeu?`], ['origem', 'De onde vem o imposto?'], ['gasto', 'Onde o governo mais gasta?']];
+function perguntas() {
+    $('perguntas').innerHTML = PERGUNTAS().map(([id, rot]) => `<button type="button" data-q="${id}" aria-pressed="${F.pergunta === id}"
+        class="px-4 py-2 rounded-full text-sm font-semibold border ${F.pergunta === id ? 'bg-brand-600 border-brand-600 text-white' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-brand-400'}">${esc(rot)}</button>`).join('');
+}
+$('perguntas').addEventListener('click', (ev) => {
+    const b = ev.target.closest('[data-q]'); if (!b) return;
+    F.pergunta = b.dataset.q; F.sankeyEsfera = F.pergunta === 'cidade' ? 'municipal' : 'federal'; desenharSankey();
+});
+function opcoesDestino() {
+    const box = $('opcaoDestino');
+    box.classList.toggle('hidden', F.sankeyEsfera !== 'estadual');
+    if (F.sankeyEsfera !== 'estadual') return;
+    box.innerHTML = [['areas', 'Despesas por área'], ['repasses', 'Repasses às prefeituras']].map(([id, rot]) => `<button type="button" role="radio" aria-checked="${destinoEstado === id}" data-dest="${id}"
+        class="px-3 py-1.5 rounded-lg text-xs font-semibold ${destinoEstado === id ? 'bg-white dark:bg-slate-700 shadow text-brand-700 dark:text-brand-300' : 'text-slate-500'}">${rot}</button>`).join('');
+}
+$('opcaoDestino').addEventListener('click', (ev) => { const b = ev.target.closest('[data-dest]'); if (b) { destinoEstado = b.dataset.dest; desenharSankey(); } });
+const ESFERAS_SANKEY = [['federal', 'Governo Federal'], ['estadual', 'Estado'], ['municipal', 'Prefeitura']];
+function seletorEsfera() {
+    $('seletorEsfera').innerHTML = ESFERAS_SANKEY.map(([id, rot]) => `<button type="button" role="radio" aria-checked="${F.sankeyEsfera === id}" data-sk="${id}"
+        class="px-3.5 py-2 rounded-lg text-sm font-semibold ${F.sankeyEsfera === id ? 'bg-white dark:bg-slate-700 shadow text-brand-700 dark:text-brand-300' : 'text-slate-500'}">${rot}</button>`).join('');
+}
+$('seletorEsfera').addEventListener('click', (ev) => { const b = ev.target.closest('[data-sk]'); if (b) { F.sankeyEsfera = b.dataset.sk; F.pergunta = ''; desenharSankey(); } });
+
+const caixa = (titulo, icone, linhas) => `<div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
+    <p class="font-bold"><i class="fa-solid ${icone} mr-1.5 text-brand-600" aria-hidden="true"></i>${esc(titulo)}</p>
+    <ul class="mt-2 space-y-1.5 text-sm">${linhas.map((l) => `<li>${l}</li>`).join('')}</ul></div>`;
+const pc1 = (v, t) => `${((100 * v) / t).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%`;
+
 async function desenharSankey() {
     const minha = ++reqSankey;
-    seletorEsfera(); opcoesDestino();
-    $('legendaSankey').innerHTML = ''; $('sankey').innerHTML = ''; $('notaSankey').textContent = '';
+    if (!F.pergunta && F.pergunta !== '') F.pergunta = 'origem';
+    perguntas(); seletorEsfera(); opcoesDestino();
+    $('legendaSankey').innerHTML = ''; $('sankey').innerHTML = ''; $('notaSankey').textContent = ''; $('caixasSankey').innerHTML = ''; $('respostaSankey').textContent = '';
     const m = municipio();
-    if (F.sankeyEsfera !== 'federal' && !m) { $('estadoSankey').innerHTML = '<p class="text-sm text-slate-500">Escolha a sua cidade na barra acima para ver o diagrama do estado e do município.</p>'; return; }
+    const TITULOS = { federal: 'De onde vem o imposto do brasileiro e para onde o Governo Federal envia o dinheiro?',
+        estadual: 'De onde vem o dinheiro do seu estado e para onde ele vai?', municipal: 'De onde vem o dinheiro da sua prefeitura e para onde ele vai?' };
+    $('tituloSankey').textContent = TITULOS[F.sankeyEsfera];
+    if (F.sankeyEsfera !== 'federal' && !m) { $('estadoSankey').innerHTML = '<p class="text-sm text-slate-500">Escolha a sua cidade na barra acima para ver o diagrama do estado e da prefeitura.</p>'; return; }
     $('estadoSankey').innerHTML = '<p class="text-sm text-slate-500"><i class="fa-solid fa-spinner fa-spin mr-1.5" aria-hidden="true"></i>Consultando o Tesouro Nacional…</p>';
     try {
+        let esq, dir, saldo, centro, legenda, nota, caixas = [];
         if (F.sankeyEsfera === 'federal') {
             const x = await api('/api/tributos/fluxo-federal');
             if (minha !== reqSankey) return;
-            $('sankey').innerHTML = sankeySvg(x.esquerda, x.centro.nome, x.direita.map((d) => ({ ...d, cor: d.nome.startsWith('Transferências') ? COR_UNIAO : '#94a3b8' })), { lado: x.saldo.valor > 0 ? 'esq' : 'dir', valor: Math.abs(x.saldo.valor), rotulo: x.saldo.rotulo });
-            $('legendaSankey').innerHTML = Object.values(x.grupos).map((g) => `<span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm" style="background:${g.cor}"></span>${esc(g.nome)}</span>`).join('')
-                + `<span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm" style="background:${COR_UNIAO}"></span>Repasses da União a estados e municípios</span>`;
-            $('notaSankey').innerHTML = `${esc(x.periodo)} · ${esc(x.unidade)}. ${esc(x.nota)} Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(x.fonte.url))}">${esc(x.fonte.nome)}</a>.`;
+            esq = x.esquerda; centro = x.centro.nome;
+            dir = x.direita.map((d) => ({ ...d, cor: d.nome.startsWith('Repasse') ? COR_UNIAO : '#94a3b8' }));
+            saldo = { lado: x.saldo.valor > 0 ? 'esq' : 'dir', valor: Math.abs(x.saldo.valor), rotulo: x.saldo.rotulo };
+            legenda = Object.values(x.grupos).map((g) => [g.nome, g.cor]).concat([['Repasses a estados e cidades', COR_UNIAO]]);
+            nota = `${x.periodo} · ${x.unidade}. ${x.nota} Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(x.fonte.url))}">${esc(x.fonte.nome)}</a>.`;
+            const base = dir.reduce((a, d) => a + d.valor, 0), maior = dir.slice().sort((a, b) => b.valor - a.valor)[0], rep = dir.find((d) => d.nome.startsWith('Repasse'));
+            caixas = [
+                caixa('Origem: o que entrou no cofre', 'fa-arrow-right-to-bracket', [
+                    `<b>${esc(reaisCurto(x.centro.receita_total))}</b> arrecadados: impostos sobre compras (consumo), sobre a renda e as contribuições da aposentadoria.`,
+                    x.saldo.valor > 0 ? `<b>Faltou no cofre:</b> ${esc(reaisCurto(x.saldo.valor))} cobertos com dívida pública.${ajuda(dicaPara('Conta no vermelho'))}` : '<b>Sobrou no cofre</b> (superávit).']),
+                caixa('Destino: para onde o dinheiro vai', 'fa-arrow-right-from-bracket', [
+                    `<b>Maior gasto:</b> ${esc(maior.nome)} — ${esc(reaisCurto(maior.valor))} (${pc1(maior.valor, base)})`,
+                    rep ? `<b>Repasse a Estados e Cidades:</b> ${esc(reaisCurto(rep.valor))} (${pc1(rep.valor, base)})${ajuda(dicaPara('Repasse a Estados'))}` : ''])];
+            const topO = x.esquerda.slice().sort((a, b) => b.valor - a.valor).slice(0, 3);
+            if (F.pergunta === 'origem') $('respostaSankey').textContent = `Em 12 meses o Governo Federal arrecadou ${reaisCurto(x.centro.receita_total)}. As maiores fontes: ${topO.map((t) => `${t.nome} (${reaisCurto(t.valor)})`).join('; ')}.`;
+            if (F.pergunta === 'gasto') $('respostaSankey').textContent = `O maior gasto do Governo Federal é com ${maior.nome}: ${reaisCurto(maior.valor)}, ${pc1(maior.valor, base)} do total gasto no período.`;
         } else {
             const ente = F.sankeyEsfera === 'estadual' ? Math.floor(m.codigo / 100000) : m.codigo;
             const d = await api('/api/economia/' + encodeURIComponent(ente));
             if (minha !== reqSankey) return;
             const COR = { proprios: '#e11d48', transferencias: '#0284c7', outras: '#a16207', credito: '#64748b' };
-            const esq = [];
-            const gTransf = d.nivel2.receitas.grupos.find((g) => g.id === 'transferencias');
+            esq = [];
             const reps = F.sankeyEsfera === 'estadual' ? R && R.estado : R && R.municipio;
             for (const g of d.nivel2.receitas.grupos) {
                 if (g.id === 'transferencias' && reps) {
                     const daUniao = Math.min(reps.da_uniao || 0, g.valor);
                     const doEstado = F.sankeyEsfera === 'municipal' ? Math.min(reps.do_estado || 0, g.valor - daUniao) : 0;
-                    esq.push({ nome: 'Repasses da União', valor: daUniao, cor: COR_UNIAO });
+                    esq.push({ nome: 'Repasses do Governo Federal', valor: daUniao, cor: COR_UNIAO });
                     if (doEstado > 0) esq.push({ nome: 'Repasses do Estado', valor: doEstado, cor: COR_ESTADO });
-                    esq.push({ nome: 'Outras transferências (Fundeb, SUS e convênios)', valor: g.valor - daUniao - doEstado, cor: COR.transferencias });
+                    esq.push({ nome: 'Outras transferências (Fundeb, SUS, convênios)', valor: g.valor - daUniao - doEstado, cor: COR.transferencias });
                 } else esq.push({ nome: g.nome, valor: g.valor, cor: COR[g.id] || '#64748b' });
             }
-            let dir;
             if (F.sankeyEsfera === 'estadual' && destinoEstado === 'repasses' && R && R.estado) {
                 const emp = R.estado.despesa_total, rep = Math.min(R.estado.aos_municipios, emp);
-                dir = [{ nome: 'Repasses aos municípios (ICMS, IPVA e outros)', valor: rep, cor: COR_ESTADO }, { nome: 'Demais despesas do Estado', valor: emp - rep, cor: '#94a3b8' }];
+                dir = [{ nome: 'Repasses às prefeituras (ICMS, IPVA e outros)', valor: rep, cor: COR_ESTADO }, { nome: 'Demais gastos do Estado', valor: emp - rep, cor: '#94a3b8' }];
             } else {
                 const fun = d.nivel2.despesas.funcoes, top = fun.slice(0, 8);
                 const resto = d.nivel2.despesas.total_liquidado - top.reduce((a, f) => a + f.valor, 0);
                 dir = top.map((f) => ({ nome: f.nome, valor: f.valor, cor: '#94a3b8' }));
                 if (resto > 0) dir.push({ nome: 'Demais áreas', valor: resto, cor: '#94a3b8' });
             }
-            const somaE = esq.reduce((a, x) => a + x.valor, 0), somaD = dir.reduce((a, x) => a + x.valor, 0);
-            const dif = Math.abs(somaE - somaD);
-            const saldo = dif > 0.01 * Math.max(somaE, somaD) ? { lado: somaE >= somaD ? 'dir' : 'esq', valor: dif, rotulo: somaE >= somaD ? 'Arrecadado e ainda não gasto no período' : 'Gasto acima do arrecadado no período' } : null;
-            $('sankey').innerHTML = sankeySvg(esq, d.instituicao || (F.sankeyEsfera === 'estadual' ? 'Governo do Estado' : 'Prefeitura'), dir, saldo);
-            $('legendaSankey').innerHTML = [['Repasses da União', COR_UNIAO], ['Repasses do Estado', COR_ESTADO], ['Impostos próprios', COR.proprios], ['Outras transferências', COR.transferencias], ['Outras receitas', COR.outras], ['Empréstimos', COR.credito]]
-                .map(([n, c]) => `<span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm" style="background:${c}"></span>${esc(n)}</span>`).join('');
-            $('notaSankey').innerHTML = `${esc(d.instituicao || '')} — ${esc(d.periodo.rotulo)} (acumulado no exercício). Receita arrecadada à esquerda, com os repasses de outros entes separados; despesa à direita. Fonte: ${esc(d.fonte)}.`;
+            const somaE = esq.reduce((a, x) => a + x.valor, 0), somaD = dir.reduce((a, x) => a + x.valor, 0), dif = Math.abs(somaE - somaD);
+            saldo = dif > 0.01 * Math.max(somaE, somaD) ? { lado: somaE >= somaD ? 'dir' : 'esq', valor: dif, rotulo: somaE >= somaD ? 'Arrecadado e ainda não gasto' : 'Conta no vermelho no período' } : null;
+            centro = d.instituicao || (F.sankeyEsfera === 'estadual' ? 'Governo do Estado' : 'Prefeitura');
+            legenda = [['Repasses do Governo Federal', COR_UNIAO], ['Repasses do Estado', COR_ESTADO], ['Impostos próprios', COR.proprios], ['Outras transferências', COR.transferencias], ['Outras receitas', COR.outras], ['Empréstimos', COR.credito]];
+            nota = `${esc(d.instituicao || '')} — ${esc(d.periodo.rotulo)} (acumulado no exercício). “Dinheiro arrecadado” à esquerda (com os repasses de outros governos separados) e “dinheiro gasto” à direita. Fonte: ${esc(d.fonte)}.`;
+            const base = Math.max(somaE, somaD), maior = dir.slice().sort((a, b) => b.valor - a.valor)[0];
+            const rec = esq.filter((q) => q.nome.startsWith('Repasses'));
+            caixas = [
+                caixa('Origem: o que entrou no cofre', 'fa-arrow-right-to-bracket', [`<b>${esc(reaisCurto(somaE - (saldo && saldo.lado === 'esq' ? saldo.valor : 0)))}</b> arrecadados no período.`]
+                    .concat(rec.map((q) => `<b>${esc(q.nome)}:</b> ${esc(reaisCurto(q.valor))} (${pc1(q.valor, base)})`))),
+                caixa('Destino: para onde o dinheiro vai', 'fa-arrow-right-from-bracket', [`<b>Maior gasto:</b> ${esc(maior.nome)} — ${esc(reaisCurto(maior.valor))} (${pc1(maior.valor, base)})`]
+                    .concat(saldo ? [`<b>${esc(saldo.rotulo)}:</b> ${esc(reaisCurto(saldo.valor))}`] : []))];
+            if (F.pergunta === 'cidade' && R && R.municipio) {
+                const mu = R.municipio;
+                $('respostaSankey').textContent = `${m.nome} recebeu ${reaisCurto(mu.da_uniao)} do Governo Federal e ${reaisCurto(mu.do_estado)} do Estado: juntos, ${pc1(mu.da_uniao + mu.do_estado, mu.receita_total)} de tudo o que a prefeitura arrecadou no período (${mu.periodo}).`;
+            }
         }
+        $('sankey').innerHTML = sankeySvg(esq, centro, dir, saldo);
+        $('legendaSankey').innerHTML = legenda.map(([n, c]) => `<span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm" style="background:${c}"></span>${esc(n)}${ajuda(dicaPara(n))}</span>`).join('');
+        $('caixasSankey').innerHTML = caixas.join('');
+        $('notaSankey').innerHTML = nota;
+        $('respostaSankey').classList.toggle('hidden', !$('respostaSankey').textContent);
         $('estadoSankey').innerHTML = '';
     } catch (e) { if (minha === reqSankey) { $('estadoSankey').innerHTML = mensagemErro(e); } }
 }

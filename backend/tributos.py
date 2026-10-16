@@ -109,18 +109,18 @@ def fluxo_federal() -> dict:
         return x
 
     esquerda = [
-        ("Imposto de Renda", v("1.1.03"), "renda"), ("CSLL", v("1.1.07"), "renda"),
-        ("Cofins", v("1.1.05"), "consumo"), ("PIS/Pasep", v("1.1.06"), "consumo"), ("IPI", v("1.1.02"), "consumo"),
-        ("Imposto de Importação", v("1.1.01"), "consumo"), ("Cide-Combustíveis", v("1.1.09"), "consumo"), ("IOF", v("1.1.04"), "financeiras"),
-        ("Contribuições previdenciárias (RGPS)", v("1.3"), "folha"), ("Outras receitas administradas pela RFB", v("1.1.10"), "outras"),
-        ("Receitas não administradas pela RFB", v("1.4"), "outras"),
+        ("Imposto de Renda", v("1.1.03"), "renda"), ("CSLL (lucro das empresas)", v("1.1.07"), "renda"),
+        ("Cofins (vendas das empresas)", v("1.1.05"), "consumo"), ("PIS/Pasep (vendas das empresas)", v("1.1.06"), "consumo"), ("IPI (produtos industriais)", v("1.1.02"), "consumo"),
+        ("Imposto de Importação", v("1.1.01"), "consumo"), ("Cide (combustíveis)", v("1.1.09"), "consumo"), ("IOF (crédito, câmbio e seguros)", v("1.1.04"), "financeiras"),
+        ("Contribuições da aposentadoria (INSS)", v("1.3"), "folha"), ("Outros impostos da Receita Federal", v("1.1.10"), "outras"),
+        ("Outras receitas (royalties, dividendos…)", v("1.4"), "outras"),
     ]
     receita_total = v("1")
     despesas = [
-        ("Transferências a estados e municípios", v("2"), "Repartição de receita (FPE, FPM, royalties e outros)"),
-        ("Benefícios previdenciários (INSS)", v("4.1"), ""), ("Pessoal e encargos sociais", v("4.2"), ""),
+        ("Repasse a Estados e Cidades", v("2"), "Repartição obrigatória de receita: FPE, FPM, royalties e outros"),
+        ("Aposentadorias e pensões (INSS)", v("4.1"), "Benefícios previdenciários"), ("Pagamento de funcionários públicos", v("4.2"), "Pessoal e encargos sociais"),
         ("Outras despesas obrigatórias", v("4.3"), "Abono e seguro-desemprego, BPC, Fundeb (complementação), precatórios…"),
-        ("Demais despesas do Poder Executivo", v("4.4"), "Inclui saúde, educação, investimentos e despesas discricionárias"),
+        ("Demais gastos (saúde, educação, obras…)", v("4.4"), "Demais despesas do Poder Executivo: inclui saúde, educação, investimentos e despesas discricionárias"),
     ]
     despesa_total = sum(d[1] for d in despesas)
     soma_esq = sum(e[1] for e in esquerda)
@@ -131,7 +131,7 @@ def fluxo_federal() -> dict:
         "grupos": {k: {"nome": n, "cor": c} for k, (n, c) in GRUPOS_RECEITA.items()},
         "centro": {"nome": "Governo Central (União)", "receita_total": receita_total, "soma_origens": round(soma_esq, 2)},
         "direita": [{"nome": n, "valor": val, "detalhe": d} for n, val, d in despesas],
-        "saldo": {"valor": saldo, "rotulo": "Déficit primário (coberto por dívida)" if saldo > 0 else "Superávit primário"},
+        "saldo": {"valor": saldo, "rotulo": "Conta no vermelho (coberta com dívida)" if saldo > 0 else "Sobrou no cofre (superávit)"},
         "fonte": {"nome": "Tesouro Nacional — Resultado do Tesouro Nacional (Governo Central, caixa)", "url": rtn["pagina"]},
         "nota": "Governo Central: Tesouro Nacional, Previdência Social e Banco Central. Não inclui os juros da dívida (resultado primário) nem as empresas estatais.",
     }
