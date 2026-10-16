@@ -268,3 +268,11 @@ O estado de desenvolvimento de cada módulo (tabela acima) é documentação int
   CadSUAS (CRAS/CREAS) exigem autenticação nas APIs públicas e não foram usados. O OpenStreetMap é baixado em segundo plano
   na primeira consulta (cerca de um minuto) e guardado em `dados/equipamentos/`.
 * `GET /api/equipamentos/{codigo_ibge}/verba?categoria=…&esfera=…` — responsável e verba da área para a ficha do local.
+
+### Inventário de tributos com arrecadação e Sankey (`tributos.html`)
+
+`GET /api/tributos/arrecadacao?municipio=` (arrecadação dos últimos 12 meses por tributo: federal pelo Resultado do Tesouro
+Nacional; estadual e municipal pelo RREO Anexo 03 do SICONFI, líquida de repasses e do Fundeb) e `GET /api/tributos/fluxo-federal`
+(de onde vêm e para onde vão as receitas do Governo Central). A tela alterna entre tabela e diagrama de Sankey (federal, estadual e
+municipal). A lista de tributos e a base legal continuam manuais em `frontend/assets/tributos.json`; cada tributo com série aberta
+tem um `arrec_id`.

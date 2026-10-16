@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inventário de tributos — ImpactoCidadão</title>
-    <meta name="description" content="Impostos, contribuições e taxas do Brasil, por esfera de governo, em versão simplificada.">
+    <meta name="description" content="Impostos, contribuições e taxas do Brasil, por esfera de governo, com a arrecadação de cada um e o caminho do dinheiro.">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="assets/tailwind-config.js"></script>
@@ -15,6 +15,8 @@
     <style>
         body { font-family: 'Inter', system-ui, sans-serif; }
         :focus-visible { outline: 2px solid #0284c7; outline-offset: 2px; }
+        .elo { transition: opacity .15s; }
+        .elo:hover { opacity: .85 !important; }
     </style>
 </head>
 <body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-full flex flex-col transition-colors duration-200">
@@ -24,22 +26,47 @@
 
 <main id="conteudo" class="max-w-5xl mx-auto px-4 sm:px-6 pt-6 pb-10 flex-grow w-full">
     <h1 class="text-2xl font-extrabold tracking-tight">Inventário de tributos do Brasil</h1>
-    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Quem cobra o quê, e quando. Uma versão simplificada: nem todo tributo existe em todo lugar, e taxas e regras variam entre estados e municípios.</p>
+    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Quem cobra o quê, quanto arrecada e para onde vai o dinheiro. Uma versão simplificada: nem todo tributo existe em todo lugar, e taxas e regras variam entre estados e municípios.</p>
 
-    <div class="mt-4 flex flex-wrap items-center gap-2 text-sm">
-        <div class="relative flex-grow min-w-[12rem] max-w-md">
-            <label for="busca" class="sr-only">Buscar tributo</label>
-            <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400 text-xs" aria-hidden="true"></i>
-            <input id="busca" type="search" maxlength="80" autocomplete="off" placeholder="Buscar: IPTU, combustível, herança…"
-                   class="w-full pl-8 pr-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 focus:outline-none">
+    <div id="barraContexto" class="mt-4"></div>
+
+    <div class="mt-4 flex flex-wrap items-center gap-3">
+        <div class="inline-flex rounded-xl p-1 bg-slate-200/70 dark:bg-slate-800" role="group" aria-label="Forma de visualizar">
+            <button id="vistaTabela" type="button" class="px-3.5 py-2 rounded-lg text-sm font-semibold"><i class="fa-solid fa-table mr-1.5" aria-hidden="true"></i>Tabela</button>
+            <button id="vistaSankey" type="button" class="px-3.5 py-2 rounded-lg text-sm font-semibold"><i class="fa-solid fa-diagram-project mr-1.5" aria-hidden="true"></i>Diagrama (Sankey)</button>
         </div>
-        <div id="chipsTipo" class="flex flex-wrap gap-1.5" role="group" aria-label="Tipo de cobrança"></div>
-        <span id="contagem" class="ml-auto text-xs text-slate-500" aria-live="polite"></span>
+        <span id="periodos" class="text-xs text-slate-500 dark:text-slate-400"></span>
     </div>
-    <div id="chipsEsfera" class="mt-2 flex flex-wrap gap-1.5" role="group" aria-label="Quem cobra"></div>
 
-    <div id="estado" class="mt-4"></div>
-    <div id="inventario" class="mt-4 space-y-8"></div>
+    <!-- ================= TABELA ================= -->
+    <div id="painelTabela" class="mt-4">
+        <div class="flex flex-wrap items-center gap-2 text-sm">
+            <div class="relative flex-grow min-w-[12rem] max-w-md">
+                <label for="busca" class="sr-only">Buscar tributo</label>
+                <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400 text-xs" aria-hidden="true"></i>
+                <input id="busca" type="search" maxlength="80" autocomplete="off" placeholder="Buscar: IPTU, combustível, herança…"
+                       class="w-full pl-8 pr-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 focus:outline-none">
+            </div>
+            <div id="chipsTipo" class="flex flex-wrap gap-1.5" role="group" aria-label="Tipo de cobrança"></div>
+            <span id="contagem" class="ml-auto text-xs text-slate-500" aria-live="polite"></span>
+        </div>
+        <div id="chipsEsfera" class="mt-2 flex flex-wrap gap-1.5" role="group" aria-label="Quem cobra"></div>
+        <div id="estado" class="mt-4"></div>
+        <div id="inventario" class="mt-4 space-y-8"></div>
+    </div>
+
+    <!-- ================= SANKEY ================= -->
+    <div id="painelSankey" class="mt-4 hidden">
+        <div class="flex flex-wrap items-center gap-2">
+            <div id="seletorEsfera" class="inline-flex rounded-xl p-1 bg-slate-200/70 dark:bg-slate-800" role="radiogroup" aria-label="Esfera de governo"></div>
+        </div>
+        <div id="estadoSankey" class="mt-3" aria-live="polite"></div>
+        <div id="legendaSankey" class="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs"></div>
+        <div class="mt-3 overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-3 text-slate-700 dark:text-slate-200">
+            <div id="sankey" class="min-w-[720px]"></div>
+        </div>
+        <p id="notaSankey" class="text-[11px] text-slate-400 mt-2"></p>
+    </div>
 
     <section class="mt-10 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 text-sm">
         <h2 class="font-bold text-lg">Como ler este inventário</h2>
@@ -48,6 +75,7 @@
             <li><b>Taxa:</b> ligada a um serviço público específico e divisível ou ao poder de fiscalização do Estado.</li>
             <li><b>Contribuição:</b> tributo com uma finalidade definida, como a seguridade social ou a iluminação pública.</li>
             <li><b>Outras cobranças:</b> aparecem no dia a dia, mas não são tributos (como o FGTS, os pedágios e as multas).</li>
+            <li><b>Arrecadação:</b> federal vem do Resultado do Tesouro Nacional (Governo Central, últimos 12 meses). Estadual e municipal vêm do RREO (SICONFI) do estado e da cidade escolhidos, já <b>líquidas de repasses e do Fundeb</b>, por isso são menores que a arrecadação bruta. “—” indica que a fonte aberta não traz aquele tributo.</li>
             <li>É uma lista de orientação, não substitui a legislação nem a consulta a um contador. “Base legal” indica o dispositivo da Constituição ou da lei de referência, quando há um claro.</li>
         </ul>
         <p class="mt-3">Quer ver para onde vai o que você paga? Use a tela <a class="underline text-brand-700 dark:text-brand-400" href="orcamento.html">Para onde vai o seu imposto</a>.</p>
@@ -64,11 +92,37 @@ const ESFERA_COR = { Federal: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-950 
     Municipal: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300', 'Estadual e Municipal': 'bg-teal-100 text-teal-800 dark:bg-teal-950 dark:text-teal-300',
     Mista: 'bg-violet-100 text-violet-800 dark:bg-violet-950 dark:text-violet-300', 'Variável': 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300' };
 const TIPOS = ['Imposto', 'Contribuição', 'Taxa', 'Outras cobranças'];
+const ESTADUAIS = new Set(['ICMS', 'IPVA', 'ITCMD']);
+const MUNICIPAIS = new Set(['IPTU', 'ISS', 'ITBI']);
 let GRUPOS = [];
-const F = { tipo: '', esfera: '', q: '' };
+let A = null;                // arrecadação (API)
+let ctx = null;              // barra de contexto
+const F = { tipo: '', esfera: '', q: '', vista: ler('ic_tributos_vista', 'tabela'), sankeyEsfera: 'federal' };
 const norm = (t) => String(t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
-const familia = (e) => (e.includes('Estadual') && !e.includes('Municipal') ? 'Estadual' : e);
+const reaisCurto = (n) => {
+    if (n == null) return '—';
+    const v = Math.abs(n), s = n < 0 ? '−' : '';
+    if (v >= 1e12) return `${s}R$ ${(v / 1e12).toLocaleString('pt-BR', { maximumFractionDigits: 2 })} tri`;
+    if (v >= 1e9) return `${s}R$ ${(v / 1e9).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} bi`;
+    if (v >= 1e6) return `${s}R$ ${(v / 1e6).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} mi`;
+    return brl(n);
+};
+const municipio = () => (ctx && ctx.municipio) || null;
 
+/* ---------- alternar tabela / diagrama ---------- */
+function vista() {
+    const sank = F.vista === 'sankey';
+    $('painelTabela').classList.toggle('hidden', sank); $('painelSankey').classList.toggle('hidden', !sank);
+    const on = 'bg-white dark:bg-slate-700 shadow text-brand-700 dark:text-brand-300', off = 'text-slate-500';
+    $('vistaTabela').className = `px-3.5 py-2 rounded-lg text-sm font-semibold ${sank ? off : on}`;
+    $('vistaSankey').className = `px-3.5 py-2 rounded-lg text-sm font-semibold ${sank ? on : off}`;
+    $('vistaTabela').setAttribute('aria-pressed', String(!sank)); $('vistaSankey').setAttribute('aria-pressed', String(sank));
+    if (sank) desenharSankey();
+}
+$('vistaTabela').addEventListener('click', () => { F.vista = 'tabela'; guardar('ic_tributos_vista', F.vista); vista(); });
+$('vistaSankey').addEventListener('click', () => { F.vista = 'sankey'; guardar('ic_tributos_vista', F.vista); vista(); });
+
+/* ---------- tabela ---------- */
 function chips() {
     const chip = (ativo, rot, attr) => `<button type="button" ${attr} aria-pressed="${ativo}" class="px-3 py-1.5 rounded-full text-xs font-semibold border ${ativo
         ? 'bg-brand-600 border-brand-600 text-white' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-brand-400'}">${esc(rot)}</button>`;
@@ -79,6 +133,16 @@ function chips() {
 $('chipsTipo').addEventListener('click', (ev) => { const b = ev.target.closest('[data-tipo]'); if (b) { F.tipo = b.dataset.tipo; chips(); desenhar(); } });
 $('chipsEsfera').addEventListener('click', (ev) => { const b = ev.target.closest('[data-esfera]'); if (b) { F.esfera = b.dataset.esfera; chips(); desenhar(); } });
 $('busca').addEventListener('input', debounce((ev) => { F.q = norm(ev.target.value.trim()); desenhar(); }, 120));
+
+function celulaArrecadacao(i) {
+    if (!i.arrec_id) return '<span class="text-slate-400">—</span>';
+    const fonte = ESTADUAIS.has(i.arrec_id) ? 'estadual' : MUNICIPAIS.has(i.arrec_id) ? 'municipal' : 'federal';
+    if ((fonte === 'estadual' || fonte === 'municipal') && !municipio()) return '<span class="text-xs text-slate-400">Escolha a cidade</span>';
+    const bloco = A && A[fonte];
+    const v = bloco && bloco.valores ? bloco.valores[i.arrec_id] : null;
+    if (v == null) return `<span class="text-slate-400">${A ? '—' : '…'}</span>`;
+    return `<span class="font-semibold whitespace-nowrap">${esc(reaisCurto(v))}</span>${i.arrec_nota ? `<span class="block text-[11px] text-slate-400 font-normal">${esc(i.arrec_nota)}</span>` : ''}`;
+}
 
 function desenhar() {
     let total = 0;
@@ -96,10 +160,11 @@ function desenhar() {
             <div class="mt-2 overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
                 <table class="w-full text-sm"><caption class="sr-only">${esc(g.titulo)}</caption>
                 <thead class="bg-slate-100 dark:bg-slate-700/60 text-left text-xs uppercase tracking-wide text-slate-500 dark:text-slate-300">
-                    <tr><th scope="col" class="p-3 w-56">Tributo</th><th scope="col" class="p-3">Onde ou quando é cobrado</th><th scope="col" class="p-3 w-52">Base legal</th></tr></thead>
+                    <tr><th scope="col" class="p-3 w-52">Tributo</th><th scope="col" class="p-3">Onde ou quando é cobrado</th><th scope="col" class="p-3 w-40 text-right">Arrecadado (12 meses)</th><th scope="col" class="p-3 w-44">Base legal</th></tr></thead>
                 <tbody>${itens.map((i) => `<tr class="border-t border-slate-100 dark:border-slate-700 align-top">
                     <th scope="row" class="p-3 text-left"><span class="font-bold">${esc(i.sigla)}</span><span class="block text-xs font-normal text-slate-500 dark:text-slate-400">${esc(i.nome)}</span></th>
                     <td class="p-3 text-slate-700 dark:text-slate-300">${esc(i.onde)}</td>
+                    <td class="p-3 text-right">${celulaArrecadacao(i)}</td>
                     <td class="p-3 text-xs text-slate-500 dark:text-slate-400">${i.base_legal ? esc(i.base_legal) : '—'}</td></tr>`).join('')}</tbody></table></div>
         </section>`;
     }).join('');
@@ -107,13 +172,115 @@ function desenhar() {
     $('contagem').textContent = `${total} cobrança${total === 1 ? '' : 's'}`;
 }
 
+function periodos() {
+    if (!A) { $('periodos').textContent = ''; return; }
+    const p = [];
+    if (A.federal) p.push(`Federal: ${A.federal.periodo} (Tesouro Nacional)`);
+    if (A.estadual) p.push(`Estadual: ${A.estadual.periodo}`);
+    if (A.municipal) p.push(`Municipal (${A.municipal.instituicao || ''}): ${A.municipal.periodo}`);
+    $('periodos').textContent = p.join(' · ');
+}
+
+async function carregarArrecadacao() {
+    const m = municipio();
+    $('estado').innerHTML = '';
+    try {
+        A = await api('/api/tributos/arrecadacao' + (m ? '?municipio=' + encodeURIComponent(m.codigo) : ''));
+        if (A.erros.length) $('estado').innerHTML = `<div class="text-xs text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 rounded-lg px-3 py-2">${A.erros.map(esc).join(' ')}</div>`;
+    } catch (e) { A = { federal: null, estadual: null, municipal: null, erros: [] }; $('estado').innerHTML = mensagemErro(e); }
+    periodos(); desenhar();
+}
+
+/* ---------- Sankey (SVG feito à mão: origem → ente → destino) ---------- */
+function sankeySvg(esq, centro, dir, saldo) {
+    // esq/dir: [{nome, valor, cor?, detalhe?}]; saldo: {lado:'esq'|'dir', valor, rotulo} opcional (equilibra os dois lados)
+    const L = esq.filter((x) => x.valor > 0), R = dir.filter((x) => x.valor > 0);
+    if (saldo && saldo.valor > 0) (saldo.lado === 'esq' ? L : R).push({ nome: saldo.rotulo, valor: saldo.valor, cor: '#64748b', saldo: true });
+    const somaL = L.reduce((a, x) => a + x.valor, 0), somaR = R.reduce((a, x) => a + x.valor, 0), total = Math.max(somaL, somaR);
+    const W = 1100, xE = 300, xC = 520, xD = 760, nw = 16, gap = 8, pad = 16;
+    const linhas = Math.max(L.length, R.length);
+    const H = Math.max(440, linhas * 36 + 2 * pad);
+    const util = H - 2 * pad - gap * (Math.max(L.length, R.length) - 1);
+    const esc_ = Math.max(util / total, 0.0000001);
+    const alt = (v) => Math.max(v * esc_, 5);
+    const pct = (v) => `${((v / total) * 100).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%`;
+    const empilha = (lista) => { let y = pad; return lista.map((n) => { const h = alt(n.valor); const o = { ...n, y, h }; y += h + gap; return o; }); };
+    const Ln = empilha(L), Rn = empilha(R);
+    const hCentro = Math.max(Ln.length ? Ln[Ln.length - 1].y + Ln[Ln.length - 1].h : 0, Rn.length ? Rn[Rn.length - 1].y + Rn[Rn.length - 1].h : 0) - pad;
+    const topC = pad;
+    let oc = topC;
+    const elos = [];
+    for (const n of Ln) {   // esquerda → centro
+        const h = n.h, y0 = n.y + h / 2, y1 = oc + h / 2; oc += h;
+        elos.push(`<path class="elo" d="M${xE + nw},${y0} C${(xE + nw + xC) / 2},${y0} ${(xE + nw + xC) / 2},${y1} ${xC},${y1}" stroke="${n.cor}" stroke-opacity="${n.saldo ? 0.45 : 0.55}" stroke-width="${h}" fill="none"><title>${esc(n.nome)}: ${esc(reaisCurto(n.valor))} (${pct(n.valor)})</title></path>`);
+    }
+    oc = topC;
+    for (const n of Rn) {   // centro → direita
+        const h = n.h, y0 = oc + h / 2, y1 = n.y + h / 2; oc += h;
+        elos.push(`<path class="elo" d="M${xC + nw},${y0} C${(xC + nw + xD) / 2},${y0} ${(xC + nw + xD) / 2},${y1} ${xD},${y1}" stroke="${n.saldo ? '#64748b' : '#94a3b8'}" stroke-opacity="0.45" stroke-width="${h}" fill="none"><title>${esc(n.nome)}: ${esc(reaisCurto(n.valor))} (${pct(n.valor)})${n.detalhe ? ' — ' + esc(n.detalhe) : ''}</title></path>`);
+    }
+    const rotulo = (x, y, h, ancora, nome, valor) => `<text x="${x}" y="${y + h / 2}" text-anchor="${ancora}" dominant-baseline="middle" fill="currentColor" font-size="12.5"><tspan font-weight="600">${esc(nome.length > 44 ? nome.slice(0, 43) + '…' : nome)}</tspan><tspan dx="6" fill-opacity="0.65" font-size="11.5">${esc(reaisCurto(valor))} · ${pct(valor)}</tspan></text>`;
+    const nosE = Ln.map((n) => `<rect x="${xE}" y="${n.y}" width="${nw}" height="${n.h}" rx="2" fill="${n.cor}"/>` + rotulo(xE - 8, n.y, n.h, 'end', n.nome, n.valor)).join('');
+    const nosD = Rn.map((n) => `<rect x="${xD}" y="${n.y}" width="${nw}" height="${n.h}" rx="2" fill="${n.saldo ? '#64748b' : '#475569'}"/>` + rotulo(xD + nw + 8, n.y, n.h, 'start', n.nome, n.valor)).join('');
+    const centroSvg = `<rect x="${xC}" y="${topC}" width="${nw}" height="${hCentro}" rx="2" fill="#0f172a"/>
+        <text x="${xC + nw / 2}" y="${topC + hCentro / 2}" transform="rotate(-90 ${xC + nw / 2} ${topC + hCentro / 2})" text-anchor="middle" dominant-baseline="middle" fill="#fff" font-size="12" font-weight="700" dy="-0.1">${esc(centro)}</text>`;
+    return `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Diagrama de Sankey: de onde vêm os tributos, ${esc(centro)} e para onde vão">${elos.join('')}${nosE}${nosD}${centroSvg}</svg>`;
+}
+
+const ESFERAS_SANKEY = [['federal', 'Federal'], ['estadual', 'Estadual'], ['municipal', 'Municipal']];
+function seletorEsfera() {
+    $('seletorEsfera').innerHTML = ESFERAS_SANKEY.map(([id, rot]) => `<button type="button" role="radio" aria-checked="${F.sankeyEsfera === id}" data-sk="${id}"
+        class="px-3.5 py-2 rounded-lg text-sm font-semibold ${F.sankeyEsfera === id ? 'bg-white dark:bg-slate-700 shadow text-brand-700 dark:text-brand-300' : 'text-slate-500'}">${rot}</button>`).join('');
+}
+$('seletorEsfera').addEventListener('click', (ev) => { const b = ev.target.closest('[data-sk]'); if (b) { F.sankeyEsfera = b.dataset.sk; desenharSankey(); } });
+
+let reqSankey = 0;
+async function desenharSankey() {
+    const minha = ++reqSankey;
+    seletorEsfera();
+    $('legendaSankey').innerHTML = ''; $('sankey').innerHTML = ''; $('notaSankey').textContent = '';
+    const m = municipio();
+    if (F.sankeyEsfera !== 'federal' && !m) { $('estadoSankey').innerHTML = '<p class="text-sm text-slate-500">Escolha a sua cidade na barra acima para ver o diagrama do estado e do município.</p>'; return; }
+    $('estadoSankey').innerHTML = '<p class="text-sm text-slate-500"><i class="fa-solid fa-spinner fa-spin mr-1.5" aria-hidden="true"></i>Consultando o Tesouro Nacional…</p>';
+    try {
+        if (F.sankeyEsfera === 'federal') {
+            const x = await api('/api/tributos/fluxo-federal');
+            if (minha !== reqSankey) return;
+            $('sankey').innerHTML = sankeySvg(x.esquerda, x.centro.nome, x.direita.map((d) => ({ ...d, cor: '#94a3b8' })), { lado: x.saldo.valor > 0 ? 'esq' : 'dir', valor: Math.abs(x.saldo.valor), rotulo: x.saldo.rotulo });
+            $('legendaSankey').innerHTML = Object.values(x.grupos).map((g) => `<span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm" style="background:${g.cor}"></span>${esc(g.nome)}</span>`).join('');
+            $('notaSankey').innerHTML = `${esc(x.periodo)} · ${esc(x.unidade)}. ${esc(x.nota)} Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(x.fonte.url))}">${esc(x.fonte.nome)}</a>.`;
+        } else {
+            const ente = F.sankeyEsfera === 'estadual' ? Math.floor(m.codigo / 100000) : m.codigo;
+            const d = await api('/api/economia/' + encodeURIComponent(ente));
+            if (minha !== reqSankey) return;
+            const COR = { proprios: '#e11d48', transferencias: '#0284c7', outras: '#a16207', credito: '#64748b' };
+            const esq = d.nivel2.receitas.grupos.map((g) => ({ nome: g.nome, valor: g.valor, cor: COR[g.id] || '#64748b' }));
+            const fun = d.nivel2.despesas.funcoes, top = fun.slice(0, 8);
+            const resto = d.nivel2.despesas.total_liquidado - top.reduce((a, f) => a + f.valor, 0);
+            const dir = top.map((f) => ({ nome: f.nome, valor: f.valor, cor: '#94a3b8' }));
+            if (resto > 0) dir.push({ nome: 'Demais áreas', valor: resto, cor: '#94a3b8' });
+            const somaE = esq.reduce((a, x) => a + x.valor, 0), somaD = dir.reduce((a, x) => a + x.valor, 0);
+            const dif = Math.abs(somaE - somaD);
+            const saldo = dif > 0.01 * Math.max(somaE, somaD) ? { lado: somaE >= somaD ? 'dir' : 'esq', valor: dif, rotulo: somaE >= somaD ? 'Arrecadado e ainda não gasto no período' : 'Gasto acima do arrecadado no período' } : null;
+            $('sankey').innerHTML = sankeySvg(esq, d.instituicao || (F.sankeyEsfera === 'estadual' ? 'Governo do Estado' : 'Prefeitura'), dir, saldo);
+            $('legendaSankey').innerHTML = [['Impostos próprios', COR.proprios], ['Transferências e repasses', COR.transferencias], ['Outras receitas', COR.outras], ['Empréstimos', COR.credito]]
+                .map(([n, c]) => `<span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm" style="background:${c}"></span>${esc(n)}</span>`).join('');
+            $('notaSankey').innerHTML = `${esc(d.instituicao || '')} — ${esc(d.periodo.rotulo)} (acumulado no exercício). Receita arrecadada à esquerda; despesa liquidada por área à direita. Fonte: ${esc(d.fonte)}.`;
+        }
+        $('estadoSankey').innerHTML = '';
+    } catch (e) { if (minha === reqSankey) { $('estadoSankey').innerHTML = mensagemErro(e); } }
+}
+
 (async function iniciar() {
+    chips(); vista();
     try {
         const r = await fetch('assets/tributos.json');
         if (!r.ok) throw new Error(`Erro ${r.status} ao carregar o inventário`);
         GRUPOS = await r.json();
-        chips(); desenhar();
+        desenhar();
     } catch (e) { $('estado').innerHTML = mensagemErro(e); }
+    ctx = await montarBarraContexto('barraContexto', () => { carregarArrecadacao(); if (F.vista === 'sankey') desenharSankey(); });
+    carregarArrecadacao();
 })();
 </script>
 </body>

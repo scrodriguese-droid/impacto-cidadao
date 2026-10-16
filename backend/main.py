@@ -38,6 +38,7 @@ import economia
 import equipamentos
 import macro
 import orcamento
+import tributos
 import simuladores
 from config import cfg
 from fontes import buscar_municipios, contexto_municipio
@@ -552,6 +553,25 @@ def macro_serie(
         raise HTTPException(status_code=404, detail="Indicador desconhecido.") from exc
     except Exception as exc:  # noqa: BLE001
         raise _fonte_macro_indisponivel(exc) from exc
+
+
+@router.get("/tributos/arrecadacao", tags=["tributos"])
+def tributos_arrecadacao(municipio: Annotated[int | None, Query(ge=1000000, le=5999999)] = None) -> dict:
+    """Arrecadação dos últimos 12 meses por tributo: federal (Tesouro) e, com município, estadual e municipal (SICONFI)."""
+    try:
+        return tributos.arrecadacao(municipio)
+    except Exception as exc:  # noqa: BLE001
+        log.warning("Arrecadação por tributo indisponível: %s", exc)
+        raise HTTPException(status_code=503, detail="Os dados de arrecadação estão indisponíveis no momento.") from exc
+
+
+@router.get("/tributos/fluxo-federal", tags=["tributos"])
+def tributos_fluxo_federal() -> dict:
+    try:
+        return tributos.fluxo_federal()
+    except Exception as exc:  # noqa: BLE001
+        log.warning("Fluxo federal indisponível: %s", exc)
+        raise HTTPException(status_code=503, detail="O Resultado do Tesouro Nacional está indisponível no momento.") from exc
 
 
 @router.get("/competencias/buscar", tags=["competencias"])

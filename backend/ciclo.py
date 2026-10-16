@@ -278,7 +278,13 @@ def _rtn() -> dict:
         from openpyxl import load_workbook
 
         rec = macro._recurso("resultado-do-tesouro-nacional", "XLSX")
-        bruto = macro._http_arquivos.get(rec["url"], accept="*/*").content
+        bruto = b""
+        for _ in range(4):
+            bruto = macro._http_arquivos.get(rec["url"], accept="*/*").content
+            if bruto[:2] == b"PK":
+                break
+        if bruto[:2] != b"PK":
+            raise ErroFonte("Arquivo do Resultado do Tesouro Nacional indisponível")
         ws = load_workbook(io.BytesIO(bruto), read_only=True, data_only=True)["1.2"]
         linhas = list(ws.iter_rows(values_only=True))
         cab = next(r for r in linhas if r and r[0] == "Discriminação")
@@ -290,7 +296,15 @@ def _rtn() -> dict:
                 return {}
             return {m: float(alvo[i]) for i, m in colunas if isinstance(alvo[i], (int, float))}
 
+        codigos: dict[str, dict] = {}
+        for r in linhas:
+            if not isinstance(r[0], str):
+                continue
+            m = re.match(r"^(\d+(?:\.\d+)*)\.?\s+(.*)$", re.sub(r"\s+", " ", r[0]).strip())
+            if m and m.group(1) not in codigos:
+                codigos[m.group(1)] = {"rotulo": m.group(2), "serie": {mes: float(r[i]) for i, mes in colunas if isinstance(r[i], (int, float))}}
         return {
+            "codigos": codigos,
             "receita_total": serie("1. RECEITA TOTAL"),
             "receita_rfb": serie("1.1 - Receita Administrada pela RFB"),
             "receita_liquida": serie("3. RECEITA LÍQUIDA"),
