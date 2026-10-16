@@ -16,6 +16,8 @@ logs/
 # PDFs baixados / colocados manualmente (podem ser grandes)
 dados/planos/*.pdf
 dados/planos/cache/
+# Resumo do projeto da LOA (extraído do PDF oficial)
+dados/orcamento/
 
 # SO / editor
 .DS_Store

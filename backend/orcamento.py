@@ -11,6 +11,7 @@ Fontes verificadas em out/2026 (nada presumido):
 """
 from __future__ import annotations
 
+import json
 import logging
 import re
 import threading
@@ -20,6 +21,7 @@ from datetime import date, datetime, timezone
 from typing import Any
 
 import economia
+from config import RAIZ
 from fontes import ClienteHTTP, ErroFonte
 
 log = logging.getLogger("impacto.orcamento")
@@ -185,7 +187,7 @@ def ciclo(ente: int) -> dict:
             "observacao": "A LOA é a lei do orçamento; o PLN é o projeto enviado pelo Executivo ao Congresso. "
                           "Os valores da LOA não vêm desta fonte: consulte o SIOP ou o Portal da Transparência.",
         })
-        return base
+        return painel_ciclo(ente, base)
     base.update({
         "fonte": {"nome": "SICONFI — extrato de entregas (apenas DCA, MSC, RREO e RGF)",
                   "url": "https://siconfi.tesouro.gov.br/"},
@@ -195,7 +197,245 @@ def ciclo(ente: int) -> dict:
         "lacuna": LACUNA_SUBNACIONAL,
         "observacao": None,
     })
+    return painel_ciclo(ente, base)
+
+
+# --------------------------------------------------------------------------- #
+# Linha do tempo viva, proposta da LOA (lida do texto oficial) e orçamento local
+# --------------------------------------------------------------------------- #
+PASTA_CACHE = RAIZ / "dados" / "orcamento"
+MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"]
+
+PRAZOS = [
+    {"tipo": "PPA", "texto": "Enviado ao Congresso até 31 de agosto do 1º ano do mandato e devolvido para sanção até o fim da sessão legislativa (22 de dezembro)."},
+    {"tipo": "LDO", "texto": "Enviada até 15 de abril e devolvida para sanção até o fim do 1º período da sessão legislativa (17 de julho)."},
+    {"tipo": "LOA", "texto": "Enviada até 31 de agosto e devolvida para sanção até o fim da sessão legislativa (22 de dezembro)."},
+]
+PRAZOS_FONTE = "Constituição Federal, art. 57, e Ato das Disposições Constitucionais Transitórias, art. 35, § 2º."
+
+ESTADOS = {
+    "em_execucao": "Em execução", "aprovada": "Aprovada (virou lei)", "em_tramitacao": "Em tramitação no Congresso",
+    "nao_enviada": "Ainda não enviada ao Congresso", "sem_fonte": "Sem fonte aberta",
+}
+
+
+def _num_br(txt: str) -> float:
+    return float(txt.replace(".", "").replace(",", "."))
+
+
+def _paginas_pdf(url: str, limite: int = 200) -> list[str]:
+    """Texto (espaços normalizados) das primeiras páginas de um PDF."""
+    import io
+    import logging as _lg
+
+    from pypdf import PdfReader
+
+    _lg.getLogger("pypdf").setLevel(_lg.ERROR)
+    bruto = ClienteHTTP(pausa=0.05, timeout=300.0).get(url, accept="*/*").content
+    leitor = PdfReader(io.BytesIO(bruto))
+    return [re.sub(r"\s+", " ", (leitor.pages[i].extract_text() or "")) for i in range(min(limite, len(leitor.pages)))]
+
+
+def _extrair(rx: str, texto: str) -> re.Match | None:
+    return re.search(rx, texto, re.I)
+
+
+def _resumo_ploa(paginas: list[str]) -> dict:
+    """Totais do projeto de lei e destaques da Mensagem Presidencial. Cada valor só entra se for encontrado."""
+    inicio = " ".join(paginas[:6])
+    def valor(rx: str) -> float | None:
+        m = _extrair(rx, inicio)
+        return _num_br(m.group(m.lastindex)) if m else None
+    totais = {
+        "receita_total": valor(r"estima a receita da Uni[ãa]o para o exerc[íi]cio financeiro de \d{4} no montante de R\$ ?([\d.]+,\d{2})"),
+        "fiscal_e_seguridade": valor(r"receita total estimada nos Or[çc]amentos Fiscal e da Seguridade Social [ée] de R\$ ?([\d.]+,\d{2})"),
+        "orcamento_fiscal": valor(r"I - Or[çc]amento Fiscal - R\$ ?([\d.]+,\d{2})"),
+        "seguridade": valor(r"II - Or[çc]amento da Seguridade Social - R\$ ?([\d.]+,\d{2})"),
+        "refinanciamento_divida": valor(r"III - Refinanciamento da D[ií]vida P[úu]blica Federal - R\$ ?([\d.]+,\d{2})"),
+        "credito_condicionado": valor(r"inclui, com fundamento.{0,200}?R\$ ?([\d.]+,\d{2}).{0,160}?opera[çc][õo]es de cr[ée]dito"),
+    }
+    # destaques da Mensagem Presidencial (texto livre do Executivo): rótulo, expressão, unidade
+    candidatos = [
+        ("Salário mínimo previsto para 2027", r"sal[áa]rio m[íi]nimo deve atingir o patamar de R\$ ?([\d.]+,\d{2})", "reais"),
+        ("Saúde — Atenção Primária (custeio)", r"Programa Aten[çc][ãa]o Prim[áa]ria [àa] Sa[úu]de, o Governo Federal alocar[áa] cerca de R\$ ?([\d.,]+) bilh", "bilhões"),
+        ("Saúde — média e alta complexidade (custeio)", r"Para 20\d{2}, est[ãa]o previstos R\$ ?([\d.,]+) bilh[õo]es em despesas de custeio desses servi[çc]os", "bilhões"),
+        ("Saúde — investimentos do Novo PAC", r"Minist[ée]rio da Sa[úu]de contar[áa] com R\$ ?([\d.,]+) bilh[õo]es em investimentos", "bilhões"),
+        ("Educação básica", r"programa Educa[çc][ãa]o B[áa]sica Democr[áa]tica, com Qualidade e Equidade ter[áa] R\$ ?([\d.,]+) bilh", "bilhões"),
+        ("Alimentação escolar (PNAE)", r"PNAE contar[áa] com aproximadamente R\$ ?([\d.,]+) bilh", "bilhões"),
+    ]
+    destaques = []
+    for rotulo, rx, unidade in candidatos:
+        for i, t in enumerate(paginas[40:170], start=41):
+            m = _extrair(rx, t)
+            if m:
+                try:
+                    v = _num_br(m.group(1)) if unidade == "reais" else float(m.group(1).replace(".", "").replace(",", "."))
+                except ValueError:
+                    break
+                destaques.append({"rotulo": rotulo, "valor": v, "unidade": unidade, "pagina_pdf": i})
+                break
+    salario_2026 = None
+    for t in paginas[140:175]:
+        m = re.search(r"Evolu[çc][ãa]o do Sal[áa]rio M[íi]nimo ([\d. ]+?) 0 200", t)
+        if m:
+            nums = [int(x.replace(".", "")) for x in re.findall(r"\d{1,2}\.\d{3}|\d{3}", m.group(1))]
+            if len(nums) >= 2:
+                salario_2026 = float(nums[-2])   # penúltimo ponto do gráfico = 2026; o último é o PLOA 2027
+            break
+    return {"totais": totais, "destaques": destaques, "salario_minimo_ano_anterior": salario_2026}
+
+
+def _ploa(proposicao: str, url: str) -> dict | None:
+    """Resumo do projeto da LOA, lido do PDF oficial na primeira vez e guardado em disco (o PDF tem ~27 MB)."""
+    chave = re.sub(r"\W+", "_", proposicao)
+    arq = PASTA_CACHE / f"ploa_{chave}.json"
+    try:
+        if arq.exists():
+            return json.loads(arq.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        pass
+    def produzir() -> dict | None:
+        try:
+            paginas = _paginas_pdf(url)
+        except Exception as exc:  # noqa: BLE001 — sem o PDF, a tela mostra só os links
+            log.warning("PDF do projeto da LOA indisponível: %s", exc)
+            return None
+        r = _resumo_ploa(paginas)
+        if not r["totais"]["receita_total"]:
+            return None
+        r.update({"proposicao": proposicao, "url": url, "extraido_em": _agora()})
+        try:
+            PASTA_CACHE.mkdir(parents=True, exist_ok=True)
+            arq.write_text(json.dumps(r, ensure_ascii=False), encoding="utf-8")
+        except OSError:
+            pass
+        return r
+    return _memo(("ploa", proposicao), produzir)
+
+
+def _estado_doc(doc: dict | None) -> str:
+    if doc is None:
+        return "nao_enviada"
+    return "aprovada" if doc["virou_lei"] else "em_tramitacao"
+
+
+def _no(tipo: str, nome: str, periodo: str, estado: str, detalhe: str | None, doc: dict | None = None) -> dict:
+    return {"tipo": tipo, "nome": nome, "periodo": periodo, "estado": estado, "estado_rotulo": ESTADOS[estado], "detalhe": detalhe,
+            "proposicao": doc["proposicao"] if doc else None, "url_tramitacao": doc["url_tramitacao"] if doc else None}
+
+
+def _mov(doc: dict) -> str:
+    if not doc.get("ultima_movimentacao"):
+        return doc["situacao"]
+    d = doc["ultima_movimentacao"]
+    return f"{doc['situacao']} (última movimentação em {d[8:10]}/{d[5:7]}/{d[:4]})"
+
+
+def _dotacao_inicial(ente: int) -> dict | None:
+    """Despesa autorizada na LOA do exercício (dotação inicial do RREO) e, se houver, por função."""
+    try:
+        per = economia._periodo_mais_recente(ente)
+        if not per:
+            return None
+        ano, bim = per
+        a1 = economia._rreo(ente, ano, bim, "RREO-Anexo 01")
+        a2 = economia._rreo(ente, ano, bim, "RREO-Anexo 02")
+    except Exception as exc:  # noqa: BLE001
+        log.warning("dotação inicial indisponível (%s): %s", ente, exc)
+        return None
+    despesa = economia._valor(a1, "TotalDespesas", "DOTAÇÃO INICIAL")
+    receita = economia._valor(a1, "TotalReceitas", "PREVISÃO INICIAL")
+    funcoes: dict[str, float] = {}
+    for r in a2:
+        if r.get("cod_conta") != "RREO2TotalDespesas" or not economia.normalizar(r.get("coluna", "")).startswith(economia.normalizar("DOTAÇÃO INICIAL")):
+            continue
+        nome = economia.FUNCOES.get(economia.normalizar(r.get("conta", "")))
+        if nome and nome not in funcoes and r.get("valor"):
+            funcoes[nome] = float(r["valor"])
+    soma = sum(funcoes.values())
+    instituicao = next((r.get("instituicao") for r in a1 if r.get("instituicao")), None)
+    return {
+        "ano": ano, "instituicao": instituicao, "periodo": f"{bim}º bimestre de {ano}",
+        "receita_prevista": float(receita) if receita is not None else None,
+        "despesa_autorizada": float(despesa) if despesa is not None else None,
+        "funcoes": sorted(({"nome": n, "valor": v, "pct": round(100 * v / soma, 1) if soma else None,
+                            "icone": economia.ICONES.get(n, "fa-circle")} for n, v in funcoes.items()), key=lambda x: -x["valor"]),
+    }
+
+
+def painel_ciclo(ente: int, base: dict) -> dict:
+    """Acrescenta a `base` (resposta de ciclo()) a linha do tempo viva e a peça central da esfera."""
+    hoje = date.today()
+    ano = hoje.year
+    esfera = base["esfera"]
+    base["agora"] = {"data": hoje.isoformat(), "rotulo": f"{MESES[hoje.month - 1].capitalize()}/{ano}", "ano": ano}
+    base["prazos"] = {"itens": PRAZOS, "fonte": PRAZOS_FONTE}
+    docs = {(d["tipo"], d["referencia"]): d for d in base.get("documentos", [])}
+
+    if esfera == "uniao":
+        ppa = next((d for d in base["documentos"] if d["tipo"] == "PPA"
+                    and "-" in d["referencia"] and int(d["referencia"][:4]) <= ano <= int(d["referencia"][5:])), None)
+        ldo, loa = docs.get(("LDO", str(ano + 1))), docs.get(("LOA", str(ano + 1)))
+        loa_atual = docs.get(("LOA", str(ano)))
+        ppa_estado = "em_execucao" if ppa and ppa["virou_lei"] else _estado_doc(ppa)
+        base["linha_do_tempo"] = [
+            _no("PPA", "Plano Plurianual", ppa["referencia"].replace("-", "–") if ppa else "—", ppa_estado,
+                "Metas de 4 anos; vigora até o fim do 1º ano do mandato seguinte." if ppa else None, ppa),
+            _no("LDO", f"LDO {ano + 1}", str(ano + 1), _estado_doc(ldo), _mov(ldo) if ldo else "Prevista para ser enviada até 15 de abril.", ldo),
+            _no("LOA", f"LOA {ano + 1}", str(ano + 1), _estado_doc(loa), _mov(loa) if loa else "Prevista para ser enviada até 31 de agosto.", loa),
+        ]
+        partes = []
+        if loa and not loa["virou_lei"]:
+            partes.append(f"O Congresso Nacional analisa o projeto do orçamento de {ano + 1} ({loa['proposicao']}).")
+        elif loa:
+            partes.append(f"O orçamento de {ano + 1} já virou lei.")
+        else:
+            partes.append(f"O projeto do orçamento de {ano + 1} ainda não chegou ao Congresso.")
+        if loa_atual and loa_atual["virou_lei"]:
+            lei_txt = f" ({loa_atual['lei']})" if loa_atual.get("lei") else ""
+            partes.append(f"O orçamento de {ano} está em execução{lei_txt}.")
+        base["momento"] = " ".join(partes)
+
+        proposta = None
+        if loa and not loa["virou_lei"] and loa.get("url_texto"):
+            r = _ploa(loa["proposicao"], loa["url_texto"])
+            comparacao = None
+            din = _dotacao_inicial(1)
+            if r and din and din["despesa_autorizada"] and r["totais"].get("fiscal_e_seguridade"):
+                comparacao = {"ano_base": din["ano"], "valor_base": din["despesa_autorizada"],
+                              "variacao_pct": round((r["totais"]["fiscal_e_seguridade"] / din["despesa_autorizada"] - 1) * 100, 1),
+                              "nota": f"Orçamentos Fiscal e da Seguridade de {ano + 1} (proposta) contra a dotação inicial de {din['ano']} declarada no RREO."}
+            proposta = {
+                "proposicao": loa["proposicao"], "ementa_ano": ano + 1, "situacao": _mov(loa), "url_texto": loa["url_texto"],
+                "url_tramitacao": loa["url_tramitacao"], "apresentada_em": loa["apresentada_em"],
+                "resumo": r, "comparacao": comparacao,
+                "leitura_pdf": "extraida" if r else "indisponivel",
+                "aviso": "Números lidos do texto do projeto de lei e da Mensagem Presidencial (documento do Executivo). "
+                         "São a proposta: o Congresso pode alterá-la.",
+            }
+        base["proposta"] = proposta
+    else:
+        din = _dotacao_inicial(ente)
+        ref = din["ano"] if din else ano
+        base["linha_do_tempo"] = [
+            _no("PPA", "Plano Plurianual", "—", "sem_fonte", "Consulte o portal de transparência do ente."),
+            _no("LDO", f"LDO {ref + 1}", str(ref + 1), "sem_fonte", "Consulte o portal de transparência do ente."),
+            _no("LOA", f"LOA {ref}", str(ref), "em_execucao" if din else "sem_fonte",
+                f"A LOA fixou {economia_brl(din['despesa_autorizada'])} de despesa (dotação inicial no RREO)." if din and din["despesa_autorizada"] else None),
+        ]
+        base["momento"] = (f"O orçamento de {ref} está em execução. O projeto de {ref + 1} é votado pela "
+                           f"{'Assembleia Legislativa' if esfera == 'estado' else 'Câmara Municipal'}; não há fonte aberta nacional para acompanhá-lo.")
+        base["orcamento_local"] = din
     return base
+
+
+def economia_brl(v: float) -> str:
+    a = abs(v)
+    if a >= 1e12:
+        return f"R$ {v / 1e12:,.2f} tri".replace(",", "X").replace(".", ",").replace("X", ".")
+    if a >= 1e9:
+        return f"R$ {v / 1e9:,.1f} bi".replace(",", "X").replace(".", ",").replace("X", ".")
+    return f"R$ {v / 1e6:,.1f} mi".replace(",", "X").replace(".", ",").replace("X", ".")
 
 
 # --------------------------------------------------------------------------- #
