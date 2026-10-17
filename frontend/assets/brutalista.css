@@ -245,7 +245,7 @@ select[class], input[class][type="text"], input[class][type="search"], input[cla
     border: 0 !important; border-bottom: 2px solid var(--line) !important; padding-top: .55rem; padding-bottom: .45rem;
 }
 /* botões, chips e etiquetas-link: contorno completo, como etiqueta */
-button[class], label[class*="rounded"], a[class*="rounded-xl"], a[class*="rounded-lg"], summary[class] { border: 1px solid var(--line) !important; background: transparent !important; }
+button[class], label[class*="rounded"], a[class*="rounded-xl"], a[class*="rounded-lg"] { border: 1px solid var(--line) !important; background: transparent !important; }
 button[class*="bg-brand-600"], button[class*="bg-brand-700"] { border-color: var(--vermelho) !important; background: var(--vermelho) !important; }
 button[data-membros], button[data-limpar], button[data-pol], button[data-fechar-pol], button[data-fechar-membros], button[data-acao] { border: 0 !important; background: transparent !important; }
 /* linhas de filtro: mais ar entre os controles */
@@ -400,7 +400,7 @@ a.chip-link:hover { background: var(--ativo); color: var(--ativo-fg); }
 @media (min-width: 860px) { .cartazes { grid-template-columns: repeat(3, 1fr); } }
 .cartaz { padding: 1.3rem 1.3rem 1.4rem; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
 .cartaz-rotulo { font: 800 .68rem/1.3 var(--fonte-texto); letter-spacing: .14em; text-transform: uppercase; }
-.cartaz-num { font-family: var(--fonte-titulo); font-size: clamp(2.4rem, 4.4vw, 3.7rem); overflow-wrap: anywhere; line-height: 1; margin: .5rem 0 .35rem; }
+.cartaz-num { font-family: var(--fonte-titulo); font-size: clamp(2rem, 3.4vw, 3.1rem); overflow-wrap: anywhere; line-height: 1; margin: .5rem 0 .35rem; }
 .cartaz-sub { font-size: .88rem; line-height: 1.4; font-weight: 600; }
 .cartaz-nota { font-size: .78rem; line-height: 1.45; color: var(--muted); margin-top: .5rem; }
 .cartaz-alerta { background: var(--vermelho); color: #fff; }
@@ -435,3 +435,17 @@ details.sanfona ul li a b { display: block; }
 details.sanfona ul li a span { display: block; font-size: .82rem; color: var(--muted); }
 details.sanfona > summary::before { content: none; }
 .es-col .grid { grid-template-columns: 1fr !important; }
+
+/* ---------- menos ruído: sem marcas "+", sem caixas dentro de caixas ---------- */
+[class*="rounded-2xl"]::after, [class*="rounded-2xl"]::before { content: none !important; }
+summary { border: 0 !important; }
+details [class*="rounded-2xl"] { border-top: 1px solid var(--line) !important; padding-top: .8rem; }
+/* o "?" do glossário é uma nota de rodapé, não um botão */
+a[href^="glossario.html#"][class*="rounded-full"] {
+    display: inline !important; width: auto !important; height: auto !important; border: 0 !important; background: none !important;
+    color: var(--vermelho) !important; font: 800 .7rem/1 var(--fonte-texto) !important; vertical-align: super; margin-left: .15rem; text-decoration: none;
+}
+a[href^="glossario.html#"][class*="rounded-full"]:hover { text-decoration: underline; }
+/* "Como foi calculado" e afins: texto sublinhado, sem caixa */
+details:not(.sanfona):not(.matriz-servico) > summary { text-decoration: underline; text-underline-offset: 3px; padding: .2rem 0; }
+details:not(.sanfona):not(.matriz-servico) { border: 0 !important; }
