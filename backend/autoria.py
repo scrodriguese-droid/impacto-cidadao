@@ -69,6 +69,66 @@ def _lider(d: dict, projetos: list[dict], aprovados: bool) -> dict | None:
             "quantidade": topo, "empatados": len(donos) - 1}
 
 
+def _parada(d: dict, p: dict) -> dict:
+    """Em que ponto da tramitação o projeto está: virou lei, arquivado, no Senado ou parado em um órgão."""
+    sit = (p.get("situacao") or "").lower()
+    sigla = p.get("orgao") or ""
+    nome = d.get("orgaos", {}).get(sigla, sigla)
+    if p["aprovado"]:
+        return {"etapa": "lei", "onde": "Virou lei", "sigla": ""}
+    if "arquiv" in sit:
+        return {"etapa": "arquivada", "onde": "Arquivada", "sigla": ""}
+    if "senado" in sit:
+        return {"etapa": "senado", "onde": "Aprovada na Câmara, segue no Senado", "sigla": ""}
+    etapa = "plenario" if sigla == "PLEN" else "comissao" if nome.lower().startswith("comiss") else "mesa" if "mesa" in nome.lower() else "outro"
+    return {"etapa": etapa, "onde": nome or "Sem órgão informado pela Câmara (em geral, aguardando despacho)", "sigla": sigla}
+
+
+def _divisao_autores(d: dict, proj: list[dict]) -> dict:
+    """Quem assina: deputados (ranking), partidos e tipos de autor (Executivo, Senado, comissões…)."""
+    por_dep: dict[int, list[int]] = {}
+    por_partido: dict[str, list] = {}
+    tipos: Counter[str] = Counter()
+    for p in proj:
+        deps = set(p["autores"])
+        if deps:
+            tipos["Deputados(as)"] += 1
+        for tp in {(o["tipo"] or "Outros") for o in p.get("outros") or []}:
+            tipos[tp] += 1
+        if not deps and not p.get("outros"):
+            tipos["Autor não informado"] += 1
+        for a in deps:
+            c = por_dep.setdefault(a, [0, 0])
+            c[0] += 1
+            c[1] += p["aprovado"]
+        for sg in {d["politicos"][a]["partido"] or "Sem partido" for a in deps}:
+            c = por_partido.setdefault(sg, [0, 0, set()])
+            c[0] += 1
+            c[1] += p["aprovado"]
+        for a in deps:
+            por_partido[d["politicos"][a]["partido"] or "Sem partido"][2].add(a)
+    deputados = sorted(por_dep.items(), key=lambda kv: (-kv[1][0], d["politicos"][kv[0]]["nome"].casefold()))[:15]
+    partidos = sorted(por_partido.items(), key=lambda kv: (-kv[1][0], kv[0]))[:15]
+    return {
+        "deputados": [{**{k: d["politicos"][i][k] for k in ("id", "nome", "partido", "uf")}, "criados": c[0], "aprovados": c[1]}
+                      for i, c in deputados],
+        "partidos": [{"sigla": sg, "criados": c[0], "aprovados": c[1], "deputados": len(c[2])} for sg, c in partidos],
+        "tipos": [{"tipo": t, "projetos": n} for t, n in tipos.most_common() if n],
+    }
+
+
+def _paradas(d: dict, proj: list[dict]) -> list[dict]:
+    """Onde estão os projetos que NÃO viraram lei (órgão atual), do mais cheio para o mais vazio."""
+    cont: Counter[tuple[str, str, str]] = Counter()
+    for p in proj:
+        if p["aprovado"]:
+            continue
+        x = _parada(d, p)
+        cont[(x["etapa"], x["sigla"], x["onde"])] += 1
+    return [{"etapa": e, "sigla": sg, "onde": on, "projetos": n}
+            for (e, sg, on), n in cont.most_common()]
+
+
 def _aviso(d: dict) -> dict:
     return {"gerado_em": d["gerado_em"],
             "fonte": {"nome": "Câmara dos Deputados — arquivos de dados abertos (proposições, autores e temas)",
@@ -106,6 +166,7 @@ def resumo(desde=None, ate=None) -> dict:
     return {"periodo": {"desde": desde, "ate": ate, "coletado_de": f"{d['anos'][0]}-01-01", "coletado_ate": f"{d['anos'][1]}-12-31"},
             "total": {"criados": len(proj), "aprovados": sum(1 for p in proj if p["aprovado"])},
             "temas": temas, "campos": por_campo,
+            "autores": _divisao_autores(d, proj), "paradas": _paradas(d, proj),
             "geral": {"mais_criados": _lider(d, proj, False), "mais_aprovados": _lider(d, proj, True)},
             **_aviso(d)}
 
@@ -147,9 +208,11 @@ def projetos_do_politico(pid: int, desde=None, ate=None, tema: int | None = None
         "criados": len(meus), "aprovados": sum(1 for p in meus if p["aprovado"]),
         "temas": sorted(({"cod": t, "nome": d["temas"].get(t, str(t)), "criados": n} for t, n in por_tema.items()),
                         key=lambda x: -x["criados"]),
-        "total_filtrado": len(base), "limite": LIMITE_PROJETOS,
+        "total_filtrado": len(base), "limite": LIMITE_PROJETOS, "paradas": _paradas(d, meus),
         "projetos": [{"ident": p["ident"], "data": p["data"], "ementa": p["ementa"], "aprovado": p["aprovado"],
-                      "situacao": p["situacao"], "url": p["url"],
+                      "situacao": p["situacao"], "url": p["url"], "ultima_movimentacao": p.get("mov") or None,
+                      "andamento": p.get("andamento") or None, "parada": _parada(d, p),
+                      "autores": [d["politicos"][a]["nome"] for a in p["autores"]] + [o["nome"] for o in p.get("outros") or []],
                       "temas": [d["temas"].get(t, str(t)) for t in p["temas"]]} for p in base[:LIMITE_PROJETOS]],
         **_aviso(d),
     }

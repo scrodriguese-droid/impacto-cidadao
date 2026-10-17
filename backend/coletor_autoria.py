@@ -63,6 +63,24 @@ def _linhas(arq: Path):
         yield from csv.DictReader(f, delimiter=";")
 
 
+def _orgaos() -> dict[str, str]:
+    """Sigla → nome dos órgãos da Câmara (comissões, Plenário, Mesa…), para dizer ONDE o projeto parou."""
+    nomes: dict[str, str] = {}
+    pagina = 1
+    while pagina <= 40:
+        r = httpx.get("https://dadosabertos.camara.leg.br/api/v2/orgaos", params={"itens": 100, "pagina": pagina},
+                      headers={"User-Agent": cfg.user_agent, "Accept": "application/json"}, timeout=60)
+        r.raise_for_status()
+        j = r.json()
+        for o in j.get("dados") or []:
+            if o.get("sigla") and o["sigla"] not in nomes:
+                nomes[o["sigla"]] = o.get("nome") or o["sigla"]
+        if not any(l.get("rel") == "next" for l in j.get("links", [])):
+            break
+        pagina += 1
+    return nomes
+
+
 def coletar(desde: int, ate: int) -> dict:
     projetos: list[dict] = []          # índice = posição; os políticos apontam para ela
     politicos: dict[str, dict] = {}
@@ -93,13 +111,22 @@ def coletar(desde: int, ate: int) -> dict:
                     "ementa": (r.get("ementa") or "").strip()[:260], "temas": [],
                     "aprovado": r.get("ultimoStatus_idSituacao") == SITUACAO_NORMA_JURIDICA,
                     "situacao": (r.get("ultimoStatus_descricaoSituacao") or "").strip(),
+                    "orgao": (r.get("ultimoStatus_siglaOrgao") or "").strip(),
+                    "andamento": (r.get("ultimoStatus_descricaoTramitacao") or "").strip(),
+                    "mov": (r.get("ultimoStatus_dataHora") or "")[:10],
                     "url": f"https://www.camara.leg.br/proposicoesWeb/fichadetramitacao?idProposicao={r['id']}",
-                    "autores": [],
+                    "autores": [], "outros": [],
                 })
             # 2) autores (só deputados que assinam como proponentes)
             for r in _linhas(arq_a):
                 i = por_id.get(r["idProposicao"])
-                if i is None or r["codTipoAutor"] != COD_AUTOR_DEPUTADO or r["proponente"] != "1" or not r["idDeputadoAutor"]:
+                if i is None or r["proponente"] != "1":
+                    continue
+                if r["codTipoAutor"] != COD_AUTOR_DEPUTADO or not r["idDeputadoAutor"]:
+                    # Senado, comissões, Executivo etc.: não entram no ranking de deputados, mas a autoria é mostrada
+                    nome = (r["nomeAutor"] or "").strip()
+                    if nome and len(projetos[i]["outros"]) < 4:
+                        projetos[i]["outros"].append({"nome": nome, "tipo": r["tipoAutor"]})
                     continue
                 pid = r["idDeputadoAutor"]
                 pol = politicos.setdefault(pid, {"id": int(pid), "nome": r["nomeAutor"], "partido": "", "uf": ""})
@@ -116,6 +143,7 @@ def coletar(desde: int, ate: int) -> dict:
                     projetos[i]["temas"].append(int(r["codTema"]))
             log.info("%s: %s projetos acumulados", ano, len(projetos))
     return {
+        "orgaos": _orgaos(),
         "gerado_em": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "anos": [desde, ate], "temas": {int(k): v for k, v in temas.items()},
         "politicos": {int(k): v for k, v in politicos.items()},

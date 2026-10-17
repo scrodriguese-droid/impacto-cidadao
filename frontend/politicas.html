@@ -133,6 +133,21 @@
         <div class="mt-3" style="height:420px"><canvas id="graficoTemas" role="img" aria-label="Divisão por tema dos projetos criados e dos aprovados"></canvas></div>
         <p class="text-[11px] text-slate-500 mt-1">Cada barra é a fatia do tema entre todos os temas atribuídos: em azul, os projetos que viraram lei; em cinza, todos os criados. Um projeto pode ter mais de um tema.</p>
         <div class="mt-5 border-t border-slate-200 dark:border-slate-700 pt-4">
+            <h3 class="font-bold">Divisão por autor</h3>
+            <p class="text-xs text-slate-500">Quem assina os projetos. Azul: viraram lei; cinza: todos os criados.</p>
+            <div id="segAutor" class="mt-2 inline-flex flex-wrap gap-1 p-1 rounded-2xl bg-slate-200/70 dark:bg-slate-800" role="radiogroup" aria-label="Agrupar autores por">
+                <button type="button" role="radio" data-autor="deputados" class="px-3 py-1.5 rounded-xl text-sm font-semibold">Deputados(as)</button>
+                <button type="button" role="radio" data-autor="partidos" class="px-3 py-1.5 rounded-xl text-sm font-semibold">Partidos</button>
+                <button type="button" role="radio" data-autor="tipos" class="px-3 py-1.5 rounded-xl text-sm font-semibold">Tipo de autor</button></div>
+            <div class="mt-3" id="boxAutores" style="height:440px"><canvas id="graficoAutores" role="img" aria-label="Divisão dos projetos por autor"></canvas></div>
+            <p id="notaAutor" class="text-[11px] text-slate-500 mt-1"></p>
+        </div>
+        <div class="mt-5 border-t border-slate-200 dark:border-slate-700 pt-4">
+            <h3 class="font-bold">Onde os projetos que não viraram lei pararam</h3>
+            <p class="text-xs text-slate-500">Órgão em que cada projeto está agora (comissões, Plenário, Mesa), além dos arquivados e dos que já passaram pela Câmara e esperam o Senado. Passe o mouse para ver o nome completo.</p>
+            <div class="mt-3" style="height:440px"><canvas id="graficoParadas" role="img" aria-label="Onde os projetos não aprovados estão parados"></canvas></div>
+        </div>
+        <div class="mt-5 border-t border-slate-200 dark:border-slate-700 pt-4">
             <label for="buscaPolitico" class="text-sm font-semibold">Ver os projetos de um(a) deputado(a)</label>
             <input id="buscaPolitico" type="search" autocomplete="off" maxlength="60" placeholder="Nome ou sigla do estado (ex.: SP)"
                    class="mt-2 w-full sm:w-80 block px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
@@ -627,6 +642,54 @@ $('lista').addEventListener('click', async (ev) => {
  * ====================================================================== */
 let reqAutoria = 0, graficoTemas = null;
 const POL = { id: null, tema: '' };
+const AUTOR = { modo: 'deputados', grafico: null }, graficoParadasRef = { g: null };
+function corEixo() { return document.documentElement.classList.contains('dark') ? '#cbd5e1' : '#475569'; }
+function desenharAutores() {
+    const a = P.autoria && P.autoria.autores;
+    if (!a) return;
+    const cor = corEixo();
+    const lin = AUTOR.modo === 'deputados' ? a.deputados.map((x) => ({ r: `${x.nome} (${x.partido}-${x.uf})`, c: x.criados, a: x.aprovados }))
+        : AUTOR.modo === 'partidos' ? a.partidos.map((x) => ({ r: `${x.sigla} (${nf(x.deputados)} dep.)`, c: x.criados, a: x.aprovados }))
+        : a.tipos.map((x) => ({ r: x.tipo, c: x.projetos, a: null }));
+    document.querySelectorAll('#segAutor [data-autor]').forEach((b) => {
+        const on = b.dataset.autor === AUTOR.modo;
+        b.setAttribute('aria-checked', String(on));
+        b.className = 'px-3 py-1.5 rounded-xl text-sm font-semibold ' + (on ? 'bg-white dark:bg-slate-700 shadow text-brand-700 dark:text-brand-300' : 'text-slate-500');
+    });
+    $('notaAutor').textContent = AUTOR.modo === 'deputados' ? 'Os 15 deputados(as) com mais projetos criados no período. Projetos com vários autores contam para cada um.'
+        : AUTOR.modo === 'partidos' ? 'Os 15 partidos com mais projetos assinados no período, pelo partido que a Câmara informa para o(a) autor(a). Quando há autores de partidos diferentes, o projeto conta em cada um.'
+        : 'Quantos projetos têm cada tipo de autor. Um projeto com autores de tipos diferentes conta em cada tipo.';
+    AUTOR.grafico?.destroy();
+    const datasets = [{ label: 'Todos os criados', data: lin.map((x) => x.c), backgroundColor: '#94a3b8' }];
+    if (lin[0] && lin[0].a !== null) datasets.unshift({ label: 'Aprovados (viraram lei)', data: lin.map((x) => x.a), backgroundColor: '#0284c7' });
+    AUTOR.grafico = new Chart($('graficoAutores'), {
+        type: 'bar', data: { labels: lin.map((x) => x.r), datasets },
+        options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, animation: false,
+            plugins: { legend: { labels: { color: cor } }, tooltip: { callbacks: { label: (x) => `${x.dataset.label}: ${nf(x.parsed.x)} projetos` } } },
+            scales: { x: { beginAtZero: true, ticks: { color: cor } }, y: { ticks: { color: cor, autoSkip: false } } } },
+    });
+}
+function desenharParadas() {
+    const a = P.autoria;
+    if (!a) return;
+    const cor = corEixo();
+    const itens = a.paradas.slice(0, 15);
+    const rot = (x) => (x.sigla ? x.sigla : x.onde.length > 28 ? x.onde.slice(0, 27) + '…' : x.onde);
+    const CORES = { comissao: '#0284c7', plenario: '#7c3aed', mesa: '#64748b', arquivada: '#be123c', senado: '#059669', outro: '#94a3b8' };
+    graficoParadasRef.g?.destroy();
+    graficoParadasRef.g = new Chart($('graficoParadas'), {
+        type: 'bar',
+        data: { labels: itens.map(rot), datasets: [{ data: itens.map((x) => x.projetos), backgroundColor: itens.map((x) => CORES[x.etapa] || '#94a3b8') }] },
+        options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, animation: false,
+            plugins: { legend: { display: false }, tooltip: { callbacks: { title: (x) => itens[x[0].dataIndex].onde, label: (x) => `${nf(x.parsed.x)} projetos parados aqui` } } },
+            scales: { x: { beginAtZero: true, ticks: { color: cor }, title: { display: true, text: 'projetos que não viraram lei', color: cor } }, y: { ticks: { color: cor, autoSkip: false } } } },
+    });
+}
+document.addEventListener('click', (ev) => {
+    const b = ev.target.closest && ev.target.closest('[data-autor]');
+    if (b) { AUTOR.modo = b.dataset.autor; desenharAutores(); }
+});
+
 const nf = (n) => Number(n).toLocaleString('pt-BR');
 function paramsPeriodo() {
     const iv = intervalo(), q = new URLSearchParams();
@@ -684,7 +747,7 @@ async function carregarAutoria() {
             ${a.geral.mais_criados ? `<br><span class="text-xs text-slate-600 dark:text-slate-400">Mais projetos criados: ${lider(a.geral.mais_criados, '', 'projetos')} · mais aprovados: ${lider(a.geral.mais_aprovados, 'nenhum no período', 'aprovados')}</span>` : ''}`;
         $('autoriaNotas').innerHTML = a.notas.map((n) => `<li>${esc(n)}</li>`).join('') +
             `<li>Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(a.fonte.url))}">${esc(a.fonte.nome)}</a>. Dados coletados em ${esc(fmtDataHora(a.gerado_em))}.</li>`;
-        desenharGraficoTemas(a);
+        desenharGraficoTemas(a); desenharAutores(); desenharParadas();
         preencherIndicadores();
         if (POL.id) abrirPolitico(POL.id, POL.tema);
         else if ($('buscaPolitico').value.trim().length >= 2) buscarPolitico();
@@ -722,6 +785,7 @@ async function abrirPolitico(id, tema = '') {
             <label class="block text-xs font-semibold mt-3">Filtrar por tema
                 <select id="temaPolitico" class="mt-1 block bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-sm font-normal">
                     <option value="">Todos os temas</option>${r.temas.map((t) => `<option value="${t.cod}" ${String(t.cod) === String(tema) ? 'selected' : ''}>${esc(t.nome)} (${nf(t.criados)})</option>`).join('')}</select></label>
+            ${r.paradas.length ? `<p class="text-xs text-slate-600 dark:text-slate-400 mt-3"><b>Onde estão os que não viraram lei:</b> ${r.paradas.slice(0, 5).map((x) => `${esc(x.sigla || x.onde)} (${nf(x.projetos)})`).join(' · ')}</p>` : ''}
             ${r.total_filtrado > r.limite ? `<p class="text-xs text-slate-500 mt-2">Mostrando os ${nf(r.limite)} mais recentes de ${nf(r.total_filtrado)}.</p>` : ''}
             <ul class="mt-3 divide-y divide-slate-100 dark:divide-slate-700 max-h-[28rem] overflow-auto">${r.projetos.length ? r.projetos.map((x) => `<li class="py-2.5 text-sm">
                 <div class="flex flex-wrap items-center gap-2"><a class="font-semibold underline" target="_blank" rel="noopener" href="${esc(urlSegura(x.url))}">${esc(x.ident)}</a>
@@ -729,6 +793,8 @@ async function abrirPolitico(id, tema = '') {
                     ${x.aprovado ? '<span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">Virou lei</span>'
                         : `<span class="text-[11px] text-slate-500">${esc(x.situacao || 'Em tramitação')}</span>`}</div>
                 <p class="text-xs text-slate-600 dark:text-slate-400 mt-0.5">${esc(x.ementa)}</p>
+                <p class="text-[11px] text-slate-500 mt-0.5"><b>Autoria:</b> ${esc(x.autores.join(', ') || 'não informada')}</p>
+                ${x.aprovado ? '' : `<p class="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5"><i class="fa-solid fa-location-dot mr-1 text-slate-400" aria-hidden="true"></i><b>Parou em:</b> ${esc(x.parada.onde)}${x.situacao ? ` · ${esc(x.situacao)}` : ''}${x.ultima_movimentacao ? ` · última movimentação em ${esc(fmtData(x.ultima_movimentacao))}` : ''}</p>`}
                 ${x.temas.length ? `<p class="text-[11px] text-slate-400 mt-0.5">${esc(x.temas.join(' · '))}</p>` : ''}</li>`).join('') : '<li class="py-3 text-sm text-slate-500">Nenhum projeto neste tema e período.</li>'}</ul></div>`;
         $('projPolitico').scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     } catch (e) { $('projPolitico').innerHTML = mensagemErro(e); }
@@ -740,7 +806,7 @@ document.addEventListener('click', (ev) => {
     if (ev.target.closest && ev.target.closest('[data-fechar-pol]')) { POL.id = null; $('projPolitico').innerHTML = ''; }
 });
 document.addEventListener('change', (ev) => { if (ev.target.id === 'temaPolitico') abrirPolitico(POL.id, ev.target.value); });
-document.getElementById('btnTema')?.addEventListener('click', () => setTimeout(() => P.autoria && desenharGraficoTemas(P.autoria), 50));
+document.getElementById('btnTema')?.addEventListener('click', () => setTimeout(() => { if (P.autoria) { desenharGraficoTemas(P.autoria); desenharAutores(); desenharParadas(); } }, 50));
 
 /* ====================================================================== *
  *  Inicialização
