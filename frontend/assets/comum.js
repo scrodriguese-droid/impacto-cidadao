@@ -45,23 +45,26 @@ const NAVEGACAO = [
     { id: 'inicio', paginas: ['inicio'], href: 'index.html', icone: 'fa-house', rotulo: 'Início' },
     { id: 'politicas', paginas: ['politicas'], href: 'politicas.html', icone: 'fa-landmark', rotulo: 'Leis e projetos' },
     { id: 'planos', paginas: ['planos'], href: 'planos.html', icone: 'fa-flag', rotulo: 'Eleições: planos de governo' },
-    { id: 'imposto', paginas: ['orcamento', 'tributos', 'simuladores'], href: 'orcamento.html', icone: 'fa-receipt', rotulo: 'Seu imposto e orçamento' },
-    { id: 'saude', paginas: ['economia', 'macro', 'financiamento', 'ciclo'], href: 'economia.html', icone: 'fa-chart-pie', rotulo: 'Saúde fiscal e dívida' },
+    { id: 'orcamento', paginas: ['economia', 'fiscal', 'orcamento', 'tributos', 'simuladores', 'macro', 'financiamento', 'ciclo'], href: 'economia.html', icone: 'fa-coins', rotulo: 'Orçamento e contas públicas' },
     { id: 'bancadas', paginas: ['bancadas'], href: 'bancadas.html', icone: 'fa-people-group', rotulo: 'Bancadas' },
 ];
 const NAV_GLOSSARIO = { id: 'glossario', paginas: ['glossario'], href: 'glossario.html', icone: 'fa-book', rotulo: 'Glossário' };
 // Subnavegação: cada área do menu tem telas focadas, escolhidas por abas no topo da página.
 const SUBNAVEGACAO = {
-    imposto: [
-        { id: 'orcamento', href: 'orcamento.html', rotulo: 'Para onde vai o seu imposto' },
-        { id: 'tributos', href: 'tributos.html', rotulo: 'Inventário de tributos' },
-        { id: 'simuladores', href: 'simuladores.html', rotulo: 'Simuladores de IR e MEI' },
+    orcamento: [
+        { id: 'economia', href: 'economia.html', rotulo: 'Entrada e saída' },
+        { id: 'orcamento', href: 'orcamento.html', rotulo: 'Leis do orçamento' },
+        { id: 'fiscal', href: 'economia.html?aba=fiscal', rotulo: 'Saúde fiscal e dívida' },
     ],
-    saude: [
-        { id: 'economia', href: 'economia.html', rotulo: 'Contas públicas' },
-        { id: 'macro', href: 'macro.html', rotulo: 'Indicadores' },
-        { id: 'financiamento', href: 'financiamento.html', rotulo: 'Dívida e títulos' },
-        { id: 'ciclo', href: 'ciclo.html', rotulo: 'Ciclo econômico' },
+};
+// Telas de aprofundamento da mesma área: ficam numa linha secundária e acendem a aba a que pertencem.
+const APROFUNDAR = {
+    orcamento: [
+        { id: 'tributos', pai: 'economia', href: 'tributos.html', rotulo: 'Inventário de tributos' },
+        { id: 'simuladores', pai: 'economia', href: 'simuladores.html', rotulo: 'Simuladores de IR e MEI' },
+        { id: 'macro', pai: 'fiscal', href: 'macro.html', rotulo: 'Indicadores' },
+        { id: 'financiamento', pai: 'fiscal', href: 'financiamento.html', rotulo: 'Dívida e títulos' },
+        { id: 'ciclo', pai: 'fiscal', href: 'ciclo.html', rotulo: 'Ciclo econômico' },
     ],
 };
 
@@ -133,9 +136,16 @@ function renderLayout(paginaAtual) {
         const abas = grupo && SUBNAVEGACAO[grupo.id];
         const principal = document.querySelector('main');
         if (abas && principal) {
-            principal.insertAdjacentHTML('afterbegin', `<nav aria-label="Telas desta área" class="mb-5 flex flex-wrap gap-1 p-1 rounded-2xl bg-slate-200/70 dark:bg-slate-800 w-fit max-w-full">
-                ${abas.map((t) => `<a href="${t.href}" ${t.id === paginaAtual ? 'aria-current="page"' : ''}
-                    class="px-3.5 py-2 rounded-xl text-sm font-semibold ${t.id === paginaAtual ? 'bg-white dark:bg-slate-700 shadow text-brand-700 dark:text-brand-300' : 'text-slate-600 dark:text-slate-300 hover:bg-white/60 dark:hover:bg-slate-700/60'}">${t.rotulo}</a>`).join('')}</nav>`);
+            const extra = APROFUNDAR[grupo.id] || [];
+            const aqui = extra.find((t) => t.id === paginaAtual);
+            const aba = (t) => { const on = t.id === paginaAtual || (aqui && aqui.pai === t.id);
+                return `<a href="${t.href}" ${t.id === paginaAtual ? 'aria-current="page"' : ''}
+                    class="px-3.5 py-2 rounded-xl text-sm font-semibold ${on ? 'bg-white dark:bg-slate-700 shadow text-brand-700 dark:text-brand-300' : 'text-slate-600 dark:text-slate-300 hover:bg-white/60 dark:hover:bg-slate-700/60'}">${t.rotulo}</a>`; };
+            const chips = extra.map((t) => `<a href="${t.href}" ${t.id === paginaAtual ? 'aria-current="page"' : ''}
+                    class="px-2.5 py-1 rounded-full border text-xs font-medium ${t.id === paginaAtual ? 'border-brand-600 text-brand-700 dark:text-brand-300 bg-white dark:bg-slate-800' : 'border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-800'}">${t.rotulo}</a>`).join('');
+            principal.insertAdjacentHTML('afterbegin', `<nav aria-label="Telas desta área" class="mb-5">
+                <div class="flex flex-wrap gap-1 p-1 rounded-2xl bg-slate-200/70 dark:bg-slate-800 w-fit max-w-full">${abas.map(aba).join('')}</div>
+                ${chips ? `<div class="mt-2 flex flex-wrap items-center gap-1.5"><span class="text-xs text-slate-500 mr-1">Aprofundar:</span>${chips}</div>` : ''}</nav>`);
         }
     }
     const rod = $('rodape');

@@ -26,3 +26,6 @@ dados/equipamentos/
 Thumbs.db
 .idea/
 .vscode/
+
+# Dados de autoria gerados pelo coletor (grandes, reproduzíveis)
+dados/autoria/

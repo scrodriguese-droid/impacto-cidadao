@@ -30,6 +30,7 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field, field_validator
 
+import autoria
 import bancadas
 import db
 import ciclo
@@ -518,6 +519,50 @@ def bancadas_partidarias() -> dict:
     except Exception as exc:  # noqa: BLE001
         log.warning("Composição partidária indisponível: %s", exc)
         raise HTTPException(status_code=503, detail="As fontes oficiais da Câmara e do Senado estão indisponíveis no momento.") from exc
+
+
+@router.get("/bancadas/tematicas", tags=["bancadas"])
+def bancadas_tematicas() -> dict:
+    try:
+        return bancadas.frentes_tematicas()
+    except Exception as exc:  # noqa: BLE001
+        log.warning("Frentes parlamentares indisponíveis: %s", exc)
+        raise HTTPException(status_code=503, detail="A fonte oficial das frentes parlamentares (Câmara) está indisponível no momento.") from exc
+
+
+# --------------------------------------------------------------------------- #
+# Autoria dos projetos da Câmara (líderes por tema, projetos por político, divisão por tema)
+# --------------------------------------------------------------------------- #
+def _autoria(fn, *args):  # noqa: ANN001
+    try:
+        return fn(*args)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail="Deputado(a) não encontrado(a) nos dados de autoria.") from exc
+    except Exception as exc:  # noqa: BLE001
+        log.warning("Autoria indisponível: %s", exc)
+        raise HTTPException(status_code=503, detail="Os dados de autoria dos projetos ainda não estão disponíveis.") from exc
+
+
+@router.get("/autoria/resumo", tags=["autoria"])
+def autoria_resumo(desde: Annotated[date | None, Query(description="AAAA-MM-DD")] = None,
+                   ate: Annotated[date | None, Query(description="AAAA-MM-DD")] = None) -> dict:
+    return _autoria(autoria.resumo, desde, ate)
+
+
+@router.get("/autoria/politicos", tags=["autoria"])
+def autoria_politicos(q: Annotated[str, Query(min_length=2, max_length=60)],
+                      desde: Annotated[date | None, Query(description="AAAA-MM-DD")] = None,
+                      ate: Annotated[date | None, Query(description="AAAA-MM-DD")] = None) -> dict:
+    return _autoria(autoria.buscar_politicos, q, desde, ate)
+
+
+@router.get("/autoria/politicos/{politico_id}", tags=["autoria"])
+def autoria_politico(politico_id: int, desde: Annotated[date | None, Query(description="AAAA-MM-DD")] = None,
+                     ate: Annotated[date | None, Query(description="AAAA-MM-DD")] = None,
+                     tema: Annotated[int | None, Query(ge=1, le=999)] = None) -> dict:
+    return _autoria(autoria.projetos_do_politico, politico_id, desde, ate, tema)
 
 
 # --------------------------------------------------------------------------- #

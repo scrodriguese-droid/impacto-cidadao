@@ -1,0 +1,155 @@
+"""Autoria dos projetos de lei da Câmara: líderes por tema, projetos por político e divisão por tema.
+
+Lê o resultado do coletor (`coletor_autoria.py` → dados/autoria/autoria_camara.json); não consulta fonte
+nenhuma em tempo de requisição. Só contagem oficial, sem ranking de "melhores" e sem juízo político:
+quantidade de projetos não mede qualidade, e o texto da tela diz isso.
+"""
+from __future__ import annotations
+
+import json
+import threading
+from collections import Counter
+from typing import Any
+
+from config import RAIZ
+from fontes import ErroFonte
+
+ARQUIVO = RAIZ / "dados" / "autoria" / "autoria_camara.json"
+LIMITE_PROJETOS = 300
+
+# Campos do site (temas.py) → temas oficiais da Câmara. A Câmara não tem tema "impostos"; tributos ficam
+# em "Finanças Públicas e Orçamento". Declarado aqui para a tela nunca fingir equivalência exata.
+TEMAS_DO_SITE: dict[str, list[int]] = {
+    "impostos": [70], "economia": [40], "emprego": [58], "previdencia": [52], "assistencia": [52],
+    "saude": [56], "educacao": [46], "seguranca": [57, 43], "habitacao": [41], "transporte": [61],
+    "meio_ambiente": [48], "agro": [64],
+}
+
+_trava = threading.Lock()
+_cache: dict[str, Any] = {"mtime": None, "dados": None}
+
+
+def _dados() -> dict:
+    try:
+        mt = ARQUIVO.stat().st_mtime
+    except OSError as exc:
+        raise ErroFonte("Dados de autoria ainda não coletados (rode backend/coletor_autoria.py).") from exc
+    with _trava:
+        if _cache["mtime"] != mt:
+            d = json.loads(ARQUIVO.read_text(encoding="utf-8"))
+            d["politicos"] = {int(k): v for k, v in d["politicos"].items()}
+            d["temas"] = {int(k): v for k, v in d["temas"].items()}
+            _cache.update(mtime=mt, dados=d)
+        return _cache["dados"]
+
+
+def _periodo(d: dict, desde, ate) -> tuple[str, str]:
+    """Período em datas (AAAA-MM-DD); sem limite = tudo que foi coletado. Comparação de texto ISO é válida."""
+    d0, d1 = f"{d['anos'][0]}-01-01", f"{d['anos'][1]}-12-31"
+    desde = max(d0, desde.isoformat() if desde else d0)
+    ate = min(d1, ate.isoformat() if ate else d1)
+    if desde > ate:
+        raise ValueError("A data inicial não pode ser posterior à final.")
+    return desde, ate
+
+
+def _lider(d: dict, projetos: list[dict], aprovados: bool) -> dict | None:
+    """Quem mais assina projetos (criados ou aprovados) neste conjunto; empate é declarado."""
+    cont: Counter[int] = Counter()
+    for p in projetos:
+        if aprovados and not p["aprovado"]:
+            continue
+        cont.update(set(p["autores"]))
+    if not cont:
+        return None
+    topo = max(cont.values())
+    donos = sorted((i for i, n in cont.items() if n == topo), key=lambda i: d["politicos"][i]["nome"].casefold())
+    pol = d["politicos"][donos[0]]
+    return {"id": pol["id"], "nome": pol["nome"], "partido": pol["partido"], "uf": pol["uf"],
+            "quantidade": topo, "empatados": len(donos) - 1}
+
+
+def _aviso(d: dict) -> dict:
+    return {"gerado_em": d["gerado_em"],
+            "fonte": {"nome": "Câmara dos Deputados — arquivos de dados abertos (proposições, autores e temas)",
+                      "url": "https://dadosabertos.camara.leg.br/swagger/api.html"},
+            "notas": [
+                "Projeto = PL, PLP ou PEC. O gráfico e os totais contam todos os autores; os indicadores e a busca por político contam só projetos assinados por deputados(as): Executivo, comissões e Senado ficam de fora.",
+                "Aprovado = situação atual “Transformado em Norma Jurídica” (virou lei ou emenda constitucional). Projetos aprovados só na Câmara, ainda no Senado, não contam.",
+                "Quando um projeto tem vários autores, cada um deles recebe o projeto. Apoiadores que só assinaram o projeto não contam.",
+                "Um projeto pode ter mais de um tema oficial e entra na conta de cada um.",
+                "Quantidade de projetos não mede qualidade nem importância: há quem apresente poucos e relevantes e quem apresente muitos de homenagem.",
+                "Só a Câmara: o Senado não publica um conjunto de dados equivalente.",
+            ]}
+
+
+def resumo(desde=None, ate=None) -> dict:
+    d = _dados()
+    desde, ate = _periodo(d, desde, ate)
+    proj = [p for p in d["projetos"] if desde <= p["data"] <= ate]
+    criados, aprovados = Counter(), Counter()
+    for p in proj:
+        for t in p["temas"]:
+            criados[t] += 1
+            if p["aprovado"]:
+                aprovados[t] += 1
+    temas = sorted(({"cod": t, "nome": d["temas"].get(t, str(t)), "criados": n, "aprovados": aprovados.get(t, 0)}
+                    for t, n in criados.items()), key=lambda x: -x["criados"])
+    por_campo = {}
+    for campo, cods in TEMAS_DO_SITE.items():
+        sub = [p for p in proj if set(cods) & set(p["temas"])]
+        por_campo[campo] = {
+            "temas_camara": [d["temas"].get(c, str(c)) for c in cods],
+            "criados": len(sub), "aprovados": sum(1 for p in sub if p["aprovado"]),
+            "mais_criados": _lider(d, sub, False), "mais_aprovados": _lider(d, sub, True),
+        }
+    return {"periodo": {"desde": desde, "ate": ate, "coletado_de": f"{d['anos'][0]}-01-01", "coletado_ate": f"{d['anos'][1]}-12-31"},
+            "total": {"criados": len(proj), "aprovados": sum(1 for p in proj if p["aprovado"])},
+            "temas": temas, "campos": por_campo,
+            "geral": {"mais_criados": _lider(d, proj, False), "mais_aprovados": _lider(d, proj, True)},
+            **_aviso(d)}
+
+
+def buscar_politicos(q: str, desde=None, ate=None) -> dict:
+    import unicodedata
+
+    def norm(s: str) -> str:
+        return "".join(c for c in unicodedata.normalize("NFD", s or "") if unicodedata.category(c) != "Mn").lower()
+
+    d = _dados()
+    desde, ate = _periodo(d, desde, ate)
+    nq = norm(q.strip())
+    if len(nq) < 2:
+        return {"itens": []}
+    cont_c, cont_a = Counter(), Counter()
+    for p in d["projetos"]:
+        if desde <= p["data"] <= ate:
+            for a in set(p["autores"]):
+                cont_c[a] += 1
+                cont_a[a] += p["aprovado"]
+    achados = [x for i, x in d["politicos"].items() if nq in norm(x["nome"]) or nq == norm(x["uf"])]
+    achados.sort(key=lambda x: (-cont_c.get(x["id"], 0), x["nome"].casefold()))
+    return {"itens": [{**x, "criados": cont_c.get(x["id"], 0), "aprovados": cont_a.get(x["id"], 0)} for x in achados[:20]]}
+
+
+def projetos_do_politico(pid: int, desde=None, ate=None, tema: int | None = None) -> dict:
+    d = _dados()
+    desde, ate = _periodo(d, desde, ate)
+    pol = d["politicos"].get(pid)
+    if not pol:
+        raise KeyError(pid)
+    meus = [p for p in d["projetos"] if pid in p["autores"] and desde <= p["data"] <= ate]
+    base = [p for p in meus if tema is None or tema in p["temas"]]
+    base.sort(key=lambda p: (p["data"], p["id"]), reverse=True)
+    por_tema = Counter(t for p in meus for t in p["temas"])
+    return {
+        "politico": pol, "periodo": {"desde": desde, "ate": ate},
+        "criados": len(meus), "aprovados": sum(1 for p in meus if p["aprovado"]),
+        "temas": sorted(({"cod": t, "nome": d["temas"].get(t, str(t)), "criados": n} for t, n in por_tema.items()),
+                        key=lambda x: -x["criados"]),
+        "total_filtrado": len(base), "limite": LIMITE_PROJETOS,
+        "projetos": [{"ident": p["ident"], "data": p["data"], "ementa": p["ementa"], "aprovado": p["aprovado"],
+                      "situacao": p["situacao"], "url": p["url"],
+                      "temas": [d["temas"].get(t, str(t)) for t in p["temas"]]} for p in base[:LIMITE_PROJETOS]],
+        **_aviso(d),
+    }

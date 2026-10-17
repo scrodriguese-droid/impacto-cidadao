@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Orçamento e seu imposto — ImpactoCidadão</title>
+    <title>Leis do orçamento — ImpactoCidadão</title>
     <meta name="description" content="Para onde vai o seu imposto, em ilustração proporcional, e o ciclo orçamentário (PPA, LDO e LOA) com links para os documentos oficiais.">
 
     <script src="https://cdn.tailwindcss.com"></script>
@@ -24,8 +24,8 @@
 <div id="cabecalho"></div>
 
 <main id="conteudo" class="max-w-4xl mx-auto px-4 sm:px-6 pt-6 pb-10 flex-grow w-full">
-    <h1 class="text-2xl font-extrabold tracking-tight">Orçamento e o seu imposto</h1>
-    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Para onde vai o dinheiro que você paga e como o orçamento nasce: PPA, LDO e LOA. Fontes oficiais, sem estimativas nossas.</p>
+    <h1 class="text-2xl font-extrabold tracking-tight">Leis do orçamento: PPA, LDO e LOA</h1>
+    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Em que fase do planejamento o governo está e o que isso muda na prática. Fontes oficiais, sem estimativas nossas.</p>
 
     <div class="sticky top-16 z-30 -mx-4 sm:mx-0 px-4 sm:px-0 py-2 mt-3 bg-slate-50/90 dark:bg-slate-900/90 backdrop-blur">
         <div class="flex flex-wrap items-center gap-x-2 gap-y-2 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 shadow-sm text-sm">
@@ -47,38 +47,8 @@
 
     <div id="segEsfera" class="mt-3 inline-flex flex-wrap gap-1 p-1 rounded-2xl bg-slate-200/70 dark:bg-slate-800" role="radiogroup" aria-label="Esfera de governo"></div>
 
-    <!-- ========================= A. CALCULADORA ========================= -->
-    <section class="mt-6" aria-labelledby="tCalc">
-        <h2 id="tCalc" class="text-xl font-bold flex items-center"><i class="fa-solid fa-calculator text-teal-500 mr-2.5" aria-hidden="true"></i>Para onde vai o meu imposto</h2>
-        <div class="mt-2 rounded-xl border border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 text-xs p-3.5 flex items-start gap-2.5" role="note">
-            <i class="fa-solid fa-triangle-exclamation mt-0.5" aria-hidden="true"></i>
-            <p><b>É uma ilustração proporcional, não um extrato.</b> Imposto não é carimbado por área: tudo vai para um caixa comum e o orçamento decide. Repartimos o valor na mesma proporção da despesa liquidada por função da esfera escolhida. <b>Cada tributo abastece uma esfera:</b> Imposto de Renda é da União; ICMS e IPVA, dos estados; IPTU e ISS, dos municípios. Escolha a esfera que corresponde ao que você paga. Estados e municípios também recebem parte do IR por repasses (FPE, FPM).</p>
-        </div>
-
-        <div class="mt-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5">
-            <div class="grid sm:grid-cols-2 gap-4">
-                <div>
-                    <label for="valorImposto" class="block text-xs font-semibold mb-1">Quanto você paga de imposto por ano (R$)</label>
-                    <input id="valorImposto" type="number" inputmode="decimal" min="0" max="100000000" step="100" placeholder="ex.: 3000"
-                           class="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-brand-500 focus:outline-none">
-                </div>
-                <div>
-                    <label for="salarioIR" class="block text-xs font-semibold mb-1">…ou use o simulador de IR: salário bruto mensal (R$)</label>
-                    <div class="flex gap-2">
-                        <input id="salarioIR" type="number" inputmode="decimal" min="0" max="1000000" step="50" placeholder="ex.: 7000"
-                               class="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-brand-500 focus:outline-none">
-                        <button id="btnIR" type="button" class="px-3 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-700 text-xs font-semibold shrink-0 hover:opacity-90">Calcular IR</button>
-                    </div>
-                    <p id="irNota" class="text-[11px] text-slate-500 mt-1"></p>
-                </div>
-            </div>
-            <button id="btnDistribuir" type="button" class="mt-4 px-4 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold">Distribuir</button>
-        </div>
-        <div id="resCalc" class="mt-4" aria-live="polite"></div>
-    </section>
-
     <!-- ========================= B. CICLO ========================= -->
-    <section class="mt-10" aria-labelledby="tCiclo">
+    <section class="mt-6" aria-labelledby="tCiclo">
         <h2 id="tCiclo" class="text-xl font-bold flex items-center"><i class="fa-solid fa-rotate text-brand-600 mr-2.5" aria-hidden="true"></i>Onde estamos no ciclo orçamentário</h2>
         <p class="text-sm text-slate-500 dark:text-slate-400">Qual lei está em execução, qual está sendo votada agora e o que isso muda na prática.</p>
         <div id="resCiclo" class="mt-3" aria-live="polite"></div>
@@ -149,45 +119,6 @@ $('cidadeLista').addEventListener('click', (ev) => {
     salvarPrefsParciais({ municipio: E.municipio });
     alternarCidade(false); atualizar();
 });
-
-/* ---------- A. calculadora ---------- */
-$('btnIR').addEventListener('click', async () => {
-    const sal = Number($('salarioIR').value);
-    if (!(sal > 0)) { $('irNota').textContent = 'Informe o salário bruto mensal.'; return; }
-    $('irNota').textContent = 'Calculando…';
-    try {
-        const r = await api('/api/simulador/ir', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ salario_bruto: sal, dependentes: 0, outras_deducoes: 0 }) });
-        const anual = r.regra_2026.imposto_mensal * 12;
-        $('valorImposto').value = anual.toFixed(2);
-        $('irNota').textContent = `IR retido na fonte pela regra de 2026: ${brl(r.regra_2026.imposto_mensal)}/mês × 12 = ${brl(anual)}/ano (sem dependentes). É imposto da União: use a esfera “União”.`;
-        if (E.esfera !== 'uniao') { E.esfera = 'uniao'; guardar('ic_esfera_economia', E.esfera); desenharEsfera(); atualizar(); }
-    } catch (e) { $('irNota').textContent = e.message; }
-});
-$('btnDistribuir').addEventListener('click', distribuir);
-$('valorImposto').addEventListener('keydown', (ev) => { if (ev.key === 'Enter') distribuir(); });
-
-async function distribuir() {
-    const valor = Number($('valorImposto').value);
-    const ente = codigoEnte();
-    if (ente == null) { $('resCalc').innerHTML = pedirCidade(); return; }
-    if (!(valor > 0)) { $('resCalc').innerHTML = cartao('<p class="text-sm text-slate-500">Informe um valor de imposto maior que zero.</p>'); return; }
-    $('resCalc').innerHTML = carregando('Consultando as despesas por função no Tesouro Nacional…');
-    try {
-        const r = await api(`/api/orcamento/imposto/${encodeURIComponent(ente)}?valor=${encodeURIComponent(valor)}`);
-        if (!r.areas.length) { $('resCalc').innerHTML = cartao(`<p class="text-sm">${esc(r.lacuna || 'Sem dados para distribuir.')}</p>`); return; }
-        const maior = Math.max(...r.areas.map((a) => a.pct));
-        $('resCalc').innerHTML = cartao(`
-            <p class="text-sm"><b>${esc(brl(r.valor_anual))}</b> por ano, repartidos como ${esc(r.instituicao || 'o ente')} gasta (${esc(r.periodo.rotulo)}):</p>
-            <ul class="mt-3 space-y-3">${r.areas.map((a) => `<li>
-                <div class="flex justify-between gap-3 text-sm"><span><i class="fa-solid ${esc(a.icone)} w-5 text-slate-400" aria-hidden="true"></i>${esc(a.nome)}</span>
-                <span class="font-semibold whitespace-nowrap">${esc(brl(a.valor))} <span class="text-xs font-normal text-slate-500">(${esc(pct(a.pct))})</span></span></div>
-                <div class="mt-1 h-2.5 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden"><div class="barra h-full bg-brand-500" style="width:${Math.max(1, a.pct / maior * 100)}%"></div></div></li>`).join('')}</ul>
-            <p class="text-xs text-slate-600 dark:text-slate-400 mt-4"><b>Como ler:</b> ${esc(r.aviso)}</p>
-            <p class="text-xs text-slate-600 dark:text-slate-400 mt-1">${esc(r.nota_funcoes)}</p>
-            ${rodapeFonte(r)}`);
-    } catch (e) { $('resCalc').innerHTML = mensagemErro(e); }
-}
 
 /* ---------- B. ciclo orçamentário ---------- */
 const reaisCurto = (n) => {
@@ -319,7 +250,6 @@ function atualizar() {
     const m = E.municipio;
     $('cidadeRotulo').textContent = m ? `${m.nome} – ${m.uf}` : 'Escolher cidade';
     desenharEsfera();
-    $('resCalc').innerHTML = '';
     carregarCiclo();
 }
 atualizar();

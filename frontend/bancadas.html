@@ -34,6 +34,12 @@
     <div id="estado" role="status"><p class="text-sm text-slate-500">Carregando dados da Câmara e do Senado…</p></div>
     <div id="casas" class="space-y-10"></div>
 
+    <section aria-labelledby="h-tematicas">
+        <h2 id="h-tematicas" class="text-xl font-bold">Bancadas temáticas (frentes parlamentares)</h2>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Grupos de deputados de vários partidos que se reúnem em torno de um tema. A barra mostra quantos deputados em exercício fazem parte e onde ficam os marcos de votação. Só contagem oficial: pertencer a uma frente não obriga a votar de nenhum modo.</p>
+        <div id="tematicas" class="mt-4" role="status"><p class="text-sm text-slate-500">Carregando frentes parlamentares…</p></div>
+    </section>
+
     <section aria-labelledby="h-municipal">
         <h2 id="h-municipal" class="text-xl font-bold">Câmaras municipais</h2>
         <div id="municipal" class="mt-3"></div>
@@ -58,6 +64,19 @@ const num = (n) => Number(n).toLocaleString('pt-BR');
 
 function corTexto() { return document.documentElement.classList.contains('dark') ? '#cbd5e1' : '#475569'; }
 
+function blocoPresidente(c) {
+    const p = c.presidente;
+    if (!p || !p.nome) return '';
+    const cargo = c.id === 'camara' ? 'Presidente da Câmara dos Deputados' : 'Presidente do Senado Federal';
+    const foto = p.foto ? `<img src="${esc(urlSegura(p.foto))}" alt="" class="w-12 h-12 rounded-full object-cover bg-slate-200" loading="lazy">`
+        : '<span class="w-12 h-12 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center" aria-hidden="true"><i class="fa-solid fa-user text-slate-400"></i></span>';
+    const sigla = [p.partido, p.uf].filter(Boolean).join('-');
+    return `<div class="mt-3 inline-flex items-center gap-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2">
+        ${foto}
+        <div><p class="text-[11px] font-semibold text-slate-500">${esc(cargo)}</p>
+            <p class="text-sm font-bold"><a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(p.url))}">${esc(p.nome)}</a>${sigla ? ` <span class="font-medium text-slate-500">(${esc(sigla)})</span>` : ''}</p></div></div>`;
+}
+
 function blocoCasa(c) {
     const lim = c.limiares.map((l) => `
         <div class="rounded-xl border border-slate-200 dark:border-slate-700 p-3" data-lim="${esc(c.id)}:${esc(l.id)}">
@@ -76,6 +95,7 @@ function blocoCasa(c) {
         <h2 id="h-${esc(c.id)}" class="text-xl font-bold">${esc(c.nome)}</h2>
         <p class="text-sm text-slate-500 dark:text-slate-400">${num(c.cadeiras_ocupadas)} parlamentares em exercício, em ${num(c.n_partidos)} partidos${c.cadeiras_sem_titular ? `; ${num(c.cadeiras_sem_titular)} cadeira(s) sem titular` : ''}.
             Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(c.fonte.url_pagina))}">${esc(c.fonte.nome)}</a>.</p>
+        ${blocoPresidente(c)}
         <div class="mt-4 grid lg:grid-cols-2 gap-6">
             <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
                 <div class="grafico" style="height:${Math.max(240, c.partidos.length * 26 + 40)}px"><canvas id="g-${esc(c.id)}" role="img" aria-label="Cadeiras por partido — ${esc(c.nome)}"></canvas></div>
@@ -166,6 +186,72 @@ document.addEventListener('click', (ev) => {
 });
 document.getElementById('btnTema')?.addEventListener('click', () => setTimeout(() => Object.keys(CASAS).forEach(desenharGrafico), 50));
 iniciar();
+
+// ---------------- Bancadas temáticas (frentes parlamentares) ----------------
+let TEM = null;
+
+function blocoFrente(f, t) {
+    const pct = (n) => Math.min(100, (n / t.total_camara) * 100);
+    const situ = f.atinge_pec ? 'Passa dos 308 (nº de votos para uma PEC) só com os próprios membros.'
+        : f.atinge_absoluta ? 'Passa dos 257 (maioria absoluta), mas fica abaixo dos 308 de uma PEC.'
+        : `Fica abaixo dos 257 (maioria absoluta): faltam ${num(t.maioria_absoluta - f.deputados)} deputados.`;
+    const top = [...f.partidos].sort((a, b) => b.cadeiras - a.cadeiras).slice(0, 5)
+        .map((p) => `${esc(p.sigla)} (${num(p.cadeiras)})`).join(', ');
+    const coord = f.coordenador && f.coordenador.nome
+        ? `Coordenação: ${esc(f.coordenador.nome)}${f.coordenador.partido ? ` (${esc(f.coordenador.partido)}-${esc(f.coordenador.uf || '')})` : ''}.` : '';
+    return `<article class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
+        <h3 class="font-bold">${esc(f.tema)}</h3>
+        <p class="text-[11px] text-slate-500">${esc(f.nome)}</p>
+        <p class="mt-2 text-2xl font-extrabold">${num(f.deputados)} <span class="text-sm font-medium text-slate-500">de ${num(t.total_camara)} deputados (${String(f.percentual).replace('.', ',')}%)</span></p>
+        <div class="relative mt-2 h-3 rounded-full bg-slate-200 dark:bg-slate-700" role="img"
+             aria-label="${esc(f.tema)}: ${f.deputados} deputados; marcos em ${t.maioria_absoluta} e ${t.tres_quintos}">
+            <div class="h-3 rounded-full bg-brand-600" style="width:${pct(f.deputados)}%;background:#0284c7"></div>
+            <span class="absolute -top-1 h-5 w-0.5 bg-slate-700 dark:bg-slate-200" style="left:${pct(t.maioria_absoluta)}%" title="${t.maioria_absoluta} — maioria absoluta"></span>
+            <span class="absolute -top-1 h-5 w-0.5 bg-amber-600" style="left:${pct(t.tres_quintos)}%" title="${t.tres_quintos} — PEC (3/5)"></span>
+        </div>
+        <p class="mt-1 text-[11px] text-slate-500"><span class="inline-block w-2 h-2 bg-slate-700 dark:bg-slate-200 align-middle"></span> ${t.maioria_absoluta}: maioria absoluta · <span class="inline-block w-2 h-2 bg-amber-600 align-middle"></span> ${t.tres_quintos}: PEC (3/5)</p>
+        <p class="mt-2 text-xs font-semibold">${esc(situ)}</p>
+        <p class="mt-2 text-xs text-slate-600 dark:text-slate-400">Partidos com mais membros: ${top}. No total, ${num(f.partidos.length)} partidos e ${num(f.ufs)} estados.</p>
+        <p class="mt-1 text-xs text-slate-500">${coord} <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(f.url_pagina))}">Ver na Câmara</a></p>
+    </article>`;
+}
+
+function buscarParlamentar(q) {
+    const alvo = $('busca-res');
+    q = q.trim().toLowerCase();
+    if (q.length < 2) { alvo.innerHTML = ''; return; }
+    const nomes = Object.fromEntries(TEM.frentes.map((f) => [f.id, f.tema]));
+    const norm = (x) => (x || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+    const nq = norm(q);
+    const achados = TEM.parlamentares.filter((d) => norm(d.nome).includes(nq) || norm(d.uf) === nq).slice(0, 15);
+    alvo.innerHTML = achados.length ? `<ul class="divide-y divide-slate-200 dark:divide-slate-700">${achados.map((d) => `
+        <li class="py-2 text-sm"><b>${esc(d.nome)}</b> <span class="text-slate-500">(${esc(d.partido)}-${esc(d.uf)})</span>
+            <span class="block text-xs text-slate-600 dark:text-slate-400">Frentes: ${d.frentes.map((i) => esc(nomes[i])).join(', ')}</span></li>`).join('')}</ul>`
+        : '<p class="text-sm text-slate-500">Nenhum deputado encontrado nas frentes mostradas. Confira a grafia ou tente a sigla do estado (ex.: SP).</p>';
+}
+
+async function iniciarTematicas() {
+    const alvo = $('tematicas');
+    try {
+        TEM = await api('/api/bancadas/tematicas');
+        alvo.removeAttribute('role');
+        alvo.innerHTML = `
+            <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 mb-4">
+                <label for="busca-dep" class="text-sm font-semibold">Em quais bancadas temáticas está um deputado?</label>
+                <p class="text-xs text-slate-500">Digite o nome ou a sigla do estado (ex.: SP).</p>
+                <input id="busca-dep" type="search" autocomplete="off" class="mt-2 w-full sm:w-80 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm">
+                <div id="busca-res" class="mt-2" aria-live="polite"></div>
+            </div>
+            <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-4">${TEM.frentes.map((f) => blocoFrente(f, TEM)).join('')}</div>
+            <p class="mt-4 text-xs rounded-xl bg-slate-100 dark:bg-slate-800 p-3"><i class="fa-solid fa-circle-info mr-1.5 text-slate-400" aria-hidden="true"></i><b>Senadores:</b> ${esc(TEM.senado.motivo)}</p>
+            <ul class="mt-3 text-xs text-slate-500 list-disc pl-5 space-y-1">${TEM.notas.map((n) => `<li>${esc(n)}</li>`).join('')}</ul>`;
+        $('busca-dep').addEventListener('input', (e) => buscarParlamentar(e.target.value));
+    } catch (e) {
+        alvo.removeAttribute('role');
+        alvo.innerHTML = mensagemErro(e);
+    }
+}
+iniciarTematicas();
 </script>
 </body>
 </html>
