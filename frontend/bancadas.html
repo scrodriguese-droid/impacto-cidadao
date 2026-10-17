@@ -10,7 +10,7 @@
     <script src="assets/tailwind-config.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
     <style>
@@ -59,6 +59,8 @@
     </section>
 </main>
 
+<aside id="gaveta" class="gaveta" aria-hidden="true" aria-label="Quem ocupa as cadeiras do partido" tabindex="-1"></aside>
+
 <div id="rodape"></div>
 
 <script src="assets/comum.js"></script>
@@ -67,10 +69,7 @@ renderLayout('bancadas');
 
 const CASAS = {};          // id -> dados
 const SEL = {};            // id -> Set de siglas escolhidas
-const GRAFICOS = {};
 const num = (n) => Number(n).toLocaleString('pt-BR');
-
-function corTexto() { return document.documentElement.classList.contains('dark') ? '#cbd5e1' : '#475569'; }
 
 function blocoPresidente(c) {
     const p = c.presidente;
@@ -94,34 +93,28 @@ function blocoCasa(c) {
             <p class="text-xs mt-1.5">Com os partidos de maior bancada, seria preciso somar <b>${l.minimo_partidos ?? '—'}</b> partido(s) para chegar a este número.</p>
             <p class="text-xs font-semibold mt-2 faltam" aria-live="polite"></p>
         </div>`).join('');
-    const chips = c.partidos.map((p) => `
-        <label class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-xs cursor-pointer">
-            <input type="checkbox" data-casa="${esc(c.id)}" data-sigla="${esc(p.sigla)}">
-            <span class="font-semibold">${esc(p.sigla)}</span><span class="text-slate-500">${num(p.cadeiras)}</span>
-        </label>`).join('');
+    const maior = Math.max(1, ...c.partidos.map((p) => p.cadeiras));
+    const linhas = c.partidos.map((p) => `
+        <div class="linha-partido" data-linha="${esc(c.id)}:${esc(p.sigla)}">
+            <button type="button" class="btn-mais" data-mais="${esc(c.id)}" data-sigla="${esc(p.sigla)}" aria-pressed="false" aria-label="Somar ${esc(p.sigla)} à conta">+</button>
+            <span class="nome-partido" data-nome="${esc(c.id)}:${esc(p.sigla)}">${esc(p.sigla)}</span>
+            <button type="button" class="barra-partido" data-barra="${esc(c.id)}" data-sigla="${esc(p.sigla)}" aria-label="Ver quem ocupa as ${num(p.cadeiras)} cadeiras de ${esc(p.sigla)}"><span class="barra-fill" style="width:${(100 * p.cadeiras / maior).toFixed(2)}%"></span></button>
+            <span class="num-partido">${num(p.cadeiras)}</span>
+        </div>`).join('');
     return `<section aria-labelledby="h-${esc(c.id)}">
         <h2 id="h-${esc(c.id)}" class="text-xl font-bold">${esc(c.nome)}</h2>
         <p class="text-sm text-slate-500 dark:text-slate-400">${num(c.cadeiras_ocupadas)} parlamentares em exercício, em ${num(c.n_partidos)} partidos${c.cadeiras_sem_titular ? `; ${num(c.cadeiras_sem_titular)} cadeira(s) sem titular` : ''}.
             Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(c.fonte.url_pagina))}">${esc(c.fonte.nome)}</a>.</p>
         ${blocoPresidente(c)}
-        <div class="mt-4 grid lg:grid-cols-2 gap-6">
-            <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
-                <div class="grafico" style="height:${Math.max(240, c.partidos.length * 26 + 40)}px"><canvas id="g-${esc(c.id)}" role="img" aria-label="Cadeiras por partido — ${esc(c.nome)}"></canvas></div>
-                <p class="mt-2 text-[11px] text-slate-500"><i class="fa-solid fa-hand-pointer mr-1" aria-hidden="true"></i>Clique em uma barra para ver quem ocupa as cadeiras do partido e de qual estado vem. Também dá para escolher o partido na tabela abaixo.</p>
-            </div>
-            <div class="space-y-4">
-                <div class="grid sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3 gap-3">${lim}</div>
-                <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
-                    <p class="text-sm font-semibold">Some partidos e veja quanto falta</p>
-                    <p class="text-xs text-slate-500">Marque os partidos para somar as cadeiras. É só uma conta: não indica que eles votarão juntos.</p>
-                    <div id="auto-${esc(c.id)}" class="mt-3 flex flex-wrap items-center gap-1.5"></div>
-                    <div class="mt-3 flex flex-wrap gap-2">${chips}</div>
-                    <p class="mt-3 text-sm" aria-live="polite"><b>Soma escolhida:</b> <span id="soma-${esc(c.id)}">0</span> cadeiras
-                        <button type="button" data-limpar="${esc(c.id)}" class="ml-2 text-xs underline text-brand-700 dark:text-brand-400">limpar</button></p>
-                </div>
-            </div>
+        <div class="mt-5 grid sm:grid-cols-3 gap-4">${lim}</div>
+        <div class="mt-6">
+            <p class="text-sm font-semibold">Some partidos e veja quanto falta</p>
+            <p class="text-xs text-slate-500">Clique no <b>+</b> ao lado do partido para somar as cadeiras. É só uma conta: não indica que eles votarão juntos. Clique na barra para ver quem ocupa as cadeiras.</p>
+            <p class="mt-3 text-sm soma-escolhida" aria-live="polite"><b>Soma escolhida:</b> <span id="soma-${esc(c.id)}">0</span> cadeiras
+                <button type="button" data-limpar="${esc(c.id)}" class="ml-2 text-xs">limpar</button></p>
+            <div class="grafico-barras mt-3" id="barras-${esc(c.id)}" role="group" aria-label="Cadeiras por partido — ${esc(c.nome)}">${linhas}</div>
+            <div id="auto-${esc(c.id)}" class="mt-4 flex flex-wrap items-center gap-1.5"></div>
         </div>
-        <div id="membros-${esc(c.id)}" class="mt-4" aria-live="polite"></div>
         <details class="mt-4 text-sm"><summary class="cursor-pointer font-semibold">Ver tabela de cadeiras</summary>
             <table class="mt-2 text-sm"><thead><tr class="text-left text-xs text-slate-500"><th class="pr-6 py-1">Partido</th><th class="py-1">Cadeiras</th></tr></thead><tbody>
             ${c.partidos.map((p) => `<tr><td class="pr-6 py-0.5"><button type="button" data-membros="${esc(c.id)}" data-sigla="${esc(p.sigla)}" class="underline decoration-dotted hover:text-brand-700 dark:hover:text-brand-400">${esc(p.sigla)}</button></td><td>${num(p.cadeiras)}</td></tr>`).join('')}</tbody></table>
@@ -129,6 +122,7 @@ function blocoCasa(c) {
     </section>`;
 }
 
+// Soma das cadeiras escolhidas: atualiza os três marcos (“faltam N”) e pinta as linhas.
 function atualizarSoma(id) {
     const c = CASAS[id];
     const soma = c.partidos.filter((p) => SEL[id].has(p.sigla)).reduce((s, p) => s + p.cadeiras, 0);
@@ -141,24 +135,21 @@ function atualizarSoma(id) {
         el.textContent = falta > 0 ? `Faltam ${num(falta)} cadeiras.` : `Atinge o número (${num(soma - l.votos)} acima).`;
         el.className = 'text-xs font-semibold mt-2 faltam ' + (falta > 0 ? 'text-amber-700 dark:text-amber-400' : 'text-emerald-700 dark:text-emerald-400');
     });
-    desenharGrafico(id);
+    pintarSelecao(id);
 }
 
-function desenharGrafico(id) {
-    const c = CASAS[id];
-    GRAFICOS[id]?.destroy();
-    const sel = SEL[id];
-    GRAFICOS[id] = new Chart($('g-' + id), {
-        type: 'bar',
-        data: { labels: c.partidos.map((p) => p.sigla),
-            datasets: [{ data: c.partidos.map((p) => p.cadeiras),
-                backgroundColor: c.partidos.map((p) => (sel.size && !sel.has(p.sigla) ? '#B9B09A' : '#A92823')) }] },
-        options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, animation: false,
-            onClick: (_ev, els) => { if (els.length) mostrarMembros(id, c.partidos[els[0].index].sigla); },
-            onHover: (ev, els) => { ev.native.target.style.cursor = els.length ? 'pointer' : 'default'; },
-            plugins: { legend: { display: false }, tooltip: { callbacks: { label: (x) => `${num(x.parsed.x)} cadeiras` } } },
-            scales: { x: { beginAtZero: true, ticks: { color: corTexto() }, title: { display: true, text: 'cadeiras', color: corTexto() } },
-                      y: { ticks: { color: corTexto(), autoSkip: false } } } },
+function pintarSelecao(id) {
+    const caixa = $('barras-' + id);
+    if (!caixa) return;
+    caixa.classList.toggle('com-selecao', SEL[id].size > 0);
+    caixa.querySelectorAll('.linha-partido').forEach((linha) => {
+        const sigla = linha.dataset.linha.split(':').slice(1).join(':');
+        const on = SEL[id].has(sigla);
+        linha.classList.toggle('sel', on);
+        const b = linha.querySelector('.btn-mais');
+        b.setAttribute('aria-pressed', String(on));
+        b.textContent = on ? '−' : '+';
+        b.setAttribute('aria-label', `${on ? 'Tirar' : 'Somar'} ${sigla} ${on ? 'da' : 'à'} conta`);
     });
 }
 
@@ -170,7 +161,7 @@ async function iniciar() {
             : '';
         $('consulta').textContent = `Consultado em ${fmtDataHora(d.consultado_em)} · dados em cache por até 6 horas.`;
         $('casas').innerHTML = d.casas.map(blocoCasa).join('');
-        d.casas.forEach((c) => { CASAS[c.id] = c; SEL[c.id] = new Set(); desenharGrafico(c.id); });
+        d.casas.forEach((c) => { CASAS[c.id] = c; SEL[c.id] = new Set(); atualizarSoma(c.id); });
         carregarAlinhamento();
         const m = d.camaras_municipais;
         $('municipal').innerHTML = `<div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 text-sm">
@@ -184,20 +175,18 @@ async function iniciar() {
     }
 }
 
-document.addEventListener('change', (ev) => {
-    const t = ev.target;
-    if (!t.matches || !t.matches('input[data-casa]')) return;
-    const s = SEL[t.dataset.casa];
-    t.checked ? s.add(t.dataset.sigla) : s.delete(t.dataset.sigla);
-    atualizarSoma(t.dataset.casa);
-});
 document.addEventListener('click', (ev) => {
+    const m = ev.target.closest && ev.target.closest('[data-mais]');
+    if (m) {
+        const s = SEL[m.dataset.mais];
+        s.has(m.dataset.sigla) ? s.delete(m.dataset.sigla) : s.add(m.dataset.sigla);
+        atualizarSoma(m.dataset.mais);
+        return;
+    }
     const b = ev.target.closest && ev.target.closest('[data-limpar]');
     if (!b) return;
-    const id = b.dataset.limpar;
-    SEL[id].clear();
-    document.querySelectorAll(`input[data-casa="${id}"]`).forEach((i) => { i.checked = false; });
-    atualizarSoma(id);
+    SEL[b.dataset.limpar].clear();
+    atualizarSoma(b.dataset.limpar);
 });
 
 // ---------------- Quem vota junto: alinhamento com o Governo, coesão e afinidade ----------------
@@ -233,14 +222,13 @@ function marcarPorAlinhamento(faixa) {
     const dentro = (v) => (faixa === 'alto' ? v >= L : faixa === 'baixo' ? v < 100 - L : v >= 100 - L && v < L);
     const siglas = new Set(ALINH.partidos.filter((p) => dentro(p.alinhamento_governo)).map((p) => p.sigla));
     SEL.camara = new Set(CASAS.camara.partidos.filter((p) => siglas.has(p.sigla)).map((p) => p.sigla));
-    document.querySelectorAll('input[data-casa="camara"]').forEach((i) => { i.checked = SEL.camara.has(i.dataset.sigla); });
     atualizarSoma('camara');
 }
 
 function dicaChips() {
-    document.querySelectorAll('input[data-casa="camara"]').forEach((i) => {
-        const p = ALINH.partidos.find((x) => x.sigla === i.dataset.sigla);
-        if (p) i.closest('label').title = `${p.sigla}: vota com o Governo em ${pct1(p.alinhamento_governo)} dos votos; coesão ${pct1(p.coesao)}`;
+    document.querySelectorAll('.nome-partido[data-nome^="camara:"]').forEach((el) => {
+        const p = ALINH.partidos.find((x) => x.sigla === el.dataset.nome.slice('camara:'.length));
+        if (p) el.title = `${p.sigla}: vota com o Governo em ${pct1(p.alinhamento_governo)} dos votos; coesão ${pct1(p.coesao)}`;
     });
 }
 
@@ -273,32 +261,38 @@ document.addEventListener('click', (ev) => {
 });
 
 
-// ---------------- Quem ocupa as cadeiras de um partido ----------------
+// ---------------- Quem ocupa as cadeiras de um partido: aba lateral ----------------
+function fecharGaveta() {
+    const g = $('gaveta');
+    g.classList.remove('aberta'); g.setAttribute('aria-hidden', 'true'); g.innerHTML = '';
+    document.querySelectorAll('.linha-partido.ativa').forEach((l) => l.classList.remove('ativa'));
+}
 function mostrarMembros(id, sigla) {
-    const c = CASAS[id], p = c && c.partidos.find((x) => x.sigla === sigla), alvo = $('membros-' + id);
-    if (!p || !alvo) return;
+    const c = CASAS[id], p = c && c.partidos.find((x) => x.sigla === sigla), g = $('gaveta');
+    if (!p) return;
     const quem = p.membros || [];
-    const porUf = {};
-    quem.forEach((m) => { porUf[m.uf || '—'] = (porUf[m.uf || '—'] || 0) + 1; });
-    const ufs = Object.entries(porUf).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+    const porUf = new Map();
+    quem.forEach((m) => { const u = m.uf || '—'; porUf.set(u, (porUf.get(u) || []).concat(m)); });
+    const ufs = [...porUf.entries()].sort((a, b) => a[0].localeCompare(b[0]));
     const [um, varios] = id === 'camara' ? ['deputado(a)', 'deputados(as)'] : ['senador(a)', 'senadores(as)'];
-    alvo.innerHTML = `<div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
-        <div class="flex items-start justify-between gap-3">
-            <div><h3 class="font-bold">${esc(p.sigla)} <span class="font-normal text-slate-500">· ${num(p.cadeiras)} ${p.cadeiras === 1 ? um : varios} em exercício na ${esc(c.nome)}</span></h3>
-                <p class="text-xs text-slate-500">Estado de origem: ${ufs.map(([u, n]) => `<b>${esc(u)}</b> ${num(n)}`).join(' · ')}</p></div>
-            <button type="button" data-fechar-membros="${esc(id)}" class="text-xs text-slate-500 underline shrink-0">fechar</button></div>
-        <ul class="mt-3 grid sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-1 text-sm max-h-80 overflow-auto">
-            ${quem.map((m) => `<li class="flex justify-between gap-2"><a class="underline decoration-dotted hover:text-brand-700 dark:hover:text-brand-400" target="_blank" rel="noopener" href="${esc(urlSegura(m.url))}">${esc(m.nome)}</a><span class="text-slate-500">${esc(m.uf || '—')}</span></li>`).join('')}</ul></div>`;
-    alvo.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    g.innerHTML = `<div class="flex items-start justify-between gap-3">
+            <div><p class="gaveta-sigla">${esc(p.sigla)}</p>
+                <p class="text-sm">${num(p.cadeiras)} ${p.cadeiras === 1 ? um : varios} em exercício · ${esc(c.nome)}</p></div>
+            <button type="button" data-fechar-gaveta class="shrink-0" aria-label="Fechar">Fechar ✕</button></div>
+        <p class="text-xs text-slate-500 mt-3">Por estado: ${ufs.sort((a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0])).map(([u, l]) => `<b>${esc(u)}</b> ${l.length}`).join(' · ')}</p>
+        ${ufs.map(([u, l]) => `<div class="gaveta-uf"><p class="gaveta-uf-nome">${esc(u)} <span>${l.length}</span></p>
+            <ul>${l.map((m) => `<li><a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(m.url))}">${esc(m.nome)}</a></li>`).join('')}</ul></div>`).join('')}`;
+    g.classList.add('aberta'); g.setAttribute('aria-hidden', 'false'); g.scrollTop = 0;
+    document.querySelectorAll('.linha-partido.ativa').forEach((l) => l.classList.remove('ativa'));
+    document.querySelector(`.linha-partido[data-linha="${CSS.escape(id + ':' + sigla)}"]`)?.classList.add('ativa');
 }
 document.addEventListener('click', (ev) => {
-    const b = ev.target.closest && ev.target.closest('[data-membros]');
-    if (b) { mostrarMembros(b.dataset.membros, b.dataset.sigla); return; }
-    const f = ev.target.closest && ev.target.closest('[data-fechar-membros]');
-    if (f) $('membros-' + f.dataset.fecharMembros).innerHTML = '';
+    const b = ev.target.closest && ev.target.closest('[data-barra], [data-membros]');
+    if (b) { mostrarMembros(b.dataset.barra || b.dataset.membros, b.dataset.sigla); return; }
+    if (ev.target.closest && ev.target.closest('[data-fechar-gaveta]')) fecharGaveta();
 });
+document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') fecharGaveta(); });
 
-document.getElementById('btnTema')?.addEventListener('click', () => setTimeout(() => Object.keys(CASAS).forEach(desenharGrafico), 50));
 iniciar();
 
 // ---------------- Bancadas temáticas (frentes parlamentares) ----------------

@@ -76,11 +76,13 @@ function renderLayout(paginaAtual) {
     }
     const cab = $('cabecalho');
     if (cab) {
-        const marca = `<img src="assets/logo-icone.png" alt="" width="44" height="44" class="w-11 h-11 rounded-xl shadow-md shrink-0">
-                <div class="min-w-0">
-                    <span class="font-extrabold text-xl tracking-tight"><span class="text-[#0b2a5b] dark:text-white">Impacto</span><span class="bg-gradient-to-r from-sky-700 to-teal-500 bg-clip-text text-transparent">Cidadão</span></span>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 leading-snug">O que muda na sua vida, em linguagem simples</p>
-                </div>`;
+        // Marca só tipográfica (sem imagem), no formato do cartaz: nome empilhado, régua e linha técnica.
+        const marca = `<span class="marca-nome block min-w-0">
+                    <span class="marca-titulo block">Impacto<br>Cidadão</span>
+                    <span class="marca-regua block" aria-hidden="true"></span>
+                    <span class="marca-linha block">Civic tech // Transparência acessível <span class="marca-ano">✦ 2026</span></span>
+                </span>`;
+        const marcaMovel = `<span class="marca-movel">Impacto<span>Cidadão</span></span>`;
         const atual = (n) => n.paginas.includes(paginaAtual);
         const linkMenu = (n) => `<a href="${n.href}" ${atual(n) ? 'aria-current="page"' : ''}
                     class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium hover:bg-slate-100 dark:hover:bg-slate-800 ${atual(n) ? 'bg-slate-100 dark:bg-slate-800 text-brand-700 dark:text-brand-400' : 'text-slate-700 dark:text-slate-300'}">
@@ -88,7 +90,7 @@ function renderLayout(paginaAtual) {
         const itens = NAVEGACAO.map(linkMenu).join('');
         cab.outerHTML = `<header class="lg:hidden sticky top-0 z-40 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-sm">
     <div class="flex items-center justify-between h-16 px-4">
-        <a href="index.html" class="flex items-center gap-3 min-w-0" aria-label="ImpactoCidadão — início">${marca}</a>
+        <a href="index.html" class="flex items-center gap-3 min-w-0" aria-label="ImpactoCidadão — início">${marcaMovel}</a>
         <div class="flex items-center gap-1">
             <button id="btnTemaMovel" type="button" class="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl" aria-label="Alternar tema claro/escuro">
                 <i class="fa-solid fa-moon dark:hidden text-lg" aria-hidden="true"></i><i class="fa-solid fa-sun hidden dark:block text-amber-400 text-lg" aria-hidden="true"></i></button>
@@ -99,7 +101,7 @@ function renderLayout(paginaAtual) {
 </header>
 <div id="menuFundo" class="hidden lg:hidden fixed inset-0 z-40 bg-black/50" aria-hidden="true"></div>
 <aside id="menuLateral" class="fixed inset-y-0 left-0 z-50 w-64 -translate-x-full lg:translate-x-0 transition-transform duration-200 flex flex-col bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 shadow-lg lg:shadow-none">
-    <a href="index.html" class="hidden lg:flex items-center gap-3 px-4 h-20 border-b border-slate-200 dark:border-slate-800 shrink-0" aria-label="ImpactoCidadão — início">${marca}</a>
+    <a href="index.html" class="marca-bloco hidden lg:block px-5 pt-5 pb-4 border-b border-slate-200 dark:border-slate-800 shrink-0" aria-label="ImpactoCidadão — início">${marca}</a>
     <div class="lg:hidden flex items-center justify-between px-4 h-16 border-b border-slate-200 dark:border-slate-800 shrink-0">
         <span class="font-bold">Menu</span>
         <button id="btnFecharMenu" type="button" class="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl" aria-label="Fechar menu"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
@@ -255,9 +257,9 @@ async function montarBarraContexto(idDestino, aoMudar) {
 }
 
 
-/* Gráficos no estilo do site: Space Grotesk e linhas de grade em tinta suave. */
+/* Gráficos no estilo do site: Inter e linhas de grade em tinta suave. */
 if (window.Chart) {
-    Chart.defaults.font.family = "'Space Grotesk', system-ui, sans-serif";
+    Chart.defaults.font.family = "'Inter', system-ui, sans-serif";
     Chart.defaults.font.size = 12;
     Chart.defaults.borderColor = 'rgba(17,17,17,.25)';
 }
