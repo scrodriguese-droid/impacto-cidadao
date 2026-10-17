@@ -280,21 +280,23 @@ tem um `arrec_id`.
 União → estado, estado → municípios e o que o município recebe da União e do estado (RREO Anexo 01 de cada ente), mais a
 repartição legal de receitas da União (Resultado do Tesouro Nacional, linhas 2.x).
 
+## Contas de editor e post-its
 
-## A Coluna (notas do colunista)
+Quem entra com uma conta de **editor** pode colar post-its (notas) em qualquer trecho de qualquer página. O post-it
+nasce como rascunho (só o autor vê) e pode ser publicado para todos; visitantes veem só os publicados.
 
-Cada página pode ter uma aba lateral "A Coluna" com comentários escritos à mão. As notas ficam em
-`frontend/assets/coluna.json`; não há banco nem login, e editar o arquivo é publicar.
+* **Não há cadastro aberto.** Quem administra o servidor cria as contas pelo terminal; a senha é digitada sem eco e
+  nunca vai para arquivo, URL ou chat:
 
-```json
-{ "id": "meu-id", "pagina": "tesouro", "ancora": "#tRegras", "titulo": "Título da nota",
-  "data": "2026-10-17", "exibir": true, "texto": "Parágrafo.
-
-Outro, com **negrito**, *itálico* e [link](https://...)." }
-```
-
-* `pagina`: id da página (`inicio`, `servicos`, `quem`, `economia`, `fiscal`, `orcamento`, `tesouro`, `politicas`,
-  `bancadas`, `planos`…), uma lista de ids ou `"*"` para todas.
-* `ancora` (opcional): seletor CSS do trecho que recebe o marcador `✦ N`. Sem ela, a nota só aparece na aba.
-* `exibir: false` guarda o rascunho; ele só aparece abrindo a página com `?coluna=rascunho`.
-* Sem notas publicadas para a página, a aba nem aparece.
+  ```bash
+  python backend/editor.py criar --email voce@exemplo.org --nome "Seu nome"
+  python backend/editor.py listar
+  python backend/editor.py senha --email voce@exemplo.org     # troca a senha e encerra as sessões
+  python backend/editor.py remover --email voce@exemplo.org   # apaga a conta e os post-its dela
+  ```
+* **Entrar:** menu lateral, "Área do editor". Logado, aparece a barra do editor no canto da tela: **Novo post-it**
+  (clique no trecho da página e escreva), **Meus post-its** e **Sair**.
+* **Segurança:** senha com hash scrypt; sessão em cookie HttpOnly/SameSite=Lax (só o hash do token fica no banco);
+  bloqueio após 5 tentativas erradas; escrita confere a origem da requisição. Em produção, sirva sob HTTPS (o cookie
+  passa a `Secure`) e faça backup de `dados/editor/editor.db`, que fica fora do git.
+* Os dados ficam num SQLite próprio (`dados/editor/editor.db`), independente do PostgreSQL do restante do app.

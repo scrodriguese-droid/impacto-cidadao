@@ -35,6 +35,7 @@ import bancadas
 import db
 import ciclo
 import competencias
+import editor
 import servicos
 import economia
 import equipamentos
@@ -1084,6 +1085,7 @@ def obter_candidato(sq_candidato: int) -> dict:
 
 
 app.include_router(router)
+app.include_router(editor.router)
 
 # Aplicativo web (HTML estático) servido na raiz — registrado por último para não
 # sombrear as rotas /api.

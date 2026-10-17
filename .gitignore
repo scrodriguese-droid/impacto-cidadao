@@ -30,3 +30,6 @@ Thumbs.db
 # Dados de autoria gerados pelo coletor (grandes, reproduzíveis)
 dados/autoria/
 dados/votacoes/
+
+# Contas de editor e post-its (SQLite local, com hashes de senha: nunca versionar)
+dados/editor/
