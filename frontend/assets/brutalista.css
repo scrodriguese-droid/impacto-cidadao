@@ -1,0 +1,180 @@
+/* ImpactoCidadão — Editorial Construtivista (limpo).
+ * Quadros retangulares com borda única de 2px, títulos em faixa de cor maciça, creme, preto tinta,
+ * vermelho tijolo e amarelo ocre. Sem sombras flutuantes, sem traços duplos, sem fonte monoespaçada no texto.
+ *
+ * Por que uma folha única com !important: as páginas usam utilitários do Tailwind (CDN) direto no HTML.
+ * Em vez de reescrever centenas de classes, este arquivo reinterpreta os utilitários mais usados
+ * (cartões, bordas, cinzas, azuis) nas cores e formas do estilo. Carregue-o DEPOIS do Tailwind.
+ */
+:root {
+    --papel: #F2EFE9;      /* creme: fundo da página e dos quadros */
+    --papel-2: #E3DDCE;    /* trilhas de barras, faixas neutras */
+    --card: #F2EFE9;
+    --tinta: #111111;
+    --vermelho: #A92823;   /* vermelho tijolo */
+    --amarelo: #E5A93B;    /* amarelo ocre */
+    --fg: #111111;
+    --muted: #4A453A;
+    --line: #111111;
+    --banda: #111111;      /* faixa dos títulos de seção */
+    --banda-fg: #FFFFFF;
+    --fonte-cartaz: 'Bebas Neue', 'Space Grotesk', Impact, sans-serif;
+    --fonte-texto: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+}
+.dark {
+    --papel: #131210;
+    --papel-2: #26231D;
+    --card: #131210;
+    --fg: #F2EFE9;
+    --muted: #BDB5A2;
+    --line: #F2EFE9;
+    --banda: #F2EFE9;
+    --banda-fg: #111111;
+}
+
+html body {
+    background: var(--papel) !important;
+    color: var(--fg) !important;
+    font-family: var(--fonte-texto) !important;
+    font-size: 15px;
+    line-height: 1.5;
+}
+/* barra fina de cor no topo: única marca de cartaz fora dos títulos */
+body::before { content: ""; display: block; height: 8px; background: var(--vermelho); position: relative; z-index: 60; }
+::selection { background: var(--amarelo); color: #111; }
+:focus-visible { outline: 3px solid var(--vermelho) !important; outline-offset: 2px !important; }
+.dark :focus-visible { outline-color: var(--amarelo) !important; }
+
+/* ---------- tipografia ---------- */
+h1, h2, h3, h4, th, button, summary, label, nav a, [class*="font-bold"], [class*="font-semibold"], [class*="font-extrabold"], [class*="font-black"] {
+    font-family: var(--fonte-texto);
+}
+/* título da página: faixa vermelha maciça */
+h1 {
+    font-family: var(--fonte-cartaz) !important; font-weight: 400 !important; text-transform: uppercase; letter-spacing: .02em;
+    font-size: clamp(2.4rem, 5.6vw, 4.2rem) !important; line-height: 1 !important;
+    display: block; background: var(--vermelho); color: #fff !important; padding: .12em .35em .06em; margin: .25rem 0 1rem;
+    border: 2px solid var(--tinta);
+}
+h1 + p { max-width: 66ch; }
+/* títulos de seção: faixa preta maciça com texto branco */
+h2 {
+    font-family: var(--fonte-cartaz) !important; font-weight: 400 !important; text-transform: uppercase; letter-spacing: .03em;
+    font-size: 1.7rem !important; line-height: 1.05 !important;
+    display: block; background: var(--banda); color: var(--banda-fg) !important; padding: .2rem .65rem .1rem;
+}
+h2 * { color: inherit !important; }
+h2 i { color: var(--amarelo) !important; }
+.dark h2 i { color: var(--vermelho) !important; }
+h2.sr-only { background: none; padding: 0; }
+h3 { font-weight: 700 !important; text-transform: uppercase; letter-spacing: .03em; font-size: .95rem; }
+h4 { font-weight: 700 !important; }
+p[class*="text-3xl"], p[class*="text-2xl"], span[class*="text-3xl"], span[class*="text-2xl"], div[class*="text-3xl"] {
+    font-family: var(--fonte-cartaz) !important; font-weight: 400 !important; letter-spacing: .02em; font-size: 2.6rem; line-height: 1;
+}
+button, summary, th { text-transform: uppercase; letter-spacing: .04em; font-weight: 700; }
+th { font-size: .72rem; border-bottom: 2px solid var(--line); }
+td, th, .tabular { font-variant-numeric: tabular-nums; }
+code, pre, kbd { font-family: ui-monospace, monospace; background: var(--papel-2); padding: 0 .25em; }
+a { text-decoration-thickness: 1.5px; text-underline-offset: 3px; }
+
+/* ---------- quadros: retângulos com borda única, sem sombra ---------- */
+*, *::before, *::after { border-radius: 0 !important; }
+[class*="shadow"] { box-shadow: none !important; }
+[class*="rounded-2xl"], [class*="rounded-3xl"] { border: 2px solid var(--line) !important; box-shadow: none !important; }
+/* o que está dentro de um quadro usa linha fina, para não haver traço duplo */
+[class*="rounded-xl"], [class*="rounded-lg"], [class*="rounded-md"], [class*="rounded-full"] { border: 1px solid var(--line) !important; }
+[class*="border-slate"], [class*="border-t"], [class*="border-b"], [class*="border-l"], [class*="border-r"], .border { border-color: var(--line) !important; }
+[class*="divide-"] > * { border-color: var(--line) !important; }
+[class*="border-dashed"] { border-style: dashed !important; border-width: 2px !important; }
+
+/* superfícies */
+[class~="bg-white"], [class*="bg-white/"], [class~="dark:bg-slate-800"] { background-color: var(--card) !important; }
+[class~="bg-slate-50"], [class*="bg-slate-50/"], [class*="bg-slate-900/"], [class~="dark:bg-slate-900"] { background-color: var(--papel) !important; }
+[class~="bg-slate-100"], [class~="bg-slate-200"], [class~="dark:bg-slate-700"] { background-color: var(--papel-2) !important; }
+[class*="bg-brand-50"], [class*="bg-teal-50"], [class*="bg-brand-950"], [class*="bg-teal-950"] { background-color: var(--amarelo) !important; color: #111 !important; }
+[class*="bg-teal-50"] *, [class*="bg-brand-50"] * { color: #111 !important; }
+/* trilhas das barras de progresso */
+[class*="h-2.5"][class*="overflow-hidden"], [class*="h-3"][class*="overflow-hidden"], [class*="h-2"][class*="overflow-hidden"] { border: 1px solid var(--line) !important; background-color: var(--papel-2) !important; }
+
+/* texto */
+[class*="text-slate-400"], [class*="text-slate-500"], [class*="text-slate-600"], [class~="dark:text-slate-400"], [class~="dark:text-slate-300"] { color: var(--muted) !important; }
+[class*="text-slate-700"], [class*="text-slate-800"], [class*="text-slate-900"], [class~="dark:text-slate-100"], [class~="dark:text-slate-200"] { color: var(--fg) !important; }
+[class*="text-brand-"], a[class*="text-brand"] { color: var(--vermelho) !important; }
+.dark [class*="text-brand-"] { color: var(--amarelo) !important; }
+[class*="text-rose-"], [class*="text-red-"] { color: var(--vermelho) !important; }
+.bg-clip-text { background: none !important; -webkit-text-fill-color: var(--vermelho) !important; color: var(--vermelho) !important; }
+.dark .bg-clip-text { -webkit-text-fill-color: var(--amarelo) !important; color: var(--amarelo) !important; }
+[class*="text-[#0b2a5b]"] { color: var(--fg) !important; }
+
+/* ---------- controles ---------- */
+button, select, input[type="text"], input[type="search"], input[type="number"], input[type="date"], textarea {
+    border: 2px solid var(--line) !important; background-color: var(--card) !important; color: var(--fg) !important; box-shadow: none !important;
+}
+select, input[type="text"], input[type="search"], input[type="number"], input[type="date"], textarea { font-family: var(--fonte-texto) !important; }
+input[type="checkbox"], input[type="radio"] { accent-color: var(--vermelho); width: 1rem; height: 1rem; }
+button { cursor: pointer; transition: none; }
+button:hover { background-color: var(--papel-2) !important; }
+/* ação principal: bloco vermelho tijolo */
+[class~="bg-brand-600"], [class~="bg-brand-700"], [class~="bg-sky-600"] {
+    background-color: var(--vermelho) !important; color: #fff !important; border: 2px solid var(--tinta) !important;
+}
+[class~="bg-brand-600"]:hover, [class~="bg-brand-700"]:hover { background-color: var(--tinta) !important; color: #fff !important; }
+
+/* ---------- abas e seletores unificados: uma barra modular colada ---------- */
+[class*="bg-slate-200/70"] {
+    display: inline-flex !important; flex-wrap: wrap; gap: 0 !important; padding: 0 !important; margin-bottom: 0;
+    background: var(--card) !important; border: 2px solid var(--line) !important; max-width: 100%; width: fit-content;
+}
+[class*="bg-slate-200/70"][role="tablist"] { display: flex !important; width: 100%; }
+[class*="bg-slate-200/70"] > * {
+    background: transparent !important; color: var(--fg) !important; border: 0 !important; border-right: 2px solid var(--line) !important;
+    box-shadow: none !important; padding: .55rem 1rem !important; text-transform: uppercase; letter-spacing: .04em; font-weight: 700;
+    font-size: .8rem; margin: 0 !important;
+}
+[class*="bg-slate-200/70"] > *:last-child { border-right: 0 !important; }
+[class*="bg-slate-200/70"] > *:hover { background: var(--papel-2) !important; }
+[class*="bg-slate-200/70"] > [aria-current="page"],
+[class*="bg-slate-200/70"] > [aria-checked="true"],
+[class*="bg-slate-200/70"] > [aria-selected="true"],
+[class*="bg-slate-200/70"] > [class~="shadow"] { background: var(--amarelo) !important; color: #111 !important; }
+[class*="bg-slate-200/70"] > * i { color: inherit !important; }
+nav[aria-label="Telas desta área"] > div { margin-bottom: 0; }
+/* "Aprofundar": linha de chips planos */
+nav[aria-label="Telas desta área"] > div + div a { text-transform: uppercase; letter-spacing: .03em; font-weight: 700; border: 1px solid var(--line) !important; }
+nav[aria-label="Telas desta área"] > div + div a[aria-current="page"] { background: var(--tinta) !important; color: #fff !important; }
+.dark nav[aria-label="Telas desta área"] > div + div a[aria-current="page"] { background: var(--papel-2) !important; color: var(--fg) !important; }
+/* chips e selos */
+[class*="rounded-full"][class*="px-"] { text-transform: uppercase; letter-spacing: .04em; font-weight: 700; }
+details > summary { list-style: none; }
+details > summary::before { content: "▸ "; }
+details[open] > summary::before { content: "▾ "; }
+
+/* ---------- menu lateral e cabeçalho móvel ---------- */
+#menuLateral { background: var(--card) !important; border-right: 2px solid var(--line) !important; box-shadow: none !important; }
+#menuLateral nav a { border: 2px solid transparent !important; text-transform: uppercase; letter-spacing: .03em; font-weight: 700; font-size: .82rem; }
+#menuLateral nav a:hover { background: var(--papel-2) !important; }
+#menuLateral a[aria-current="page"] { background: var(--amarelo) !important; color: #111 !important; border: 2px solid var(--tinta) !important; }
+#menuLateral a[aria-current="page"] i { color: #111 !important; }
+#menuLateral > a:first-child, #menuLateral > div { border-color: var(--line) !important; }
+header.lg\:hidden { background: var(--card) !important; border-bottom: 2px solid var(--line) !important; backdrop-filter: none !important; }
+#menuLateral img, header img { border: 2px solid var(--tinta) !important; }
+
+/* ---------- rodapé ---------- */
+footer { background: #111111 !important; color: #F2EFE9 !important; border-top: 8px solid var(--vermelho) !important; }
+footer h4 { color: var(--amarelo) !important; }
+footer a, footer li, footer p { color: #F2EFE9 !important; }
+footer a:hover { background: var(--amarelo); color: #111 !important; }
+
+/* ---------- mapa, gráficos, tabelas, diálogos ---------- */
+#mapa { border: 2px solid var(--line); }
+canvas { background: transparent; }
+table { border-collapse: collapse; }
+tbody tr { border-color: var(--line) !important; }
+dialog { border: 2px solid var(--tinta) !important; }
+dialog::backdrop { background: rgba(17, 17, 17, .7) !important; }
+
+/* ---------- ajustes de layout ---------- */
+/* itens de grade podem encolher: sem isso, o canvas dos gráficos (Chart.js) infla a coluna em telas estreitas */
+.grid > *, .flex > * { min-width: 0; }
+html, body { overflow-x: clip; }

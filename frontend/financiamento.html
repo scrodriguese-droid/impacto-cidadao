@@ -10,15 +10,16 @@
     <script src="assets/tailwind-config.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
     <style>
         body { font-family: 'Inter', system-ui, sans-serif; }
-        :focus-visible { outline: 2px solid #0284c7; outline-offset: 2px; }
+        :focus-visible { outline: 2px solid #A92823; outline-offset: 2px; }
         .grafico { position: relative; height: 320px; }
         dialog::backdrop { background: rgba(0, 0, 0, .55); }
     </style>
+    <link rel="stylesheet" href="assets/brutalista.css">
 </head>
 <body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-full flex flex-col transition-colors duration-200">
 
@@ -92,7 +93,7 @@ const secao = (n, titulo, sub, corpo) => `<section aria-labelledby="b${n}"><p cl
 const ehEscuro = () => document.documentElement.classList.contains('dark');
 const corTexto = () => (ehEscuro() ? '#cbd5e1' : '#475569');
 const corGrade = () => (ehEscuro() ? 'rgba(148,163,184,.18)' : 'rgba(100,116,139,.18)');
-const CORES = { fiscal: '#e11d48', liquida: '#0284c7', estoque: '#7c3aed', emissao: '#059669', resgate: '#d97706' };
+const CORES = { fiscal: '#e11d48', liquida: '#A92823', estoque: '#7c3aed', emissao: '#059669', resgate: '#d97706' };
 const graficos = {};
 function desenharGrafico(id, config) {
     if (graficos[id]) graficos[id].destroy();
@@ -249,13 +250,13 @@ function graficos_(d) {
             y1: { position: 'right', grid: { drawOnChartArea: false }, title: { display: true, text: 'R$ trilhões' } } } } });
     if (d.vencimentos) {
         const cal = d.vencimentos.proximos_12_meses;
-        desenharGrafico('gVenc', { type: 'bar', data: { labels: cal.map((x) => fmtMes(x.mes)), datasets: [{ label: 'Vencendo no mês (R$ bilhões)', data: cal.map((x) => x.valor / 1e9), backgroundColor: '#0284c7' }] },
+        desenharGrafico('gVenc', { type: 'bar', data: { labels: cal.map((x) => fmtMes(x.mes)), datasets: [{ label: 'Vencendo no mês (R$ bilhões)', data: cal.map((x) => x.valor / 1e9), backgroundColor: '#A92823' }] },
             options: { scales: { y: { title: { display: true, text: 'R$ bilhões' } } } } });
     }
     if (d.composicao) {
         const ix = d.composicao.indexadores;
         desenharGrafico('gIdx', { type: 'doughnut', data: { labels: ix.map((i) => `${i.nome} (${pct(i.pct)})`), datasets: [{ data: ix.map((i) => i.valor / 1e9),
-            backgroundColor: ['#0284c7', '#059669', '#d97706', '#7c3aed', '#64748b'] }] },
+            backgroundColor: ['#A92823', '#059669', '#d97706', '#7c3aed', '#64748b'] }] },
             options: { plugins: { tooltip: { callbacks: { label: (c) => `${c.label.split(' (')[0]}: R$ ${Number(c.parsed).toLocaleString('pt-BR', { maximumFractionDigits: 0 })} bi` } } } } });
     }
 }

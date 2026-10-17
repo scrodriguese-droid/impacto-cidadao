@@ -10,16 +10,17 @@
     <script src="assets/tailwind-config.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body { font-family: 'Inter', system-ui, sans-serif; }
-        :focus-visible { outline: 2px solid #0284c7; outline-offset: 2px; }
+        :focus-visible { outline: 2px solid #A92823; outline-offset: 2px; }
         .elo { transition: opacity .15s; }
         .sk-t { paint-order: stroke fill; stroke: #fff; stroke-width: 3px; stroke-linejoin: round; }
         .dark .sk-t { stroke: #1e293b; }
         .elo:hover { opacity: .85 !important; }
     </style>
+    <link rel="stylesheet" href="assets/brutalista.css">
 </head>
 <body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-full flex flex-col transition-colors duration-200">
 
@@ -249,14 +250,14 @@ function sankeySvg(esq, centro, dir, saldo) {
     oc = topC;
     for (const n of Rn) {   // centro → direita
         const h = n.h, y0 = oc + h / 2, y1 = n.y + h / 2; oc += h;
-        elos.push(`<path class="elo" d="M${xC + nw},${y0} C${(xC + nw + xD) / 2},${y0} ${(xC + nw + xD) / 2},${y1} ${xD},${y1}" stroke="${n.saldo ? '#64748b' : (n.cor || '#94a3b8')}" stroke-opacity="${n.cor && n.cor !== '#94a3b8' && !n.saldo ? 0.6 : 0.45}" stroke-width="${h}" fill="none"><title>${esc(n.nome)}: ${esc(reaisCurto(n.valor))} (${pct(n.valor)})${n.detalhe ? ' — ' + esc(n.detalhe) : ''}</title></path>`);
+        elos.push(`<path class="elo" d="M${xC + nw},${y0} C${(xC + nw + xD) / 2},${y0} ${(xC + nw + xD) / 2},${y1} ${xD},${y1}" stroke="${n.saldo ? '#64748b' : (n.cor || '#B9B09A')}" stroke-opacity="${n.cor && n.cor !== '#B9B09A' && !n.saldo ? 0.6 : 0.45}" stroke-width="${h}" fill="none"><title>${esc(n.nome)}: ${esc(reaisCurto(n.valor))} (${pct(n.valor)})${n.detalhe ? ' — ' + esc(n.detalhe) : ''}</title></path>`);
     }
     const rotulo = (x, y, h, ancora, nome, valor, detalhe) => {
         const tip = dicaPara(nome) || detalhe || '';
         return `<text class="sk-t" x="${x}" y="${y + h / 2}" text-anchor="${ancora}" dominant-baseline="middle" fill="currentColor" font-size="14.5"><title>${esc(nome)}: ${esc(reaisCurto(valor))} (${pct(valor)})${tip ? ' — ' + esc(tip) : ''}</title><tspan font-weight="700">${esc(nome.length > 42 ? nome.slice(0, 41) + '…' : nome)}</tspan><tspan dx="8" font-size="13" font-weight="500" fill-opacity="0.9">${esc(reaisCurto(valor))} · ${pct(valor)}</tspan></text>`;
     };
     const nosE = Ln.map((n) => `<rect x="${xE}" y="${n.y}" width="${nw}" height="${n.h}" rx="2" fill="${n.cor}"/>` + rotulo(xE - 8, n.y, n.h, 'end', n.nome, n.valor, n.detalhe)).join('');
-    const nosD = Rn.map((n) => `<rect x="${xD}" y="${n.y}" width="${nw}" height="${n.h}" rx="2" fill="${n.saldo ? '#64748b' : (n.cor && n.cor !== '#94a3b8' ? n.cor : '#475569')}"/>` + rotulo(xD + nw + 8, n.y, n.h, 'start', n.nome, n.valor, n.detalhe)).join('');
+    const nosD = Rn.map((n) => `<rect x="${xD}" y="${n.y}" width="${nw}" height="${n.h}" rx="2" fill="${n.saldo ? '#64748b' : (n.cor && n.cor !== '#B9B09A' ? n.cor : '#475569')}"/>` + rotulo(xD + nw + 8, n.y, n.h, 'start', n.nome, n.valor, n.detalhe)).join('');
     const centroSvg = `<rect x="${xC}" y="${topC}" width="${nw}" height="${hCentro}" rx="2" fill="#0f172a"/>
         <text x="${xC + nw / 2}" y="${topC + hCentro / 2}" transform="rotate(-90 ${xC + nw / 2} ${topC + hCentro / 2})" text-anchor="middle" dominant-baseline="middle" fill="#fff" font-size="14" font-weight="700" dy="-0.1">${esc(centro)}</text>`;
     return `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Diagrama de Sankey: de onde vem o dinheiro, ${esc(centro)} e para onde vai">${elos.join('')}${nosE}${nosD}${centroSvg}</svg>`;
@@ -362,7 +363,7 @@ async function desenharSankey() {
             const x = await api('/api/tributos/fluxo-federal');
             if (minha !== reqSankey) return;
             esq = x.esquerda; centro = x.centro.nome;
-            dir = x.direita.map((d) => ({ ...d, cor: d.nome.startsWith('Repasse') ? COR_UNIAO : '#94a3b8' }));
+            dir = x.direita.map((d) => ({ ...d, cor: d.nome.startsWith('Repasse') ? COR_UNIAO : '#B9B09A' }));
             saldo = { lado: x.saldo.valor > 0 ? 'esq' : 'dir', valor: Math.abs(x.saldo.valor), rotulo: x.saldo.rotulo };
             legenda = Object.values(x.grupos).map((g) => [g.nome, g.cor]).concat([['Repasses a estados e cidades', COR_UNIAO]]);
             nota = `${x.periodo} · ${x.unidade}. ${x.nota} Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(x.fonte.url))}">${esc(x.fonte.nome)}</a>.`;
@@ -381,7 +382,7 @@ async function desenharSankey() {
             const ente = F.sankeyEsfera === 'estadual' ? Math.floor(m.codigo / 100000) : m.codigo;
             const d = await api('/api/economia/' + encodeURIComponent(ente));
             if (minha !== reqSankey) return;
-            const COR = { proprios: '#e11d48', transferencias: '#0284c7', outras: '#a16207', credito: '#64748b' };
+            const COR = { proprios: '#e11d48', transferencias: '#A92823', outras: '#a16207', credito: '#64748b' };
             esq = [];
             const reps = F.sankeyEsfera === 'estadual' ? R && R.estado : R && R.municipio;
             for (const g of d.nivel2.receitas.grupos) {
@@ -395,12 +396,12 @@ async function desenharSankey() {
             }
             if (F.sankeyEsfera === 'estadual' && destinoEstado === 'repasses' && R && R.estado) {
                 const emp = R.estado.despesa_total, rep = Math.min(R.estado.aos_municipios, emp);
-                dir = [{ nome: 'Repasses às prefeituras (ICMS, IPVA e outros)', valor: rep, cor: COR_ESTADO }, { nome: 'Demais gastos do Estado', valor: emp - rep, cor: '#94a3b8' }];
+                dir = [{ nome: 'Repasses às prefeituras (ICMS, IPVA e outros)', valor: rep, cor: COR_ESTADO }, { nome: 'Demais gastos do Estado', valor: emp - rep, cor: '#B9B09A' }];
             } else {
                 const fun = d.nivel2.despesas.funcoes, top = fun.slice(0, 8);
                 const resto = d.nivel2.despesas.total_liquidado - top.reduce((a, f) => a + f.valor, 0);
-                dir = top.map((f) => ({ nome: f.nome, valor: f.valor, cor: '#94a3b8' }));
-                if (resto > 0) dir.push({ nome: 'Demais áreas', valor: resto, cor: '#94a3b8' });
+                dir = top.map((f) => ({ nome: f.nome, valor: f.valor, cor: '#B9B09A' }));
+                if (resto > 0) dir.push({ nome: 'Demais áreas', valor: resto, cor: '#B9B09A' });
             }
             const somaE = esq.reduce((a, x) => a + x.valor, 0), somaD = dir.reduce((a, x) => a + x.valor, 0), dif = Math.abs(somaE - somaD);
             saldo = dif > 0.01 * Math.max(somaE, somaD) ? { lado: somaE >= somaD ? 'dir' : 'esq', valor: dif, rotulo: somaE >= somaD ? 'Arrecadado e ainda não gasto' : 'Conta no vermelho no período' } : null;

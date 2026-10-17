@@ -2,7 +2,7 @@
 tailwind.config = {
     darkMode: 'class',
     theme: { extend: {
-        colors: { brand: { 50: '#f0f9ff', 100: '#e0f2fe', 400: '#38bdf8', 500: '#0ea5e9', 600: '#0284c7', 700: '#0369a1', 800: '#075985', 900: '#0c4a6e', 950: '#082f49' } },
-        fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] }
+        colors: { brand: { 50: '#fdf2f0', 100: '#fbe0dc', 400: '#e0584c', 500: '#cc3b2f', 600: '#A92823', 700: '#8f1f17', 800: '#6e1812', 900: '#4f110d', 950: '#2c0907' } },
+        fontFamily: { sans: ['Space Grotesk', 'Inter', 'system-ui', 'sans-serif'] }
     } }
 };

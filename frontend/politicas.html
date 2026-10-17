@@ -11,14 +11,15 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body { font-family: 'Inter', system-ui, sans-serif; }
         details > summary { list-style: none; cursor: pointer; }
         details > summary::-webkit-details-marker { display: none; }
-        :focus-visible { outline: 2px solid #0284c7; outline-offset: 2px; }
+        :focus-visible { outline: 2px solid #A92823; outline-offset: 2px; }
     </style>
+    <link rel="stylesheet" href="assets/brutalista.css">
 </head>
 <body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-full flex flex-col transition-colors duration-200">
 
@@ -660,8 +661,8 @@ function desenharAutores() {
         : AUTOR.modo === 'partidos' ? 'Os 15 partidos com mais projetos assinados no período, pelo partido que a Câmara informa para o(a) autor(a). Quando há autores de partidos diferentes, o projeto conta em cada um.'
         : 'Quantos projetos têm cada tipo de autor. Um projeto com autores de tipos diferentes conta em cada tipo.';
     AUTOR.grafico?.destroy();
-    const datasets = [{ label: 'Todos os criados', data: lin.map((x) => x.c), backgroundColor: '#94a3b8' }];
-    if (lin[0] && lin[0].a !== null) datasets.unshift({ label: 'Aprovados (viraram lei)', data: lin.map((x) => x.a), backgroundColor: '#0284c7' });
+    const datasets = [{ label: 'Todos os criados', data: lin.map((x) => x.c), backgroundColor: '#B9B09A' }];
+    if (lin[0] && lin[0].a !== null) datasets.unshift({ label: 'Aprovados (viraram lei)', data: lin.map((x) => x.a), backgroundColor: '#A92823' });
     AUTOR.grafico = new Chart($('graficoAutores'), {
         type: 'bar', data: { labels: lin.map((x) => x.r), datasets },
         options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, animation: false,
@@ -675,11 +676,11 @@ function desenharParadas() {
     const cor = corEixo();
     const itens = a.paradas.slice(0, 15);
     const rot = (x) => (x.sigla ? x.sigla : x.onde.length > 28 ? x.onde.slice(0, 27) + '…' : x.onde);
-    const CORES = { comissao: '#0284c7', plenario: '#7c3aed', mesa: '#64748b', arquivada: '#be123c', senado: '#059669', outro: '#94a3b8' };
+    const CORES = { comissao: '#A92823', plenario: '#7c3aed', mesa: '#64748b', arquivada: '#be123c', senado: '#059669', outro: '#B9B09A' };
     graficoParadasRef.g?.destroy();
     graficoParadasRef.g = new Chart($('graficoParadas'), {
         type: 'bar',
-        data: { labels: itens.map(rot), datasets: [{ data: itens.map((x) => x.projetos), backgroundColor: itens.map((x) => CORES[x.etapa] || '#94a3b8') }] },
+        data: { labels: itens.map(rot), datasets: [{ data: itens.map((x) => x.projetos), backgroundColor: itens.map((x) => CORES[x.etapa] || '#B9B09A') }] },
         options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, animation: false,
             plugins: { legend: { display: false }, tooltip: { callbacks: { title: (x) => itens[x[0].dataIndex].onde, label: (x) => `${nf(x.parsed.x)} projetos parados aqui` } } },
             scales: { x: { beginAtZero: true, ticks: { color: cor }, title: { display: true, text: 'projetos que não viraram lei', color: cor } }, y: { ticks: { color: cor, autoSkip: false } } } },
@@ -725,8 +726,8 @@ function desenharGraficoTemas(a) {
     graficoTemas = new Chart($('graficoTemas'), {
         type: 'bar',
         data: { labels: itens.map((t) => t.nome), datasets: [
-            { label: 'Aprovados (viraram lei)', data: itens.map((t) => (100 * t.aprovados) / totA), backgroundColor: '#0284c7', _n: itens.map((t) => t.aprovados) },
-            { label: 'Todos os criados', data: itens.map((t) => (100 * t.criados) / totC), backgroundColor: '#94a3b8', _n: itens.map((t) => t.criados) },
+            { label: 'Aprovados (viraram lei)', data: itens.map((t) => (100 * t.aprovados) / totA), backgroundColor: '#A92823', _n: itens.map((t) => t.aprovados) },
+            { label: 'Todos os criados', data: itens.map((t) => (100 * t.criados) / totC), backgroundColor: '#B9B09A', _n: itens.map((t) => t.criados) },
         ] },
         options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, animation: false,
             plugins: { legend: { labels: { color: cor } },

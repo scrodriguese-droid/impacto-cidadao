@@ -253,3 +253,11 @@ async function montarBarraContexto(idDestino, aoMudar) {
         definirPerfil(id) { estado.perfil = id; mudou(); },
     };
 }
+
+
+/* Gráficos no estilo do site: Space Grotesk e linhas de grade em tinta suave. */
+if (window.Chart) {
+    Chart.defaults.font.family = "'Space Grotesk', system-ui, sans-serif";
+    Chart.defaults.font.size = 12;
+    Chart.defaults.borderColor = 'rgba(17,17,17,.25)';
+}

@@ -10,14 +10,15 @@
     <script src="assets/tailwind-config.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
     <style>
         body { font-family: 'Inter', system-ui, sans-serif; }
-        :focus-visible { outline: 2px solid #0284c7; outline-offset: 2px; }
+        :focus-visible { outline: 2px solid #A92823; outline-offset: 2px; }
         .grafico { position: relative; }
     </style>
+    <link rel="stylesheet" href="assets/brutalista.css">
 </head>
 <body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-full flex flex-col transition-colors duration-200">
 
@@ -151,7 +152,7 @@ function desenharGrafico(id) {
         type: 'bar',
         data: { labels: c.partidos.map((p) => p.sigla),
             datasets: [{ data: c.partidos.map((p) => p.cadeiras),
-                backgroundColor: c.partidos.map((p) => (sel.size && !sel.has(p.sigla) ? '#94a3b8' : '#0284c7')) }] },
+                backgroundColor: c.partidos.map((p) => (sel.size && !sel.has(p.sigla) ? '#B9B09A' : '#A92823')) }] },
         options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, animation: false,
             onClick: (_ev, els) => { if (els.length) mostrarMembros(id, c.partidos[els[0].index].sigla); },
             onHover: (ev, els) => { ev.native.target.style.cursor = els.length ? 'pointer' : 'default'; },
@@ -209,7 +210,7 @@ function tabelaAlinhamento() {
     const cad = (sg) => { const p = cam && cam.partidos.find((x) => x.sigla === sg); return p ? p.cadeiras : null; };
     const linhas = ALINH.partidos.map((p) => `<tr class="border-t border-slate-100 dark:border-slate-700 align-top">
         <td class="py-2 pr-3 font-semibold whitespace-nowrap">${esc(p.sigla)}${cad(p.sigla) != null ? `<span class="block text-[11px] font-normal text-slate-500">${num(cad(p.sigla))} deputados</span>` : '<span class="block text-[11px] font-normal text-slate-500">sem cadeiras hoje</span>'}</td>
-        <td class="py-2 pr-4 min-w-[8rem]"><b>${pct1(p.alinhamento_governo)}</b>${barraPct(p.alinhamento_governo, '#0284c7')}</td>
+        <td class="py-2 pr-4 min-w-[8rem]"><b>${pct1(p.alinhamento_governo)}</b>${barraPct(p.alinhamento_governo, '#A92823')}</td>
         <td class="py-2 pr-4 min-w-[8rem]"><b>${pct1(p.coesao)}</b>${barraPct(p.coesao, '#0d9488')}</td>
         <td class="py-2 text-xs text-slate-600 dark:text-slate-400">${p.mais_afins.length ? p.mais_afins.slice(0, 3).map((x) => `${esc(x.sigla)} (${pct1(x.pct)})`).join(', ') : '<span class="text-slate-400">votos insuficientes</span>'}</td></tr>`).join('');
     return `<div class="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
@@ -318,7 +319,7 @@ function blocoFrente(f, t) {
         <p class="mt-2 text-2xl font-extrabold">${num(f.deputados)} <span class="text-sm font-medium text-slate-500">de ${num(t.total_camara)} deputados (${String(f.percentual).replace('.', ',')}%)</span></p>
         <div class="relative mt-2 h-3 rounded-full bg-slate-200 dark:bg-slate-700" role="img"
              aria-label="${esc(f.tema)}: ${f.deputados} deputados; marcos em ${t.maioria_absoluta} e ${t.tres_quintos}">
-            <div class="h-3 rounded-full bg-brand-600" style="width:${pct(f.deputados)}%;background:#0284c7"></div>
+            <div class="h-3 rounded-full bg-brand-600" style="width:${pct(f.deputados)}%;background:#A92823"></div>
             <span class="absolute -top-1 h-5 w-0.5 bg-slate-700 dark:bg-slate-200" style="left:${pct(t.maioria_absoluta)}%" title="${t.maioria_absoluta} — maioria absoluta"></span>
             <span class="absolute -top-1 h-5 w-0.5 bg-amber-600" style="left:${pct(t.tres_quintos)}%" title="${t.tres_quintos} — PEC (3/5)"></span>
         </div>
