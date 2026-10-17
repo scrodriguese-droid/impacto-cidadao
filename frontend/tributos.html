@@ -281,7 +281,7 @@ async function carregarRepasses() {
 // cartão em 3 níveis: de onde → para onde · valor · frase
 function cartaoRepasse(origem, destino, valor, frase, cor, tip) {
     return `<div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 overflow-hidden" style="border-top:4px solid ${cor}">
-        <div class="p-4"><p class="text-[11px] font-bold tracking-wide uppercase text-slate-500 dark:text-slate-400">${esc(origem)} <span aria-hidden="true">➜</span> ${esc(destino)}</p>
+        <div class="p-4"><p class="text-[11px] font-bold tracking-wide uppercase text-slate-500 dark:text-slate-400">${esc(origem)} → ${esc(destino)}</p>
             <p class="text-3xl font-extrabold mt-1">${esc(reaisCurto(valor))}${ajuda(tip)}</p>
             <p class="text-sm text-slate-700 dark:text-slate-300 mt-2 leading-snug">${frase}</p></div></div>`;
 }

@@ -126,7 +126,9 @@ def _presidente_senado() -> dict | None:
                 nome = re.sub(r"^Senador(a)?\s+", "", c.get("NomeParlamentar") or "")
                 m = re.match(r"\(([^-]+)-([A-Z]{2})\)", c.get("Bancada") or "")
                 return {"nome": nome, "partido": m.group(1) if m else None, "uf": m.group(2) if m else None,
-                        "desde": None, "foto": None,
+                        "desde": None,
+                        # 'Http' é o código do senador; a foto oficial segue este padrão
+                        "foto": f"https://legis.senado.leg.br/senadores/fotos-oficiais/{c.get('Http')}",
                         "url": f"https://www25.senado.leg.br/web/senadores/senador/-/perfil/{c.get('Http')}"}
     return None
 

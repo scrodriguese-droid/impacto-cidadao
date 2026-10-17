@@ -43,18 +43,23 @@ function salvarPrefsParciais(parcial) { guardar('ic_prefs', { ...lerPrefs(), ...
 /* ---------- cabeçalho e rodapé ---------- */
 const NAVEGACAO = [
     { id: 'inicio', paginas: ['inicio'], href: 'index.html', icone: 'fa-house', rotulo: 'Início' },
-    { id: 'politicas', paginas: ['politicas'], href: 'politicas.html', icone: 'fa-landmark', rotulo: 'Leis e projetos' },
-    { id: 'planos', paginas: ['planos'], href: 'planos.html', icone: 'fa-flag', rotulo: 'Eleições: planos de governo' },
+    { id: 'quem', paginas: ['servicos', 'quem'], href: 'servicos.html', icone: 'fa-magnifying-glass-location', rotulo: 'Quem resolve o quê?' },
     { id: 'orcamento', paginas: ['economia', 'fiscal', 'orcamento', 'tributos', 'simuladores', 'macro', 'financiamento', 'ciclo'], href: 'economia.html', icone: 'fa-coins', rotulo: 'Orçamento e contas públicas' },
+    { id: 'politicas', paginas: ['politicas'], href: 'politicas.html', icone: 'fa-landmark', rotulo: 'Leis e projetos' },
     { id: 'bancadas', paginas: ['bancadas'], href: 'bancadas.html', icone: 'fa-people-group', rotulo: 'Bancadas' },
+    { id: 'planos', paginas: ['planos'], href: 'planos.html', icone: 'fa-flag', rotulo: 'Eleições: planos de governo' },
 ];
 const NAV_GLOSSARIO = { id: 'glossario', paginas: ['glossario'], href: 'glossario.html', icone: 'fa-book', rotulo: 'Glossário' };
 // Subnavegação: cada área do menu tem telas focadas, escolhidas por abas no topo da página.
 const SUBNAVEGACAO = {
+    quem: [
+        { id: 'servicos', href: 'servicos.html', rotulo: 'Guia de serviços' },
+        { id: 'quem', href: 'quem-resolve.html', rotulo: 'Buscador e mapa' },
+    ],
     orcamento: [
-        { id: 'economia', href: 'economia.html', rotulo: 'Entrada e saída' },
-        { id: 'orcamento', href: 'orcamento.html', rotulo: 'Leis do orçamento' },
-        { id: 'fiscal', href: 'economia.html?aba=fiscal', rotulo: 'Saúde fiscal e dívida' },
+        { id: 'economia', href: 'economia.html', rotulo: '1 · De onde vem e vai' },
+        { id: 'orcamento', href: 'orcamento.html', rotulo: '2 · Ciclo e leis' },
+        { id: 'fiscal', href: 'economia.html?aba=fiscal', rotulo: '3 · Saúde fiscal e tributos' },
     ],
 };
 // Telas de aprofundamento da mesma área: ficam numa linha secundária e acendem a aba a que pertencem.
@@ -143,11 +148,9 @@ function renderLayout(paginaAtual) {
             const aba = (t) => { const on = t.id === paginaAtual || (aqui && aqui.pai === t.id);
                 return `<a href="${t.href}" ${t.id === paginaAtual ? 'aria-current="page"' : ''}
                     class="px-3.5 py-2 rounded-xl text-sm font-semibold ${on ? 'bg-white dark:bg-slate-700 shadow text-brand-700 dark:text-brand-300' : 'text-slate-600 dark:text-slate-300 hover:bg-white/60 dark:hover:bg-slate-700/60'}">${t.rotulo}</a>`; };
-            const chips = extra.map((t) => `<a href="${t.href}" ${t.id === paginaAtual ? 'aria-current="page"' : ''}
-                    class="px-2.5 py-1 rounded-full border text-xs font-medium ${t.id === paginaAtual ? 'border-brand-600 text-brand-700 dark:text-brand-300 bg-white dark:bg-slate-800' : 'border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-800'}">${t.rotulo}</a>`).join('');
+            // as telas de aprofundamento não têm linha própria: ficam num bloco recolhido dentro da aba 3
             principal.insertAdjacentHTML('afterbegin', `<nav aria-label="Telas desta área" class="mb-5">
-                <div class="flex flex-wrap gap-1 p-1 rounded-2xl bg-slate-200/70 dark:bg-slate-800 w-fit max-w-full">${abas.map(aba).join('')}</div>
-                ${chips ? `<div class="mt-2 flex flex-wrap items-center gap-1.5"><span class="text-xs text-slate-500 mr-1">Aprofundar:</span>${chips}</div>` : ''}</nav>`);
+                <div class="flex flex-wrap gap-1 p-1 rounded-2xl bg-slate-200/70 dark:bg-slate-800 w-fit max-w-full">${abas.map(aba).join('')}</div></nav>`);
         }
     }
     const rod = $('rodape');

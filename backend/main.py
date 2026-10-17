@@ -35,6 +35,7 @@ import bancadas
 import db
 import ciclo
 import competencias
+import servicos
 import economia
 import equipamentos
 import macro
@@ -639,6 +640,60 @@ def tributos_fluxo_federal() -> dict:
     except Exception as exc:  # noqa: BLE001
         log.warning("Fluxo federal indisponível: %s", exc)
         raise HTTPException(status_code=503, detail="O Resultado do Tesouro Nacional está indisponível no momento.") from exc
+
+
+def _ou_404(valor, msg="Não encontrado."):  # noqa: ANN001
+    if valor is None:
+        raise HTTPException(status_code=404, detail=msg)
+    return valor
+
+
+def _servicos(fn, *args):  # noqa: ANN001
+    try:
+        return fn(*args)
+    except Exception as exc:  # noqa: BLE001
+        log.warning("Guia de serviços indisponível: %s", exc)
+        raise HTTPException(status_code=503, detail="Não foi possível montar o guia de serviços agora.") from exc
+
+
+MunicipioQuery = Annotated[int | None, Query(ge=1000000, le=9999999, description="código IBGE do município")]
+
+
+@router.get("/servicos", tags=["servicos"])
+def servicos_indice(municipio: MunicipioQuery = None) -> dict:
+    return _servicos(servicos.indice, municipio)
+
+
+@router.get("/servicos/esfera/{esfera}", tags=["servicos"])
+def servicos_esfera(esfera: Literal["municipio", "estado", "uniao"]) -> dict:
+    return _ou_404(_servicos(servicos.por_esfera, esfera))
+
+
+@router.get("/servicos/{area_id}", tags=["servicos"])
+def servicos_area(area_id: str, municipio: MunicipioQuery = None) -> dict:
+    return _ou_404(_servicos(servicos.area, area_id, municipio), "Área não encontrada.")
+
+
+@router.get("/servicos/{area_id}/{slug}", tags=["servicos"])
+def servicos_servico(area_id: str, slug: str, municipio: MunicipioQuery = None) -> dict:
+    return _ou_404(_servicos(servicos.servico, area_id, slug, municipio), "Serviço não encontrado.")
+
+
+@router.get("/competencias/areas", tags=["competencias"])
+def competencias_areas() -> list[dict]:
+    return competencias.areas()
+
+
+@router.get("/competencias/areas/{area_id}", tags=["competencias"])
+def competencias_area(area_id: str, municipio: Annotated[int | None, Query(ge=1000000, le=9999999)] = None) -> dict:
+    try:
+        r = competencias.area(area_id, municipio)
+    except Exception as exc:  # noqa: BLE001
+        log.warning("Área de interesse indisponível: %s", exc)
+        raise HTTPException(status_code=503, detail="Não foi possível montar esta área agora.") from exc
+    if not r:
+        raise HTTPException(status_code=404, detail="Área não encontrada.")
+    return r
 
 
 @router.get("/competencias/buscar", tags=["competencias"])

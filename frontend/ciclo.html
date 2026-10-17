@@ -249,15 +249,15 @@ function blocoEstabilizadores() {
         <div class="grafico"><canvas id="gEstab" role="img" aria-label="Arrecadação, seguro-desemprego e desocupação"></canvas></div>
         <p class="text-[11px] text-slate-400">Valores correntes (não deflacionados). A série é só uma ilustração de itens que costumam acompanhar o ciclo; não isola o efeito do ciclo dos efeitos de regras e decisões.</p></div>` : '';
     return `<div class="grid md:grid-cols-2 gap-4 text-sm">
-        ${cartao(`<p class="font-bold"><span aria-hidden="true">🛡️</span> O que são${gl('ESTABILIZADOR_AUTOMATICO')}</p>
+        ${cartao(`<p class="font-bold">O que são${gl('ESTABILIZADOR_AUTOMATICO')}</p>
             <p class="mt-2 text-slate-600 dark:text-slate-300">São mecanismos pelos quais a arrecadação e certas despesas variam com a atividade econômica <b>mesmo sem nova decisão do governo</b>, porque estão ligados a regras já existentes.</p>`)}
-        ${cartao(`<p class="font-bold"><span aria-hidden="true">🔁</span> Como funcionam</p>
+        ${cartao(`<p class="font-bold">Como funcionam</p>
             <ul class="mt-2 list-disc pl-5 space-y-1 text-slate-600 dark:text-slate-300">
                 <li><b>Na expansão:</b> renda, emprego e consumo sobem, a arrecadação cresce e despesas como o seguro-desemprego tendem a cair.</li>
                 <li><b>Na desaceleração:</b> o movimento se inverte, e as contas públicas amortecem parte da queda da renda das famílias.</li></ul>`)}
-        ${cartao(`<p class="font-bold"><span aria-hidden="true">⚖️</span> Efeito sobre o resultado fiscal</p>
+        ${cartao(`<p class="font-bold">Efeito sobre o resultado fiscal</p>
             <p class="mt-2 text-slate-600 dark:text-slate-300">Parte do déficit (ou do superávit) de um período é <b>cíclica</b> — resulta do estágio do ciclo — e parte é <b>estrutural</b>. Separar as duas exige estimar o PIB potencial, que não é observado diretamente; por isso esta página não calcula esse resultado.</p>`)}
-        ${cartao(`<p class="font-bold"><span aria-hidden="true">🧭</span> O que isso não diz</p>
+        ${cartao(`<p class="font-bold">O que isso não diz</p>
             <p class="mt-2 text-slate-600 dark:text-slate-300">Déficit não implica automaticamente corte de gastos, e queda da atividade não implica aumento automático de despesas. A resposta depende de objetivos, custos, prazos e da composição das medidas — decisões que ficam fora de um painel de indicadores.</p>`)}
     </div>${serie}`;
 }

@@ -5,14 +5,34 @@
     "mapa": "saude",
     "servico": "Atendimento básico, posto de saúde, vacinação e combate à dengue",
     "equipamento_tipico": "UBS (posto de saúde), Estratégia Saúde da Família e UPA 24h",
-    "esferas": ["Municipal"],
+    "esferas": [
+      "Municipal"
+    ],
     "orgao_responsavel": "Secretaria Municipal de Saúde",
-    "quem_cobrar": ["Prefeito e Secretário Municipal de Saúde", "Vereadores da sua cidade (fiscalizam o serviço)"],
+    "quem_cobrar": [
+      "Prefeito e Secretário Municipal de Saúde",
+      "Vereadores da sua cidade (fiscalizam o serviço)"
+    ],
     "funcao_orcamento": "Saúde",
     "subfuncao_orcamento": "Atenção Básica",
     "observacao": "O município executa a atenção básica com apoio financeiro do Estado e da União. A UPA costuma ser cofinanciada pelas três esferas.",
     "base": "Constituição Federal, art. 30, VII; Lei 8.080/1990.",
-    "palavras_chave": ["posto de saude", "ubs", "upa", "pronto atendimento", "vacina", "vacinacao", "dengue", "marcar consulta", "consulta medica", "dentista", "saude da familia", "agente de saude", "medico no posto"]
+    "palavras_chave": [
+      "posto de saude",
+      "ubs",
+      "upa",
+      "pronto atendimento",
+      "vacina",
+      "vacinacao",
+      "dengue",
+      "marcar consulta",
+      "consulta medica",
+      "dentista",
+      "saude da familia",
+      "agente de saude",
+      "medico no posto"
+    ],
+    "area": "saude"
   },
   {
     "id": "saude_especializada",
@@ -20,14 +40,41 @@
     "mapa": "saude",
     "servico": "Cirurgias, exames de alta complexidade, UTI e especialidades",
     "equipamento_tipico": "Ambulatórios de especialidades (AME), hospitais regionais e hospitais de referência",
-    "esferas": ["Estadual", "Municipal"],
+    "esferas": [
+      "Estadual",
+      "Municipal"
+    ],
     "orgao_responsavel": "Secretaria de Estado da Saúde (regulação das vagas) e Secretaria Municipal de Saúde",
-    "quem_cobrar": ["Governador e Secretário de Estado da Saúde", "Deputados Estaduais", "Prefeito, se o hospital for municipal"],
+    "quem_cobrar": [
+      "Governador e Secretário de Estado da Saúde",
+      "Deputados Estaduais",
+      "Prefeito, se o hospital for municipal"
+    ],
     "funcao_orcamento": "Saúde",
     "subfuncao_orcamento": "Assistência Hospitalar e Ambulatorial",
     "observacao": "O posto de saúde encaminha o pedido; as vagas de cirurgia e de leitos passam por uma central de regulação do SUS (no Estado de São Paulo, a CROSS). Os hospitais podem ser municipais, estaduais ou filantrópicos conveniados ao SUS.",
     "base": "Lei 8.080/1990 (SUS descentralizado, com regionalização).",
-    "palavras_chave": ["ame", "hospital", "hospital geral", "hospital regional", "cirurgia", "demora para cirurgia", "fila de cirurgia", "hemodialise", "cancer", "oncologia", "uti", "leito", "cross", "vaga em hospital", "exame de alta complexidade", "ressonancia", "tomografia", "especialista"]
+    "palavras_chave": [
+      "ame",
+      "hospital",
+      "hospital geral",
+      "hospital regional",
+      "cirurgia",
+      "demora para cirurgia",
+      "fila de cirurgia",
+      "hemodialise",
+      "cancer",
+      "oncologia",
+      "uti",
+      "leito",
+      "cross",
+      "vaga em hospital",
+      "exame de alta complexidade",
+      "ressonancia",
+      "tomografia",
+      "especialista"
+    ],
+    "area": "saude"
   },
   {
     "id": "medicamentos",
@@ -35,14 +82,32 @@
     "mapa": "saude",
     "servico": "Remédios: básicos, de alto custo e Farmácia Popular",
     "equipamento_tipico": "Farmácia da UBS, farmácia de medicamentos especializados e farmácias credenciadas",
-    "esferas": ["Municipal", "Estadual", "Federal"],
+    "esferas": [
+      "Municipal",
+      "Estadual",
+      "Federal"
+    ],
     "orgao_responsavel": "Município (básicos), Secretaria de Estado da Saúde (especializados) e Ministério da Saúde (Farmácia Popular)",
-    "quem_cobrar": ["Prefeito, para remédios básicos", "Governador, para medicamentos especializados", "Presidente e Ministro da Saúde, para o Farmácia Popular"],
+    "quem_cobrar": [
+      "Prefeito, para remédios básicos",
+      "Governador, para medicamentos especializados",
+      "Presidente e Ministro da Saúde, para o Farmácia Popular"
+    ],
     "funcao_orcamento": "Saúde",
     "subfuncao_orcamento": "Suporte Profilático e Terapêutico",
     "observacao": "O município costuma dispensar os remédios da atenção básica; os medicamentos especializados são solicitados ao Estado, com financiamento compartilhado com a União.",
     "base": "Lei 8.080/1990; políticas de assistência farmacêutica do SUS.",
-    "palavras_chave": ["remedio", "remedio no posto", "medicamento", "farmacia", "farmacia popular", "remedio de alto custo", "medicamento especial", "insulina"]
+    "palavras_chave": [
+      "remedio",
+      "remedio no posto",
+      "medicamento",
+      "farmacia",
+      "farmacia popular",
+      "remedio de alto custo",
+      "medicamento especial",
+      "insulina"
+    ],
+    "area": "saude"
   },
   {
     "id": "educacao_infantil",
@@ -50,14 +115,32 @@
     "mapa": "educacao",
     "servico": "Vaga em creche (0 a 3 anos) e pré-escola (4 e 5 anos)",
     "equipamento_tipico": "Creches, CEMEIs e EMEIs municipais",
-    "esferas": ["Municipal"],
+    "esferas": [
+      "Municipal"
+    ],
     "orgao_responsavel": "Secretaria Municipal de Educação",
-    "quem_cobrar": ["Prefeito e Secretário Municipal de Educação", "Vereadores da sua cidade (fiscalizam a fila de vagas)"],
+    "quem_cobrar": [
+      "Prefeito e Secretário Municipal de Educação",
+      "Vereadores da sua cidade (fiscalizam a fila de vagas)"
+    ],
     "funcao_orcamento": "Educação",
     "subfuncao_orcamento": "Educação Infantil",
     "observacao": "Os municípios atuam prioritariamente na educação infantil e no ensino fundamental, com apoio de recursos do Fundeb e de repasses federais.",
     "base": "Constituição Federal, art. 211, § 2º.",
-    "palavras_chave": ["creche", "vaga na creche", "preciso de vaga na creche", "pre escola", "pre-escola", "emei", "cemei", "0 a 3 anos", "maternal", "bercario", "fila da creche"]
+    "palavras_chave": [
+      "creche",
+      "vaga na creche",
+      "preciso de vaga na creche",
+      "pre escola",
+      "pre-escola",
+      "emei",
+      "cemei",
+      "0 a 3 anos",
+      "maternal",
+      "bercario",
+      "fila da creche"
+    ],
+    "area": "educacao"
   },
   {
     "id": "educacao_fundamental",
@@ -65,14 +148,31 @@
     "mapa": "educacao",
     "servico": "Ensino fundamental (1º ao 9º ano), merenda e transporte escolar",
     "equipamento_tipico": "Escolas municipais (EMEF) e escolas estaduais",
-    "esferas": ["Municipal", "Estadual"],
+    "esferas": [
+      "Municipal",
+      "Estadual"
+    ],
     "orgao_responsavel": "Secretaria Municipal de Educação e Secretaria de Estado da Educação",
-    "quem_cobrar": ["Prefeito, se a escola for municipal", "Governador e Deputados Estaduais, se a escola for estadual"],
+    "quem_cobrar": [
+      "Prefeito, se a escola for municipal",
+      "Governador e Deputados Estaduais, se a escola for estadual"
+    ],
     "funcao_orcamento": "Educação",
     "subfuncao_orcamento": "Ensino Fundamental",
     "observacao": "O ensino fundamental é oferecido por municípios e estados em regime de colaboração: veja na ficha da escola de qual esfera ela é.",
     "base": "Constituição Federal, art. 211, §§ 2º e 3º.",
-    "palavras_chave": ["escola", "ensino fundamental", "escola municipal", "emef", "merenda", "merenda escolar", "transporte escolar", "professor faltando", "1 ao 9 ano"]
+    "palavras_chave": [
+      "escola",
+      "ensino fundamental",
+      "escola municipal",
+      "emef",
+      "merenda",
+      "merenda escolar",
+      "transporte escolar",
+      "professor faltando",
+      "1 ao 9 ano"
+    ],
+    "area": "educacao"
   },
   {
     "id": "educacao_medio",
@@ -80,14 +180,27 @@
     "mapa": "educacao",
     "servico": "Ensino médio",
     "equipamento_tipico": "Escolas estaduais",
-    "esferas": ["Estadual"],
+    "esferas": [
+      "Estadual"
+    ],
     "orgao_responsavel": "Secretaria de Estado da Educação",
-    "quem_cobrar": ["Governador e Secretário de Estado da Educação", "Deputados Estaduais"],
+    "quem_cobrar": [
+      "Governador e Secretário de Estado da Educação",
+      "Deputados Estaduais"
+    ],
     "funcao_orcamento": "Educação",
     "subfuncao_orcamento": "Ensino Médio",
     "observacao": "Os estados atuam prioritariamente no ensino fundamental e no médio.",
     "base": "Constituição Federal, art. 211, § 3º.",
-    "palavras_chave": ["ensino medio", "escola estadual", "colegio estadual", "novo ensino medio", "ee", "vestibular escola"]
+    "palavras_chave": [
+      "ensino medio",
+      "escola estadual",
+      "colegio estadual",
+      "novo ensino medio",
+      "ee",
+      "vestibular escola"
+    ],
+    "area": "educacao"
   },
   {
     "id": "educacao_tecnica_superior",
@@ -95,14 +208,36 @@
     "mapa": "educacao",
     "servico": "Ensino técnico e universidade pública",
     "equipamento_tipico": "ETECs e FATECs (Estado de São Paulo), universidades estaduais, Institutos Federais e universidades federais",
-    "esferas": ["Estadual", "Federal"],
+    "esferas": [
+      "Estadual",
+      "Federal"
+    ],
     "orgao_responsavel": "Estado (ETEC, FATEC e universidades estaduais) e Ministério da Educação (Institutos e universidades federais)",
-    "quem_cobrar": ["Governador e Deputados Estaduais, para as estaduais", "Presidente, Ministro da Educação, Deputados Federais e Senadores, para as federais"],
+    "quem_cobrar": [
+      "Governador e Deputados Estaduais, para as estaduais",
+      "Presidente, Ministro da Educação, Deputados Federais e Senadores, para as federais"
+    ],
     "funcao_orcamento": "Educação",
     "subfuncao_orcamento": "Ensino Superior",
     "observacao": "Quem mantém a instituição define quem responde por ela: veja na ficha de cada unidade.",
     "base": "Constituição Federal, arts. 207 e 211.",
-    "palavras_chave": ["etec", "fatec", "instituto federal", "universidade federal", "universidade estadual", "faculdade publica", "curso tecnico", "universidade publica", "usp", "unicamp", "unesp", "sisu", "prouni", "fies"]
+    "palavras_chave": [
+      "etec",
+      "fatec",
+      "instituto federal",
+      "universidade federal",
+      "universidade estadual",
+      "faculdade publica",
+      "curso tecnico",
+      "universidade publica",
+      "usp",
+      "unicamp",
+      "unesp",
+      "sisu",
+      "prouni",
+      "fies"
+    ],
+    "area": "educacao"
   },
   {
     "id": "seguranca_estadual",
@@ -110,14 +245,38 @@
     "mapa": "seguranca",
     "servico": "Policiamento, emergência 190, investigação e delegacias",
     "equipamento_tipico": "Batalhões e companhias da Polícia Militar, delegacias da Polícia Civil e DDM, Corpo de Bombeiros",
-    "esferas": ["Estadual"],
+    "esferas": [
+      "Estadual"
+    ],
     "orgao_responsavel": "Secretaria de Estado da Segurança Pública",
-    "quem_cobrar": ["Governador e Secretário de Segurança Pública", "Deputados Estaduais"],
+    "quem_cobrar": [
+      "Governador e Secretário de Segurança Pública",
+      "Deputados Estaduais"
+    ],
     "funcao_orcamento": "Segurança pública",
     "subfuncao_orcamento": "Policiamento",
     "observacao": "A Guarda Municipal protege bens, serviços e instalações do município; o policiamento ostensivo e a investigação são do Estado. Rodovias federais têm a Polícia Rodoviária Federal.",
     "base": "Constituição Federal, art. 144.",
-    "palavras_chave": ["policia", "pm", "policia militar", "policia civil", "delegacia", "ddm", "delegacia da mulher", "assalto", "furto", "roubo", "boletim de ocorrencia", "190", "bombeiros", "193", "violencia", "seguranca publica", "patrulhamento"]
+    "palavras_chave": [
+      "policia",
+      "pm",
+      "policia militar",
+      "policia civil",
+      "delegacia",
+      "ddm",
+      "delegacia da mulher",
+      "assalto",
+      "furto",
+      "roubo",
+      "boletim de ocorrencia",
+      "190",
+      "bombeiros",
+      "193",
+      "violencia",
+      "seguranca publica",
+      "patrulhamento"
+    ],
+    "area": "seguranca"
   },
   {
     "id": "guarda_municipal",
@@ -125,14 +284,26 @@
     "mapa": "seguranca",
     "servico": "Guarda Municipal: proteção de praças, escolas e prédios públicos",
     "equipamento_tipico": "Bases da Guarda Civil Municipal",
-    "esferas": ["Municipal"],
+    "esferas": [
+      "Municipal"
+    ],
     "orgao_responsavel": "Secretaria Municipal de Segurança (ou equivalente)",
-    "quem_cobrar": ["Prefeito", "Vereadores da sua cidade"],
+    "quem_cobrar": [
+      "Prefeito",
+      "Vereadores da sua cidade"
+    ],
     "funcao_orcamento": "Segurança pública",
     "subfuncao_orcamento": null,
     "observacao": "A Guarda Municipal não substitui a Polícia Militar nem a Civil.",
     "base": "Constituição Federal, art. 144, § 8º.",
-    "palavras_chave": ["guarda municipal", "guarda civil", "gcm", "seguranca na praca", "seguranca na escola"]
+    "palavras_chave": [
+      "guarda municipal",
+      "guarda civil",
+      "gcm",
+      "seguranca na praca",
+      "seguranca na escola"
+    ],
+    "area": "seguranca"
   },
   {
     "id": "assistencia_social",
@@ -140,14 +311,33 @@
     "mapa": "assistencia",
     "servico": "Cadastro Único, Bolsa Família, cesta básica e apoio a famílias em vulnerabilidade",
     "equipamento_tipico": "CRAS e CREAS",
-    "esferas": ["Municipal", "Federal"],
+    "esferas": [
+      "Municipal",
+      "Federal"
+    ],
     "orgao_responsavel": "Secretaria Municipal de Assistência Social (cadastro e atendimento) e Ministério do Desenvolvimento e Assistência Social (benefícios)",
-    "quem_cobrar": ["Prefeito e Vereadores, para atendimento e cadastro", "Presidente e Deputados Federais, para as regras e o valor dos benefícios"],
+    "quem_cobrar": [
+      "Prefeito e Vereadores, para atendimento e cadastro",
+      "Presidente e Deputados Federais, para as regras e o valor dos benefícios"
+    ],
     "funcao_orcamento": "Assistência social",
     "subfuncao_orcamento": null,
     "observacao": "O CRAS faz o cadastro e o acompanhamento; o benefício do Bolsa Família é federal e pago pela Caixa.",
     "base": "Lei 8.742/1993 (LOAS).",
-    "palavras_chave": ["cras", "creas", "bolsa familia", "cadunico", "cadastro unico", "cesta basica", "auxilio", "morador de rua", "pessoa em situacao de rua", "assistencia social", "vulnerabilidade"]
+    "palavras_chave": [
+      "cras",
+      "creas",
+      "bolsa familia",
+      "cadunico",
+      "cadastro unico",
+      "cesta basica",
+      "auxilio",
+      "morador de rua",
+      "pessoa em situacao de rua",
+      "assistencia social",
+      "vulnerabilidade"
+    ],
+    "area": "renda"
   },
   {
     "id": "previdencia_trabalho",
@@ -155,14 +345,33 @@
     "mapa": "outros",
     "servico": "Aposentadoria, BPC/LOAS, auxílio por incapacidade, FGTS e seguro-desemprego",
     "equipamento_tipico": "Agências do INSS (atendimento pelo Meu INSS e telefone 135), Caixa e Ministério do Trabalho",
-    "esferas": ["Federal"],
+    "esferas": [
+      "Federal"
+    ],
     "orgao_responsavel": "Instituto Nacional do Seguro Social (INSS) e Ministério do Trabalho e Emprego",
-    "quem_cobrar": ["Presidente e Ministros", "Deputados Federais e Senadores"],
+    "quem_cobrar": [
+      "Presidente e Ministros",
+      "Deputados Federais e Senadores"
+    ],
     "funcao_orcamento": "Previdência",
     "subfuncao_orcamento": null,
     "observacao": "Estados e municípios têm regimes próprios só para os seus servidores.",
     "base": "Constituição Federal, arts. 201 e 203.",
-    "palavras_chave": ["inss", "aposentadoria", "bpc", "loas", "pericia medica", "pericia do inss", "seguro desemprego", "fgts", "carteira de trabalho", "auxilio doenca", "pensao por morte", "meu inss"]
+    "palavras_chave": [
+      "inss",
+      "aposentadoria",
+      "bpc",
+      "loas",
+      "pericia medica",
+      "pericia do inss",
+      "seguro desemprego",
+      "fgts",
+      "carteira de trabalho",
+      "auxilio doenca",
+      "pensao por morte",
+      "meu inss"
+    ],
+    "area": "renda"
   },
   {
     "id": "infraestrutura_urbana",
@@ -170,14 +379,34 @@
     "mapa": "outros",
     "servico": "Asfalto, tapa-buraco, iluminação pública, limpeza urbana e coleta de lixo",
     "equipamento_tipico": "Ruas e avenidas municipais, iluminação pública, ecopontos e coleta",
-    "esferas": ["Municipal"],
+    "esferas": [
+      "Municipal"
+    ],
     "orgao_responsavel": "Secretaria Municipal de Obras e de Serviços Públicos",
-    "quem_cobrar": ["Prefeito", "Vereadores da sua cidade"],
+    "quem_cobrar": [
+      "Prefeito",
+      "Vereadores da sua cidade"
+    ],
     "funcao_orcamento": "Urbanismo",
     "subfuncao_orcamento": null,
     "observacao": "Os serviços de interesse local são do município; a iluminação pública é custeada por uma contribuição municipal.",
     "base": "Constituição Federal, arts. 30, V, e 149-A.",
-    "palavras_chave": ["buraco", "tapa buraco", "asfalto", "iluminacao publica", "lampada queimada", "poste apagado", "coleta de lixo", "lixo", "entulho", "poda de arvore", "rua esburacada", "limpeza urbana", "mato alto"]
+    "palavras_chave": [
+      "buraco",
+      "tapa buraco",
+      "asfalto",
+      "iluminacao publica",
+      "lampada queimada",
+      "poste apagado",
+      "coleta de lixo",
+      "lixo",
+      "entulho",
+      "poda de arvore",
+      "rua esburacada",
+      "limpeza urbana",
+      "mato alto"
+    ],
+    "area": "cidade"
   },
   {
     "id": "transporte_rodovias",
@@ -185,14 +414,37 @@
     "mapa": "outros",
     "servico": "Ônibus urbano, estradas, pedágios e trânsito",
     "equipamento_tipico": "Linhas urbanas (município), rodovias estaduais (SP-xxx) e rodovias federais (BR-xxx)",
-    "esferas": ["Municipal", "Estadual", "Federal"],
+    "esferas": [
+      "Municipal",
+      "Estadual",
+      "Federal"
+    ],
     "orgao_responsavel": "Município (ônibus urbano e ruas), Estado (rodovias estaduais e linhas intermunicipais) e União (rodovias federais)",
-    "quem_cobrar": ["Prefeito, para o ônibus urbano", "Governador, para rodovias estaduais", "Presidente e Ministro dos Transportes, para as BRs"],
+    "quem_cobrar": [
+      "Prefeito, para o ônibus urbano",
+      "Governador, para rodovias estaduais",
+      "Presidente e Ministro dos Transportes, para as BRs"
+    ],
     "funcao_orcamento": "Transporte",
     "subfuncao_orcamento": null,
     "observacao": "O responsável pela estrada é quem a administra (ou a concede à iniciativa privada): o nome da rodovia mostra a esfera. Em SP, SP-xxx é estadual e BR-xxx é federal.",
     "base": "Constituição Federal, arts. 21, 25 e 30, V.",
-    "palavras_chave": ["rodovia", "estrada", "pedagio", "br", "radar", "onibus urbano", "onibus", "terminal de onibus", "transporte publico", "transporte coletivo", "passe de onibus", "ponto de onibus", "anhanguera"]
+    "palavras_chave": [
+      "rodovia",
+      "estrada",
+      "pedagio",
+      "br",
+      "radar",
+      "onibus urbano",
+      "onibus",
+      "terminal de onibus",
+      "transporte publico",
+      "transporte coletivo",
+      "passe de onibus",
+      "ponto de onibus",
+      "anhanguera"
+    ],
+    "area": "cidade"
   },
   {
     "id": "saneamento",
@@ -200,14 +452,30 @@
     "mapa": "outros",
     "servico": "Água, esgoto e drenagem",
     "equipamento_tipico": "Rede de água e esgoto, estações de tratamento e galerias",
-    "esferas": ["Municipal"],
+    "esferas": [
+      "Municipal"
+    ],
     "orgao_responsavel": "Município (titular do serviço) e a concessionária ou autarquia que presta o serviço",
-    "quem_cobrar": ["Prefeito e Vereadores", "A empresa ou autarquia que presta o serviço, e a agência reguladora"],
+    "quem_cobrar": [
+      "Prefeito e Vereadores",
+      "A empresa ou autarquia que presta o serviço, e a agência reguladora"
+    ],
     "funcao_orcamento": "Saneamento",
     "subfuncao_orcamento": null,
     "observacao": "O município é o titular do serviço, mas a prestação pode ser de uma companhia estadual ou privada, e há agência reguladora.",
     "base": "Lei 11.445/2007, com a redação dada pela Lei 14.026/2020.",
-    "palavras_chave": ["agua", "falta de agua", "esgoto", "saneamento", "vazamento", "conta de agua", "enchente", "bueiro", "drenagem"]
+    "palavras_chave": [
+      "agua",
+      "falta de agua",
+      "esgoto",
+      "saneamento",
+      "vazamento",
+      "conta de agua",
+      "enchente",
+      "bueiro",
+      "drenagem"
+    ],
+    "area": "cidade"
   },
   {
     "id": "tributos",
@@ -215,14 +483,36 @@
     "mapa": "outros",
     "servico": "Quem cobra cada imposto",
     "equipamento_tipico": "Prefeitura (IPTU, ISS, ITBI), Secretaria da Fazenda estadual (ICMS, IPVA, ITCMD) e Receita Federal (Imposto de Renda, IPI, contribuições)",
-    "esferas": ["Municipal", "Estadual", "Federal"],
+    "esferas": [
+      "Municipal",
+      "Estadual",
+      "Federal"
+    ],
     "orgao_responsavel": "Cada esfera arrecada os seus tributos",
-    "quem_cobrar": ["Prefeito e Vereadores, para IPTU, ISS e ITBI", "Governador e Deputados Estaduais, para ICMS e IPVA", "Presidente e Congresso Nacional, para Imposto de Renda e contribuições"],
+    "quem_cobrar": [
+      "Prefeito e Vereadores, para IPTU, ISS e ITBI",
+      "Governador e Deputados Estaduais, para ICMS e IPVA",
+      "Presidente e Congresso Nacional, para Imposto de Renda e contribuições"
+    ],
     "funcao_orcamento": null,
     "subfuncao_orcamento": null,
     "observacao": "Veja para onde vai o seu imposto na tela “Seu imposto e orçamento”.",
     "base": "Constituição Federal, arts. 145 a 156.",
-    "palavras_chave": ["iptu", "iss", "itbi", "icms", "ipva", "itcmd", "imposto de renda", "irpf", "imposto", "taxa", "tributo", "ipi"]
+    "palavras_chave": [
+      "iptu",
+      "iss",
+      "itbi",
+      "icms",
+      "ipva",
+      "itcmd",
+      "imposto de renda",
+      "irpf",
+      "imposto",
+      "taxa",
+      "tributo",
+      "ipi"
+    ],
+    "area": "renda"
   },
   {
     "id": "documentos",
@@ -230,13 +520,189 @@
     "mapa": "outros",
     "servico": "RG, CNH, CPF, título de eleitor e passaporte",
     "equipamento_tipico": "Postos de identificação (Estado), Detran, Receita Federal, cartório eleitoral e Polícia Federal",
-    "esferas": ["Estadual", "Federal"],
+    "esferas": [
+      "Estadual",
+      "Federal"
+    ],
     "orgao_responsavel": "Estado (RG e CNH), Receita Federal (CPF), Justiça Eleitoral (título) e Polícia Federal (passaporte)",
-    "quem_cobrar": ["Governador, para RG e CNH", "Governo Federal, para CPF e passaporte"],
+    "quem_cobrar": [
+      "Governador, para RG e CNH",
+      "Governo Federal, para CPF e passaporte"
+    ],
     "funcao_orcamento": null,
     "subfuncao_orcamento": null,
     "observacao": "Cada documento tem um emissor diferente.",
     "base": null,
-    "palavras_chave": ["rg", "cnh", "carteira de motorista", "cpf", "titulo de eleitor", "passaporte", "identidade", "segunda via", "detran"]
+    "palavras_chave": [
+      "rg",
+      "cnh",
+      "carteira de motorista",
+      "cpf",
+      "titulo de eleitor",
+      "passaporte",
+      "identidade",
+      "segunda via",
+      "detran"
+    ],
+    "area": "seguranca"
+  },
+  {
+    "id": "saude_mental",
+    "categoria": "Saúde",
+    "mapa": "saude",
+    "servico": "Saúde mental, CAPS e dependência de álcool e drogas",
+    "equipamento_tipico": "CAPS (Centro de Atenção Psicossocial), CAPS AD e UBS",
+    "esferas": [
+      "Municipal",
+      "Estadual",
+      "Federal"
+    ],
+    "orgao_responsavel": "Secretaria Municipal de Saúde (rede local) · Secretaria de Estado da Saúde (leitos e referência)",
+    "quem_cobrar": [
+      "Prefeito e Secretário Municipal de Saúde",
+      "Vereadores da sua cidade (fiscalizam o serviço)"
+    ],
+    "funcao_orcamento": "Saúde",
+    "subfuncao_orcamento": null,
+    "observacao": "A porta de entrada é a UBS ou o CAPS da sua cidade; o CAPS recebe quem chega sem encaminhamento. Leitos em hospital geral e serviços de referência costumam depender do Estado, e o financiamento da rede é dividido com a União.",
+    "base": "Lei 10.216/2001; Portaria MS 3.088/2011 (Rede de Atenção Psicossocial).",
+    "palavras_chave": [
+      "saude mental",
+      "caps",
+      "caps ad",
+      "dependente quimico",
+      "dependencia quimica",
+      "drogas",
+      "droga",
+      "alcool",
+      "alcoolismo",
+      "alcoolatra",
+      "vicio",
+      "crack",
+      "usuario de drogas",
+      "depressao",
+      "ansiedade",
+      "psicologo",
+      "psiquiatra",
+      "surto",
+      "tentativa de suicidio"
+    ],
+    "area": "saude"
+  },
+  {
+    "id": "moradia_programas",
+    "categoria": "Moradia",
+    "mapa": "outros",
+    "servico": "Moradia popular: Minha Casa, Minha Vida, regularização do lote e aluguel social",
+    "equipamento_tipico": "Secretaria de Habitação, companhias estaduais de habitação e Caixa Econômica Federal",
+    "esferas": [
+      "Municipal",
+      "Estadual",
+      "Federal"
+    ],
+    "orgao_responsavel": "Secretaria Municipal de Habitação (cadastro e regularização) · Ministério das Cidades (programa)",
+    "quem_cobrar": [
+      "Prefeito e Secretário Municipal de Habitação",
+      "Vereadores da sua cidade",
+      "Deputados Federais e Senadores (regras e recursos do programa)"
+    ],
+    "funcao_orcamento": "Habitação",
+    "subfuncao_orcamento": null,
+    "observacao": "O cadastro e a seleção das famílias costumam ser feitos pelo município. O financiamento e as regras do Minha Casa, Minha Vida vêm da União, e o Estado pode ter programa próprio.",
+    "base": "Constituição Federal, art. 23, IX; Lei 14.620/2023 (Minha Casa, Minha Vida); Lei 13.465/2017 (regularização fundiária).",
+    "palavras_chave": [
+      "moradia",
+      "casa propria",
+      "minha casa minha vida",
+      "mcmv",
+      "habitacao",
+      "regularizacao fundiaria",
+      "regularizar lote",
+      "escritura",
+      "aluguel social",
+      "sem teto",
+      "financiamento da casa",
+      "cdhu",
+      "habitacional"
+    ],
+    "area": "moradia"
+  },
+  {
+    "id": "meio_ambiente_urbano",
+    "categoria": "Meio ambiente",
+    "mapa": "outros",
+    "servico": "Poda de árvores, áreas verdes, enchentes e Defesa Civil",
+    "equipamento_tipico": "Secretaria de Meio Ambiente, Defesa Civil municipal e Corpo de Bombeiros",
+    "esferas": [
+      "Municipal",
+      "Estadual",
+      "Federal"
+    ],
+    "orgao_responsavel": "Secretaria Municipal de Meio Ambiente e Defesa Civil municipal",
+    "quem_cobrar": [
+      "Prefeito e Secretário Municipal de Meio Ambiente",
+      "Vereadores da sua cidade",
+      "Ministério Público (fiscaliza o meio ambiente)"
+    ],
+    "funcao_orcamento": "Meio ambiente",
+    "subfuncao_orcamento": null,
+    "observacao": "Poda e áreas verdes urbanas são do município. A Defesa Civil atua nas três esferas: o município age primeiro, e o Estado e a União apoiam em desastres. O licenciamento de atividades maiores é do órgão ambiental estadual ou federal, conforme o caso.",
+    "base": "Lei Complementar 140/2011; Lei 12.608/2012 (Política Nacional de Proteção e Defesa Civil).",
+    "palavras_chave": [
+      "poda",
+      "poda de arvore",
+      "arvore caida",
+      "arvore",
+      "praca",
+      "area verde",
+      "enchente",
+      "alagamento",
+      "inundacao",
+      "deslizamento",
+      "defesa civil",
+      "desmatamento",
+      "queimada",
+      "poluicao",
+      "esgoto a ceu aberto",
+      "meio ambiente",
+      "cetesb"
+    ],
+    "area": "moradia"
+  },
+  {
+    "id": "justica_acesso",
+    "categoria": "Justiça",
+    "mapa": "outros",
+    "servico": "Justiça gratuita, processos e Defensoria Pública",
+    "equipamento_tipico": "Fórum, Juizado Especial, Defensoria Pública e Ministério Público",
+    "esferas": [
+      "Estadual",
+      "Federal"
+    ],
+    "orgao_responsavel": "Tribunal de Justiça e Defensoria Pública do Estado · Justiça Federal e Defensoria Pública da União",
+    "quem_cobrar": [
+      "Ouvidoria do Tribunal de Justiça e da Defensoria Pública",
+      "Ministério Público (fiscaliza o serviço público)"
+    ],
+    "funcao_orcamento": "Judiciário",
+    "subfuncao_orcamento": null,
+    "observacao": "A Defensoria Pública presta assistência jurídica gratuita a quem não pode pagar um advogado. Causas contra o INSS e a União correm na Justiça Federal; as demais, em regra, na Justiça estadual.",
+    "base": "Constituição Federal, arts. 5º, LXXIV, 98, 109, 127 a 135.",
+    "palavras_chave": [
+      "defensoria",
+      "defensor publico",
+      "advogado gratuito",
+      "advogado de graca",
+      "justica gratuita",
+      "processo",
+      "juizado especial",
+      "forum",
+      "ministerio publico",
+      "promotor",
+      "acao judicial",
+      "pensao alimenticia",
+      "direitos do consumidor"
+    ],
+    "area": "seguranca"
   }
 ]

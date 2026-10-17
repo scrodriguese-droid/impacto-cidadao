@@ -212,9 +212,11 @@ function atalhosSelecao() {
     const alvo = $('auto-camara');
     if (!alvo || !ALINH) return;
     const L = ALINH.limiar_alinhado;
-    const b = (id, rot) => `<button type="button" data-auto="${id}" class="px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-700">${rot}</button>`;
-    alvo.innerHTML = `<span class="text-xs text-slate-500">Marcar pelos votos:</span>
-        ${b('alto', `Votam com o Governo ≥ ${L}%`)}${b('medio', `Entre ${100 - L}% e ${L}%`)}${b('baixo', `Votam com o Governo < ${100 - L}%`)}`;
+    const b = (id, rot, sub) => `<button type="button" data-auto="${id}" title="${sub}" class="px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 text-xs font-semibold text-left hover:bg-slate-100 dark:hover:bg-slate-700">${rot}<span class="block text-[11px] font-normal text-slate-500">${sub}</span></button>`;
+    alvo.innerHTML = `<p class="w-full text-xs text-slate-600 dark:text-slate-400 mb-1"><b>Marcar partidos de uma vez, pelo histórico de votações.</b>
+        Cada botão marca os partidos que seguiram a orientação do Governo nas votações nominais da Câmara com a frequência indicada
+        (período e detalhes em “Quem vota junto”, abaixo). Assim você vê quantas cadeiras o grupo soma e se alcança a maioria. Clique de novo em “Limpar” para desfazer.</p>
+        ${b('alto', 'Mais alinhados ao Governo', `seguem a orientação em ${L}% ou mais das votações`)}${b('medio', 'Posição intermediária', `seguem em ${100 - L}% a ${L - 1}% das votações`)}${b('baixo', 'Menos alinhados ao Governo', `seguem em menos de ${100 - L}% das votações`)}`;
 }
 
 function marcarPorAlinhamento(faixa) {

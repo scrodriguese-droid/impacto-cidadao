@@ -19,6 +19,7 @@ import orcamento
 from config import RAIZ
 
 ARQUIVO = RAIZ / "dados" / "competencias.json"
+ARQUIVO_AREAS = RAIZ / "dados" / "competencias_areas.json"
 SUGESTOES = ["vaga na creche", "buraco na rua", "demora para cirurgia", "remédio no posto", "assalto e polícia", "aposentadoria no INSS"]
 _cache: dict[int, tuple[float, dict | None]] = {}
 _trava = threading.Lock()
@@ -33,6 +34,29 @@ def _norm(t: str) -> str:
 @lru_cache(maxsize=1)
 def _matriz() -> list[dict]:
     return json.loads(ARQUIVO.read_text(encoding="utf-8"))
+
+
+@lru_cache(maxsize=1)
+def _areas() -> list[dict]:
+    return json.loads(ARQUIVO_AREAS.read_text(encoding="utf-8"))
+
+
+def areas() -> list[dict]:
+    """As áreas de interesse, sem o detalhe (para os cartões de entrada)."""
+    return [{"id": a["id"], "titulo": a["titulo"], "resumo": a["resumo"]} for a in _areas()]
+
+
+def area(area_id: str, municipio: int | None = None) -> dict | None:
+    """Uma área por inteiro: quem faz o quê em cada ente, como os três Poderes atuam e cada serviço em detalhe."""
+    a = next((x for x in _areas() if x["id"] == area_id), None)
+    if not a:
+        return None
+    por_id = {it["id"]: it for it in _matriz()}
+    servicos = []
+    for iid in a["itens"]:
+        it = por_id[iid]
+        servicos.append({k: v for k, v in it.items() if k not in ("palavras_chave",)} | {"verba": _verba(it, municipio)})
+    return {**{k: v for k, v in a.items() if k != "itens"}, "servicos": servicos}
 
 
 def _singular(q: str) -> str:
@@ -121,7 +145,7 @@ def ficha(municipio: int, categoria: str, esfera: str) -> dict:
 def buscar(consulta: str, municipio: int | None = None, limite: int = 3) -> dict:
     q = _norm(consulta)
     if len(q) < 2:
-        return {"consulta": consulta, "resultados": [], "sugestoes": SUGESTOES}
+        return {"consulta": consulta, "resultados": [], "sugestoes": SUGESTOES, "areas": areas()}
     ranking = sorted(((_pontuar(q, it), it) for it in _matriz()), key=lambda x: -x[0])
     achados = [it for pts, it in ranking if pts > 0][:limite]
     if not achados:  # erro de digitação: troca cada palavra pela palavra-chave mais parecida
@@ -133,4 +157,4 @@ def buscar(consulta: str, municipio: int | None = None, limite: int = 3) -> dict
     resultados = []
     for it in achados:
         resultados.append({k: v for k, v in it.items() if k != "palavras_chave"} | {"verba": _verba(it, municipio)})
-    return {"consulta": consulta, "resultados": resultados, "sugestoes": SUGESTOES}
+    return {"consulta": consulta, "resultados": resultados, "sugestoes": SUGESTOES, "areas": areas()}

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guia de serviços públicos — ImpactoCidadão</title>
+    <meta name="description" content="O que a prefeitura, o estado e a União fazem em cada área da vida, como pedir cada serviço e onde está o portal oficial.">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="assets/tailwind-config.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/brutalista.css">
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-full flex flex-col transition-colors duration-200">
+
+<a href="#conteudo" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-white focus:text-slate-900 focus:p-3">Ir para o conteúdo</a>
+<div id="cabecalho"></div>
+
+<main id="conteudo" class="max-w-5xl mx-auto px-4 sm:px-6 pt-6 pb-10 flex-grow w-full">
+    <header>
+        <h1 class="text-2xl font-extrabold tracking-tight">Guia de serviços públicos</h1>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">O que a prefeitura, o estado e a União fazem em cada área da vida, como pedir cada serviço e onde está o portal oficial. Cada informação traz a base legal.</p>
+    </header>
+    <div id="barraContexto" class="mt-6"></div>
+    <div id="vista" class="mt-8" aria-live="polite"></div>
+</main>
+
+<div id="rodape"></div>
+
+<script src="assets/comum.js"></script>
+<script>
+renderLayout('servicos');
+
+let contexto = null;
+let INDICE = null;
+const ESFERA_URL = { municipio: 'Municipal', estado: 'Estadual', uniao: 'Federal' };
+const COLUNA = { Municipal: 'Município', Estadual: 'Estado', Federal: 'União' };
+const URL_ESFERA = { Municipal: 'municipio', Estadual: 'estado', Federal: 'uniao' };
+const codigo = () => (contexto && contexto.municipio ? contexto.municipio.codigo : null);
+const qs = () => (codigo() ? `?municipio=${codigo()}` : '');
+const carregando = (t) => `<p class="text-sm text-slate-500"><i class="fa-solid fa-spinner fa-spin mr-1.5" aria-hidden="true"></i>${esc(t)}</p>`;
+const reaisCurto = (n) => {
+    if (n == null) return '—';
+    const v = Math.abs(n);
+    if (v >= 1e12) return `R$ ${(v / 1e12).toLocaleString('pt-BR', { maximumFractionDigits: 2 })} tri`;
+    if (v >= 1e9) return `R$ ${(v / 1e9).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} bi`;
+    if (v >= 1e6) return `R$ ${(v / 1e6).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} mi`;
+    return brl(n);
+};
+const nomeEnte = (esfera) => {
+    const m = contexto && contexto.municipio;
+    return esfera === 'Municipal' ? (m ? `Prefeitura de ${m.nome}` : 'Prefeitura') : esfera === 'Estadual' ? (m ? `Governo do Estado (${m.uf})` : 'Governo do Estado') : 'Governo Federal';
+};
+const fichaLinha = (rotulo, corpo) => `<div class="ficha-linha"><p class="ficha-rotulo">${rotulo}</p><div class="ficha-corpo">${corpo}</div></div>`;
+const ext = (l) => `<a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(l.url))}">${esc(l.nome)} ↗</a>`;
+const listaLinks = (ls) => `<ul>${ls.map((l) => `<li>${ext(l)}</li>`).join('')}</ul>`;
+const migalhas = (...partes) => `<nav class="migalhas" aria-label="Você está em"><a href="#/">Guia de serviços</a>${partes.map(([t, h]) => ` <span aria-hidden="true">/</span> ${h ? `<a href="${h}">${esc(t)}</a>` : `<span>${esc(t)}</span>`}`).join('')}</nav>`;
+
+/* ---- portais oficiais: o que existe para a cidade escolhida e o que fazer quando não há link verificado ---- */
+function blocoPortais(r) {
+    const linhas = [fichaLinha('União', listaLinks(r.federal))];
+    linhas.push(fichaLinha('Estado', r.estado_com_portal ? listaLinks(r.estadual)
+        : '<p class="ficha-nota">Procure o portal de serviços do governo do seu estado. Escolha a cidade na barra acima para ver os portais já conferidos (hoje: São Paulo).</p>'));
+    linhas.push(fichaLinha('Município', r.municipio_com_portal ? listaLinks(r.municipal)
+        : `<p class="ficha-nota">Toda prefeitura deve manter a Carta de Serviços ao Cidadão no seu site (${ext(r.carta_servicos_lei)}). Procure por ela no site da sua prefeitura. Os links já conferidos são os de Limeira.</p>`));
+    return `<div class="ficha">${linhas.join('')}</div>`;
+}
+
+/* ---- visão 1: áreas, esferas e portais ---- */
+async function vistaInicio() {
+    $('vista').innerHTML = carregando('Carregando o guia…');
+    INDICE = await api('/api/servicos' + qs());
+    const areas = INDICE.areas.map((a, i) => `<a class="area-btn" href="#/${esc(a.id)}"><span class="area-num">${String(i + 1).padStart(2, '0')}</span><span class="area-titulo">${esc(a.titulo)}</span><span class="area-resumo">${esc(a.resumo)}</span><span class="area-resumo mt-1">${a.servicos.length} serviços</span></a>`).join('');
+    const esf = ['municipio', 'estado', 'uniao'].map((e) => `<a class="area-btn" href="#/esfera/${e}"><span class="area-titulo">${COLUNA[ESFERA_URL[e]]}</span><span class="area-resumo">${esc(nomeEnte(ESFERA_URL[e]))}: tudo o que é de responsabilidade desta esfera, por área.</span></a>`).join('');
+    $('vista').innerHTML = `
+        <section aria-labelledby="gA"><h2 id="gA">Por área da vida</h2>
+            <p class="text-sm text-slate-500 mt-1">${INDICE.total_servicos} serviços, cada um com o que faz o município, o estado e a União, como pedir e onde está o portal oficial.</p>
+            <div class="grade-areas mt-4">${areas}</div></section>
+        <section aria-labelledby="gE" class="mt-10"><h2 id="gE">Por esfera de governo</h2>
+            <p class="text-sm text-slate-500 mt-1">Prefira esta visão se já sabe a quem quer cobrar.</p>
+            <div class="grade-areas mt-4">${esf}</div></section>
+        <section aria-labelledby="gP" class="mt-10"><h2 id="gP">Portais oficiais</h2>
+            <p class="text-sm text-slate-500 mt-1">As fontes de onde vêm as informações. Os links foram conferidos.</p>
+            <div class="mt-4">${blocoPortais(INDICE.referencias)}</div></section>`;
+}
+
+/* ---- visão 2: uma área ---- */
+async function vistaArea(id) {
+    $('vista').innerHTML = carregando('Montando a área…');
+    const a = await api(`/api/servicos/${encodeURIComponent(id)}${qs()}`);
+    const colunas = ['Municipal', 'Estadual', 'Federal'].map((e) => `<div class="matriz-col"><p class="matriz-ente">${COLUNA[e]}</p><p class="matriz-quem">${esc(nomeEnte(e))}</p>
+        <ul>${(a.entes[e] || []).map((x) => `<li>${esc(x)}</li>`).join('')}</ul></div>`).join('');
+    const poderes = ['Executivo', 'Legislativo', 'Judiciário'].map((p) => fichaLinha(p, `<p>${esc(a.poderes[p === 'Judiciário' ? 'Judiciario' : p])}</p>`)).join('');
+    const cards = a.servicos.map((s) => `<a class="area-btn" href="#/${esc(a.id)}/${esc(s.slug)}"><span class="area-titulo" style="font-size:1.3rem">${esc(s.nome)}</span>
+        <span class="area-resumo">${esc(s.resumo)}</span><span class="area-resumo mt-2"><b>${s.esferas.map((e) => COLUNA[e]).join(' · ')}</b></span></a>`).join('');
+    $('vista').innerHTML = `${migalhas([a.titulo])}
+        <div class="matriz-cab mt-4"><div><p class="matriz-rotulo">Área de interesse</p><h2 class="matriz-titulo">${esc(a.titulo)}</h2></div></div>
+        <p class="text-sm mt-3">${esc(a.resumo)}</p>
+        <p class="matriz-sub">Quem cuida de quê</p><div class="matriz-colunas">${colunas}</div>
+        <p class="matriz-sub">Como os Poderes atuam nesta área</p><div class="matriz-poderes">${poderes}</div>
+        <p class="ficha-nota mt-2">Base legal: ${esc(a.base)}</p>
+        <p class="matriz-sub">Serviço por serviço</p><div class="grade-areas">${cards}</div>
+        <p class="matriz-sub">Portais oficiais</p>${blocoPortais(a.referencias)}`;
+}
+
+/* ---- visão 3: o raio-X de um serviço ---- */
+async function vistaServico(areaId, slug) {
+    $('vista').innerHTML = carregando('Abrindo o serviço…');
+    const s = await api(`/api/servicos/${encodeURIComponent(areaId)}/${encodeURIComponent(slug)}${qs()}`);
+    const colunas = ['Municipal', 'Estadual', 'Federal'].map((e) => `<div class="matriz-col"><p class="matriz-ente">${COLUNA[e]}</p><p class="matriz-quem">${esc(nomeEnte(e))}</p>
+        ${s.entes[e] ? `<p class="text-sm">${esc(s.entes[e])}</p>` : '<p class="ficha-nota">Sem papel direto neste serviço.</p>'}</div>`).join('');
+    const passos = `<ol class="passos">${s.como_acessar.map((p) => `<li>${esc(p)}</li>`).join('')}</ol>`;
+    const verba = s.verba.length ? `<ul>${s.verba.map((v) => `<li><b>${esc(v.instituicao)}</b> autorizou na LOA ${esc(v.ano)}: <b>${esc(reaisCurto(v.valor_funcao))}</b> para ${esc(v.funcao)}${v.subfuncao && v.valor_subfuncao != null ? `, dos quais <b>${esc(reaisCurto(v.valor_subfuncao))}</b> em ${esc(v.subfuncao)}` : ''}.</li>`).join('')}</ul>
+        <p class="ficha-nota">Dotação inicial da LOA declarada ao Tesouro Nacional (RREO). É o valor da área, não de um serviço específico.</p>`
+        : `<p class="ficha-nota">${codigo() ? 'Sem valor de orçamento declarado para esta área.' : 'Escolha a sua cidade na barra acima para ver quanto cada esfera autorizou para esta área.'}</p>`;
+    const L = s.links;
+    const portais = [
+        L.federal.length ? fichaLinha('União', listaLinks(L.federal)) : '',
+        L.estado_com_portal ? fichaLinha('Estado', listaLinks(L.estadual)) : fichaLinha('Estado', '<p class="ficha-nota">Procure o portal de serviços do governo do seu estado. Escolha a cidade para ver os já conferidos.</p>'),
+        L.municipio_com_portal ? fichaLinha('Município', listaLinks(L.municipal)) : fichaLinha('Município', '<p class="ficha-nota">Procure a Carta de Serviços ao Cidadão no site da sua prefeitura. Todo município deve mantê-la (Lei 13.460/2017).</p>'),
+    ].join('');
+    $('vista').innerHTML = `${migalhas([s.area_titulo, `#/${areaId}`], [s.nome])}
+        <h2 class="mt-4">${esc(s.nome)}</h2>
+        <p class="text-sm mt-3" style="max-width:70ch">${esc(s.resumo)}</p>
+        <p class="matriz-sub">Quem faz o quê</p><div class="matriz-colunas">${colunas}</div>
+        <p class="matriz-sub">Como pedir e como acompanhar</p>${passos}
+        <p class="matriz-sub">De onde vem o dinheiro</p><div class="ficha">${fichaLinha('Financiamento', `<p>${esc(s.financiamento)}</p>`)}${fichaLinha('Orçamento previsto', verba)}</div>
+        <p class="matriz-sub">A quem cobrar</p><div class="ficha">${fichaLinha('Responsáveis', `<ul>${s.quem_cobrar.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>`)}</div>
+        <p class="matriz-sub">Portais oficiais</p><div class="ficha">${portais}</div>
+        <p class="ficha-nota mt-3">Base legal: ${esc(s.base)}</p>
+        <p class="mt-4"><a class="portal-entrar" href="quem-resolve.html#mapaSec">Ver os equipamentos no mapa →</a></p>`;
+}
+
+/* ---- visão 4: tudo o que é de uma esfera ---- */
+async function vistaEsfera(e) {
+    $('vista').innerHTML = carregando('Carregando…');
+    const r = await api(`/api/servicos/esfera/${encodeURIComponent(e)}`);
+    $('vista').innerHTML = `${migalhas([COLUNA[r.esfera]])}
+        <h2 class="mt-4">${esc(COLUNA[r.esfera])}</h2>
+        <p class="text-sm mt-3">${esc(r.rotulo)}${codigo() ? `: ${esc(nomeEnte(r.esfera))}` : ''}. Tudo o que esta esfera faz, por área.</p>
+        ${r.areas.map((a) => `<p class="matriz-sub">${esc(a.titulo)}</p><div class="ficha">${a.servicos.map((s) =>
+            fichaLinha(`<a href="#/${esc(a.id)}/${esc(s.slug)}">${esc(s.nome)}</a>`, `<p>${esc(s.papel)}</p>`)).join('')}</div>`).join('')}`;
+}
+
+/* ---- roteador por hash: #/ · #/saude · #/saude/caps · #/esfera/municipio ---- */
+async function rotear() {
+    const partes = location.hash.replace(/^#\/?/, '').split('/').filter(Boolean);
+    try {
+        if (!partes.length) await vistaInicio();
+        else if (partes[0] === 'esfera' && ESFERA_URL[partes[1]]) await vistaEsfera(partes[1]);
+        else if (partes.length === 1) await vistaArea(partes[0]);
+        else await vistaServico(partes[0], partes[1]);
+    } catch (e) { $('vista').innerHTML = `${migalhas()}${mensagemErro(e)}`; }
+    window.scrollTo({ top: 0 });
+}
+window.addEventListener('hashchange', rotear);
+(async function iniciar() {
+    contexto = await montarBarraContexto('barraContexto', rotear);
+    rotear();
+})();
+</script>
+</body>
+</html>
