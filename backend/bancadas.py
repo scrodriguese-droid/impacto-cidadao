@@ -11,6 +11,7 @@ em exercício), então a lacuna é declarada.
 """
 from __future__ import annotations
 
+import json
 import logging
 import math
 import re
@@ -19,6 +20,7 @@ import time
 from datetime import datetime, timezone
 from typing import Any
 
+from config import RAIZ
 from fontes import ClienteHTTP, ErroFonte
 
 log = logging.getLogger("impacto.bancadas")
@@ -281,3 +283,78 @@ def bancadas() -> dict:
 def frentes_tematicas() -> dict:
     """Bancadas temáticas (frentes parlamentares). Falha da fonte vira ErroFonte para a rota tratar."""
     return {"consultado_em": _agora(), **_memo("frentes", _frentes)}
+
+
+# --------------------------------------------------------------------------- #
+# Quem vota junto: alinhamento com o Governo, coesão e afinidade entre partidos
+# --------------------------------------------------------------------------- #
+ARQ_ALINHAMENTO = RAIZ / "dados" / "votacoes" / "alinhamento_camara.json"
+LIMIAR_ALINHADO = 70       # % de votos iguais à orientação do Governo para o atalho "mais alinhados"
+MIN_VOTOS_PARTIDO = 30     # abaixo disso o percentual não é confiável e o partido fica de fora
+MIN_VOTACOES_PAR = 20      # idem para a afinidade entre dois partidos
+_cache_alinh: dict[str, Any] = {"mtime": None, "dados": None}
+
+
+def _dados_alinhamento() -> dict:
+    try:
+        mt = ARQ_ALINHAMENTO.stat().st_mtime
+    except OSError as exc:
+        raise ErroFonte("Alinhamento de votação ainda não coletado (rode backend/coletor_votacoes.py).") from exc
+    with _trava:
+        if _cache_alinh["mtime"] != mt:
+            _cache_alinh.update(mtime=mt, dados=json.loads(ARQ_ALINHAMENTO.read_text(encoding="utf-8")))
+        return _cache_alinh["dados"]
+
+
+def alinhamento(desde: int | None = None, ate: int | None = None) -> dict:
+    d = _dados_alinhamento()
+    anos = sorted(int(a) for a in d["anos"])
+    desde, ate = max(anos[0], desde or anos[0]), min(anos[-1], ate or anos[-1])
+    if desde > ate:
+        raise ValueError("O ano inicial não pode ser posterior ao final.")
+    sel = [d["anos"][str(a)] for a in range(desde, ate + 1) if str(a) in d["anos"]]
+    tot: dict[str, dict] = {}
+    pares: dict[str, list[int]] = {}
+    for a in sel:
+        for sg, x in a["partidos"].items():
+            t = tot.setdefault(sg, {"gov_ok": 0, "gov_n": 0, "rice_soma": 0.0, "rice_n": 0})
+            for k in t:
+                t[k] += x[k]
+        for k, (ok, n) in a["pares"].items():
+            q = pares.setdefault(k, [0, 0])
+            q[0] += ok
+            q[1] += n
+    afin: dict[str, list[dict]] = {}
+    for k, (ok, n) in pares.items():
+        if n < MIN_VOTACOES_PAR:
+            continue
+        a, b = k.split("|")
+        pct = 100 * ok / n
+        afin.setdefault(a, []).append({"sigla": b, "pct": round(pct, 1), "votacoes": n})
+        afin.setdefault(b, []).append({"sigla": a, "pct": round(pct, 1), "votacoes": n})
+    itens = []
+    for sg, t in sorted(tot.items(), key=lambda kv: kv[0].casefold()):
+        if t["gov_n"] < MIN_VOTOS_PARTIDO or sg.upper() in ("S.PART.", "SEM PARTIDO"):
+            continue
+        outros = sorted(afin.get(sg, []), key=lambda x: (-x["pct"], x["sigla"]))
+        itens.append({
+            "sigla": sg, "votos": t["gov_n"],
+            "alinhamento_governo": round(100 * t["gov_ok"] / t["gov_n"], 1),
+            "coesao": round(100 * t["rice_soma"] / t["rice_n"], 1) if t["rice_n"] else None,
+            "mais_afins": outros[:5], "menos_afins": list(reversed(outros[-3:])) if len(outros) > 5 else [],
+        })
+    return {
+        "periodo": {"desde": desde, "ate": ate, "anos_disponiveis": anos},
+        "votacoes": sum(a["votacoes"] for a in sel), "limiar_alinhado": LIMIAR_ALINHADO,
+        "gerado_em": d["gerado_em"], "partidos": itens,
+        "fonte": {"nome": "Câmara dos Deputados — votações nominais e orientações de bancada (dados abertos)",
+                  "url": "https://dadosabertos.camara.leg.br/swagger/api.html"},
+        "notas": [
+            "Não classificamos partidos como esquerda, centro ou direita: a Câmara não faz essa classificação e qualquer rótulo seria opinião. Mostramos só o comportamento em votações.",
+            "Alinhamento com o Governo: dos votos “Sim” e “Não” do partido, quantos coincidem com a orientação do Governo, nas votações nominais em que o Governo orientou “Sim” ou “Não”.",
+            "Coesão: 100% = todos os deputados do partido votaram igual; valores baixos indicam bancada dividida. É a média das votações em que o partido teve ao menos 3 votos.",
+            f"Afinidade: percentual das votações em que a posição da maioria de cada partido coincidiu. Só aparece com pelo menos {MIN_VOTACOES_PAR} votações em comum.",
+            "Votações nominais não são todas as decisões do Congresso (muita coisa é votada simbolicamente) e o alinhamento muda com o tema: é retrato, não previsão.",
+            f"Partidos com menos de {MIN_VOTOS_PARTIDO} votos no período não aparecem, por falta de base para o percentual.",
+        ],
+    }

@@ -521,6 +521,18 @@ def bancadas_partidarias() -> dict:
         raise HTTPException(status_code=503, detail="As fontes oficiais da Câmara e do Senado estão indisponíveis no momento.") from exc
 
 
+@router.get("/bancadas/alinhamento", tags=["bancadas"])
+def bancadas_alinhamento(desde: Annotated[int | None, Query(ge=2000, le=2100)] = None,
+                         ate: Annotated[int | None, Query(ge=2000, le=2100)] = None) -> dict:
+    try:
+        return bancadas.alinhamento(desde, ate)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except Exception as exc:  # noqa: BLE001
+        log.warning("Alinhamento indisponível: %s", exc)
+        raise HTTPException(status_code=503, detail="Os dados de votação ainda não estão disponíveis.") from exc
+
+
 @router.get("/bancadas/tematicas", tags=["bancadas"])
 def bancadas_tematicas() -> dict:
     try:
