@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simuladores de IR e MEI — ImpactoCidadão</title>
+    <meta name="description" content="Simule o Imposto de Renda na fonte (regra de 2025 e de 2026) e o limite do MEI.">
+
+    <!-- Tailwind via CDN: ótimo para desenvolvimento. Em produção, compile o CSS (tailwindcss CLI). -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="assets/tailwind-config.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Inter', system-ui, sans-serif; }
+        details > summary { list-style: none; cursor: pointer; }
+        details > summary::-webkit-details-marker { display: none; }
+        details[open] > summary .chev { transform: rotate(180deg); }
+        .chev { transition: transform .15s ease; }
+        .scroll-x { scrollbar-width: thin; }
+        :focus-visible { outline: 2px solid #A92823; outline-offset: 2px; }
+    </style>
+    <link rel="stylesheet" href="assets/brutalista.css">
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-full flex flex-col transition-colors duration-200">
+
+<a href="#conteudo" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-white focus:text-slate-900 focus:p-3">Ir para o conteúdo</a>
+
+<div id="cabecalho"></div>
+
+<main id="conteudo" class="max-w-4xl mx-auto px-4 sm:px-6 pt-6 pb-10 flex-grow w-full space-y-6">
+    <h1 class="text-2xl font-extrabold tracking-tight">Simuladores de IR e MEI</h1>
+    <!-- ========================= SIMULADORES ========================= -->
+    <section id="simuladores" class="scroll-mt-20 bg-white dark:bg-slate-800 rounded-2xl p-6 sm:p-8 border border-slate-200 dark:border-slate-700/80 shadow-sm" aria-labelledby="tSim">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 border-b border-slate-100 dark:border-slate-700/60 pb-5">
+            <div>
+                <h2 id="tSim" class="text-xl font-bold flex items-center"><i class="fa-solid fa-calculator text-teal-500 mr-2.5" aria-hidden="true"></i>Simuladores do seu bolso</h2>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Cálculos com as regras vigentes, feitos no servidor com parâmetros legais documentados. São estimativas de orientação.</p>
+            </div>
+            <div class="inline-flex rounded-xl p-1 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700" role="tablist">
+                <button id="tabIR" role="tab" type="button" class="px-3 py-1.5 text-xs font-semibold rounded-lg">Imposto de Renda</button>
+                <button id="tabMEI" role="tab" type="button" class="px-3 py-1.5 text-xs font-semibold rounded-lg">Limite do MEI</button>
+            </div>
+        </div>
+
+        <!-- IR -->
+        <div id="painelIR" class="grid grid-cols-1 md:grid-cols-12 gap-6">
+            <div class="md:col-span-5 space-y-4">
+                <div>
+                    <label for="irSalario" class="block text-xs font-semibold mb-1">Salário bruto mensal (R$)</label>
+                    <input id="irSalario" type="number" inputmode="decimal" min="0" max="1000000" step="50" value="4500"
+                           class="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                </div>
+                <div>
+                    <label for="irDeps" class="block text-xs font-semibold mb-1">Dependentes: <span id="irDepsTxt" class="font-bold text-brand-600">0</span></label>
+                    <input id="irDeps" type="range" min="0" max="6" value="0" class="w-full accent-brand-600">
+                </div>
+                <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">Compara a retenção na fonte pela regra de 2025 com a regra de 2026 (Lei 15.270/2025: isenção até R$ 5.000 e redução gradual até R$ 7.350).</p>
+            </div>
+            <div id="irResultado" class="md:col-span-7 bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl p-5 shadow-lg border border-slate-700" aria-live="polite"></div>
+        </div>
+
+        <!-- MEI -->
+        <div id="painelMEI" class="hidden grid grid-cols-1 md:grid-cols-12 gap-6">
+            <div class="md:col-span-5 space-y-4">
+                <div>
+                    <label for="meiFat" class="block text-xs font-semibold mb-1">Faturamento anual (R$)</label>
+                    <input id="meiFat" type="number" inputmode="decimal" min="0" max="10000000" step="1000" value="90000"
+                           class="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                </div>
+                <div>
+                    <label for="meiAtiv" class="block text-xs font-semibold mb-1">Atividade</label>
+                    <select id="meiAtiv" class="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm">
+                        <option value="servicos">Serviços</option>
+                        <option value="comercio_industria">Comércio ou indústria</option>
+                        <option value="comercio_servicos">Comércio e serviços</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="meiTeto" class="block text-xs font-semibold mb-1">E se o teto anual fosse… (R$, hipótese)</label>
+                    <input id="meiTeto" type="number" inputmode="decimal" min="0" max="10000000" step="1000" placeholder="ex.: 130000"
+                           class="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                    <p class="text-[11px] text-slate-500 mt-1">Simulação livre: não representa lei aprovada.</p>
+                </div>
+            </div>
+            <div id="meiResultado" class="md:col-span-7 bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl p-5 shadow-lg border border-slate-700" aria-live="polite"></div>
+        </div>
+    </section>
+</main>
+
+<div id="rodape"></div>
+
+<script src="assets/comum.js"></script>
+<script>
+renderLayout('simuladores');
+
+/* ====================================================================== *
+ *  Simuladores
+ * ====================================================================== */
+function abaSimulador(qual) {
+    const ir = qual === 'ir';
+    $('painelIR').classList.toggle('hidden', !ir); $('painelMEI').classList.toggle('hidden', ir);
+    const ativo = 'bg-white dark:bg-slate-800 text-brand-600 dark:text-brand-400 shadow-sm';
+    const inativo = 'text-slate-600 dark:text-slate-400';
+    $('tabIR').className = `px-3 py-1.5 text-xs font-semibold rounded-lg ${ir ? ativo : inativo}`;
+    $('tabMEI').className = `px-3 py-1.5 text-xs font-semibold rounded-lg ${ir ? inativo : ativo}`;
+    $('tabIR').setAttribute('aria-selected', String(ir)); $('tabMEI').setAttribute('aria-selected', String(!ir));
+    (ir ? simularIR : simularMEI)();
+}
+$('tabIR').addEventListener('click', () => abaSimulador('ir'));
+$('tabMEI').addEventListener('click', () => abaSimulador('mei'));
+
+async function post(caminho, corpo) {
+    return api(caminho, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(corpo) });
+}
+const num = (id) => { const v = parseFloat($(id).value); return Number.isFinite(v) && v >= 0 ? v : 0; };
+
+const simularIR = debounce(async () => {
+    $('irDepsTxt').textContent = $('irDeps').value;
+    try {
+        const r = await post('/api/simulador/ir', { salario_bruto: num('irSalario'), dependentes: parseInt($('irDeps').value, 10) || 0 });
+        const e = r.economia_mensal;
+        const manchete = e > 0
+            ? `<span class="text-xs text-slate-400 uppercase tracking-widest block">Você deixa de pagar</span><div class="text-3xl sm:text-4xl font-extrabold text-emerald-400 my-1">${brl(e)} <span class="text-sm font-normal text-slate-300">/mês</span></div><p class="text-xs text-slate-300">≈ ${brl(r.economia_anual_estimada)} por ano (12 meses, sem 13º).</p>`
+            : `<span class="text-xs text-slate-400 uppercase tracking-widest block">Efeito da regra de 2026</span><div class="text-2xl font-extrabold text-white my-1">Sem mudança no seu imposto na fonte</div><p class="text-xs text-slate-300">${r.faixa === 'sem_beneficio' ? 'Acima de R$ 7.350 mensais não há redução.' : 'Seu imposto já era zero pela regra anterior.'}</p>`;
+        $('irResultado').innerHTML = `<div class="text-center border-b border-slate-700/80 pb-4">${manchete}</div>
+            <table class="w-full text-xs mt-4"><thead><tr class="text-slate-400"><th class="text-left font-medium pb-2"></th><th class="text-right font-medium pb-2">Regra 2025</th><th class="text-right font-medium pb-2">Regra 2026</th></tr></thead>
+            <tbody class="divide-y divide-slate-700/60">
+              <tr><td class="py-1.5 text-slate-300">IRRF mensal</td><td class="text-right">${brl(r.regra_2025.imposto_mensal)}</td><td class="text-right font-bold text-emerald-300">${brl(r.regra_2026.imposto_mensal)}</td></tr>
+              <tr><td class="py-1.5 text-slate-300">INSS mensal</td><td class="text-right">${brl(r.inss)}</td><td class="text-right">${brl(r.inss)}</td></tr>
+              <tr><td class="py-1.5 text-slate-300">Líquido mensal</td><td class="text-right">${brl(r.regra_2025.liquido_mensal)}</td><td class="text-right font-bold">${brl(r.regra_2026.liquido_mensal)}</td></tr>
+            </tbody></table>
+            <p class="text-[11px] text-slate-400 mt-4 leading-relaxed">${esc(r.observacoes[0])} ${r.fontes.map((f) => `<a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(f.url))}">${esc(f.nome)}</a>`).join(' · ')}</p>`;
+    } catch (err) { $('irResultado').innerHTML = `<p class="text-sm text-rose-300">${esc(err.message)}</p>`; }
+}, 250);
+
+const simularMEI = debounce(async () => {
+    const teto = num('meiTeto');
+    try {
+        const r = await post('/api/simulador/mei', { faturamento_anual: num('meiFat'), atividade: $('meiAtiv').value, teto_hipotetico: teto > 0 ? teto : null });
+        const cores = { dentro_do_limite: 'text-emerald-400', excesso_ate_20: 'text-amber-400', excesso_acima_20: 'text-rose-400' };
+        const s = r.situacao_atual;
+        const hip = r.cenario_hipotetico
+            ? `<div class="mt-4 p-3 rounded-xl bg-slate-800/80 border border-slate-700 text-xs"><p class="font-semibold text-slate-200">Hipótese: teto de ${brl(r.cenario_hipotetico.teto_anual)}</p>
+               <p class="${cores[r.cenario_hipotetico.situacao.codigo]} font-bold mt-1">${esc(r.cenario_hipotetico.situacao.titulo)}</p>
+               <p class="text-slate-400 mt-1">${r.cenario_hipotetico.mudou_em_relacao_ao_atual ? 'Muda em relação às regras de hoje.' : 'Sem mudança em relação às regras de hoje.'} Simulação livre, não é lei aprovada.</p></div>` : '';
+        $('meiResultado').innerHTML = `<div class="text-center border-b border-slate-700/80 pb-4">
+                <span class="text-xs text-slate-400 uppercase tracking-widest block">Situação frente ao limite de ${brl(r.limite_vigente)}</span>
+                <div class="text-xl font-extrabold ${cores[s.codigo]} my-1">${esc(s.titulo)}</div>
+                <p class="text-xs text-slate-300">${esc(s.detalhe)}</p>
+                <p class="text-[11px] text-slate-400 mt-2">Você usou ${r.percentual_do_limite}% do limite.</p></div>
+            <div class="grid grid-cols-2 gap-3 mt-4 text-center">
+                <div class="p-3 rounded-xl bg-slate-800/80 border border-slate-700"><span class="text-[11px] text-slate-400 block">DAS mensal</span><b class="text-lg">${brl(r.das_mensal)}</b></div>
+                <div class="p-3 rounded-xl bg-slate-800/80 border border-slate-700"><span class="text-[11px] text-slate-400 block">DAS no ano</span><b class="text-lg">${brl(r.das_anual)}</b></div></div>${hip}
+            <p class="text-[11px] text-slate-400 mt-4">${esc(r.observacoes[0])}</p>`;
+    } catch (err) { $('meiResultado').innerHTML = `<p class="text-sm text-rose-300">${esc(err.message)}</p>`; }
+}, 250);
+['irSalario', 'irDeps'].forEach((id) => $(id).addEventListener('input', simularIR));
+['meiFat', 'meiAtiv', 'meiTeto'].forEach((id) => $(id).addEventListener('input', simularMEI));
+
+
+abaSimulador('ir');
+</script>
+</body>
+</html>

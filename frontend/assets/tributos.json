@@ -1,0 +1,504 @@
+[
+  {
+    "id": "impostos_federais",
+    "titulo": "Impostos federais",
+    "esfera": "Federal",
+    "tipo": "Imposto",
+    "nota": "Arrecadados pela União. Parte da arrecadação do IR e do IPI é repassada a estados e municípios (FPE e FPM).",
+    "itens": [
+      {
+        "sigla": "II",
+        "nome": "Imposto de Importação",
+        "onde": "Na importação de produtos estrangeiros.",
+        "base_legal": "CF, art. 153, I",
+        "arrec_id": "II"
+      },
+      {
+        "sigla": "IE",
+        "nome": "Imposto de Exportação",
+        "onde": "Na exportação de determinados produtos.",
+        "base_legal": "CF, art. 153, II"
+      },
+      {
+        "sigla": "IRPF",
+        "nome": "Imposto de Renda da Pessoa Física",
+        "onde": "Sobre rendimentos de pessoas físicas, conforme as regras aplicáveis.",
+        "base_legal": "CF, art. 153, III",
+        "arrec_id": "IRPF",
+        "arrec_nota": "Imposto de Renda retido na fonte aparece separado (IRRF)."
+      },
+      {
+        "sigla": "IRPJ",
+        "nome": "Imposto de Renda da Pessoa Jurídica",
+        "onde": "Sobre os resultados tributáveis das empresas.",
+        "base_legal": "CF, art. 153, III",
+        "arrec_id": "IRPJ"
+      },
+      {
+        "sigla": "IPI",
+        "nome": "Imposto sobre Produtos Industrializados",
+        "onde": "Sobre produtos industrializados, nas operações previstas em lei.",
+        "base_legal": "CF, art. 153, IV",
+        "arrec_id": "IPI"
+      },
+      {
+        "sigla": "IOF",
+        "nome": "Imposto sobre Operações Financeiras",
+        "onde": "Em operações de crédito, câmbio, seguros e títulos ou valores mobiliários.",
+        "base_legal": "CF, art. 153, V",
+        "arrec_id": "IOF"
+      },
+      {
+        "sigla": "ITR",
+        "nome": "Imposto sobre a Propriedade Territorial Rural",
+        "onde": "Sobre a propriedade rural.",
+        "base_legal": "CF, art. 153, VI"
+      },
+      {
+        "sigla": "IS",
+        "nome": "Imposto Seletivo",
+        "onde": "Sobre bens e serviços definidos em lei, relacionados a efeitos prejudiciais à saúde ou ao meio ambiente. Criado pela reforma tributária; a cobrança está prevista para começar em 2027.",
+        "base_legal": "CF, art. 153, VIII (EC 132/2023); LC 214/2025"
+      },
+      {
+        "sigla": "IGF",
+        "nome": "Imposto sobre Grandes Fortunas",
+        "onde": "Previsto na Constituição, mas ainda sem instituição por lei complementar.",
+        "base_legal": "CF, art. 153, VII"
+      }
+    ]
+  },
+  {
+    "id": "impostos_estaduais",
+    "titulo": "Impostos estaduais e do Distrito Federal",
+    "esfera": "Estadual",
+    "tipo": "Imposto",
+    "nota": "Cobrados pelos estados e pelo Distrito Federal. Parte do ICMS e do IPVA é repassada aos municípios.",
+    "itens": [
+      {
+        "sigla": "ICMS",
+        "nome": "Imposto sobre Circulação de Mercadorias e Serviços",
+        "onde": "Em operações com mercadorias e em serviços específicos, como transporte interestadual e intermunicipal e comunicação.",
+        "base_legal": "CF, art. 155, II",
+        "arrec_id": "ICMS"
+      },
+      {
+        "sigla": "IPVA",
+        "nome": "Imposto sobre a Propriedade de Veículos Automotores",
+        "onde": "Sobre a propriedade de veículos automotores.",
+        "base_legal": "CF, art. 155, III",
+        "arrec_id": "IPVA"
+      },
+      {
+        "sigla": "ITCMD",
+        "nome": "Imposto sobre Transmissão Causa Mortis e Doação",
+        "onde": "Em heranças e doações.",
+        "base_legal": "CF, art. 155, I",
+        "arrec_id": "ITCMD"
+      }
+    ]
+  },
+  {
+    "id": "impostos_municipais",
+    "titulo": "Impostos municipais",
+    "esfera": "Municipal",
+    "tipo": "Imposto",
+    "nota": "Cobrados pelos municípios (e pelo Distrito Federal, que reúne os impostos estaduais e municipais).",
+    "itens": [
+      {
+        "sigla": "IPTU",
+        "nome": "Imposto sobre a Propriedade Predial e Territorial Urbana",
+        "onde": "Sobre imóveis urbanos.",
+        "base_legal": "CF, art. 156, I",
+        "arrec_id": "IPTU"
+      },
+      {
+        "sigla": "ITBI",
+        "nome": "Imposto sobre Transmissão de Bens Imóveis",
+        "onde": "Em transmissões onerosas de imóveis, como certas compras e vendas.",
+        "base_legal": "CF, art. 156, II",
+        "arrec_id": "ITBI"
+      },
+      {
+        "sigla": "ISS",
+        "nome": "Imposto sobre Serviços de Qualquer Natureza",
+        "onde": "Sobre serviços previstos na legislação.",
+        "base_legal": "CF, art. 156, III",
+        "arrec_id": "ISS"
+      }
+    ]
+  },
+  {
+    "id": "reforma_consumo",
+    "titulo": "Reforma tributária do consumo (em transição)",
+    "esfera": "Mista",
+    "tipo": "Imposto",
+    "nota": "A reforma (EC 132/2023 e LC 214/2025) cria tributos sobre bens e serviços que vão substituir, gradualmente, PIS, Cofins, ICMS e ISS. As datas e alíquotas dependem da transição prevista em lei.",
+    "itens": [
+      {
+        "sigla": "CBS",
+        "nome": "Contribuição sobre Bens e Serviços",
+        "onde": "Tributo federal criado pela reforma do consumo, com implementação gradual. Substitui PIS e Cofins.",
+        "base_legal": "CF, art. 195, V (EC 132/2023); LC 214/2025"
+      },
+      {
+        "sigla": "IBS",
+        "nome": "Imposto sobre Bens e Serviços",
+        "onde": "Tributo compartilhado entre estados e municípios, criado pela reforma, com gestão por um comitê gestor. Substitui, gradualmente, ICMS e ISS.",
+        "base_legal": "CF, art. 156-A (EC 132/2023); LC 214/2025"
+      }
+    ]
+  },
+  {
+    "id": "contribuicoes_federais",
+    "titulo": "Contribuições federais",
+    "esfera": "Federal",
+    "tipo": "Contribuição",
+    "nota": "A Receita Federal administra, entre outros, PIS/Pasep, Cofins, CSLL, contribuições previdenciárias e Cide-Combustíveis.",
+    "itens": [
+      {
+        "sigla": "PIS",
+        "nome": "Programa de Integração Social",
+        "onde": "Principalmente sobre receitas de empresas e outras bases previstas em lei.",
+        "base_legal": "CF, art. 195, I, b, e art. 239",
+        "arrec_id": "PIS_PASEP",
+        "arrec_nota": "PIS e Pasep vêm somados na fonte."
+      },
+      {
+        "sigla": "Pasep",
+        "nome": "Programa de Formação do Patrimônio do Servidor Público",
+        "onde": "Contribuição relacionada ao Programa de Formação do Patrimônio do Servidor Público.",
+        "base_legal": "CF, art. 239",
+        "arrec_id": "PIS_PASEP",
+        "arrec_nota": "PIS e Pasep vêm somados na fonte."
+      },
+      {
+        "sigla": "Cofins",
+        "nome": "Contribuição para o Financiamento da Seguridade Social",
+        "onde": "Principalmente sobre receitas de empresas e outras bases previstas em lei.",
+        "base_legal": "CF, art. 195, I, b",
+        "arrec_id": "COFINS"
+      },
+      {
+        "sigla": "CSLL",
+        "nome": "Contribuição Social sobre o Lucro Líquido",
+        "onde": "Sobre o lucro das pessoas jurídicas.",
+        "base_legal": "CF, art. 195, I, c",
+        "arrec_id": "CSLL"
+      },
+      {
+        "sigla": "Previdenciária do empregado",
+        "nome": "Contribuição previdenciária do empregado",
+        "onde": "Descontada da remuneração de trabalhadores abrangidos pelo regime.",
+        "base_legal": "CF, art. 195, II",
+        "arrec_id": "RGPS_URBANO",
+        "arrec_nota": "Conjunto do RGPS urbano: a fonte não separa empregado, empregador e autônomo."
+      },
+      {
+        "sigla": "Previdenciária individual",
+        "nome": "Contribuição previdenciária individual",
+        "onde": "Paga por contribuintes individuais, conforme seu enquadramento.",
+        "base_legal": "CF, art. 195, II",
+        "arrec_id": "RGPS_URBANO",
+        "arrec_nota": "Conjunto do RGPS urbano: a fonte não separa empregado, empregador e autônomo."
+      },
+      {
+        "sigla": "Previdenciária patronal",
+        "nome": "Contribuição previdenciária patronal",
+        "onde": "Devida por empregadores, conforme as regras aplicáveis.",
+        "base_legal": "CF, art. 195, I, a",
+        "arrec_id": "RGPS_URBANO",
+        "arrec_nota": "Conjunto do RGPS urbano: a fonte não separa empregado, empregador e autônomo."
+      },
+      {
+        "sigla": "CPRB",
+        "nome": "Contribuição previdenciária sobre a receita bruta",
+        "onde": "Aplicável a empresas e atividades enquadradas nas regras específicas.",
+        "base_legal": null
+      },
+      {
+        "sigla": "CPSS",
+        "nome": "Contribuição previdenciária do servidor público federal",
+        "onde": "Relacionada ao regime próprio dos servidores públicos federais.",
+        "base_legal": "CF, art. 40",
+        "arrec_id": "CPSS"
+      },
+      {
+        "sigla": "Previdenciárias rurais",
+        "nome": "Contribuições previdenciárias rurais",
+        "onde": "Incidem sobre bases previstas na legislação da atividade rural.",
+        "base_legal": "CF, art. 195, § 8º",
+        "arrec_id": "RGPS_RURAL"
+      },
+      {
+        "sigla": "Salário-Educação",
+        "nome": "Salário-Educação",
+        "onde": "Contribuição vinculada ao financiamento da educação básica pública, recolhida conforme a legislação.",
+        "base_legal": "CF, art. 212, § 5º",
+        "arrec_id": "SAL_EDUC"
+      },
+      {
+        "sigla": "Cide-Combustíveis",
+        "nome": "Contribuição de Intervenção no Domínio Econômico sobre combustíveis",
+        "onde": "Sobre operações com combustíveis previstas em lei.",
+        "base_legal": "CF, art. 149 e art. 177, § 4º",
+        "arrec_id": "CIDE"
+      },
+      {
+        "sigla": "Cide-Remessas",
+        "nome": "Cide sobre remessas ao exterior",
+        "onde": "Sobre determinadas remessas ao exterior, conforme a operação.",
+        "base_legal": "CF, art. 149"
+      },
+      {
+        "sigla": "PIS/Pasep-Importação",
+        "nome": "PIS/Pasep sobre importação",
+        "onde": "Sobre importações abrangidas pela legislação.",
+        "base_legal": "CF, art. 195, IV"
+      },
+      {
+        "sigla": "Cofins-Importação",
+        "nome": "Cofins sobre importação",
+        "onde": "Sobre importações abrangidas pela legislação.",
+        "base_legal": "CF, art. 195, IV"
+      },
+      {
+        "sigla": "Sistema S",
+        "nome": "Contribuições ao Sistema S",
+        "onde": "Contribuições destinadas a entidades como Senai, Sesi, Senac, Sesc e outras, conforme o caso.",
+        "base_legal": "CF, art. 240"
+      },
+      {
+        "sigla": "Concursos de prognósticos",
+        "nome": "Contribuições sobre concursos de prognósticos",
+        "onde": "Relacionadas a loterias e outras modalidades legalmente previstas.",
+        "base_legal": "CF, art. 195, III"
+      },
+      {
+        "sigla": "Atividades rurais",
+        "nome": "Contribuições sobre atividades rurais",
+        "onde": "Contribuições específicas aplicáveis a produtores, empregadores ou operações rurais.",
+        "base_legal": null
+      },
+      {
+        "sigla": "Setoriais",
+        "nome": "Contribuições setoriais",
+        "onde": "Contribuições específicas de determinados setores econômicos.",
+        "base_legal": "CF, art. 149"
+      }
+    ]
+  },
+  {
+    "id": "contribuicoes_estaduais_municipais",
+    "titulo": "Contribuições estaduais e municipais",
+    "esfera": "Estadual e Municipal",
+    "tipo": "Contribuição",
+    "nota": "Cada ente define em lei própria as regras da contribuição dos seus servidores e da iluminação pública.",
+    "itens": [
+      {
+        "sigla": "Previdenciária estadual",
+        "nome": "Contribuição previdenciária estadual",
+        "onde": "De servidores vinculados ao regime próprio estadual, conforme as regras aplicáveis.",
+        "base_legal": "CF, art. 149, § 1º"
+      },
+      {
+        "sigla": "Previdenciária municipal",
+        "nome": "Contribuição previdenciária municipal",
+        "onde": "De servidores vinculados ao regime próprio municipal, conforme as regras aplicáveis.",
+        "base_legal": "CF, art. 149, § 1º"
+      },
+      {
+        "sigla": "CIP/Cosip",
+        "nome": "Contribuição para Custeio da Iluminação Pública",
+        "onde": "Pode aparecer na conta de energia elétrica, conforme a legislação municipal.",
+        "base_legal": "CF, art. 149-A"
+      },
+      {
+        "sigla": "Contribuição de melhoria",
+        "nome": "Contribuição de melhoria",
+        "onde": "Pode ser cobrada em razão de obra pública que valorize imóveis, respeitadas as exigências legais.",
+        "base_legal": "CF, art. 145, III"
+      }
+    ]
+  },
+  {
+    "id": "taxas_federais",
+    "titulo": "Taxas federais",
+    "esfera": "Federal",
+    "tipo": "Taxa",
+    "nota": "Taxas são cobranças ligadas ao exercício do poder de fiscalização do Estado ou à prestação de serviços públicos específicos e divisíveis. Existem outras taxas federais específicas: a cobrança depende da lei que institui cada uma.",
+    "itens": [
+      {
+        "sigla": "Siscomex",
+        "nome": "Taxa de Utilização do Siscomex",
+        "onde": "Em operações de comércio exterior abrangidas pela cobrança.",
+        "base_legal": "CF, art. 145, II"
+      },
+      {
+        "sigla": "Fiscalização sanitária",
+        "nome": "Taxas de fiscalização e controle sanitário",
+        "onde": "Em atividades sujeitas à fiscalização sanitária federal.",
+        "base_legal": "CF, art. 145, II"
+      },
+      {
+        "sigla": "Setores regulados",
+        "nome": "Taxas de fiscalização de setores regulados",
+        "onde": "Em atividades fiscalizadas por órgãos federais, conforme a legislação específica.",
+        "base_legal": "CF, art. 145, II"
+      },
+      {
+        "sigla": "Serviços administrativos",
+        "nome": "Taxas de serviços administrativos federais",
+        "onde": "Em serviços administrativos específicos cuja cobrança tenha previsão legal.",
+        "base_legal": "CF, art. 145, II"
+      },
+      {
+        "sigla": "Aduaneiras",
+        "nome": "Taxas de serviços e fiscalização aduaneira",
+        "onde": "Em procedimentos aduaneiros e atividades previstas em lei.",
+        "base_legal": "CF, art. 145, II"
+      }
+    ]
+  },
+  {
+    "id": "taxas_estaduais",
+    "titulo": "Taxas estaduais",
+    "esfera": "Estadual",
+    "tipo": "Taxa",
+    "nota": "Os nomes e os valores variam de estado para estado.",
+    "itens": [
+      {
+        "sigla": "Licenciamento e fiscalização",
+        "nome": "Taxas de licenciamento e fiscalização",
+        "onde": "Atividades sujeitas à fiscalização estadual.",
+        "base_legal": "CF, art. 145, II"
+      },
+      {
+        "sigla": "Serviços estaduais",
+        "nome": "Taxas de serviços estaduais",
+        "onde": "Serviços administrativos estaduais específicos.",
+        "base_legal": "CF, art. 145, II"
+      },
+      {
+        "sigla": "Judiciárias",
+        "nome": "Taxas judiciárias estaduais",
+        "onde": "Determinados atos e serviços do Judiciário.",
+        "base_legal": "CF, art. 145, II"
+      },
+      {
+        "sigla": "Ambiental",
+        "nome": "Taxas de fiscalização ambiental",
+        "onde": "Atividades sujeitas à fiscalização ambiental estadual.",
+        "base_legal": "CF, art. 145, II"
+      },
+      {
+        "sigla": "Sanitária",
+        "nome": "Taxas de fiscalização sanitária",
+        "onde": "Estabelecimentos e atividades abrangidos pela vigilância estadual.",
+        "base_legal": "CF, art. 145, II"
+      },
+      {
+        "sigla": "Segurança e prevenção",
+        "nome": "Taxas de segurança e prevenção",
+        "onde": "Serviços ou atividades de fiscalização previstos na legislação estadual.",
+        "base_legal": "CF, art. 145, II"
+      }
+    ]
+  },
+  {
+    "id": "taxas_municipais",
+    "titulo": "Taxas municipais",
+    "esfera": "Municipal",
+    "tipo": "Taxa",
+    "nota": "Essas taxas não existem necessariamente em todos os municípios e podem ter nomes diferentes.",
+    "itens": [
+      {
+        "sigla": "Licença de funcionamento",
+        "nome": "Taxa de licença de funcionamento",
+        "onde": "Licenciamento de determinadas atividades comerciais.",
+        "base_legal": "CF, art. 145, II"
+      },
+      {
+        "sigla": "Fiscalização de estabelecimentos",
+        "nome": "Taxa de fiscalização de estabelecimentos",
+        "onde": "Fiscalização municipal de atividades econômicas.",
+        "base_legal": "CF, art. 145, II"
+      },
+      {
+        "sigla": "Licença para obras",
+        "nome": "Taxa de licença para obras",
+        "onde": "Licenciamento de obras e construções, quando previsto em lei.",
+        "base_legal": "CF, art. 145, II"
+      },
+      {
+        "sigla": "Sanitária municipal",
+        "nome": "Taxa de fiscalização sanitária municipal",
+        "onde": "Atividades sujeitas à vigilância sanitária municipal.",
+        "base_legal": "CF, art. 145, II"
+      },
+      {
+        "sigla": "Serviços administrativos",
+        "nome": "Taxas de serviços administrativos",
+        "onde": "Serviços específicos prestados pela prefeitura.",
+        "base_legal": "CF, art. 145, II"
+      },
+      {
+        "sigla": "Ambiental municipal",
+        "nome": "Taxas de fiscalização ambiental municipal",
+        "onde": "Atividades sujeitas à fiscalização ambiental local.",
+        "base_legal": "CF, art. 145, II"
+      }
+    ]
+  },
+  {
+    "id": "outras_cobrancas",
+    "titulo": "Outras contribuições e cobranças que precisam ser distinguidas",
+    "esfera": "Variável",
+    "tipo": "Outras cobranças",
+    "nota": "Nem tudo que o poder público cobra é tributo: aqui estão cobranças que costumam ser confundidas com impostos.",
+    "itens": [
+      {
+        "sigla": "FGTS",
+        "nome": "Fundo de Garantia do Tempo de Serviço",
+        "onde": "Depósito obrigatório feito pelo empregador em favor do trabalhador; tecnicamente, não é tributo.",
+        "base_legal": "CF, art. 7º, III"
+      },
+      {
+        "sigla": "AFRMM",
+        "nome": "Adicional ao Frete para Renovação da Marinha Mercante",
+        "onde": "Cobrança incidente sobre determinados fretes aquaviários.",
+        "base_legal": null
+      },
+      {
+        "sigla": "Fundos setoriais",
+        "nome": "Contribuições para fundos setoriais",
+        "onde": "Contribuições destinadas a fundos específicos, conforme a lei de cada setor.",
+        "base_legal": null
+      },
+      {
+        "sigla": "Conselhos profissionais",
+        "nome": "Contribuições a conselhos profissionais",
+        "onde": "Anuidades de conselhos como CRM, CREA, OAB e outros; o enquadramento jurídico varia conforme a entidade.",
+        "base_legal": null
+      },
+      {
+        "sigla": "Empréstimo compulsório",
+        "nome": "Empréstimos compulsórios",
+        "onde": "Podem ser instituídos pela União nas hipóteses excepcionais previstas na Constituição; não são cobranças rotineiras.",
+        "base_legal": "CF, art. 148"
+      },
+      {
+        "sigla": "Pedágio",
+        "nome": "Pedágios",
+        "onde": "Em regra, são tarifas ou preços públicos pelo uso de vias, e não impostos.",
+        "base_legal": null
+      },
+      {
+        "sigla": "Multas",
+        "nome": "Multas tributárias e administrativas",
+        "onde": "Penalidades por infrações; não são tributos, embora possam ser cobradas pelo poder público.",
+        "base_legal": null
+      }
+    ]
+  }
+]

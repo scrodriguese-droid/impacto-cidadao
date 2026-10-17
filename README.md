@@ -186,3 +186,96 @@ Os coletores são **idempotentes**: reexecutar não duplica linhas nem refaz o q
 Login (Supabase Auth) + tela de notificações (a tabela e o *trigger* já existem) · OCR para planos escaneados ·
 compilar o Tailwind em vez do CDN · cache HTTP/CDN na frente da API · revisão editorial por amostragem das
 traduções (a tabela guarda `analise_bruta` e o modelo usado para auditoria).
+
+## Economia e indicadores macro
+
+* **/economia.html** — contas de município, estado e União (SICONFI/Tesouro): saúde fiscal, déficits
+  nominal/primário/operacional, receitas e despesas, execução orçamentária. `GET /api/economia/{codigo}`
+  (1 = União, 2 dígitos = UF, 7 dígitos = município).
+* **/macro.html** — IPCA, Selic, desemprego (PNAD), resultado fiscal e dívida pública, com filtros,
+  comparação, tabela, exportação CSV e fonte/data de consulta em cada série.
+  `GET /api/macro/{catalogo,resumo,serie/{id},divida}`.
+
+Fontes (abertas, sem chave): Banco Central SGS (433, 13522, 432, 4649, 4616, 4583, 5793, 5727, 5760, 4513, 4478),
+IBGE SIDRA (tabela 6381), Tesouro Transparente (estoque da DPF, emissões e resgates, Tesouro Direto) e SICONFI.
+Os códigos do SGS foram conferidos nos metadados do BCB e entre si (nominal = primário + juros).
+
+Limitações: a dívida da DPF é bruta e só da União (não é a dívida líquida do setor público); o déficit operacional
+é cálculo próprio aproximado; mínimos constitucionais de Saúde/Educação não estão na API aberta do SICONFI; os
+arquivos do Tesouro (10–15 MB) são baixados na primeira consulta e ficam em cache por 6 h. Em redes com inspeção
+TLS, instale `truststore` (já em `requirements.txt`) para usar o repositório de certificados do sistema.
+
+## Arquitetura do site (7 módulos)
+
+| # | Módulo | Estado | Onde |
+|---|--------|--------|------|
+| 1 | Filtro de perfil e cidade (IBGE) | Disponível | barra de contexto (`assets/comum.js`: `montarBarraContexto`); preferências compartilhadas (`ic_prefs`) |
+| 2 | Leis e projetos de lei (Câmara/Senado) | Disponível | `politicas.html` |
+| 3 | Radar de realidade (promessas × Constituição e LRF) | Parcial: planos de governo com citação; falta a avaliação de lei/PEC, esfera e fonte na LOA | `planos.html` |
+| 4 | Ciclo orçamentário e calculadora de imposto | Disponível: “para onde vai o meu imposto” (ilustração proporcional) e PPA/LDO/LOA da União (Câmara, PLN); estados e municípios: lacuna declarada (sem base aberta) + dotação inicial do RREO | `orcamento.html`, `orcamento.html`, `simuladores.html` |
+| 5 | Emendas parlamentares e execução local | Planejado: só links oficiais (lista própria exige chave gratuita da CGU) | `economia.html#n4` |
+| 6 | Economia do setor público e saúde fiscal | Disponível: arrecadação, LRF, déficits, reservas, dívida | `economia.html`, `macro.html` |
+| 7 | Composição partidária e bancadas | Disponível: Câmara e Senado (cadeiras por partido, limiares de maioria e 3/5); câmaras municipais: lacuna declarada (sem fonte aberta confiável da composição atual) | `bancadas.html`, `GET /api/bancadas` |
+
+### Módulo 4 — `orcamento.html`
+
+* `GET /api/orcamento/imposto/{codigo}?valor=` — reparte um valor anual de imposto pelas funções de governo,
+  proporcional à despesa liquidada (RREO Anexo 02). É ilustração: imposto não é carimbado por área, e cada
+  tributo abastece uma esfera (IR → União; ICMS/IPVA → estado; IPTU/ISS → município). Pode usar o resultado do
+  simulador de IR (regra 2026 × 12).
+* `GET /api/orcamento/ciclo/{codigo}` — União: PPA, LDO e LOA como proposições PLN da Câmara (situação, lei,
+  link do texto e da tramitação; cache 6 h). Verificado: o SICONFI (`extrato_entregas`) só tem DCA, MSC, RREO
+  e RGF, então estados e municípios aparecem como lacuna; mostramos a dotação inicial (LOA) do RREO.
+* Não vem da fonte: os valores da LOA federal por área/ação (SIOP exige o sistema próprio; Portal da
+  Transparência exige chave para API) — a página aponta para eles.
+
+### Dívida e títulos públicos (`financiamento.html`)
+
+`GET /api/macro/financiamento`: resultado primário/nominal (BCB SGS 4649/4583/4616), emissões, resgates e
+emissão líquida (Tesouro Transparente, XLSX), estoque da DPF e vencimentos (CSV), indexadores e prazo médio
+(cálculo próprio a partir do estoque) e comparativos mensais/anuais. O custo médio da DPF não tem série
+aberta e é declarado como indisponível (Relatório Mensal da Dívida). A NFSP é o resultado nominal
+“abaixo da linha” do BCB (setor público consolidado, exceto Petrobras e Eletrobras).
+
+### Ciclo econômico (`ciclo.html`)
+
+`GET /api/macro/ciclo`: PIB trimestral (IBGE SIDRA 5932), IBC-Br dessazonalizado (BCB SGS 24364), PNAD (6381, 6390, 6320),
+produção industrial (8888), vendas do varejo (8880), IPCA, e relação com contas públicas (Resultado do Tesouro
+Nacional e séries fiscais do BCB). A leitura “expansão / desaceleração / possível contração” usa disseminação,
+duração e intensidade com limiares explícitos, é interpretativa e não substitui a datação do CODACE/FGV IBRE.
+
+### Telas do aplicativo
+
+O menu lateral tem seis áreas, cada uma com telas focadas (abas no topo da página):
+
+| Menu | Telas |
+|------|-------|
+| Início | `index.html`: destaques para o perfil e a cidade (leis recentes, contas da cidade, indicadores, planos) |
+| Leis e projetos | `politicas.html` |
+| Eleições: planos de governo | `planos.html` |
+| Orçamento e contas públicas | Abas: **Entrada e saída** `economia.html` (fluxo de caixa, execução e calculadora “para onde vai o meu imposto”) · **Leis do orçamento** `orcamento.html` (PPA/LDO/LOA, única linha do tempo) · **Saúde fiscal e dívida** `economia.html?aba=fiscal`. Aprofundar: `tributos.html` (dados em `frontend/assets/tributos.json`) · `simuladores.html` (IR e MEI) · `macro.html` · `financiamento.html` · `ciclo.html` |
+| Bancadas | `bancadas.html` |
+
+O estado de desenvolvimento de cada módulo (tabela acima) é documentação interna e não aparece na interface.
+
+### Quem resolve o quê? e mapa de equipamentos (página inicial)
+
+* `GET /api/competencias/buscar?q=…&municipio=…` — matriz de competências (`dados/competencias.json`, editável) que liga o
+  problema do dia a dia à esfera responsável, a quem cobrar e à verba (dotação inicial da LOA, por função e subfunção, via RREO).
+* `GET /api/equipamentos/{codigo_ibge}` — unidades de saúde do CNES/DATASUS (API de Dados Abertos da Saúde, com coordenadas
+  e esfera) e escolas, delegacias, bombeiros e assistência do OpenStreetMap (esfera inferida pelo nome). O INEP (escolas) e o
+  CadSUAS (CRAS/CREAS) exigem autenticação nas APIs públicas e não foram usados. O OpenStreetMap é baixado em segundo plano
+  na primeira consulta (cerca de um minuto) e guardado em `dados/equipamentos/`.
+* `GET /api/equipamentos/{codigo_ibge}/verba?categoria=…&esfera=…` — responsável e verba da área para a ficha do local.
+
+### Inventário de tributos com arrecadação e Sankey (`tributos.html`)
+
+`GET /api/tributos/arrecadacao?municipio=` (arrecadação dos últimos 12 meses por tributo: federal pelo Resultado do Tesouro
+Nacional; estadual e municipal pelo RREO Anexo 03 do SICONFI, líquida de repasses e do Fundeb) e `GET /api/tributos/fluxo-federal`
+(de onde vêm e para onde vão as receitas do Governo Central). A tela alterna entre tabela e diagrama de Sankey (federal, estadual e
+municipal). A lista de tributos e a base legal continuam manuais em `frontend/assets/tributos.json`; cada tributo com série aberta
+tem um `arrec_id`.
+
+`GET /api/tributos/repasses?municipio=` — repasses entre os entes: União → estados e municípios (RREO Anexo 01 da União),
+União → estado, estado → municípios e o que o município recebe da União e do estado (RREO Anexo 01 de cada ente), mais a
+repartição legal de receitas da União (Resultado do Tesouro Nacional, linhas 2.x).

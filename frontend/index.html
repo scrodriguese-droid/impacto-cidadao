@@ -3,494 +3,354 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ImpactoCidadão — Transparência no seu dia a dia</title>
-    <meta name="description" content="Planos de governo, leis e medidas provisórias traduzidos em impacto prático para o seu perfil e a sua cidade.">
+    <title>ImpactoCidadão — Destaques de hoje</title>
+    <meta name="description" content="Leis, indicadores e contas públicas que importam para o seu perfil e a sua cidade, em linguagem simples.">
 
     <!-- Tailwind via CDN: ótimo para desenvolvimento. Em produção, compile o CSS (tailwindcss CLI). -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="assets/tailwind-config.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
     <style>
         body { font-family: 'Inter', system-ui, sans-serif; }
-        details > summary { list-style: none; cursor: pointer; }
-        details > summary::-webkit-details-marker { display: none; }
-        details[open] > summary .chev { transform: rotate(180deg); }
-        .chev { transition: transform .15s ease; }
-        .scroll-x { scrollbar-width: thin; }
-        :focus-visible { outline: 2px solid #0284c7; outline-offset: 2px; }
+        #mapa { height: 460px; z-index: 0; border-radius: 1rem; }
+        :focus-visible { outline: 2px solid #A92823; outline-offset: 2px; }
     </style>
+    <link rel="stylesheet" href="assets/brutalista.css">
 </head>
 <body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-full flex flex-col transition-colors duration-200">
 
 <a href="#conteudo" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-white focus:text-slate-900 focus:p-3">Ir para o conteúdo</a>
-
 <div id="cabecalho"></div>
 
-<!-- ========================= HERO: PERFIL + CIDADE ========================= -->
-<section class="bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 text-white py-10 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-7xl mx-auto">
-        <div class="text-center max-w-3xl mx-auto mb-8">
-            <span class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-slate-800/80 border border-slate-700 text-xs font-semibold text-brand-400 mb-3">
-                <i class="fa-solid fa-bullseye text-teal-400" aria-hidden="true"></i><span>Informação sem partido, focada em você</span>
-            </span>
-            <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight">O que as propostas do governo mudam na sua vida e na sua cidade?</h1>
-            <p class="mt-3 text-slate-300 text-sm sm:text-base">Escolha seu perfil e sua cidade. Traduzimos planos de governo, leis e medidas provisórias para o que importa no dia a dia — sempre com o documento original à mão.</p>
-        </div>
+<main id="conteudo" class="max-w-5xl mx-auto px-4 sm:px-6 pt-6 pb-10 flex-grow w-full space-y-6">
+    <header>
+        <h1 class="text-2xl font-extrabold tracking-tight">Destaques de hoje</h1>
+        <p id="subtitulo" class="text-sm text-slate-500 dark:text-slate-400 mt-1">O que mais importa para você, em linguagem simples.</p>
+    </header>
 
-        <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider text-center mb-3">1. Seu perfil</p>
-        <div id="perfilGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3" role="radiogroup" aria-label="Perfil do cidadão"></div>
+    <div id="barraContexto"></div>
 
-        <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider text-center mt-8 mb-3">2. Sua cidade <span class="normal-case font-normal">(opcional)</span></p>
-        <div class="max-w-md mx-auto relative">
-            <label for="cidadeInput" class="sr-only">Buscar município</label>
-            <i class="fa-solid fa-location-dot absolute left-4 top-3.5 text-slate-400" aria-hidden="true"></i>
-            <input id="cidadeInput" type="text" autocomplete="off" placeholder="Digite o nome da sua cidade…"
-                   class="w-full pl-11 pr-4 py-3 rounded-xl bg-slate-800 border border-slate-600 text-sm text-white placeholder-slate-400 focus:ring-2 focus:ring-brand-500 focus:outline-none">
-            <ul id="cidadeLista" class="hidden absolute z-30 mt-1 w-full bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 overflow-hidden text-sm" role="listbox"></ul>
-            <div id="cidadeChip" class="hidden mt-3 text-center"></div>
-        </div>
-    </div>
-</section>
-
-<main id="conteudo" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full space-y-14">
-
-    <!-- ========================= PLANOS DE GOVERNO ========================= -->
-    <section id="candidatos" class="scroll-mt-20" aria-labelledby="tCandidatos">
-        <div class="mb-5">
-            <h2 id="tCandidatos" class="text-2xl font-bold text-slate-900 dark:text-white flex items-center">
-                <i class="fa-solid fa-flag text-brand-600 mr-2.5" aria-hidden="true"></i>Planos de governo para a Presidência
-            </h2>
-            <p class="text-sm text-slate-600 dark:text-slate-400 mt-1">Mesma pergunta, para todos, no mesmo formato e em ordem alfabética. Cada proposta traz o trecho original e a página do documento registrado no TSE.</p>
-        </div>
-
-        <div class="rounded-xl border border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 text-xs p-3.5 flex items-start space-x-2.5 mb-5" role="note">
-            <i class="fa-solid fa-triangle-exclamation mt-0.5" aria-hidden="true"></i>
-            <p><b>Isto é informação, não recomendação de voto.</b> Quando existe resumo, ele é gerado por inteligência artificial a partir do plano oficial e conferido automaticamente contra o PDF, mas pode conter imprecisões. A busca por palavra mostra apenas trechos literais, sem interpretação. Confira sempre o trecho original. O que um plano promete não é garantia de execução: depende do Congresso, do orçamento e, muitas vezes, de estados e prefeituras.</p>
-        </div>
-
-        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 mb-5">
-            <div id="temaChips" class="flex gap-2 overflow-x-auto scroll-x pb-1" role="radiogroup" aria-label="Tema"></div>
-            <label class="inline-flex items-center space-x-2 text-sm shrink-0 cursor-pointer">
-                <input id="chkTurno2" type="checkbox" class="rounded border-slate-300 text-brand-600 focus:ring-brand-500">
-                <span>Somente candidatos no <b>2º turno</b></span>
-            </label>
-        </div>
-
-        <form id="formBuscaPlano" class="flex gap-2 mb-5" role="search">
-            <div class="relative flex-grow">
-                <label for="buscaPlano" class="sr-only">Buscar nos planos de governo</label>
-                <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-slate-400 text-xs" aria-hidden="true"></i>
-                <input id="buscaPlano" type="search" maxlength="100" autocomplete="off"
-                       placeholder="Buscar nos planos por palavra: creche, aposentadoria, SUS…"
-                       class="w-full pl-9 pr-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
-            </div>
+    <!-- Quem resolve o quê? -->
+    <section class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5" aria-labelledby="tQuem">
+        <h2 id="tQuem" class="font-bold text-lg flex items-center gap-2"><i class="fa-solid fa-magnifying-glass-location text-brand-600" aria-hidden="true"></i>Quem resolve o quê?</h2>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Conte o seu problema e descubra quem é o responsável, a quem cobrar e quanto dinheiro foi previsto para isso.</p>
+        <form id="formQuem" class="mt-3 flex gap-2" role="search">
+            <label for="qQuem" class="sr-only">Descreva o seu problema</label>
+            <input id="qQuem" type="search" maxlength="120" autocomplete="off" placeholder="Ex.: preciso de vaga na creche, buraco na rua, demora para cirurgia…"
+                   class="flex-grow px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
             <button type="submit" class="px-4 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold">Buscar</button>
         </form>
-
-        <div id="candidatosGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5" aria-live="polite"></div>
+        <div id="sugestoesQuem" class="mt-2 flex flex-wrap gap-2"></div>
+        <div id="respQuem" class="mt-4 space-y-4" aria-live="polite"></div>
     </section>
 
-    <!-- ========================= SIMULADORES ========================= -->
-    <section id="simuladores" class="scroll-mt-20 bg-white dark:bg-slate-800 rounded-2xl p-6 sm:p-8 border border-slate-200 dark:border-slate-700/80 shadow-sm" aria-labelledby="tSim">
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 border-b border-slate-100 dark:border-slate-700/60 pb-5">
-            <div>
-                <h2 id="tSim" class="text-xl font-bold flex items-center"><i class="fa-solid fa-calculator text-teal-500 mr-2.5" aria-hidden="true"></i>Simuladores do seu bolso</h2>
-                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Cálculos com as regras vigentes, feitos no servidor com parâmetros legais documentados. São estimativas de orientação.</p>
-            </div>
-            <div class="inline-flex rounded-xl p-1 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700" role="tablist">
-                <button id="tabIR" role="tab" type="button" class="px-3 py-1.5 text-xs font-semibold rounded-lg">Imposto de Renda</button>
-                <button id="tabMEI" role="tab" type="button" class="px-3 py-1.5 text-xs font-semibold rounded-lg">Limite do MEI</button>
-            </div>
+    <!-- Mapa dos equipamentos públicos -->
+    <section id="mapaSec" class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 scroll-mt-4" aria-labelledby="tMapa">
+        <h2 id="tMapa" class="font-bold text-lg flex items-center gap-2"><i class="fa-solid fa-map-location-dot text-teal-600" aria-hidden="true"></i>Mapa dos equipamentos públicos</h2>
+        <p id="mapaSub" class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Postos de saúde, UPAs, hospitais, escolas, delegacias e outros serviços perto de você, com a esfera responsável.</p>
+        <div id="filtrosMapa" class="mt-3 flex flex-wrap gap-2" role="group" aria-label="Tipos de equipamento"></div>
+        <div id="legendaMapa" class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs"></div>
+        <div id="mapaEstado" class="mt-3"></div>
+        <div class="mt-3 grid lg:grid-cols-[1fr_20rem] gap-4">
+            <div id="mapa" role="application" aria-label="Mapa interativo dos equipamentos públicos"></div>
+            <aside id="fichaLocal" class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/40 p-4 text-sm" aria-live="polite">
+                <p class="text-slate-500">Clique em um ponto do mapa para ver a ficha do local.</p></aside>
         </div>
-
-        <!-- IR -->
-        <div id="painelIR" class="grid grid-cols-1 md:grid-cols-12 gap-6">
-            <div class="md:col-span-5 space-y-4">
-                <div>
-                    <label for="irSalario" class="block text-xs font-semibold mb-1">Salário bruto mensal (R$)</label>
-                    <input id="irSalario" type="number" inputmode="decimal" min="0" max="1000000" step="50" value="4500"
-                           class="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-brand-500 focus:outline-none">
-                </div>
-                <div>
-                    <label for="irDeps" class="block text-xs font-semibold mb-1">Dependentes: <span id="irDepsTxt" class="font-bold text-brand-600">0</span></label>
-                    <input id="irDeps" type="range" min="0" max="6" value="0" class="w-full accent-brand-600">
-                </div>
-                <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">Compara a retenção na fonte pela regra de 2025 com a regra de 2026 (Lei 15.270/2025: isenção até R$ 5.000 e redução gradual até R$ 7.350).</p>
-            </div>
-            <div id="irResultado" class="md:col-span-7 bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl p-5 shadow-lg border border-slate-700" aria-live="polite"></div>
-        </div>
-
-        <!-- MEI -->
-        <div id="painelMEI" class="hidden grid grid-cols-1 md:grid-cols-12 gap-6">
-            <div class="md:col-span-5 space-y-4">
-                <div>
-                    <label for="meiFat" class="block text-xs font-semibold mb-1">Faturamento anual (R$)</label>
-                    <input id="meiFat" type="number" inputmode="decimal" min="0" max="10000000" step="1000" value="90000"
-                           class="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-brand-500 focus:outline-none">
-                </div>
-                <div>
-                    <label for="meiAtiv" class="block text-xs font-semibold mb-1">Atividade</label>
-                    <select id="meiAtiv" class="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm">
-                        <option value="servicos">Serviços</option>
-                        <option value="comercio_industria">Comércio ou indústria</option>
-                        <option value="comercio_servicos">Comércio e serviços</option>
-                    </select>
-                </div>
-                <div>
-                    <label for="meiTeto" class="block text-xs font-semibold mb-1">E se o teto anual fosse… (R$, hipótese)</label>
-                    <input id="meiTeto" type="number" inputmode="decimal" min="0" max="10000000" step="1000" placeholder="ex.: 130000"
-                           class="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
-                    <p class="text-[11px] text-slate-500 mt-1">Simulação livre: não representa lei aprovada.</p>
-                </div>
-            </div>
-            <div id="meiResultado" class="md:col-span-7 bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl p-5 shadow-lg border border-slate-700" aria-live="polite"></div>
-        </div>
+        <p id="mapaFontes" class="text-[11px] text-slate-400 mt-3"></p>
     </section>
+
+    <div class="grid lg:grid-cols-2 gap-5">
+        <section class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5" aria-labelledby="tLeis">
+            <h2 id="tLeis" class="font-bold flex items-center gap-2"><i class="fa-solid fa-landmark text-brand-600" aria-hidden="true"></i>Leis e projetos recentes</h2>
+            <p id="leisSub" class="text-xs text-slate-500 mt-0.5"></p>
+            <div id="leis" class="mt-3 space-y-3" aria-live="polite"></div>
+            <a href="politicas.html" class="inline-block mt-4 text-sm font-semibold text-brand-700 dark:text-brand-400 hover:underline">Ver todas as leis e projetos →</a>
+        </section>
+
+        <section class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5" aria-labelledby="tCidade">
+            <h2 id="tCidade" class="font-bold flex items-center gap-2"><i class="fa-solid fa-city text-teal-600" aria-hidden="true"></i>As contas da sua cidade</h2>
+            <p id="cidadeSub" class="text-xs text-slate-500 mt-0.5"></p>
+            <div id="cidade" class="mt-3 space-y-3" aria-live="polite"></div>
+            <a href="economia.html" class="inline-block mt-4 text-sm font-semibold text-brand-700 dark:text-brand-400 hover:underline">Ver entrada e saída de dinheiro →</a>
+        </section>
+
+        <section class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5" aria-labelledby="tInd">
+            <h2 id="tInd" class="font-bold flex items-center gap-2"><i class="fa-solid fa-chart-line text-emerald-600" aria-hidden="true"></i>Indicadores do dia</h2>
+            <p class="text-xs text-slate-500 mt-0.5">Banco Central e IBGE, exatamente como publicados.</p>
+            <div id="indicadores" class="mt-3 grid grid-cols-3 gap-3" aria-live="polite"></div>
+            <a href="macro.html" class="inline-block mt-4 text-sm font-semibold text-brand-700 dark:text-brand-400 hover:underline">Ver todos os indicadores →</a>
+        </section>
+
+        <section class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5" aria-labelledby="tPlanos">
+            <h2 id="tPlanos" class="font-bold flex items-center gap-2"><i class="fa-solid fa-flag text-rose-600" aria-hidden="true"></i>Eleições: planos de governo</h2>
+            <p class="text-xs text-slate-500 mt-0.5">Mesma pergunta para todos, no mesmo formato e em ordem alfabética.</p>
+            <p id="planos" class="mt-3 text-sm text-slate-600 dark:text-slate-300" aria-live="polite"></p>
+            <a href="planos.html" class="inline-block mt-4 text-sm font-semibold text-brand-700 dark:text-brand-400 hover:underline">Comparar os planos →</a>
+        </section>
+    </div>
 </main>
 
 <div id="rodape"></div>
 
 <script src="assets/comum.js"></script>
 <script>
-/* ====================================================================== *
- *  ImpactoCidadão — front-end (JavaScript puro, sem build)
- *  Toda a informação vem da API (/api/...). Texto vindo do servidor é
- *  sempre escapado antes de ir para o HTML (função esc).
- * ====================================================================== */
+renderLayout('inicio');
 
-renderLayout('planos'); // cabeçalho/rodapé compartilhados (assets/comum.js)
-
-/* ---------- estado ---------- */
-const prefs = ler('ic_prefs', {});
-const S = {
-    perfil: prefs.perfil || '', municipio: prefs.municipio || null, tema: prefs.tema || 'saude',
-    turno2: prefs.turno2 !== undefined ? prefs.turno2 : true,
-    buscaPlano: '', categoria: 'all', status: 'all', q: '', ordem: 'recentes', pagina: 1, total: 0, itens: [],
-    perfis: [], categorias: [], statusLista: [], candidatosResumo: {},
+let contexto = null;
+const num = (v, d = 2) => (v == null ? '—' : Number(v).toLocaleString('pt-BR', { minimumFractionDigits: d, maximumFractionDigits: d }));
+const curto = (t, n) => { const x = String(t || '').replace(/\s+/g, ' ').trim(); return x.length > n ? x.slice(0, n - 1).trimEnd() + '…' : x; };
+const reais = (n) => {
+    const v = Math.abs(Number(n)), s = n < 0 ? '−' : '';
+    if (v >= 1e12) return `${s}R$ ${(v / 1e12).toLocaleString('pt-BR', { maximumFractionDigits: 2 })} tri`;
+    if (v >= 1e9) return `${s}R$ ${(v / 1e9).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} bi`;
+    if (v >= 1e6) return `${s}R$ ${(v / 1e6).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} mi`;
+    return `${s}${brl(v)}`;
 };
-const salvarPrefs = () => guardar('ic_prefs', { perfil: S.perfil, municipio: S.municipio, tema: S.tema, turno2: S.turno2 });
+const vazio = (txt) => `<p class="text-sm text-slate-500">${esc(txt)}</p>`;
+const NIVEL = { federal: 'Federal', estadual: 'Estadual', municipal: 'Municipal' };
 
-const CANAIS = {
-    beneficio_direto: ['Pago direto à pessoa', 'fa-hand-holding-dollar'],
-    programa_via_municipio: ['Executado pela prefeitura', 'fa-city'],
-    repasse_a_municipios: ['Repasse aos municípios', 'fa-money-bill-transfer'],
-    regulacao_nacional: ['Regra nacional', 'fa-scale-balanced'],
-    investimento_federal_direto: ['Obra ou serviço federal', 'fa-building-columns'],
-    nao_especificado: ['Execução não detalhada', 'fa-circle-question'],
-};
-const STATUS_PLANO = {
-    aguardando_pdf: 'O arquivo do plano ainda não pôde ser obtido; a análise está pendente.',
-    sem_texto: 'O PDF do plano é uma imagem sem texto selecionável; a análise automática está pendente.',
-    texto_longo: 'O plano é muito extenso e a análise automática está pendente.',
-    pendente: 'A análise deste plano ainda não foi executada.',
-    falha: 'A análise automática deste plano falhou e será refeita.',
-    sem_plano: 'Nenhum plano de governo foi encontrado no registro da candidatura.',
-};
-const RELEVANCIA = { alta: ['Impacto alto no bolso', 'bg-rose-100 text-rose-800 dark:bg-rose-950/70 dark:text-rose-300'],
-                     media: ['Impacto médio', 'bg-amber-100 text-amber-800 dark:bg-amber-950/70 dark:text-amber-300'],
-                     baixa: ['Impacto baixo', 'bg-sky-100 text-sky-800 dark:bg-sky-950/70 dark:text-sky-300'],
-                     nenhuma: ['Sem efeito direto', 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300'] };
-
-
-/* ====================================================================== *
- *  Perfil
- * ====================================================================== */
-function renderPerfis() {
-    const todos = [{ id: '', nome: 'Todos os perfis', icone: 'fa-users' }, ...S.perfis];
-    $('perfilGrid').innerHTML = todos.map((p) => {
-        const ativo = p.id === S.perfil;
-        return `<button type="button" role="radio" aria-checked="${ativo}" data-perfil="${esc(p.id)}"
-                class="flex flex-col items-center justify-center p-3.5 rounded-2xl border text-center transition ${ativo
-                ? 'bg-brand-600 border-brand-500 text-white shadow-lg ring-2 ring-brand-400/50'
-                : 'bg-slate-800/80 border-slate-700/80 text-slate-300 hover:bg-slate-700/80 hover:text-white'}">
-                <i class="fa-solid ${esc(p.icone)} text-lg mb-2 ${ativo ? 'text-white' : 'text-brand-400'}" aria-hidden="true"></i>
-                <span class="text-xs font-semibold leading-tight">${esc(p.nome)}</span></button>`;
-    }).join('');
+function atualizarSubtitulo() {
+    const p = contexto && contexto.perfis.find((x) => x.id === contexto.perfil);
+    const cid = contexto && contexto.municipio;
+    $('subtitulo').textContent = `O que mais importa ${p ? 'para ' + p.nome : 'para você'}${cid ? ' em ' + cid.nome + ' – ' + cid.uf : ''}, em linguagem simples.`;
 }
-$('perfilGrid').addEventListener('click', (ev) => {
-    const b = ev.target.closest('[data-perfil]');
-    if (!b) return;
-    S.perfil = b.dataset.perfil;
-    salvarPrefs(); renderPerfis(); carregarCandidatos();
-});
 
-/* ====================================================================== *
- *  Cidade (autocomplete IBGE)
- * ====================================================================== */
-function renderCidadeChip() {
-    const chip = $('cidadeChip');
-    if (!S.municipio) { chip.classList.add('hidden'); chip.innerHTML = ''; return; }
-    chip.classList.remove('hidden');
-    chip.innerHTML = `<span class="inline-flex items-center space-x-2 bg-teal-500/15 border border-teal-400/40 text-teal-200 rounded-full px-3 py-1 text-xs font-semibold">
-        <i class="fa-solid fa-location-dot" aria-hidden="true"></i><span>${esc(S.municipio.nome)}/${esc(S.municipio.uf)}</span>
-        <button type="button" id="btnTirarCidade" class="ml-1 hover:text-white" aria-label="Remover cidade"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></span>`;
-    $('btnTirarCidade').addEventListener('click', () => { S.municipio = null; salvarPrefs(); renderCidadeChip(); carregarCandidatos(); });
-}
-const buscarCidade = debounce(async () => {
-    const q = $('cidadeInput').value.trim();
-    const lista = $('cidadeLista');
-    if (q.length < 2) { lista.classList.add('hidden'); return; }
+async function carregarLeis() {
+    $('leis').innerHTML = '<p class="text-sm text-slate-500"><i class="fa-solid fa-spinner fa-spin mr-1.5" aria-hidden="true"></i>Carregando…</p>';
+    const q = new URLSearchParams({ incluir_pendentes: 'true', ordem: 'recentes', por_pagina: '4' });
+    if (contexto && contexto.perfil) q.set('perfil', contexto.perfil);
     try {
-        const achados = await api('/api/municipios?q=' + encodeURIComponent(q));
-        lista.innerHTML = achados.length
-            ? achados.map((m) => `<li><button type="button" role="option" data-cod="${m.codigo}" data-nome="${esc(m.nome)}" data-uf="${esc(m.uf)}"
-                class="w-full text-left px-4 py-2.5 hover:bg-slate-100 dark:hover:bg-slate-700">${esc(m.nome)} <span class="text-slate-400">/ ${esc(m.uf)}</span></button></li>`).join('')
-            : '<li class="px-4 py-2.5 text-slate-500">Nenhum município encontrado.</li>';
-        lista.classList.remove('hidden');
-    } catch (e) { lista.innerHTML = `<li class="px-4 py-2.5 text-rose-600">${esc(e.message)}</li>`; lista.classList.remove('hidden'); }
-}, 250);
-$('cidadeInput').addEventListener('input', buscarCidade);
-$('cidadeLista').addEventListener('click', (ev) => {
-    const b = ev.target.closest('[data-cod]');
-    if (!b) return;
-    S.municipio = { codigo: Number(b.dataset.cod), nome: b.dataset.nome, uf: b.dataset.uf };
-    $('cidadeInput').value = ''; $('cidadeLista').classList.add('hidden');
-    salvarPrefs(); renderCidadeChip(); carregarCandidatos();
-});
-document.addEventListener('click', (ev) => { if (!ev.target.closest('#cidadeLista') && ev.target.id !== 'cidadeInput') $('cidadeLista').classList.add('hidden'); });
-
-/* ====================================================================== *
- *  Planos de governo
- * ====================================================================== */
-function renderTemaChips() {
-    $('temaChips').innerHTML = S.categorias.map((c) => {
-        const ativo = c.id === S.tema;
-        return `<button type="button" role="radio" aria-checked="${ativo}" data-tema="${esc(c.id)}"
-            class="shrink-0 inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-full text-xs font-semibold border transition ${ativo
-            ? 'bg-brand-600 border-brand-600 text-white'
-            : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-brand-400'}">
-            <i class="fa-solid ${esc(c.icone)}" aria-hidden="true"></i><span>${esc(c.nome)}</span></button>`;
-    }).join('');
-}
-$('temaChips').addEventListener('click', (ev) => {
-    const b = ev.target.closest('[data-tema]');
-    if (!b) return;
-    S.tema = b.dataset.tema; salvarPrefs(); renderTemaChips(); carregarCandidatos();
-});
-$('chkTurno2').addEventListener('change', (ev) => { S.turno2 = ev.target.checked; salvarPrefs(); carregarCandidatos(); });
-
-const chip = (ok, texto) => `<span class="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full text-[11px] font-medium ${ok
-    ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
-    : 'bg-slate-100 text-slate-500 dark:bg-slate-700/60 dark:text-slate-400'}"><i class="fa-solid ${ok ? 'fa-check' : 'fa-minus'} text-[9px]" aria-hidden="true"></i><span>${texto}</span></span>`;
-
-function cartaoProposta(p) {
-    const [rotuloCanal, iconeCanal] = CANAIS[p.canal] || CANAIS.nao_especificado;
-    return `<li class="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-900/50 p-3.5">
-        <p class="text-sm font-medium leading-snug">${esc(p.descricao)}</p>
-        <div class="flex flex-wrap gap-1.5 mt-2.5">
-            ${chip(p.especifica.meta_numerica, 'meta numérica')}${chip(p.especifica.prazo, 'prazo')}${chip(p.especifica.fonte_de_recurso, 'fonte de recursos')}
-            <span class="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-sky-100 text-sky-800 dark:bg-sky-950/60 dark:text-sky-300">
-                <i class="fa-solid ${iconeCanal} text-[9px]" aria-hidden="true"></i><span>${esc(rotuloCanal)}</span></span>
-        </div>
-        ${p.como_chega_na_cidade ? `<p class="mt-2.5 text-xs leading-relaxed text-teal-900 dark:text-teal-200 bg-teal-50 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-900 rounded-lg p-2.5">
-            <i class="fa-solid fa-location-dot mr-1" aria-hidden="true"></i><b>Na sua cidade:</b> ${esc(p.como_chega_na_cidade)}</p>` : ''}
-        <details class="mt-2.5 text-xs">
-            <summary class="text-brand-700 dark:text-brand-400 font-semibold inline-flex items-center space-x-1">
-                <span>Ver trecho original${p.pagina ? ` (p. ${esc(p.pagina)})` : ''}</span><i class="fa-solid fa-chevron-down text-[9px] chev" aria-hidden="true"></i></summary>
-            <blockquote class="mt-2 pl-3 border-l-2 border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-400 italic">“${esc(p.trecho_literal)}”</blockquote>
-        </details>
-    </li>`;
+        const r = await api('/api/proposicoes?' + q);
+        $('leisSub').textContent = contexto && contexto.perfil ? 'Atos que afetam o seu perfil, dos mais recentes aos mais antigos.' : 'Os atos mais recentes do Congresso e do Executivo.';
+        $('leis').innerHTML = r.itens.length ? r.itens.map((i) => `<article class="border-l-2 ${i.traduzida ? 'border-brand-500' : 'border-slate-300 dark:border-slate-600'} pl-3">
+            <p class="text-xs text-slate-500">${esc(i.identificacao)} · ${esc(NIVEL[i.nivel] || '')}${i.data_apresentacao ? ' · ' + esc(fmtData(i.data_apresentacao)) : ''}</p>
+            <p class="font-semibold leading-snug">${esc(curto(i.traduzida ? i.titulo : i.ementa_oficial || i.titulo, 130))}</p>
+            ${i.traduzida && i.resumo ? `<p class="text-xs text-slate-600 dark:text-slate-400 mt-0.5">${esc(curto(i.resumo, 170))}</p>` : '<p class="text-[11px] text-slate-400 mt-0.5">Ementa oficial · tradução em linguagem simples ainda não disponível</p>'}</article>`).join('')
+            : vazio('Nenhum ato recente encontrado para este perfil.');
+    } catch (e) { $('leis').innerHTML = mensagemErro(e); }
 }
 
-/* Trechos literais (busca por palavra-chave, sem IA). Os ⟦marcadores⟧ vêm do servidor; o texto é escapado antes. */
-function marcar(txt) {
-    const limpo = esc(String(txt).replace(/\s+/g, ' ').trim());
-    return limpo.replace(/⟦/g, '<mark class="bg-amber-200 dark:bg-amber-500/40 text-inherit rounded px-0.5">').replace(/⟧/g, '</mark>');
-}
-function trechosHtml(b, pdf) {
-    if (!b) return '';
-    if (!b.texto_disponivel) return '<p class="text-xs text-slate-500">O texto deste plano ainda não foi carregado.</p>';
-    if (!b.trechos.length) return '<p class="text-sm text-slate-600 dark:text-slate-400">Nenhum trecho encontrado para esta busca neste plano.</p>';
-    return `<ul class="space-y-3">${b.trechos.map((t) => `<li class="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-900/50 p-3.5">
-            <p class="text-sm leading-relaxed text-slate-700 dark:text-slate-300">“… ${marcar(t.trecho)} …”</p>
-            <p class="mt-1.5 text-[11px] text-slate-500">página ${esc(t.pagina)}${pdf ? ` · <a class="text-brand-700 dark:text-brand-400 hover:underline" target="_blank" rel="noopener" href="${esc(urlSegura(pdf))}#page=${esc(t.pagina)}">abrir no PDF</a>` : ''}</p></li>`).join('')}</ul>`;
-}
-
-function cartaoCandidato(c, b, modo) {
-    const seg = (c.totalizacao || '').toLowerCase().startsWith('2');
-    const r = S.candidatosResumo[c.sq_candidato];
-    const plano = r ? r.plano : null;
-    const pdf = c.url_pdf || (plano && plano.url_pdf);
-    let corpo;
-    if (modo === 'palavra') {
-        corpo = trechosHtml(b, pdf) || '<p class="text-xs text-slate-500">Busca indisponível.</p>';
-    } else if (c.plano_status !== 'ok') {
-        const aviso = b && b.texto_disponivel
-            ? `<p class="text-[11px] text-slate-500 mb-3"><i class="fa-solid fa-info-circle mr-1" aria-hidden="true"></i>${esc(STATUS_PLANO[c.plano_status] || 'Análise indisponível.')} Abaixo, os trechos do plano que mencionam este tema (busca por palavras-chave, sem interpretação).</p>`
-            : `<p class="text-sm text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-900/60 rounded-xl p-3.5"><i class="fa-solid fa-hourglass-half mr-1.5" aria-hidden="true"></i>${esc(STATUS_PLANO[c.plano_status] || 'Análise indisponível.')} Use a caixa de busca para procurar uma palavra no plano.</p>`;
-        corpo = aviso + (b && b.texto_disponivel ? trechosHtml(b, pdf) : '');
-    } else if (!c.mencionado) {
-        corpo = `<p class="text-sm text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-900/60 rounded-xl p-3.5">
-            <i class="fa-solid fa-circle-minus mr-1.5" aria-hidden="true"></i>Nenhuma proposta sobre este tema foi identificada na análise automática. Confira o documento original.</p>`;
-    } else {
-        corpo = `${c.resumo ? `<p class="text-sm text-slate-700 dark:text-slate-300 leading-relaxed mb-3">${esc(c.resumo)}</p>` : ''}
-            ${c.propostas.length ? `<ul class="space-y-3">${c.propostas.map(cartaoProposta).join('')}</ul>` : ''}
-            ${c.propostas_ocultas_pelo_perfil ? `<p class="mt-3 text-xs text-slate-500"><i class="fa-solid fa-eye-slash mr-1" aria-hidden="true"></i>${c.propostas_ocultas_pelo_perfil} proposta(s) deste tema não são específicas para o perfil escolhido. <button type="button" class="underline" data-acao="todos-perfis">Ver todas</button></p>` : ''}`;
-    }
-    const estat = plano && plano.status === 'ok'
-        ? `<p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">${plano.propostas} propostas identificadas no plano · ${plano.com_meta_numerica} com meta numérica · ${plano.com_prazo} com prazo · ${plano.com_fonte_de_recurso} com fonte de recursos</p>` : '';
-    return `<article class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-sm p-5 flex flex-col">
-        <header class="pb-3 mb-3 border-b border-slate-100 dark:border-slate-700/60">
-            <div class="flex items-start justify-between gap-2">
-                <div>
-                    <h3 class="text-lg font-bold leading-tight">${esc(c.nome)}</h3>
-                    <p class="text-xs text-slate-500 dark:text-slate-400">${esc(c.partido || '')} · nº ${esc(c.numero ?? '—')}${c.vice ? ` · vice: ${esc(c.vice)}` : ''}</p>
-                </div>
-                ${seg ? '<span class="shrink-0 text-[10px] font-bold uppercase tracking-wide px-2 py-1 rounded-full bg-brand-100 text-brand-800 dark:bg-brand-950 dark:text-brand-300">2º turno</span>' : ''}
-            </div>
-            ${estat}
-        </header>
-        <div class="flex-grow">${corpo}</div>
-        ${pdf ? `<footer class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-700/60 text-xs">
-            <a href="${esc(urlSegura(pdf))}" target="_blank" rel="noopener" class="text-brand-700 dark:text-brand-400 font-semibold hover:underline">
-                <i class="fa-solid fa-file-pdf mr-1" aria-hidden="true"></i>Ler o plano completo (TSE)<i class="fa-solid fa-arrow-up-right-from-square text-[9px] ml-1" aria-hidden="true"></i></a></footer>` : ''}
-    </article>`;
-}
-
-let reqCandidatos = 0;
-async function carregarCandidatos() {
-    const grade = $('candidatosGrid');
-    const minha = ++reqCandidatos;
-    grade.innerHTML = '<p class="text-sm text-slate-500 col-span-full"><i class="fa-solid fa-spinner fa-spin mr-2" aria-hidden="true"></i>Carregando planos…</p>';
-    const modo = S.buscaPlano ? 'palavra' : 'tema';
-    const params = new URLSearchParams({ categoria: S.tema, turno2: S.turno2 });
-    if (S.perfil) params.set('perfil', S.perfil);
-    if (S.municipio) params.set('municipio', S.municipio.codigo);
-    const pBusca = new URLSearchParams({ turno2: S.turno2 });
-    if (modo === 'palavra') pBusca.set('q', S.buscaPlano); else pBusca.set('categoria', S.tema);
-    try {
-        const [cmp, resumo, busca] = await Promise.all([
-            modo === 'tema' ? api('/api/candidatos/comparar?' + params) : Promise.resolve(null),
-            api('/api/candidatos?turno2=' + S.turno2),
-            // "Outros temas" não tem termos padrão de busca: só a busca por palavra se aplica.
-            (modo === 'tema' && S.tema === 'outros') ? Promise.resolve(null)
-                : api('/api/candidatos/buscar?' + pBusca).catch((e) => (modo === 'palavra' ? { erro: e } : null)),
-        ]);
-        if (minha !== reqCandidatos) return; // resposta antiga
-        S.candidatosResumo = Object.fromEntries(resumo.itens.map((i) => [i.sq_candidato, i]));
-        if (busca && busca.erro) throw busca.erro;
-        const buscaPorSq = Object.fromEntries(((busca && busca.candidatos) || []).map((x) => [x.sq_candidato, x]));
-        const lista = modo === 'tema' ? cmp.candidatos : ((busca && busca.candidatos) || []).map((x) => ({
-            sq_candidato: x.sq_candidato, nome: x.nome, numero: x.numero, partido: x.partido, totalizacao: x.totalizacao,
-            vice: x.vice, plano_status: x.plano_status, url_pdf: x.url_pdf }));
-        if (!lista.length) {
-            grade.innerHTML = '<p class="text-sm text-slate-500 col-span-full">Nenhum candidato encontrado. Rode o coletor de candidatos (veja o README).</p>';
-            return;
-        }
-        const dicaCidade = (S.municipio || modo === 'palavra') ? '' : `<p class="col-span-full text-xs text-slate-500 dark:text-slate-400"><i class="fa-solid fa-location-dot mr-1" aria-hidden="true"></i>Escolha sua cidade no topo para ver como cada proposta chegaria até você (disponível nos planos já analisados).</p>`;
-        const cabecalhoBusca = modo === 'palavra'
-            ? `<div class="col-span-full text-xs text-slate-600 dark:text-slate-400"><p><b>Resultados para “${esc(S.buscaPlano)}”.</b> ${esc((busca && busca.aviso) || '')}</p>
-               <button type="button" class="mt-1 underline text-brand-700 dark:text-brand-400" data-acao="limpar-busca">Limpar busca</button></div>` : '';
-        grade.innerHTML = cabecalhoBusca + dicaCidade + lista.map((c) => cartaoCandidato(c, buscaPorSq[c.sq_candidato], modo)).join('');
-        if (resumo.atualizado_em) {
-            grade.insertAdjacentHTML('beforeend', `<p class="col-span-full text-[11px] text-slate-400 dark:text-slate-500"><i class="fa-solid fa-rotate mr-1" aria-hidden="true"></i>Planos lidos do TSE em ${esc(fmtDataHora(resumo.atualizado_em))}.</p>`);
-        }
-        if (cmp && cmp.municipio && cmp.municipio.populacao) {
-            const pop = cmp.municipio.populacao;
-            grade.insertAdjacentHTML('afterbegin', `<p class="col-span-full text-xs text-slate-500 dark:text-slate-400"><i class="fa-solid fa-city mr-1" aria-hidden="true"></i>${esc(cmp.municipio.nome)}/${esc(cmp.municipio.uf)} — ${esc(cmp.municipio.regiao)} · ${pop.valor.toLocaleString('pt-BR')} habitantes (estimativa IBGE ${esc(pop.ano)}).</p>`);
-        }
-    } catch (e) { if (minha === reqCandidatos) grade.innerHTML = `<div class="col-span-full">${mensagemErro(e)}</div>`; }
-}
-$('candidatosGrid').addEventListener('click', (ev) => {
-    if (ev.target.closest('[data-acao="todos-perfis"]')) { S.perfil = ''; salvarPrefs(); renderPerfis(); carregarCandidatos(); }
-    if (ev.target.closest('[data-acao="limpar-busca"]')) { S.buscaPlano = ''; $('buscaPlano').value = ''; carregarCandidatos(); }
-});
-$('formBuscaPlano').addEventListener('submit', (ev) => {
-    ev.preventDefault();
-    S.buscaPlano = $('buscaPlano').value.trim();
-    carregarCandidatos();
-});
-$('buscaPlano').addEventListener('search', () => { // clicar no "x" do campo
-    if (!$('buscaPlano').value.trim() && S.buscaPlano) { S.buscaPlano = ''; carregarCandidatos(); }
-});
-
-/* ====================================================================== *
- *  Simuladores
- * ====================================================================== */
-function abaSimulador(qual) {
-    const ir = qual === 'ir';
-    $('painelIR').classList.toggle('hidden', !ir); $('painelMEI').classList.toggle('hidden', ir);
-    const ativo = 'bg-white dark:bg-slate-800 text-brand-600 dark:text-brand-400 shadow-sm';
-    const inativo = 'text-slate-600 dark:text-slate-400';
-    $('tabIR').className = `px-3 py-1.5 text-xs font-semibold rounded-lg ${ir ? ativo : inativo}`;
-    $('tabMEI').className = `px-3 py-1.5 text-xs font-semibold rounded-lg ${ir ? inativo : ativo}`;
-    $('tabIR').setAttribute('aria-selected', String(ir)); $('tabMEI').setAttribute('aria-selected', String(!ir));
-    (ir ? simularIR : simularMEI)();
-}
-$('tabIR').addEventListener('click', () => abaSimulador('ir'));
-$('tabMEI').addEventListener('click', () => abaSimulador('mei'));
-
-async function post(caminho, corpo) {
-    return api(caminho, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(corpo) });
-}
-const num = (id) => { const v = parseFloat($(id).value); return Number.isFinite(v) && v >= 0 ? v : 0; };
-
-const simularIR = debounce(async () => {
-    $('irDepsTxt').textContent = $('irDeps').value;
-    try {
-        const r = await post('/api/simulador/ir', { salario_bruto: num('irSalario'), dependentes: parseInt($('irDeps').value, 10) || 0 });
-        const e = r.economia_mensal;
-        const manchete = e > 0
-            ? `<span class="text-xs text-slate-400 uppercase tracking-widest block">Você deixa de pagar</span><div class="text-3xl sm:text-4xl font-extrabold text-emerald-400 my-1">${brl(e)} <span class="text-sm font-normal text-slate-300">/mês</span></div><p class="text-xs text-slate-300">≈ ${brl(r.economia_anual_estimada)} por ano (12 meses, sem 13º).</p>`
-            : `<span class="text-xs text-slate-400 uppercase tracking-widest block">Efeito da regra de 2026</span><div class="text-2xl font-extrabold text-white my-1">Sem mudança no seu imposto na fonte</div><p class="text-xs text-slate-300">${r.faixa === 'sem_beneficio' ? 'Acima de R$ 7.350 mensais não há redução.' : 'Seu imposto já era zero pela regra anterior.'}</p>`;
-        $('irResultado').innerHTML = `<div class="text-center border-b border-slate-700/80 pb-4">${manchete}</div>
-            <table class="w-full text-xs mt-4"><thead><tr class="text-slate-400"><th class="text-left font-medium pb-2"></th><th class="text-right font-medium pb-2">Regra 2025</th><th class="text-right font-medium pb-2">Regra 2026</th></tr></thead>
-            <tbody class="divide-y divide-slate-700/60">
-              <tr><td class="py-1.5 text-slate-300">IRRF mensal</td><td class="text-right">${brl(r.regra_2025.imposto_mensal)}</td><td class="text-right font-bold text-emerald-300">${brl(r.regra_2026.imposto_mensal)}</td></tr>
-              <tr><td class="py-1.5 text-slate-300">INSS mensal</td><td class="text-right">${brl(r.inss)}</td><td class="text-right">${brl(r.inss)}</td></tr>
-              <tr><td class="py-1.5 text-slate-300">Líquido mensal</td><td class="text-right">${brl(r.regra_2025.liquido_mensal)}</td><td class="text-right font-bold">${brl(r.regra_2026.liquido_mensal)}</td></tr>
-            </tbody></table>
-            <p class="text-[11px] text-slate-400 mt-4 leading-relaxed">${esc(r.observacoes[0])} ${r.fontes.map((f) => `<a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(f.url))}">${esc(f.nome)}</a>`).join(' · ')}</p>`;
-    } catch (err) { $('irResultado').innerHTML = `<p class="text-sm text-rose-300">${esc(err.message)}</p>`; }
-}, 250);
-
-const simularMEI = debounce(async () => {
-    const teto = num('meiTeto');
-    try {
-        const r = await post('/api/simulador/mei', { faturamento_anual: num('meiFat'), atividade: $('meiAtiv').value, teto_hipotetico: teto > 0 ? teto : null });
-        const cores = { dentro_do_limite: 'text-emerald-400', excesso_ate_20: 'text-amber-400', excesso_acima_20: 'text-rose-400' };
-        const s = r.situacao_atual;
-        const hip = r.cenario_hipotetico
-            ? `<div class="mt-4 p-3 rounded-xl bg-slate-800/80 border border-slate-700 text-xs"><p class="font-semibold text-slate-200">Hipótese: teto de ${brl(r.cenario_hipotetico.teto_anual)}</p>
-               <p class="${cores[r.cenario_hipotetico.situacao.codigo]} font-bold mt-1">${esc(r.cenario_hipotetico.situacao.titulo)}</p>
-               <p class="text-slate-400 mt-1">${r.cenario_hipotetico.mudou_em_relacao_ao_atual ? 'Muda em relação às regras de hoje.' : 'Sem mudança em relação às regras de hoje.'} Simulação livre, não é lei aprovada.</p></div>` : '';
-        $('meiResultado').innerHTML = `<div class="text-center border-b border-slate-700/80 pb-4">
-                <span class="text-xs text-slate-400 uppercase tracking-widest block">Situação frente ao limite de ${brl(r.limite_vigente)}</span>
-                <div class="text-xl font-extrabold ${cores[s.codigo]} my-1">${esc(s.titulo)}</div>
-                <p class="text-xs text-slate-300">${esc(s.detalhe)}</p>
-                <p class="text-[11px] text-slate-400 mt-2">Você usou ${r.percentual_do_limite}% do limite.</p></div>
-            <div class="grid grid-cols-2 gap-3 mt-4 text-center">
-                <div class="p-3 rounded-xl bg-slate-800/80 border border-slate-700"><span class="text-[11px] text-slate-400 block">DAS mensal</span><b class="text-lg">${brl(r.das_mensal)}</b></div>
-                <div class="p-3 rounded-xl bg-slate-800/80 border border-slate-700"><span class="text-[11px] text-slate-400 block">DAS no ano</span><b class="text-lg">${brl(r.das_anual)}</b></div></div>${hip}
-            <p class="text-[11px] text-slate-400 mt-4">${esc(r.observacoes[0])}</p>`;
-    } catch (err) { $('meiResultado').innerHTML = `<p class="text-sm text-rose-300">${esc(err.message)}</p>`; }
-}, 250);
-['irSalario', 'irDeps'].forEach((id) => $(id).addEventListener('input', simularIR));
-['meiFat', 'meiAtiv', 'meiTeto'].forEach((id) => $(id).addEventListener('input', simularMEI));
-
-/* ====================================================================== *
- *  Inicialização
- * ====================================================================== */
-async function iniciar() {
-    $('chkTurno2').checked = S.turno2;
-    renderCidadeChip();
-    abaSimulador('ir');
-    try {
-        const [perfis, categorias, statusLista] = await Promise.all([api('/api/perfis'), api('/api/categorias'), api('/api/status')]);
-        S.perfis = perfis; S.categorias = categorias; S.statusLista = statusLista;
-        if (S.perfil && !perfis.some((p) => p.id === S.perfil)) S.perfil = '';
-        if (!categorias.some((c) => c.id === S.tema)) S.tema = categorias[0].id;
-    } catch (e) {
-        $('candidatosGrid').innerHTML = `<div class="col-span-full">${mensagemErro(e)}</div>`;
+async function carregarCidade() {
+    const m = contexto && contexto.municipio;
+    if (!m) {
+        $('cidadeSub').textContent = '';
+        $('cidade').innerHTML = vazio('Escolha sua cidade na barra acima para ver arrecadação, gastos e dívida do município.');
         return;
     }
-    renderPerfis(); renderTemaChips();
-    carregarCandidatos();
+    $('cidadeSub').textContent = `${m.nome} – ${m.uf}`;
+    $('cidade').innerHTML = '<p class="text-sm text-slate-500"><i class="fa-solid fa-spinner fa-spin mr-1.5" aria-hidden="true"></i>Consultando o Tesouro Nacional…</p>';
+    try {
+        const d = await api('/api/economia/' + encodeURIComponent(m.codigo));
+        const sf = d.situacao_fiscal;
+        const nominal = sf && sf.fluxo.itens.find((i) => i.id === 'nominal');
+        const divida = sf && sf.estoque.itens[0];
+        const b = d.nivel1.balanco;
+        const fila = (rot, valor, sub) => `<div><p class="text-xs text-slate-500">${rot}</p><p class="text-xl font-extrabold">${valor}</p>${sub ? `<p class="text-xs text-slate-500">${sub}</p>` : ''}</div>`;
+        $('cidade').innerHTML = `<div class="grid grid-cols-2 gap-3">
+            ${fila('Arrecadado no período', reais(b.receita_arrecadada), esc(d.periodo.rotulo))}
+            ${fila('Gasto comprometido', reais(b.despesa_empenhada), 'despesa empenhada')}
+            ${nominal ? fila('Resultado com juros', `${reais(Math.abs(nominal.valor_rs))} <span class="text-sm ${nominal.situacao === 'deficit' ? 'text-rose-600' : 'text-emerald-600'}">${nominal.situacao === 'deficit' ? 'Déficit' : 'Superávit'}</span>`, '') : ''}
+            ${divida && divida.pct != null ? fila('Dívida da prefeitura', `${num(divida.pct, 1)}%`, 'da receita corrente líquida') : ''}</div>
+            <p class="text-[11px] text-slate-400">${esc(d.instituicao || '')} · fonte: Tesouro Nacional (SICONFI)</p>`;
+    } catch (e) { $('cidade').innerHTML = `<p class="text-sm text-slate-500">${esc(e.message || 'Não foi possível carregar as contas deste município agora.')}</p>`; }
 }
-iniciar();
+
+async function carregarIndicadores() {
+    const ini = new Date(); ini.setFullYear(ini.getFullYear() - 1);
+    const desde = ini.toISOString().slice(0, 10);
+    const itens = [['ipca12', 'Inflação em 12 meses', '%'], ['selic', 'Meta Selic', '% ao ano'], ['desemprego', 'Desemprego', '%']];
+    $('indicadores').innerHTML = itens.map(() => '<div class="h-16 rounded-xl bg-slate-100 dark:bg-slate-700/50 animate-pulse"></div>').join('');
+    const res = await Promise.allSettled(itens.map(([id]) => api(`/api/macro/serie/${id}?inicio=${desde}`)));
+    $('indicadores').innerHTML = res.map((r, i) => {
+        const [, rot, un] = itens[i];
+        if (r.status !== 'fulfilled' || !r.value.pontos.length) return `<div><p class="text-xs text-slate-500">${rot}</p><p class="text-sm text-slate-400">indisponível</p></div>`;
+        const ult = r.value.pontos[r.value.pontos.length - 1];
+        return `<div><p class="text-xs text-slate-500">${rot}</p><p class="text-2xl font-extrabold">${num(ult.valor, 2)}</p>
+            <p class="text-[11px] text-slate-400">${un} · ${esc(ult.referencia || fmtData(ult.data).slice(3))}</p></div>`;
+    }).join('');
+}
+
+async function carregarPlanos() {
+    try {
+        const r = await api('/api/candidatos?turno2=true');
+        const n = r.itens ? r.itens.length : 0;
+        $('planos').textContent = n ? `${n} candidato${n === 1 ? '' : 's'} no 2º turno, com o plano de governo resumido e o trecho original de cada proposta.`
+            : 'Compare as propostas dos candidatos tema a tema, com o trecho original do plano registrado no TSE.';
+    } catch (_) { $('planos').textContent = 'Compare as propostas dos candidatos tema a tema, com o trecho original do plano registrado no TSE.'; }
+}
+
+/* ---------- Quem resolve o quê? ---------- */
+const COR_ESFERA = { Municipal: '#16a34a', Estadual: '#2563eb', Federal: '#eab308', 'Conveniado ao SUS': '#9333ea', 'Pública (esfera não informada)': '#0891b2', 'Não informada': '#8F8F8B', Pública: '#0891b2' };
+const CHIP_ESFERA = { Municipal: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300', Estadual: 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300',
+    Federal: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-950 dark:text-yellow-300' };
+const nomeEnte = (esfera) => {
+    const m = contexto && contexto.municipio;
+    return esfera === 'Municipal' ? (m ? `Prefeitura de ${m.nome}` : 'a Prefeitura') : esfera === 'Estadual' ? (m ? `Governo do Estado (${m.uf})` : 'o Governo do Estado') : 'o Governo Federal';
+};
+const reaisCurto = (n) => {
+    if (n == null) return '—';
+    const v = Math.abs(n);
+    if (v >= 1e12) return `R$ ${(v / 1e12).toLocaleString('pt-BR', { maximumFractionDigits: 2 })} tri`;
+    if (v >= 1e9) return `R$ ${(v / 1e9).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} bi`;
+    if (v >= 1e6) return `R$ ${(v / 1e6).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} mi`;
+    return brl(n);
+};
+function linhaVerba(v) {
+    const sub = v.subfuncao && v.valor_subfuncao != null ? `, dos quais <b>${esc(reaisCurto(v.valor_subfuncao))}</b> em ${esc(v.subfuncao)}` : '';
+    return `<li><b>${esc(v.instituicao)}</b> autorizou na LOA ${esc(v.ano)}: <b>${esc(reaisCurto(v.valor_funcao))}</b> para ${esc(v.funcao)}${sub}.</li>`;
+}
+function cartaoResposta(r) {
+    const esferas = r.esferas.map((e) => `<span class="px-2.5 py-1 rounded-full text-xs font-bold ${CHIP_ESFERA[e]}">${esc(e)}</span>`).join(' ');
+    const responsaveis = r.esferas.map(nomeEnte).join(' · ');
+    return `<article class="rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+        <header class="px-4 py-3 bg-slate-100 dark:bg-slate-700/60"><p class="text-xs font-bold text-slate-500">RESPONSÁVEL</p>
+            <p class="font-bold"><span aria-hidden="true">🏛️</span> ${esc(responsaveis)} <span class="ml-1">${esferas}</span></p></header>
+        <div class="p-4 space-y-3 text-sm">
+            <p><b>${esc(r.servico)}</b><span class="block text-xs text-slate-500">${esc(r.equipamento_tipico)}</span></p>
+            <div><p class="font-semibold"><span aria-hidden="true">📌</span> Quem você deve cobrar?</p>
+                <ul class="list-disc pl-5 text-slate-700 dark:text-slate-300">${r.quem_cobrar.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
+                <p class="text-xs text-slate-500 mt-1">Órgão: ${esc(r.orgao_responsavel)}</p></div>
+            ${r.verba.length ? `<div><p class="font-semibold"><span aria-hidden="true">💰</span> Quanto foi previsto no orçamento?</p>
+                <ul class="list-disc pl-5 text-slate-700 dark:text-slate-300">${r.verba.map(linhaVerba).join('')}</ul>
+                <p class="text-[11px] text-slate-400 mt-1">Dotação inicial da LOA declarada ao Tesouro Nacional (RREO). É o valor da área, não de um serviço específico.</p></div>`
+                : (r.funcao_orcamento && !(contexto && contexto.municipio) ? '<p class="text-xs text-slate-500"><span aria-hidden="true">💰</span> Escolha a sua cidade para ver quanto cada esfera autorizou para esta área.</p>' : '')}
+            ${r.observacao ? `<p class="text-xs text-slate-600 dark:text-slate-400"><span aria-hidden="true">💡</span> ${esc(r.observacao)}</p>` : ''}
+            ${r.base ? `<p class="text-[11px] text-slate-400">Base legal: ${esc(r.base)}</p>` : ''}
+            <button type="button" data-mapa="${esc(r.mapa)}" class="px-3 py-1.5 rounded-lg bg-teal-50 dark:bg-teal-950/40 text-teal-800 dark:text-teal-300 text-xs font-semibold border border-teal-200 dark:border-teal-800">
+                <i class="fa-solid fa-map-pin mr-1" aria-hidden="true"></i>Ver no mapa</button></div></article>`;
+}
+async function buscarQuem(texto) {
+    const q = (texto || '').trim();
+    if (q.length < 2) { $('respQuem').innerHTML = ''; return; }
+    $('respQuem').innerHTML = '<p class="text-sm text-slate-500"><i class="fa-solid fa-spinner fa-spin mr-1.5" aria-hidden="true"></i>Procurando o responsável…</p>';
+    try {
+        const par = new URLSearchParams({ q }); if (contexto && contexto.municipio) par.set('municipio', contexto.municipio.codigo);
+        const r = await api('/api/competencias/buscar?' + par);
+        $('respQuem').innerHTML = r.resultados.length ? r.resultados.map(cartaoResposta).join('')
+            : `<p class="text-sm text-slate-600 dark:text-slate-300">Não encontramos um responsável direto para “${esc(q)}”. Tente: ${r.sugestoes.map((x) => `<button type="button" data-q="${esc(x)}" class="underline text-brand-700 dark:text-brand-400">${esc(x)}</button>`).join(', ')}.</p>`;
+    } catch (e) { $('respQuem').innerHTML = mensagemErro(e); }
+}
+$('formQuem').addEventListener('submit', (ev) => { ev.preventDefault(); buscarQuem($('qQuem').value); });
+['respQuem', 'sugestoesQuem'].forEach((id) => $(id).addEventListener('click', (ev) => {
+    const q = ev.target.closest('[data-q]');
+    if (q) { $('qQuem').value = q.dataset.q; buscarQuem(q.dataset.q); return; }
+    const m = ev.target.closest('[data-mapa]');
+    if (m) { M.categoria = m.dataset.mapa; desenharFiltros(); desenharPontos(); $('mapaSec').scrollIntoView({ behavior: 'smooth' }); }
+}));
+$('sugestoesQuem').innerHTML = ['vaga na creche', 'buraco na rua', 'demora para cirurgia', 'remédio no posto', 'assalto', 'aposentadoria no INSS']
+    .map((x) => `<button type="button" data-q="${esc(x)}" class="px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600">${esc(x)}</button>`).join('');
+
+/* ---------- Mapa dos equipamentos públicos ---------- */
+const M = { mapa: null, camada: null, dados: null, categoria: 'todos', esferas: new Set(['Municipal', 'Estadual', 'Federal', 'Conveniado ao SUS']), tentativas: 0, timer: null, selecionado: null };
+const CATEGORIAS = [['todos', 'Todos', 'fa-layer-group'], ['saude', 'Saúde', 'fa-heart-pulse'], ['educacao', 'Educação', 'fa-graduation-cap'],
+    ['seguranca', 'Segurança', 'fa-shield-halved'], ['assistencia', 'Assistência social', 'fa-hand-holding-heart'], ['outros', 'Outros', 'fa-building-columns']];
+function desenharFiltros() {
+    $('filtrosMapa').innerHTML = CATEGORIAS.map(([id, rot, ic]) => `<button type="button" data-cat="${id}" aria-pressed="${M.categoria === id}"
+        class="px-3 py-1.5 rounded-full text-xs font-semibold border ${M.categoria === id ? 'bg-brand-600 border-brand-600 text-white' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700'}">
+        <i class="fa-solid ${ic} mr-1" aria-hidden="true"></i>${rot}</button>`).join('');
+    const cont = (M.dados && M.dados.contagem_por_esfera) || {};
+    const ordem = ['Municipal', 'Estadual', 'Federal', 'Conveniado ao SUS', 'Pública (esfera não informada)', 'Não informada'];
+    $('legendaMapa').innerHTML = ordem.filter((e) => cont[e]).map((e) => `<label class="inline-flex items-center gap-1.5 cursor-pointer">
+        <input type="checkbox" data-esf="${esc(e)}" ${M.esferas.has(e) ? 'checked' : ''}><span class="w-3 h-3 rounded-full" style="background:${COR_ESFERA[e] || '#8F8F8B'}"></span>${esc(e)} <span class="text-slate-400">(${cont[e]})</span></label>`).join('');
+}
+$('filtrosMapa').addEventListener('click', (ev) => { const b = ev.target.closest('[data-cat]'); if (b) { M.categoria = b.dataset.cat; desenharFiltros(); desenharPontos(); } });
+$('legendaMapa').addEventListener('change', (ev) => { const e = ev.target.dataset.esf; if (!e) return; ev.target.checked ? M.esferas.add(e) : M.esferas.delete(e); desenharPontos(); });
+
+function iniciarMapa(centro) {
+    if (M.mapa) return;
+    M.mapa = L.map('mapa', { scrollWheelZoom: false }).setView([centro.lat, centro.lon], 12);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>' }).addTo(M.mapa);
+    M.camada = L.layerGroup().addTo(M.mapa);
+    M.mapa.on('click', () => M.mapa.scrollWheelZoom.enable());
+}
+function desenharPontos() {
+    if (!M.mapa || !M.dados) return;
+    M.camada.clearLayers();
+    const itens = M.dados.itens.filter((i) => (M.categoria === 'todos' || i.categoria === M.categoria) && M.esferas.has(i.esfera));
+    const pts = [];
+    for (const i of itens) {
+        const cor = COR_ESFERA[i.esfera] || '#8F8F8B';
+        const mk = L.circleMarker([i.lat, i.lon], { radius: 7, color: '#fff', weight: 1.5, fillColor: cor, fillOpacity: 0.95 });
+        mk.bindTooltip(i.nome, { direction: 'top' });
+        mk.on('click', () => abrirFicha(i));
+        mk.addTo(M.camada); pts.push([i.lat, i.lon]);
+    }
+    if (pts.length) M.mapa.fitBounds(pts, { padding: [30, 30], maxZoom: 15 });
+    $('mapaEstado').innerHTML = itens.length ? '' : '<p class="text-sm text-slate-500">Nenhum equipamento com este filtro.</p>';
+}
+async function abrirFicha(i) {
+    const m = contexto.municipio;
+    const botao = (rot, url) => `<a class="underline text-brand-700 dark:text-brand-400" target="_blank" rel="noopener" href="${esc(urlSegura(url))}">${esc(rot)}</a>`;
+    const cab = `<h3 class="font-bold leading-snug">${esc(i.nome)}</h3>
+        <p class="text-xs text-slate-500">${esc(i.tipo)}</p>
+        <p class="mt-2"><span class="px-2.5 py-1 rounded-full text-xs font-bold text-white" style="background:${COR_ESFERA[i.esfera] || '#8F8F8B'}">${esc(i.esfera)}</span>
+           <span class="block text-[11px] text-slate-400 mt-1">Esfera: ${esc(i.esfera_origem)}</span></p>
+        <ul class="mt-3 space-y-1 text-xs text-slate-700 dark:text-slate-300">
+            ${i.endereco ? `<li><span aria-hidden="true">📍</span> ${esc(i.endereco)}</li>` : ''}
+            ${i.telefone ? `<li><span aria-hidden="true">📞</span> ${esc(i.telefone)}</li>` : ''}
+            ${i.funcionamento ? `<li><span aria-hidden="true">🕒</span> ${esc(i.funcionamento)}</li>` : ''}</ul>`;
+    const rodape = `<p class="text-[11px] text-slate-400 mt-3">Fonte: ${botao(i.fonte, i.url_fonte)}${i.atualizado_em ? ` · atualizado em ${esc(fmtData(i.atualizado_em))}` : ''}</p>`;
+    $('fichaLocal').innerHTML = cab + '<p class="mt-3 text-xs text-slate-500"><i class="fa-solid fa-spinner fa-spin mr-1" aria-hidden="true"></i>Buscando responsável e orçamento…</p>' + rodape;
+    if (!['Municipal', 'Estadual', 'Federal'].includes(i.esfera)) {
+        const extra = i.conveniado_sus
+            ? '<p class="mt-3 text-xs"><b>Transparência:</b> entidade sem fins lucrativos que atende pelo SUS. O atendimento é financiado por repasses do SUS (Município, Estado e União). Para reclamar do atendimento, use a Ouvidoria do SUS: <b>Disque Saúde 136</b>.</p>'
+            : '<p class="mt-3 text-xs text-slate-500">A esfera deste local não está informada na fonte; por isso não mostramos o orçamento. Consulte o órgão responsável.</p>';
+        $('fichaLocal').innerHTML = cab + extra + rodape; return;
+    }
+    try {
+        const r = await api(`/api/equipamentos/${m.codigo}/verba?categoria=${encodeURIComponent(i.categoria)}&esfera=${encodeURIComponent(i.esfera)}`);
+        const v = r.verba;
+        $('fichaLocal').innerHTML = cab + `<div class="mt-3 border-t border-slate-200 dark:border-slate-700 pt-3 text-xs space-y-2">
+            <p class="font-semibold text-sm"><span aria-hidden="true">💰</span> Transparência e dinheiro público</p>
+            <p><b>Responsável:</b> ${esc(r.orgao)}</p>
+            <p><b>Quem cobrar:</b> ${r.quem_cobrar.map(esc).join(' e ')}</p>
+            ${v && v.valor_funcao != null ? `<p>${esc(v.instituicao)} autorizou na LOA ${esc(v.ano)} <b>${esc(reaisCurto(v.valor_funcao))}</b> para ${esc(v.funcao)} (${(100 * v.valor_funcao / v.despesa_total).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}% da despesa autorizada). <a class="underline" href="orcamento.html">Ver o orçamento</a>.</p>
+              <p class="text-[11px] text-slate-400">É o valor da área na esfera, não o custo desta unidade.</p>` : '<p class="text-slate-500">Sem valor de orçamento para esta área.</p>'}
+            ${i.categoria === 'saude' ? '<p>Reclamações sobre o atendimento: Ouvidoria do SUS, <b>Disque Saúde 136</b>.</p>' : ''}</div>` + rodape;
+    } catch (e) { $('fichaLocal').innerHTML = cab + `<p class="mt-3 text-xs text-slate-500">${esc(e.message)}</p>` + rodape; }
+}
+async function carregarMapa() {
+    const m = contexto && contexto.municipio;
+    clearTimeout(M.timer);
+    if (!m) {
+        $('mapaEstado').innerHTML = '<p class="text-sm text-slate-500">Escolha a sua cidade na barra acima para ver os equipamentos públicos no mapa.</p>';
+        $('filtrosMapa').innerHTML = ''; $('legendaMapa').innerHTML = ''; $('mapaFontes').textContent = '';
+        $('mapa').classList.add('hidden'); $('fichaLocal').classList.add('hidden'); return;
+    }
+    $('mapa').classList.remove('hidden'); $('fichaLocal').classList.remove('hidden');
+    $('mapaSub').textContent = `Equipamentos públicos de ${m.nome} – ${m.uf}, com a esfera responsável por cada um.`;
+    if (!M.dados || M.dados.municipio !== m.codigo) $('mapaEstado').innerHTML = '<p class="text-sm text-slate-500"><i class="fa-solid fa-spinner fa-spin mr-1.5" aria-hidden="true"></i>Consultando o cadastro de unidades de saúde (CNES)…</p>';
+    try {
+        const d = await api('/api/equipamentos/' + encodeURIComponent(m.codigo));
+        const trocou = !M.dados || M.dados.municipio !== d.municipio;
+        M.dados = d;
+        if (!d.centro) { $('mapaEstado').innerHTML = '<p class="text-sm text-slate-500">Nenhum equipamento com localização foi encontrado para esta cidade.</p>'; return; }
+        iniciarMapa(d.centro);
+        if (trocou) M.mapa.setView([d.centro.lat, d.centro.lon], 12);
+        M.mapa.invalidateSize();
+        desenharFiltros(); desenharPontos();
+        const osm = d.fontes.osm;
+        $('mapaFontes').innerHTML = `Fontes: ${esc(d.fontes.cnes.nome)} (${d.fontes.cnes.itens} unidades) · ${esc(osm.nome)} (${osm.itens} locais${osm.estado === 'indisponivel' ? ', indisponível agora' : ''}). ${d.avisos.map(esc).join(' ')}`;
+        if (osm.estado === 'carregando' && M.tentativas < 8) {
+            $('mapaEstado').innerHTML = '<p class="text-xs text-slate-500"><i class="fa-solid fa-spinner fa-spin mr-1.5" aria-hidden="true"></i>Carregando escolas, delegacias e outros serviços do OpenStreetMap (na primeira vez pode levar um minuto)…</p>';
+            M.tentativas += 1; M.timer = setTimeout(carregarMapa, 15000);
+        } else { M.tentativas = 0; }
+    } catch (e) { $('mapaEstado').innerHTML = mensagemErro(e); }
+}
+
+function recarregar() { atualizarSubtitulo(); carregarLeis(); carregarCidade(); M.tentativas = 0; carregarMapa(); if ($('qQuem').value.trim()) buscarQuem($('qQuem').value); }
+
+(async function iniciar() {
+    contexto = await montarBarraContexto('barraContexto', recarregar);
+    recarregar();
+    carregarIndicadores();
+    carregarPlanos();
+})();
 </script>
 </body>
 </html>

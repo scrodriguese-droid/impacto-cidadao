@@ -16,9 +16,17 @@ logs/
 # PDFs baixados / colocados manualmente (podem ser grandes)
 dados/planos/*.pdf
 dados/planos/cache/
+# Resumo do projeto da LOA (extraído do PDF oficial)
+dados/orcamento/
+# Cache dos equipamentos públicos (OpenStreetMap)
+dados/equipamentos/
 
 # SO / editor
 .DS_Store
 Thumbs.db
 .idea/
 .vscode/
+
+# Dados de autoria gerados pelo coletor (grandes, reproduzíveis)
+dados/autoria/
+dados/votacoes/

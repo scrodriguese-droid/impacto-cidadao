@@ -16,6 +16,7 @@ from __future__ import annotations
 import hashlib
 import logging
 import re
+import threading
 import time
 from collections import defaultdict, deque
 from contextlib import asynccontextmanager
@@ -23,13 +24,22 @@ from datetime import date
 from typing import Annotated, Any, Literal
 
 import psycopg
-from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, FastAPI, HTTPException, Path, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field, field_validator
 
+import autoria
+import bancadas
 import db
+import ciclo
+import competencias
+import economia
+import equipamentos
+import macro
+import orcamento
+import tributos
 import simuladores
 from config import cfg
 from fontes import buscar_municipios, contexto_municipio
@@ -45,12 +55,21 @@ PerfilQuery = Annotated[str | None, Query(description="id do perfil (ex.: clt, m
 # --------------------------------------------------------------------------- #
 # Aplicação
 # --------------------------------------------------------------------------- #
+def _aquecer_cache() -> None:
+    try:
+        macro.resumo()
+    except Exception as exc:  # noqa: BLE001 — é só otimização; a primeira consulta refaz o trabalho
+        log.info("Aquecimento do cache macro não concluído: %s", exc)
+
+
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     try:
         db.abrir_pool()
     except Exception as exc:  # noqa: BLE001
         log.error("Banco indisponível na inicialização: %s", exc)
+    # Aquece o cache dos indicadores em segundo plano: a página inicial não espera 30–60 s na primeira visita.
+    threading.Thread(target=_aquecer_cache, name="aquecer-cache", daemon=True).start()
     yield
     db.fechar_pool()
 
@@ -75,6 +94,9 @@ async def cabecalhos_de_seguranca(request: Request, call_next):
     resposta = await call_next(request)
     resposta.headers.setdefault("X-Content-Type-Options", "nosniff")
     resposta.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+    if not request.url.path.startswith("/api"):
+        # páginas e scripts estáticos: o navegador revalida (ETag) em vez de reaproveitar uma cópia antiga
+        resposta.headers.setdefault("Cache-Control", "no-cache")
     return resposta
 
 
@@ -485,6 +507,256 @@ def pesquisar_municipios(q: Annotated[str, Query(min_length=2, max_length=60)]) 
     except Exception as exc:  # noqa: BLE001
         log.warning("IBGE indisponível: %s", exc)
         raise HTTPException(status_code=503, detail="Lista de municípios (IBGE) indisponível no momento.") from exc
+
+
+# --------------------------------------------------------------------------- #
+# Composição partidária (Câmara e Senado)
+# --------------------------------------------------------------------------- #
+@router.get("/bancadas", tags=["bancadas"])
+def bancadas_partidarias() -> dict:
+    try:
+        return bancadas.bancadas()
+    except Exception as exc:  # noqa: BLE001
+        log.warning("Composição partidária indisponível: %s", exc)
+        raise HTTPException(status_code=503, detail="As fontes oficiais da Câmara e do Senado estão indisponíveis no momento.") from exc
+
+
+@router.get("/bancadas/alinhamento", tags=["bancadas"])
+def bancadas_alinhamento(desde: Annotated[int | None, Query(ge=2000, le=2100)] = None,
+                         ate: Annotated[int | None, Query(ge=2000, le=2100)] = None) -> dict:
+    try:
+        return bancadas.alinhamento(desde, ate)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except Exception as exc:  # noqa: BLE001
+        log.warning("Alinhamento indisponível: %s", exc)
+        raise HTTPException(status_code=503, detail="Os dados de votação ainda não estão disponíveis.") from exc
+
+
+@router.get("/bancadas/tematicas", tags=["bancadas"])
+def bancadas_tematicas() -> dict:
+    try:
+        return bancadas.frentes_tematicas()
+    except Exception as exc:  # noqa: BLE001
+        log.warning("Frentes parlamentares indisponíveis: %s", exc)
+        raise HTTPException(status_code=503, detail="A fonte oficial das frentes parlamentares (Câmara) está indisponível no momento.") from exc
+
+
+# --------------------------------------------------------------------------- #
+# Autoria dos projetos da Câmara (líderes por tema, projetos por político, divisão por tema)
+# --------------------------------------------------------------------------- #
+def _autoria(fn, *args):  # noqa: ANN001
+    try:
+        return fn(*args)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail="Deputado(a) não encontrado(a) nos dados de autoria.") from exc
+    except Exception as exc:  # noqa: BLE001
+        log.warning("Autoria indisponível: %s", exc)
+        raise HTTPException(status_code=503, detail="Os dados de autoria dos projetos ainda não estão disponíveis.") from exc
+
+
+@router.get("/autoria/resumo", tags=["autoria"])
+def autoria_resumo(desde: Annotated[date | None, Query(description="AAAA-MM-DD")] = None,
+                   ate: Annotated[date | None, Query(description="AAAA-MM-DD")] = None) -> dict:
+    return _autoria(autoria.resumo, desde, ate)
+
+
+@router.get("/autoria/politicos", tags=["autoria"])
+def autoria_politicos(q: Annotated[str, Query(min_length=2, max_length=60)],
+                      desde: Annotated[date | None, Query(description="AAAA-MM-DD")] = None,
+                      ate: Annotated[date | None, Query(description="AAAA-MM-DD")] = None) -> dict:
+    return _autoria(autoria.buscar_politicos, q, desde, ate)
+
+
+@router.get("/autoria/politicos/{politico_id}", tags=["autoria"])
+def autoria_politico(politico_id: int, desde: Annotated[date | None, Query(description="AAAA-MM-DD")] = None,
+                     ate: Annotated[date | None, Query(description="AAAA-MM-DD")] = None,
+                     tema: Annotated[int | None, Query(ge=1, le=999)] = None) -> dict:
+    return _autoria(autoria.projetos_do_politico, politico_id, desde, ate, tema)
+
+
+# --------------------------------------------------------------------------- #
+# Indicadores macroeconômicos (BCB, IBGE, Tesouro Nacional)
+# --------------------------------------------------------------------------- #
+def _fonte_macro_indisponivel(exc: Exception) -> HTTPException:
+    log.warning("Fonte macroeconômica indisponível: %s", exc)
+    return HTTPException(status_code=503, detail="Uma fonte oficial (Banco Central, IBGE ou Tesouro) está indisponível no momento.")
+
+
+@router.get("/macro/catalogo", tags=["macro"])
+def macro_catalogo() -> list[dict]:
+    return macro.catalogo()
+
+
+@router.get("/macro/resumo", tags=["macro"])
+def macro_resumo() -> dict:
+    try:
+        return macro.resumo()
+    except Exception as exc:  # noqa: BLE001
+        raise _fonte_macro_indisponivel(exc) from exc
+
+
+@router.get("/macro/serie/{chave}", tags=["macro"])
+def macro_serie(
+    chave: Annotated[str, Path(pattern=r"^[a-z0-9_]{2,20}$")],
+    inicio: Annotated[date | None, Query(description="AAAA-MM-DD")] = None,
+    fim: Annotated[date | None, Query(description="AAAA-MM-DD")] = None,
+) -> dict:
+    try:
+        return macro.serie(chave, inicio.isoformat() if inicio else None, fim.isoformat() if fim else None)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail="Indicador desconhecido.") from exc
+    except Exception as exc:  # noqa: BLE001
+        raise _fonte_macro_indisponivel(exc) from exc
+
+
+@router.get("/tributos/arrecadacao", tags=["tributos"])
+def tributos_arrecadacao(municipio: Annotated[int | None, Query(ge=1000000, le=5999999)] = None) -> dict:
+    """Arrecadação dos últimos 12 meses por tributo: federal (Tesouro) e, com município, estadual e municipal (SICONFI)."""
+    try:
+        return tributos.arrecadacao(municipio)
+    except Exception as exc:  # noqa: BLE001
+        log.warning("Arrecadação por tributo indisponível: %s", exc)
+        raise HTTPException(status_code=503, detail="Os dados de arrecadação estão indisponíveis no momento.") from exc
+
+
+@router.get("/tributos/repasses", tags=["tributos"])
+def tributos_repasses(municipio: Annotated[int | None, Query(ge=1000000, le=5999999)] = None) -> dict:
+    """Repasses entre União, estado e município (SICONFI) e a repartição de receitas da União (Tesouro)."""
+    try:
+        return tributos.repasses(municipio)
+    except Exception as exc:  # noqa: BLE001
+        log.warning("Repasses indisponíveis: %s", exc)
+        raise HTTPException(status_code=503, detail="Os dados de repasses estão indisponíveis no momento.") from exc
+
+
+@router.get("/tributos/fluxo-federal", tags=["tributos"])
+def tributos_fluxo_federal() -> dict:
+    try:
+        return tributos.fluxo_federal()
+    except Exception as exc:  # noqa: BLE001
+        log.warning("Fluxo federal indisponível: %s", exc)
+        raise HTTPException(status_code=503, detail="O Resultado do Tesouro Nacional está indisponível no momento.") from exc
+
+
+@router.get("/competencias/buscar", tags=["competencias"])
+def competencias_buscar(
+    q: Annotated[str, Query(min_length=2, max_length=120, description="problema do dia a dia, ex.: vaga na creche")],
+    municipio: Annotated[int | None, Query(ge=1000000, le=5999999, description="código IBGE do município")] = None,
+) -> dict:
+    try:
+        return competencias.buscar(q, municipio)
+    except Exception as exc:  # noqa: BLE001
+        log.warning("Busca de competências falhou: %s", exc)
+        raise HTTPException(status_code=503, detail="Não foi possível consultar a matriz de competências agora.") from exc
+
+
+@router.get("/equipamentos/{codigo_ibge}", tags=["equipamentos"])
+def equipamentos_municipio(codigo_ibge: Annotated[int, Path(ge=1000000, le=5999999)]) -> dict:
+    """Unidades de saúde (CNES) e outros serviços (OpenStreetMap) de um município, com coordenadas."""
+    try:
+        return equipamentos.listar(codigo_ibge)
+    except Exception as exc:  # noqa: BLE001
+        log.warning("Equipamentos indisponíveis (%s): %s", codigo_ibge, exc)
+        raise HTTPException(status_code=503, detail="O cadastro de equipamentos públicos está indisponível no momento.") from exc
+
+
+@router.get("/equipamentos/{codigo_ibge}/verba", tags=["equipamentos"])
+def equipamentos_verba(
+    codigo_ibge: Annotated[int, Path(ge=1000000, le=5999999)],
+    categoria: Annotated[Literal["saude", "educacao", "seguranca", "assistencia", "outros"], Query()],
+    esfera: Annotated[Literal["Municipal", "Estadual", "Federal"], Query()],
+) -> dict:
+    """Responsável e verba autorizada na LOA (dotação inicial do RREO) para o tipo de equipamento e a esfera dele."""
+    try:
+        return competencias.ficha(codigo_ibge, categoria, esfera)
+    except Exception as exc:  # noqa: BLE001
+        log.warning("Verba do equipamento indisponível: %s", exc)
+        raise HTTPException(status_code=503, detail="Os dados de orçamento estão indisponíveis no momento.") from exc
+
+
+@router.get("/macro/ciclo", tags=["macro"])
+def macro_ciclo() -> dict:
+    try:
+        return ciclo.ciclo()
+    except Exception as exc:  # noqa: BLE001
+        raise _fonte_macro_indisponivel(exc) from exc
+
+
+@router.get("/macro/financiamento", tags=["macro"])
+def macro_financiamento() -> dict:
+    try:
+        return macro.financiamento()
+    except Exception as exc:  # noqa: BLE001
+        raise _fonte_macro_indisponivel(exc) from exc
+
+
+@router.get("/macro/reservas", tags=["macro"])
+def macro_reservas() -> dict:
+    try:
+        return macro.reservas()
+    except Exception as exc:  # noqa: BLE001
+        raise _fonte_macro_indisponivel(exc) from exc
+
+
+@router.get("/macro/divida", tags=["macro"])
+def macro_divida() -> dict:
+    try:
+        return macro.divida()
+    except Exception as exc:  # noqa: BLE001
+        raise _fonte_macro_indisponivel(exc) from exc
+
+
+# --------------------------------------------------------------------------- #
+# Economia do setor público (SICONFI)
+# --------------------------------------------------------------------------- #
+@router.get("/economia/{codigo_ibge}", tags=["economia"])
+def economia_municipio(codigo_ibge: Annotated[int, Path(ge=1, le=5999999)]) -> dict:
+    """Saúde fiscal, receitas, despesas e execução orçamentária do município (código IBGE de 7 dígitos)."""
+    try:
+        painel = economia.painel_economia(codigo_ibge)
+    except Exception as exc:  # noqa: BLE001
+        log.warning("SICONFI indisponível: %s", exc)
+        raise HTTPException(status_code=503, detail="O SICONFI (Tesouro Nacional) está indisponível no momento.") from exc
+    if painel is None:
+        raise HTTPException(status_code=404, detail="Este município ainda não publicou relatórios no SICONFI.")
+    contexto = None
+    try:
+        contexto = contexto_municipio(codigo_ibge)
+    except Exception:  # noqa: BLE001
+        pass
+    return {**painel, "municipio": contexto}
+
+
+# --------------------------------------------------------------------------- #
+# Ciclo orçamentário (PPA, LDO, LOA) e "para onde vai o meu imposto"
+# --------------------------------------------------------------------------- #
+@router.get("/orcamento/ciclo/{codigo}", tags=["orcamento"])
+def orcamento_ciclo(codigo: Annotated[int, Path(ge=1, le=5999999)]) -> dict:
+    """PPA, LDO e LOA da esfera do ente (1 = União, 2 dígitos = UF, 7 dígitos = município)."""
+    try:
+        return orcamento.ciclo(codigo)
+    except Exception as exc:  # noqa: BLE001
+        log.warning("Fonte do ciclo orçamentário indisponível: %s", exc)
+        raise HTTPException(status_code=503, detail="A fonte dos documentos orçamentários está indisponível no momento.") from exc
+
+
+@router.get("/orcamento/imposto/{codigo}", tags=["orcamento"])
+def orcamento_imposto(
+    codigo: Annotated[int, Path(ge=1, le=5999999)],
+    valor: Annotated[float, Query(gt=0, le=100_000_000, description="imposto pago no ano, em R$")],
+) -> dict:
+    """Distribui `valor` pelas áreas de governo, proporcional à despesa liquidada por função (ilustração)."""
+    try:
+        res = orcamento.distribuir_imposto(codigo, valor)
+    except Exception as exc:  # noqa: BLE001
+        log.warning("SICONFI indisponível: %s", exc)
+        raise HTTPException(status_code=503, detail="O SICONFI (Tesouro Nacional) está indisponível no momento.") from exc
+    if res is None:
+        raise HTTPException(status_code=404, detail="Este ente ainda não publicou relatórios no SICONFI.")
+    return res
 
 
 # --------------------------------------------------------------------------- #

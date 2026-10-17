@@ -1,0 +1,366 @@
+{
+  "indicadores_economicos": {
+    "IPCA": {
+      "termo_tecnico": "Índice Nacional de Preços ao Consumidor Amplo (IBGE)",
+      "nome_cidadao": "Aumento Médio dos Preços (Inflação)",
+      "explicacao_simples": "Mede o quanto a sua feira, conta de luz e combustível ficaram mais caros no mês ou no ano. É o índice usado na meta de inflação.",
+      "icone": "🛒",
+      "categoria": "Custo de Vida"
+    },
+    "SELIC": {
+      "termo_tecnico": "Taxa Básica de Juros da Economia (meta definida pelo Copom, do Banco Central)",
+      "nome_cidadao": "Taxa Mãe dos Juros",
+      "explicacao_simples": "Referência para o custo de pegar dinheiro emprestado ou financiar um bem no Brasil. Juros mais altos esfriam a economia e a inflação, e também encarecem a dívida pública.",
+      "icone": "📈",
+      "categoria": "Macroeconomia"
+    },
+    "PIB": {
+      "termo_tecnico": "Produto Interno Bruto",
+      "nome_cidadao": "Tudo o que o país produz",
+      "explicacao_simples": "Soma do valor de tudo o que é produzido no país em um período. Serve de régua para comparar dívida e déficit: “a dívida é 70% do PIB”.",
+      "icone": "🏭",
+      "categoria": "Macroeconomia"
+    },
+    "DESOCUPACAO": {
+      "termo_tecnico": "Taxa de desocupação (PNAD Contínua, IBGE)",
+      "nome_cidadao": "Taxa de desemprego",
+      "explicacao_simples": "Percentual de pessoas que procuraram trabalho e não encontraram, entre as que estão na força de trabalho. É medida em trimestres móveis.",
+      "icone": "👷",
+      "categoria": "Mercado de Trabalho"
+    },
+    "RESULTADO_PRIMARIO": {
+      "termo_tecnico": "Resultado Primário do Setor Público (fluxo)",
+      "nome_cidadao": "Saldo das contas do governo, sem contar os juros",
+      "explicacao_simples": "Compara receitas e despesas antes de pagar os juros da dívida. Atenção ao sinal: nas séries fiscais do Banco Central, número positivo é déficit (faltou dinheiro) e negativo é superávit (sobrou).",
+      "icone": "⚖️",
+      "categoria": "Saúde Fiscal"
+    },
+    "JUROS_NOMINAIS": {
+      "termo_tecnico": "Juros nominais do setor público",
+      "nome_cidadao": "Custo da dívida no período",
+      "explicacao_simples": "Quanto a dívida pública rendeu para quem a possui, incluindo a correção monetária. Somado ao resultado primário, dá o resultado nominal.",
+      "icone": "🧾",
+      "categoria": "Saúde Fiscal"
+    },
+    "DEFICIT_NOMINAL": {
+      "termo_tecnico": "Déficit nominal = gastos totais − receitas totais",
+      "nome_cidadao": "Quanto faltou no total",
+      "explicacao_simples": "Considera tudo: despesas com juros e amortizações, empréstimos recebidos e demais itens financeiros. É o quanto o governo precisou se financiar no período.",
+      "icone": "📉",
+      "categoria": "Saúde Fiscal"
+    },
+    "DEFICIT_PRIMARIO": {
+      "termo_tecnico": "Déficit primário = gastos não financeiros − receitas não financeiras",
+      "nome_cidadao": "Quanto faltou sem contar a dívida",
+      "explicacao_simples": "Tira do cálculo os juros e as amortizações da dívida e outros itens financeiros. Mostra se o governo vive dentro do que arrecada no dia a dia.",
+      "icone": "🧮",
+      "categoria": "Saúde Fiscal"
+    },
+    "DEFICIT_OPERACIONAL": {
+      "termo_tecnico": "Déficit operacional = déficit primário + juros reais",
+      "nome_cidadao": "Quanto faltou, descontada a inflação dos juros",
+      "explicacao_simples": "Usa só os juros acima da inflação (juros reais). Foi muito usado no Brasil nos anos de inflação alta. Neste site é um cálculo próprio e aproximado, não uma série oficial.",
+      "icone": "🔬",
+      "categoria": "Saúde Fiscal"
+    },
+    "DLSP_PIB": {
+      "termo_tecnico": "Dívida Líquida do Setor Público / PIB",
+      "nome_cidadao": "Endividamento do país (descontados os ativos)",
+      "explicacao_simples": "Compara o que o setor público deve, já descontados seus ativos financeiros, com tudo o que o país produz no ano. É diferente da Dívida Pública Federal, que é bruta e só da União.",
+      "icone": "📊",
+      "categoria": "Saúde Fiscal"
+    },
+    "DPF": {
+      "termo_tecnico": "Dívida Pública Federal (Tesouro Nacional)",
+      "nome_cidadao": "Dívida do governo federal em títulos",
+      "explicacao_simples": "Estoque bruto de títulos e contratos do governo federal, internos e externos. O Tesouro Direto é apenas a parte vendida a pessoas físicas.",
+      "icone": "🏛️",
+      "categoria": "Dívida Pública"
+    },
+    "TESOURO_DIRETO": {
+      "termo_tecnico": "Tesouro Direto",
+      "nome_cidadao": "Título público para o pequeno investidor",
+      "explicacao_simples": "Programa do Tesouro Nacional que vende títulos da dívida pública a pessoas físicas pela internet. Quem compra empresta dinheiro ao governo.",
+      "icone": "🪪",
+      "categoria": "Dívida Pública"
+    },
+    "FLUXO": {
+      "termo_tecnico": "Fluxo (variável de fluxo)",
+      "nome_cidadao": "O que entra e sai no período",
+      "explicacao_simples": "É a movimentação do mês ou do ano, como o seu salário menos as contas do mês. Superávit e déficit são fluxos.",
+      "icone": "🌊",
+      "categoria": "Conceitos"
+    },
+    "ESTOQUE": {
+      "termo_tecnico": "Estoque (variável de estoque)",
+      "nome_cidadao": "O tamanho acumulado",
+      "explicacao_simples": "É o saldo acumulado até hoje, como o saldo devedor do financiamento da casa. A dívida pública é um estoque: mesmo com sobra no mês, ela continua existindo e rendendo juros.",
+      "icone": "🏢",
+      "categoria": "Conceitos"
+    },
+    "DBGG": {
+      "termo_tecnico": "Dívida Bruta do Governo Geral (DBGG) / PIB",
+      "nome_cidadao": "Dívida total do governo, sem descontar nada",
+      "explicacao_simples": "Soma do que União, estados e municípios devem, sem descontar os ativos, comparada com o PIB. É a medida mais usada em comparações com outros países.",
+      "icone": "🧱",
+      "categoria": "Dívida Pública"
+    },
+    "CUSTO_DIVIDA": {
+      "termo_tecnico": "Custo da dívida (juros nominais / dívida)",
+      "nome_cidadao": "Quanto a dívida custa por ano",
+      "explicacao_simples": "Parte da riqueza ou da receita que vai apenas para remunerar quem emprestou ao governo. Sobe e desce com a Selic.",
+      "icone": "💳",
+      "categoria": "Dívida Pública"
+    },
+    "NFSP": {
+      "termo_tecnico": "Necessidades de Financiamento do Setor Público (NFSP)",
+      "nome_cidadao": "Quanto o setor público precisou se financiar",
+      "explicacao_simples": "É o resultado nominal medido pela variação da dívida líquida (“abaixo da linha”). Valor positivo indica déficit: o governo precisou de dinheiro novo ou de mais dívida.",
+      "icone": "🏦",
+      "categoria": "Saúde Fiscal"
+    },
+    "CICLO_ECONOMICO": {
+      "termo_tecnico": "Ciclo econômico (expansão, desaceleração, contração)",
+      "nome_cidadao": "Altos e baixos da economia",
+      "explicacao_simples": "A atividade econômica não cresce em linha reta: alterna períodos de avanço e de queda. Identificar o momento exige olhar vários indicadores, por quanto tempo e com que força eles caem.",
+      "icone": "🌊",
+      "categoria": "Macroeconomia"
+    },
+    "PIB_TRIMESTRAL": {
+      "termo_tecnico": "PIB trimestral — taxa contra o trimestre anterior (com ajuste sazonal)",
+      "nome_cidadao": "Quanto a economia cresceu em relação ao trimestre passado",
+      "explicacao_simples": "Compara o trimestre com o imediatamente anterior, depois de retirar efeitos típicos de cada época do ano. A taxa contra o mesmo trimestre do ano anterior mostra o ritmo em um ano.",
+      "icone": "📈",
+      "categoria": "Macroeconomia"
+    },
+    "IBC_BR": {
+      "termo_tecnico": "Índice de Atividade Econômica do Banco Central (IBC-Br)",
+      "nome_cidadao": "Prévia mensal do PIB",
+      "explicacao_simples": "Estimativa mensal da atividade feita pelo Banco Central. Serve de termômetro entre uma divulgação do PIB e outra, mas não é o PIB oficial do IBGE.",
+      "icone": "🌡️",
+      "categoria": "Macroeconomia"
+    },
+    "AJUSTE_SAZONAL": {
+      "termo_tecnico": "Ajuste sazonal (série dessazonalizada)",
+      "nome_cidadao": "Tirando os efeitos de cada época do ano",
+      "explicacao_simples": "Retira variações que se repetem todo ano, como vendas de fim de ano, para comparar meses diferentes de forma justa.",
+      "icone": "🗓️",
+      "categoria": "Macroeconomia"
+    },
+    "ESTABILIZADOR_AUTOMATICO": {
+      "termo_tecnico": "Estabilizadores automáticos",
+      "nome_cidadao": "Freios e amortecedores embutidos nas contas públicas",
+      "explicacao_simples": "Receitas e despesas que variam com a atividade econômica por regras já existentes, sem nova decisão do governo. Quando a economia desacelera, a arrecadação cai e alguns gastos, como o seguro-desemprego, sobem, o que amortece a queda da renda.",
+      "icone": "🛡️",
+      "categoria": "Saúde Fiscal"
+    }
+  },
+  "reservas_e_fmi": {
+    "RESERVAS_INTERNACIONAIS": {
+      "termo_tecnico": "Reservas Internacionais — conceito caixa e conceito liquidez",
+      "nome_cidadao": "Colchão de segurança do Brasil (em dólares)",
+      "explicacao_simples": "Ativos em moeda forte administrados pelo Banco Central, usados para dar segurança em crises cambiais e internacionais.",
+      "icone": "💵",
+      "categoria": "Patrimônio da União"
+    },
+    "CONCEITO_LIQUIDEZ": {
+      "termo_tecnico": "Conceito liquidez × conceito caixa",
+      "nome_cidadao": "Duas formas de contar as reservas",
+      "explicacao_simples": "O conceito liquidez, o mais divulgado, tem abrangência maior que o conceito caixa. Os valores diferem e não devem ser comparados diretamente.",
+      "icone": "🧭",
+      "categoria": "Patrimônio da União"
+    },
+    "POSICAO_RESERVA_FMI": {
+      "termo_tecnico": "Posição de Reserva no FMI",
+      "nome_cidadao": "Crédito do Brasil junto ao FMI",
+      "explicacao_simples": "Parte da cota paga pelo Brasil ao Fundo Monetário Internacional que conta como ativo de reserva. A série do Banco Central usada aqui mostra as transações do mês (variação), não o saldo.",
+      "icone": "🌐",
+      "categoria": "Patrimônio da União"
+    },
+    "DES_SDR": {
+      "termo_tecnico": "Direitos Especiais de Saque (DES / SDR)",
+      "nome_cidadao": "Moeda de reserva criada pelo FMI",
+      "explicacao_simples": "Ativo de reserva emitido pelo FMI e distribuído aos países-membros, que pode ser trocado por moedas como dólar ou euro. A série usada aqui mostra a variação do mês, não o saldo.",
+      "icone": "💳",
+      "categoria": "Patrimônio da União"
+    },
+    "OURO_MONETARIO": {
+      "termo_tecnico": "Ouro Monetário",
+      "nome_cidadao": "Ouro mantido como reserva",
+      "explicacao_simples": "Ouro que faz parte das reservas internacionais. A série usada aqui mostra as compras e vendas do mês; zero significa que nada foi comprado ou vendido.",
+      "icone": "🪙",
+      "categoria": "Patrimônio da União"
+    }
+  },
+  "orcamento_publico": {
+    "PPA": {
+      "termo_tecnico": "Plano Plurianual",
+      "nome_cidadao": "Mapa de metas para 4 anos",
+      "explicacao_simples": "O plano de médio prazo do governo, com os grandes programas e objetivos da gestão. Vale do 2º ano de um mandato até o 1º do seguinte.",
+      "icone": "🗺️",
+      "categoria": "Planejamento"
+    },
+    "LDO": {
+      "termo_tecnico": "Lei de Diretrizes Orçamentárias",
+      "nome_cidadao": "Regras do orçamento do ano seguinte",
+      "explicacao_simples": "Define as prioridades e metas fiscais que orientam o orçamento do ano seguinte e as regras para os gastos.",
+      "icone": "📐",
+      "categoria": "Planejamento"
+    },
+    "LOA": {
+      "termo_tecnico": "Lei Orçamentária Anual",
+      "nome_cidadao": "O orçamento do ano, em reais",
+      "explicacao_simples": "A autorização de gastos do ano: quanto cada secretaria ou ministério pode gastar, e com o quê.",
+      "icone": "💰",
+      "categoria": "Execução"
+    },
+    "LRF": {
+      "termo_tecnico": "Lei de Responsabilidade Fiscal (Lei Complementar 101/2000)",
+      "nome_cidadao": "Lei que põe limites nos gastos públicos",
+      "explicacao_simples": "Exige planejamento e transparência e fixa limites, como o teto de gasto com a folha de pagamento em relação à receita, para prefeitos, governadores e presidente.",
+      "icone": "🛡️",
+      "categoria": "Legislação"
+    },
+    "RCL": {
+      "termo_tecnico": "Receita Corrente Líquida",
+      "nome_cidadao": "Régua de receita da LRF",
+      "explicacao_simples": "Receita corrente do ente, com ajustes. Os limites da LRF para despesa com pessoal e dívida são calculados como percentual dela.",
+      "icone": "📏",
+      "categoria": "Legislação"
+    },
+    "FPM_FPE": {
+      "termo_tecnico": "Fundo de Participação dos Municípios (FPM) e dos Estados (FPE)",
+      "nome_cidadao": "Repasse da União para prefeituras e estados",
+      "explicacao_simples": "Parte da arrecadação federal repassada por regra constitucional a municípios (FPM) e estados (FPE). É uma das principais receitas de muitas cidades.",
+      "icone": "🔁",
+      "categoria": "Receitas"
+    },
+    "FUNDEB": {
+      "termo_tecnico": "Fundo de Manutenção e Desenvolvimento da Educação Básica",
+      "nome_cidadao": "Fundo da educação básica",
+      "explicacao_simples": "Fundo formado por impostos de estados e municípios, com complemento da União, redistribuído para a educação básica pública.",
+      "icone": "🎒",
+      "categoria": "Receitas"
+    }
+  },
+  "fases_da_despesa": {
+    "DOTACAO_INICIAL": {
+      "termo_tecnico": "Dotação inicial aprovada na LOA",
+      "nome_cidadao": "Verba planejada na lei",
+      "explicacao_simples": "Valor autorizado na lei orçamentária para uma ação ou serviço. A dotação atualizada inclui as mudanças feitas ao longo do ano.",
+      "icone": "📝",
+      "categoria": "Estágio do Dinheiro"
+    },
+    "EMPENHADO": {
+      "termo_tecnico": "Despesa empenhada",
+      "nome_cidadao": "Verba reservada ou contratada",
+      "explicacao_simples": "O governo se compromete a pagar: o valor fica reservado para o fornecedor ou serviço contratado, mas o dinheiro ainda não saiu.",
+      "icone": "🤝",
+      "categoria": "Estágio do Dinheiro"
+    },
+    "LIQUIDADO": {
+      "termo_tecnico": "Despesa liquidada",
+      "nome_cidadao": "Serviço ou obra entregue e conferida",
+      "explicacao_simples": "O governo verificou que o bem ou serviço foi entregue e o pagamento passa a ser devido.",
+      "icone": "✅",
+      "categoria": "Estágio do Dinheiro"
+    },
+    "PAGO": {
+      "termo_tecnico": "Despesa paga",
+      "nome_cidadao": "Dinheiro realmente entregue",
+      "explicacao_simples": "O valor efetivamente saiu do caixa para pagar o fornecedor. O que foi empenhado e não pago até o fim do ano pode virar “restos a pagar”.",
+      "icone": "💸",
+      "categoria": "Estágio do Dinheiro"
+    }
+  },
+  "processo_legislativo": {
+    "PEC": {
+      "termo_tecnico": "Proposta de Emenda à Constituição",
+      "nome_cidadao": "Mudança na Constituição",
+      "explicacao_simples": "Exige o voto de 3/5 dos parlamentares (308 deputados e 49 senadores), em dois turnos em cada Casa. É a votação mais difícil do Congresso.",
+      "icone": "📜",
+      "categoria": "Leis"
+    },
+    "PL": {
+      "termo_tecnico": "Projeto de Lei Ordinária",
+      "nome_cidadao": "Projeto de lei comum",
+      "explicacao_simples": "Altera regras gerais e, em regra, é aprovado por maioria simples dos presentes na Câmara, no Senado ou na Câmara de Vereadores.",
+      "icone": "📄",
+      "categoria": "Leis"
+    },
+    "MPV": {
+      "termo_tecnico": "Medida Provisória",
+      "nome_cidadao": "Decreto com efeito imediato",
+      "explicacao_simples": "Norma editada pelo Presidente da República com força de lei imediata. O Congresso tem até 120 dias (60, prorrogáveis por mais 60) para votar, ou ela perde a validade.",
+      "icone": "⚡",
+      "categoria": "Leis"
+    }
+  },
+  "fontes_de_dados": {
+    "SICONFI": {
+      "termo_tecnico": "Sistema de Informações Contábeis e Fiscais do Setor Público Brasileiro (Tesouro Nacional)",
+      "nome_cidadao": "Cadastro nacional das contas de prefeituras e estados",
+      "explicacao_simples": "Base onde municípios, estados e a União enviam seus demonstrativos fiscais. É a fonte da página Economia.",
+      "icone": "🗄️",
+      "categoria": "Fontes"
+    },
+    "RREO": {
+      "termo_tecnico": "Relatório Resumido da Execução Orçamentária",
+      "nome_cidadao": "Prestação de contas do orçamento, a cada 2 meses",
+      "explicacao_simples": "Demonstrativo bimestral com receitas, despesas por área e execução do orçamento, publicado por cada ente.",
+      "icone": "🗒️",
+      "categoria": "Fontes"
+    },
+    "RGF": {
+      "termo_tecnico": "Relatório de Gestão Fiscal",
+      "nome_cidadao": "Prestação de contas da folha e da dívida",
+      "explicacao_simples": "Demonstrativo quadrimestral ou semestral que mostra a despesa com pessoal e a dívida em relação aos limites da LRF.",
+      "icone": "📋",
+      "categoria": "Fontes"
+    }
+  },
+  "divida_e_titulos": {
+    "EMISSAO_BRUTA": {
+      "termo_tecnico": "Emissão bruta de títulos públicos",
+      "nome_cidadao": "Títulos novos vendidos no mês",
+      "explicacao_simples": "Total de títulos que o Tesouro vendeu no período. Não serve só para cobrir déficit: grande parte paga títulos antigos que venceram.",
+      "icone": "📤",
+      "categoria": "Dívida Pública"
+    },
+    "RESGATE": {
+      "termo_tecnico": "Resgate de títulos públicos",
+      "nome_cidadao": "Títulos que o governo pagou e tirou da dívida",
+      "explicacao_simples": "Valor de títulos que venceram ou foram recomprados no período e saíram do estoque da dívida.",
+      "icone": "📥",
+      "categoria": "Dívida Pública"
+    },
+    "EMISSAO_LIQUIDA": {
+      "termo_tecnico": "Emissão líquida = emissões brutas − resgates",
+      "nome_cidadao": "Dívida nova de verdade no mês",
+      "explicacao_simples": "Se positiva, o Tesouro vendeu mais títulos do que pagou; se negativa, pagou mais do que vendeu. É diferente do déficit e diferente da variação do estoque, que também inclui juros e câmbio.",
+      "icone": "➕",
+      "categoria": "Dívida Pública"
+    },
+    "DPMFI_DPFE": {
+      "termo_tecnico": "DPMFi e DPFe",
+      "nome_cidadao": "Dívida interna e dívida externa",
+      "explicacao_simples": "DPMFi é a dívida mobiliária federal interna, em reais. DPFe é a dívida pública federal externa, em moeda estrangeira.",
+      "icone": "🌎",
+      "categoria": "Dívida Pública"
+    },
+    "ROLAGEM": {
+      "termo_tecnico": "Rolagem (refinanciamento) da dívida",
+      "nome_cidadao": "Pagar dívida antiga com dívida nova",
+      "explicacao_simples": "Quando um título vence, o Tesouro emite outros para pagá-lo. Quanto mais dívida vence em pouco tempo, maior a necessidade de rolagem.",
+      "icone": "🔄",
+      "categoria": "Dívida Pública"
+    },
+    "INDEXADOR": {
+      "termo_tecnico": "Indexador da dívida (Selic, prefixado, inflação, câmbio)",
+      "nome_cidadao": "O que faz a dívida crescer",
+      "explicacao_simples": "É o índice que corrige cada título: Selic (juros do dia a dia), taxa fixa combinada na compra, inflação (IPCA) ou dólar. Cada um reage de um jeito a mudanças na economia.",
+      "icone": "🧭",
+      "categoria": "Dívida Pública"
+    }
+  }
+}

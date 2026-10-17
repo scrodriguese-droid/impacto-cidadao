@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entrada e saída de dinheiro — ImpactoCidadão</title>
+    <meta name="description" content="As contas da sua cidade em linguagem simples: saúde fiscal, de onde vem e para onde vai o dinheiro, orçamento e transparência.">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="assets/tailwind-config.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Inter', system-ui, sans-serif; }
+        :focus-visible { outline: 2px solid #A92823; outline-offset: 2px; }
+        .barra { transition: width .6s ease; }
+    </style>
+    <link rel="stylesheet" href="assets/brutalista.css">
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-full flex flex-col transition-colors duration-200">
+
+<a href="#conteudo" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-white focus:text-slate-900 focus:p-3">Ir para o conteúdo</a>
+<div id="cabecalho"></div>
+
+<main id="conteudo" class="max-w-4xl mx-auto px-4 sm:px-6 pt-6 pb-10 flex-grow w-full">
+    <h1 id="h1" class="text-2xl font-extrabold tracking-tight">Entrada e saída de dinheiro</h1>
+    <p id="sub" class="text-sm text-slate-500 dark:text-slate-400 mt-1">De onde vem o dinheiro da sua cidade (ou estado, ou do país) e para onde ele vai. Dados oficiais do Tesouro Nacional (SICONFI).</p>
+
+    <!-- Cidade -->
+    <div class="sticky top-16 z-30 -mx-4 sm:mx-0 px-4 sm:px-0 py-2 mt-3 bg-slate-50/90 dark:bg-slate-900/90 backdrop-blur">
+        <div class="flex flex-wrap items-center gap-x-2 gap-y-2 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 shadow-sm text-sm">
+            <i class="fa-solid fa-location-dot text-rose-500" aria-hidden="true"></i>
+            <span class="font-medium">Contas de:</span>
+            <div class="relative">
+                <button id="btnCidade" type="button" class="inline-flex items-center gap-1.5 font-bold bg-teal-50 dark:bg-teal-950/50 text-teal-800 dark:text-teal-300 border border-teal-200 dark:border-teal-800 rounded-full px-3.5 py-1.5 hover:opacity-90" aria-expanded="false" aria-controls="popCidade">
+                    <i class="fa-solid fa-city text-xs" aria-hidden="true"></i><span id="cidadeRotulo">Escolher cidade</span>
+                </button>
+                <div id="popCidade" class="hidden absolute left-0 top-full mt-2 w-72 z-40 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-xl p-2">
+                    <label for="cidadeBusca" class="sr-only">Buscar município</label>
+                    <input id="cidadeBusca" type="text" autocomplete="off" placeholder="Digite o nome da cidade…"
+                           class="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                    <ul id="cidadeLista" class="mt-1 max-h-60 overflow-auto text-sm" role="listbox"></ul>
+                </div>
+            </div>
+            <span id="periodoRotulo" class="ml-auto text-xs text-slate-500 dark:text-slate-400"></span>
+        </div>
+    </div>
+
+    <!-- Esfera de governo -->
+    <div id="segEsfera" class="mt-3 inline-flex flex-wrap gap-1 p-1 rounded-2xl bg-slate-200/70 dark:bg-slate-800" role="radiogroup" aria-label="Esfera de governo"></div>
+
+    <div id="estado" class="mt-4"></div>
+    <div id="painel" class="hidden mt-4 space-y-8"></div>
+    <!-- Calculadora: só na aba “Entrada e saída” -->
+    <section id="secCalc" class="hidden mt-8" aria-labelledby="tCalc">
+        <h2 id="tCalc" class="text-xl font-bold flex items-center"><i class="fa-solid fa-calculator text-teal-500 mr-2.5" aria-hidden="true"></i>Para onde vai o meu imposto</h2>
+        <div class="mt-2 rounded-xl border border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 text-xs p-3.5 flex items-start gap-2.5" role="note">
+            <i class="fa-solid fa-triangle-exclamation mt-0.5" aria-hidden="true"></i>
+            <p><b>É uma ilustração proporcional, não um extrato.</b> Imposto não é carimbado por área: tudo vai para um caixa comum e o orçamento decide. Repartimos o valor na mesma proporção da despesa liquidada por função da esfera escolhida. <b>Cada tributo abastece uma esfera:</b> Imposto de Renda é da União; ICMS e IPVA, dos estados; IPTU e ISS, dos municípios. Escolha a esfera que corresponde ao que você paga. Estados e municípios também recebem parte do IR por repasses (FPE, FPM).</p>
+        </div>
+
+        <div class="mt-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5">
+            <div class="grid sm:grid-cols-2 gap-4">
+                <div>
+                    <label for="valorImposto" class="block text-xs font-semibold mb-1">Quanto você paga de imposto por ano (R$)</label>
+                    <input id="valorImposto" type="number" inputmode="decimal" min="0" max="100000000" step="100" placeholder="ex.: 3000"
+                           class="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                </div>
+                <div>
+                    <label for="salarioIR" class="block text-xs font-semibold mb-1">…ou use o simulador de IR: salário bruto mensal (R$)</label>
+                    <div class="flex gap-2">
+                        <input id="salarioIR" type="number" inputmode="decimal" min="0" max="1000000" step="50" placeholder="ex.: 7000"
+                               class="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                        <button id="btnIR" type="button" class="px-3 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-700 text-xs font-semibold shrink-0 hover:opacity-90">Calcular IR</button>
+                    </div>
+                    <p id="irNota" class="text-[11px] text-slate-500 mt-1"></p>
+                </div>
+            </div>
+            <button id="btnDistribuir" type="button" class="mt-4 px-4 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold">Distribuir</button>
+        </div>
+        <div id="resCalc" class="mt-4" aria-live="polite"></div>
+    </section>
+
+
+</main>
+
+<div id="rodape"></div>
+
+<script src="assets/comum.js"></script>
+<script>
+// Duas telas no mesmo arquivo: “Entrada e saída” (padrão) e “Saúde fiscal e dívida” (?aba=fiscal).
+const ABA_FISCAL = new URLSearchParams(location.search).get('aba') === 'fiscal';
+renderLayout(ABA_FISCAL ? 'fiscal' : 'economia');
+if (ABA_FISCAL) {
+    document.title = 'Saúde fiscal e dívida — ImpactoCidadão';
+    $('h1').textContent = 'Saúde fiscal e dívida';
+    $('sub').textContent = 'As contas estão em dia? Dívida, limites da Lei de Responsabilidade Fiscal e déficits, com dados oficiais do Tesouro Nacional (SICONFI).';
+}
+
+const ESFERAS = [
+    { id: 'municipio', rotulo: 'Município', icone: 'fa-city' },
+    { id: 'estado', rotulo: 'Estado', icone: 'fa-map' },
+    { id: 'uniao', rotulo: 'União', icone: 'fa-flag' },
+];
+const E = { municipio: lerPrefs().municipio || null, esfera: ler('ic_esfera_economia', 'municipio'), dados: null, aba: 'receitas' };
+if (!ESFERAS.some((x) => x.id === E.esfera)) E.esfera = 'municipio';
+// Código do ente no SICONFI: município = IBGE (7 dígitos); estado = 2 primeiros dígitos; União = 1.
+const codigoEnte = () => {
+    if (E.esfera === 'uniao') return 1;
+    if (!E.municipio) return null;
+    return E.esfera === 'estado' ? Math.floor(E.municipio.codigo / 100000) : E.municipio.codigo;
+};
+function desenharEsfera() {
+    $('segEsfera').innerHTML = ESFERAS.map((x) => `<button type="button" role="radio" aria-checked="${E.esfera === x.id}" data-esfera="${x.id}"
+        class="px-3.5 py-2 rounded-xl text-sm font-semibold ${E.esfera === x.id ? 'bg-white dark:bg-slate-700 shadow text-brand-700 dark:text-brand-300' : 'text-slate-500'}">
+        <i class="fa-solid ${x.icone} mr-1.5 text-xs" aria-hidden="true"></i>${x.rotulo}</button>`).join('');
+}
+$('segEsfera').addEventListener('click', (ev) => {
+    const b = ev.target.closest('[data-esfera]');
+    if (!b || b.dataset.esfera === E.esfera) return;
+    E.esfera = b.dataset.esfera; guardar('ic_esfera_economia', E.esfera); carregar();
+});
+const pct = (v) => (v == null ? '—' : `${Number(v).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%`);
+const brlCurto = (n) => {
+    const v = Math.abs(Number(n || 0)), s = n < 0 ? '−' : '';
+    if (v >= 1e12) return `${s}R$ ${(v / 1e12).toLocaleString('pt-BR', { maximumFractionDigits: 2 })} tri`;
+    if (v >= 1e9) return `${s}R$ ${(v / 1e9).toLocaleString('pt-BR', { maximumFractionDigits: 2 })} bi`;
+    if (v >= 1e6) return `${s}R$ ${(v / 1e6).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} mi`;
+    if (v >= 1e3) return `${s}R$ ${(v / 1e3).toLocaleString('pt-BR', { maximumFractionDigits: 0 })} mil`;
+    return `${s}${brl(v)}`;
+};
+const barra = (p, cor = 'bg-brand-500') => `<div class="h-2.5 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden"><div class="barra h-full ${cor}" style="width:${Math.max(0, Math.min(100, Number(p) || 0))}%"></div></div>`;
+const cartao = (inner, extra = '') => `<div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 ${extra}">${inner}</div>`;
+const titulo = (n, t, sub) => `<div class="mb-3"><h2 class="text-xl font-bold">${esc(t)}</h2><p class="text-sm text-slate-500 dark:text-slate-400">${esc(sub)}</p></div>`;
+
+/* ---------- cidade ---------- */
+const pop = $('popCidade');
+function alternarCidade(abrir) {
+    const mostrar = abrir ?? pop.classList.contains('hidden');
+    pop.classList.toggle('hidden', !mostrar);
+    $('btnCidade').setAttribute('aria-expanded', String(mostrar));
+    if (mostrar) { $('cidadeBusca').value = ''; $('cidadeLista').innerHTML = ''; setTimeout(() => $('cidadeBusca').focus(), 30); }
+}
+$('btnCidade').addEventListener('click', () => alternarCidade());
+document.addEventListener('click', (ev) => { if (!ev.target.closest('#popCidade') && !ev.target.closest('#btnCidade')) alternarCidade(false); });
+document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') alternarCidade(false); });
+$('cidadeBusca').addEventListener('input', debounce(async () => {
+    const q = $('cidadeBusca').value.trim();
+    if (q.length < 2) { $('cidadeLista').innerHTML = ''; return; }
+    try {
+        const achados = await api('/api/municipios?q=' + encodeURIComponent(q));
+        $('cidadeLista').innerHTML = achados.length
+            ? achados.map((m) => `<li><button type="button" role="option" data-cod="${esc(m.codigo)}" data-nome="${esc(m.nome)}" data-uf="${esc(m.uf)}"
+                class="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700">${esc(m.nome)} <span class="text-slate-400">– ${esc(m.uf)}</span></button></li>`).join('')
+            : '<li class="px-3 py-2 text-slate-500">Nenhum município encontrado.</li>';
+    } catch (e) { $('cidadeLista').innerHTML = `<li class="px-3 py-2 text-rose-600 text-xs">${esc(e.message)}</li>`; }
+}, 250));
+$('cidadeLista').addEventListener('click', (ev) => {
+    const b = ev.target.closest('[data-cod]');
+    if (!b) return;
+    E.municipio = { codigo: Number(b.dataset.cod), nome: b.dataset.nome, uf: b.dataset.uf };
+    salvarPrefsParciais({ municipio: E.municipio });
+    alternarCidade(false); carregar();
+});
+
+/* ---------- déficits (nominal, primário, operacional) ---------- */
+function deficits(d) {
+    const x = d.deficits;
+    if (!x) return '';
+    const linha = (rot, v) => `<li class="flex justify-between gap-3"><span>${rot}</span><span class="font-semibold whitespace-nowrap">${v == null ? '—' : brlCurto(v)}</span></li>`;
+    const caixa = (rot, v, dica, detalhe) => {
+        const tem = v != null;
+        const def = tem && v >= 0;
+        const cor = !tem ? 'text-slate-400' : def ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400';
+        return cartao(`<p class="text-xs font-semibold text-slate-500">${rot}${gl(SIGLA_DEFICIT[rot])}</p>
+            <p class="text-2xl font-extrabold mt-1 ${cor}">${tem ? brlCurto(Math.abs(v)) : 'Indisponível'}</p>
+            <p class="text-xs font-bold ${cor}">${tem ? (def ? 'Déficit' : 'Superávit') : ''}</p>
+            <p class="text-xs text-slate-500 mt-2">${dica}</p>
+            <details class="mt-2 text-xs text-slate-600 dark:text-slate-400"><summary class="cursor-pointer text-brand-700 dark:text-brand-400 font-semibold">Como foi calculado</summary>
+                <ul class="mt-2 space-y-1">${detalhe}</ul></details>`);
+    };
+    const n = x.nominal, p = x.primario, o = x.operacional;
+    const detOper = o.valor != null
+        ? linha('Déficit primário', p.valor) + linha(`Juros nominais (${esc(o.juros_base)})`, o.juros_nominais)
+          + linha(`(−) Correção monetária (IPCA ${pct(o.ipca_acumulado_pct)} × dívida de ${brlCurto(o.divida_inicio_ano)})`, o.correcao_monetaria)
+          + linha('= Juros reais', o.juros_reais) + linha('Primário + juros reais', o.valor)
+          + '<li class="text-[11px] text-slate-400">Cálculo nosso, aproximado — não é série oficial. A correção usa o IPCA e o estoque da dívida no início do ano.</li>'
+        : `<li>${esc(o.indisponivel_motivo || 'Dados insuficientes.')}</li>`;
+    return `<div class="mt-6">
+        <h3 class="font-bold">Déficits em detalhe <span class="text-xs font-normal text-slate-500">· ${esc(d.instituicao || '')} · ${esc(x.periodo)}</span></h3>
+        <div class="grid sm:grid-cols-3 gap-4 mt-2">
+            ${caixa('Déficit nominal', n.valor, 'Gastos totais − receitas totais. Inclui juros, amortizações e empréstimos.',
+                linha('Gastos totais (empenhados)', n.gastos_totais) + linha('Receitas totais (arrecadadas)', n.receitas_totais) + linha('Gastos − receitas', n.valor))}
+            ${caixa('Déficit primário', p.valor, 'Gastos − receitas não financeiros. Exclui juros e amortização da dívida, entre outros itens financeiros.',
+                linha('Gastos não financeiros', p.gastos_nao_financeiros) + linha('Receitas não financeiras', p.receitas_nao_financeiras) + linha('Gastos − receitas', p.valor)
+                + `<li class="text-[11px] text-slate-400">Base: ${esc(p.base)}.</li>`)}
+            ${caixa('Déficit operacional', o.valor, 'Primário + juros reais: tira dos juros nominais o efeito da inflação.', detOper)}
+        </div>
+        <p class="text-[11px] text-slate-400 mt-2">Positivo = déficit; negativo = superávit. Valores do exercício até o período, conforme declarados pelo ente (RREO/SICONFI).</p>
+    </div>`;
+}
+
+/* ---------- reservas internacionais e posição no FMI (só União) ---------- */
+const fmtMes = (aaaaMm) => aaaaMm.split('-').reverse().join('/');
+const usd = (milhoes) => {
+    const v = Math.abs(Number(milhoes)) * 1e6, s = milhoes < 0 ? '−' : '';
+    if (v >= 1e9) return `${s}US$ ${(v / 1e9).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} bi`;
+    return `${s}US$ ${(v / 1e6).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} mi`;
+};
+function reservasEsqueleto() {
+    return `<div id="reservasBox" class="mt-6"><p class="text-sm text-slate-500"><i class="fa-solid fa-spinner fa-spin mr-1.5" aria-hidden="true"></i>Consultando o Banco Central…</p></div>`;
+}
+function linhaSpark(pontos) {
+    if (pontos.length < 2) return '';
+    const v = pontos.map((p) => p.valor), min = Math.min(...v), max = Math.max(...v), W = 300, H = 56;
+    const xy = v.map((y, i) => `${(i / (v.length - 1)) * W},${H - 4 - ((y - min) / ((max - min) || 1)) * (H - 8)}`).join(' ');
+    return `<svg viewBox="0 0 ${W} ${H}" class="w-full h-14" role="img" aria-label="Evolução mensal das reservas nos últimos ${v.length} meses"><polyline points="${xy}" fill="none" stroke="#A92823" stroke-width="2"/></svg>`;
+}
+async function carregarReservas() {
+    const box = $('reservasBox');
+    if (!box) return;
+    try {
+        const r = await api('/api/macro/reservas');
+        const c = r.caixa, dif = c.anterior != null ? c.valor - c.anterior : null;
+        box.innerHTML = `<h3 class="font-bold">Patrimônio e reservas internacionais da União</h3>
+            <p class="text-xs text-slate-500">Ativos em moeda estrangeira administrados pelo Banco Central. Não fazem parte da LOA nem do resultado primário acima.</p>
+            <div class="grid sm:grid-cols-2 gap-4 mt-2">
+                ${cartao(`<p class="text-xs font-semibold text-slate-500"><i class="fa-solid fa-vault mr-1" aria-hidden="true"></i>Reservas internacionais (conceito caixa)${gl('RESERVAS_INTERNACIONAIS')}</p>
+                    <p class="text-3xl font-extrabold mt-1">${usd(c.valor)}</p>
+                    <p class="text-xs text-slate-500">Saldo no fim de ${esc(fmtMes(c.data.slice(0, 7)))}${dif != null ? ` · ${dif >= 0 ? '+' : '−'}${usd(Math.abs(dif))} no mês` : ''}</p>
+                    <div class="mt-2">${linhaSpark(c.serie)}</div>
+                    <p class="text-[11px] text-slate-400">Últimos ${c.serie.length} meses. Série 3546 do Banco Central.</p>`)}
+                ${cartao(`<p class="text-xs font-semibold text-slate-500"><i class="fa-solid fa-scale-balanced mr-1" aria-hidden="true"></i>Dentro das reservas: ouro, DES e posição no FMI</p>
+                    <ul class="mt-2 space-y-1.5 text-sm">${r.fluxos.map((f) => `<li class="flex justify-between gap-3"><span>${esc(f.nome.replace(' — transações do mês', ''))}${gl(SIGLA_RESERVA[f.id])}</span>
+                        <span class="font-semibold whitespace-nowrap">${f.valor >= 0 ? '+' : '−'}${usd(Math.abs(f.valor))}</span></li>`).join('')}</ul>
+                    <p class="text-[11px] text-slate-400 mt-2">Transações em ${esc(fmtMes((r.fluxos[0] || {}).data ? r.fluxos[0].data.slice(0, 7) : c.data.slice(0, 7)))}: a <b>variação</b> do mês, não o saldo.</p>`)}
+            </div>
+            <div class="mt-3 text-xs text-slate-600 dark:text-slate-400 space-y-1.5">
+                <p><b>O que é a posição no FMI:</b> o Brasil é sócio do Fundo e parte do que depositou (cota) conta como ativo de reserva: a <i>posição de reserva</i> e os <i>Direitos Especiais de Saque (DES)</i>, ativo criado pelo FMI e trocável por moedas.</p>
+                <p><b>Saldo exato no FMI:</b> o Banco Central não publica o saldo dessas rubricas em série aberta. Consulte a posição oficial do Brasil no <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(r.links.fmi))}">FMI (Financial Position in the Fund)</a> e a <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(r.links.bcb))}">composição das reservas no Banco Central</a>.</p>
+                ${r.liquidez ? `<p><b>Atenção ao conceito:</b> pelo conceito <i>liquidez</i>${gl('CONCEITO_LIQUIDEZ')} (o mais citado), as reservas estavam em ${usd(r.liquidez.valor)} em ${esc(fmtData(r.liquidez.data))}; é maior que o conceito caixa e não deve ser comparado diretamente.</p>` : ''}
+                <p class="text-[11px] text-slate-400">Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(c.url_fonte))}">${esc(c.fonte)}</a> · consultado em ${esc(fmtDataHora(r.consultado_em))}.</p>
+            </div>`;
+    } catch (e) { box.innerHTML = mensagemErro(e); }
+}
+
+/* ---------- glossário: "?" ao lado do termo, com a explicação e o link do verbete ---------- */
+let GLOSS = {};
+async function carregarGlossario() {
+    try {
+        const resp = await fetch('assets/glossario.json');
+        if (!resp.ok) return;
+        for (const termos of Object.values(await resp.json())) Object.assign(GLOSS, termos);
+    } catch (_) { /* sem glossário a página segue funcionando */ }
+}
+const gl = (sigla) => {
+    const g = GLOSS[sigla];
+    if (!g) return '';
+    return ` <a href="glossario.html#${encodeURIComponent(sigla)}" title="${esc(g.nome_cidadao)}: ${esc(g.explicacao_simples)}" aria-label="${esc(g.nome_cidadao)}: ver no glossário"
+        class="inline-flex items-center justify-center w-4 h-4 rounded-full bg-slate-200 dark:bg-slate-700 text-[10px] font-bold text-slate-600 dark:text-slate-300 hover:bg-brand-500 hover:text-white align-middle">?</a>`;
+};
+const SIGLA_DEFICIT = { 'Déficit nominal': 'DEFICIT_NOMINAL', 'Déficit primário': 'DEFICIT_PRIMARIO', 'Déficit operacional': 'DEFICIT_OPERACIONAL' };
+const SIGLA_RESERVA = { fmi_posicao_fluxo: 'POSICAO_RESERVA_FMI', des_fluxo: 'DES_SDR', ouro_fluxo: 'OURO_MONETARIO' };
+
+/* ---------- situação fiscal: fluxo, estoque, custo e capacidade ---------- */
+const pc = (v, dec = 1) => (v == null ? '—' : `${Number(v).toLocaleString('pt-BR', { maximumFractionDigits: dec })}`);
+function cartaoFiscal(n, titulo, corpo, significa) {
+    return `<div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5">
+        <p class="text-xs font-bold text-brand-700 dark:text-brand-400">${n}</p>
+        <h4 class="font-bold">${titulo}</h4>
+        <div class="mt-3 space-y-2.5">${corpo}</div>
+        <p class="mt-4 text-xs text-slate-600 dark:text-slate-400 leading-relaxed"><span aria-hidden="true">💡</span> <b>O que significa:</b> ${significa}</p></div>`;
+}
+const linhaFiscal = (nome, grande, pequeno, cor = '') => `<div><p class="text-xs text-slate-500">${nome}</p>
+    <p class="text-xl font-extrabold ${cor}">${grande}</p>${pequeno ? `<p class="text-xs text-slate-500">${pequeno}</p>` : ''}</div>`;
+
+function situacaoFiscal(d) {
+    const x = d.situacao_fiscal;
+    if (!x) return '';
+    const sinal = (sit) => (sit === 'deficit'
+        ? '<span class="text-rose-600 dark:text-rose-400">Déficit</span>' : '<span class="text-emerald-600 dark:text-emerald-400">Superávit</span>');
+    // 1. FLUXO
+    const flx = x.fluxo.itens.map((i) => linhaFiscal(i.nome,
+        `${brlCurto(Math.abs(i.valor_rs))} ${sinal(i.situacao)}`,
+        i.pct_pib != null ? `${pc(Math.abs(i.pct_pib), 2)}% do PIB` : '')).join('') || '<p class="text-sm text-slate-500">Sem dados do período.</p>';
+    // 2. ESTOQUE
+    const seta = { alta: '↗️ Em crescimento', queda: '↘️ Em queda', estavel: '→ Estável' }[x.estoque.tendencia] || '';
+    const est = x.estoque.itens.map((i) => linhaFiscal(i.nome,
+        `${i.pct != null ? pc(i.pct, 1) + '%' : brlCurto(i.valor_rs)} <span class="text-sm font-semibold text-slate-500">${esc((i.rotulo_pct || '').replace(/^%\s*/, ''))}</span>`,
+        [i.valor_rs != null && i.pct != null ? brlCurto(i.valor_rs) : '',
+         i.variacao_pp != null ? `${i.variacao_pp >= 0 ? '+' : '−'}${pc(Math.abs(i.variacao_pp), 1)} p.p. em 12 meses` : '',
+         i.variacao_pct != null ? `${i.variacao_pct >= 0 ? '+' : '−'}${pc(Math.abs(i.variacao_pct), 1)}% desde 31/12` : ''].filter(Boolean).join(' · '))).join('')
+        + (seta ? `<p class="text-sm font-semibold">${seta}</p>` : '');
+    // 3. CUSTO
+    const cus = x.custo.itens.map((i) => linhaFiscal(i.nome,
+        i.valor_rs != null ? brlCurto(i.valor_rs) : `${pc(i.pct, 1)}%`,
+        [i.valor_rs != null && i.pct != null ? `${pc(i.pct, 1)} ${esc(i.rotulo_pct || '')}` : (i.valor_rs == null ? esc(i.rotulo_pct || '') : ''), i.nota ? esc(i.nota) : ''].filter(Boolean).join(' · '))).join('');
+    // 4. CAPACIDADE
+    const cap = x.capacidade.itens.length
+        ? x.capacidade.itens.map((i) => linhaFiscal(i.nome, `${pc(i.pct, 1)}% <span class="text-sm font-semibold text-slate-500">${esc((i.rotulo_pct || '').replace(/^%\s*/, ''))}</span>`, brlCurto(i.valor_rs))).join('')
+          + `<p class="text-[11px] text-slate-400">${esc(x.capacidade.periodo || '')}. ${esc(x.capacidade.nota || '')}</p>`
+        : `<p class="text-sm text-slate-500">${esc(x.capacidade.indisponivel || 'Sem dados.')}</p>`;
+
+    const significaEstoque = 'É a “fatura acumulada” ao longo do tempo e indica a sustentabilidade financeira de longo prazo. Um superávit em um ano não zera a dívida: ela só cresce mais devagar.';
+    return `<div class="mb-6">
+        <h3 class="font-bold text-lg">Situação fiscal <span class="text-xs font-normal text-slate-500">· ${esc(x.universo)}</span></h3>
+        <p class="text-xs text-slate-500">${esc(x.fluxo.periodo || '')}</p>
+        <div class="grid sm:grid-cols-2 gap-4 mt-3">
+            ${cartaoFiscal('1 · FLUXO' + gl('FLUXO'), 'Resultado fiscal do período', flx, esc(x.fluxo.leitura || 'Compara o que entrou e o que saiu no período.'))}
+            ${cartaoFiscal('2 · ESTOQUE' + gl('ESTOQUE'), 'Trajetória da dívida pública', est, significaEstoque + (x.estoque.nota ? ' ' + esc(x.estoque.nota) : ''))}
+            ${cartaoFiscal('3 · CUSTO DA DÍVIDA' + gl('CUSTO_DIVIDA'), 'A carga dos juros', cus, esc(x.custo.leitura || ''))}
+            ${cartaoFiscal('4 · CAPACIDADE FISCAL', 'Peso na economia', cap, 'O tamanho da receita e da despesa do Estado em relação a tudo o que o país produz em um ano.')}
+        </div>
+        <details open class="mt-4 rounded-2xl border border-amber-200 dark:border-amber-900 bg-amber-50 dark:bg-amber-950/30 p-4 text-sm">
+            <summary class="font-bold cursor-pointer"><span aria-hidden="true">💡</span> Entenda a diferença: fluxo × estoque</summary>
+            <div class="mt-2 grid sm:grid-cols-2 gap-4 text-slate-700 dark:text-slate-300">
+                <div><p class="font-semibold"><span aria-hidden="true">🌊</span> Fluxo — o que entra e sai no mês ou no ano</p>
+                    <p class="mt-1">É o seu “salário menos as contas do mês”. Se sobrou dinheiro na conta corrente neste mês, houve superávit.</p></div>
+                <div><p class="font-semibold"><span aria-hidden="true">🏢</span> Estoque — o tamanho acumulado da dívida</p>
+                    <p class="mt-1">É o “saldo devedor do financiamento da sua casa”. Mesmo que tenha sobrado dinheiro no mês, o financiamento continua existindo e rendendo juros.</p></div>
+            </div>
+            <p class="mt-3 text-slate-700 dark:text-slate-300"><span aria-hidden="true">⚠️</span> O déficit aumenta o estoque da dívida, mas o estoque também cresce sozinho por causa dos juros e, na parcela atrelada ao câmbio, da variação do dólar.</p>
+        </details>
+        <p class="text-[11px] text-slate-400 mt-2">Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(x.fonte.url))}">${esc(x.fonte.nome)}</a>.</p>
+    </div>`;
+}
+
+/* ---------- níveis ---------- */
+function nivel1(d) {
+    const n = d.nivel1, b = n.balanco, p = n.lrf_pessoal;
+    const sup = b.situacao === 'superavit';
+    const corBal = sup ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400';
+    const nivelLrf = {
+        ok: ['Dentro do limite', 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300', 'bg-emerald-500'],
+        alerta: ['Em alerta', 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300', 'bg-amber-500'],
+        prudencial: ['Acima do limite prudencial', 'bg-orange-100 text-orange-800 dark:bg-orange-950 dark:text-orange-300', 'bg-orange-500'],
+        acima_limite: ['Acima do limite legal', 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300', 'bg-rose-500'],
+        indefinido: ['Sem limite informado', 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300', 'bg-slate-400'],
+    };
+    const lrf = p ? (() => {
+        const [rot, cls, cor] = nivelLrf[p.nivel] || nivelLrf.indefinido;
+        return cartao(`<p class="text-xs font-semibold text-slate-500">Folha de pagamento (LRF)${gl('LRF')}</p>
+            <p class="text-3xl font-extrabold mt-1">${pct(p.pct_rcl)} <span class="text-sm font-medium text-slate-500">da receita</span></p>
+            <div class="mt-3 relative">${barra(p.limite_maximo ? (p.pct_rcl / p.limite_maximo) * 100 : 0, cor)}</div>
+            <p class="text-xs text-slate-500 mt-2">Limite legal: <b>${pct(p.limite_maximo)}</b> · alerta a partir de ${pct(p.limite_alerta)}</p>
+            <span class="inline-block mt-2 px-2.5 py-1 rounded-full text-xs font-bold ${cls}">${rot}</span>
+            <p class="text-[11px] text-slate-400 mt-2">${esc(p.referencia)} · Poder Executivo</p>`);
+    })() : cartao(`<p class="text-xs font-semibold text-slate-500">Folha de pagamento (LRF)${gl('LRF')}</p><p class="text-sm text-slate-500 mt-2">O município não publicou o RGF mais recente.</p>`);
+    const fatia = (f, rot, icone) => f ? cartao(`<p class="text-xs font-semibold text-slate-500"><i class="fa-solid ${icone} mr-1" aria-hidden="true"></i>${rot}</p>
+            <p class="text-3xl font-extrabold mt-1">${pct(f.pct)} <span class="text-sm font-medium text-slate-500">da despesa</span></p>
+            <div class="mt-3">${barra(f.pct * 2, 'bg-brand-500')}</div>
+            <p class="text-xs text-slate-500 mt-2">${brlCurto(f.valor)} liquidados no período</p>`)
+        : cartao(`<p class="text-xs font-semibold text-slate-500">${rot}</p><p class="text-sm text-slate-500 mt-2">Sem dado por função.</p>`);
+    return `<section aria-labelledby="n1">${titulo(1, 'Saúde fiscal', 'Responde em 3 segundos: as contas estão em dia?').replace('<h2', '<h2 id="n1"')}
+        ${situacaoFiscal(d)}
+        <div class="grid sm:grid-cols-2 gap-4">
+            ${lrf}
+            ${fatia(n.saude, 'Saúde', 'fa-heart-pulse')}
+            ${fatia(n.educacao, 'Educação', 'fa-graduation-cap')}
+        </div>
+        ${deficits(d)}
+        ${d.esfera === 'uniao' ? reservasEsqueleto() : ''}
+        <p class="text-[11px] text-slate-400 mt-2">Saúde e Educação: fatia da despesa liquidada por função. Os mínimos constitucionais (15% e 25% da receita de impostos) são apurados em demonstrativos próprios — confira no portal oficial do município.</p>
+    </section>`;
+}
+
+function listaGrupo(itens, total) {
+    return itens.map((g) => `<li class="py-3">
+        <div class="flex items-baseline justify-between gap-3"><span class="font-semibold">${esc(g.nome)}${g.id === 'transferencias' ? gl('FPM_FPE') + gl('FUNDEB') : ''}</span>
+            <span class="text-sm font-bold whitespace-nowrap">${brlCurto(g.valor)} <span class="text-slate-400 font-normal">· ${pct(g.pct)}</span></span></div>
+        <div class="mt-1.5">${barra(g.pct)}</div>
+        ${(g.detalhe || []).length ? `<ul class="mt-2 grid sm:grid-cols-2 gap-x-6 gap-y-0.5 text-xs text-slate-600 dark:text-slate-400">
+            ${g.detalhe.map((x) => `<li class="flex justify-between"><span>${esc(x.nome)}</span><span class="font-medium">${brlCurto(x.valor)}</span></li>`).join('')}</ul>
+            <p class="text-[11px] text-slate-400 mt-1">Valores ${esc(g.detalhe_periodo)}.</p>` : ''}
+    </li>`).join('');
+}
+
+function nivel2(d) {
+    const r = d.nivel2.receitas, de = d.nivel2.despesas;
+    const abaRec = `<p class="text-sm text-slate-500 mb-1">Total arrecadado: <b>${brlCurto(r.total)}</b></p><ul class="divide-y divide-slate-100 dark:divide-slate-700">${listaGrupo(r.grupos.filter((g) => g.valor > 0))}</ul>
+        ${d.esfera === 'uniao' ? '<p class="text-[11px] text-slate-400 mt-2">Na União, “empréstimos” e “serviço da dívida” incluem a rolagem (refinanciamento) da dívida pública, o que infla os dois lados.</p>' : ''}`;
+    const tipos = de.tipos.map((t) => ({ ...t, detalhe: t.extra ? [{ nome: 'Só folha e encargos sociais', valor: t.extra.pessoal }] : [], detalhe_periodo: 'acumulado no exercício' }));
+    const abaDes = `<p class="text-sm text-slate-500 mb-1">Total gasto (liquidado): <b>${brlCurto(de.total_liquidado)}</b></p>
+        <h3 class="font-bold mt-3">Por tipo de custo</h3><ul class="divide-y divide-slate-100 dark:divide-slate-700">${listaGrupo(tipos)}</ul>
+        <h3 class="font-bold mt-5">Por área</h3>
+        <ul class="divide-y divide-slate-100 dark:divide-slate-700">${de.funcoes.slice(0, 12).map((f) => `<li class="py-2.5">
+            <div class="flex items-baseline justify-between gap-3"><span class="font-medium"><i class="fa-solid ${esc(f.icone)} w-5 text-slate-400" aria-hidden="true"></i>${esc(f.nome)}</span>
+            <span class="text-sm font-bold whitespace-nowrap">${brlCurto(f.valor)} <span class="text-slate-400 font-normal">· ${pct(f.pct)}</span></span></div>
+            <div class="mt-1.5">${barra(f.pct * 2)}</div></li>`).join('')}</ul>`;
+    const tab = (id, rot, ic) => `<button type="button" role="tab" data-aba="${id}" aria-selected="${E.aba === id}"
+        class="flex-1 px-4 py-2 rounded-xl text-sm font-semibold ${E.aba === id ? 'bg-white dark:bg-slate-700 shadow text-brand-700 dark:text-brand-300' : 'text-slate-500'}">
+        <i class="fa-solid ${ic} mr-1.5" aria-hidden="true"></i>${rot}</button>`;
+    return `<section aria-labelledby="n2">${titulo(2, 'Fluxo do caixa', 'De onde vem e para onde vai o dinheiro.').replace('<h2', '<h2 id="n2"')}
+        <div role="tablist" class="flex gap-1 p-1 rounded-2xl bg-slate-200/70 dark:bg-slate-800 mb-3">${tab('receitas', 'De onde vem', 'fa-arrow-down')}${tab('despesas', 'Para onde vai', 'fa-arrow-up')}</div>
+        ${cartao(E.aba === 'receitas' ? abaRec : abaDes)}</section>`;
+}
+
+function nivel3(d) {
+    const x = d.nivel3.execucao;
+    const linhas = [
+        ['Planejado — dotado (previsto na LOA)', x.dotado, 100, 'bg-slate-400', 'DOTACAO_INICIAL'],
+        ['Reservado — empenhado (já contratado)', x.empenhado, x.dotado ? (x.empenhado / x.dotado) * 100 : 0, 'bg-brand-500', 'EMPENHADO'],
+        ['Entregue — liquidado (serviço ou obra entregue)', x.liquidado, x.dotado ? (x.liquidado / x.dotado) * 100 : 0, 'bg-teal-500', 'LIQUIDADO'],
+        ['Pago — saiu do caixa', x.pago, x.dotado ? (x.pago / x.dotado) * 100 : 0, 'bg-emerald-500', 'PAGO'],
+    ];
+    return `<section aria-labelledby="n3">${titulo(3, 'Como o dinheiro é executado', 'Do que estava planejado até o que saiu do caixa. As leis que autorizam o gasto (PPA, LDO e LOA) estão em “Leis do orçamento”.').replace('<h2', '<h2 id="n3"')}
+        ${cartao(`<h3 class="font-bold mb-3">Execução do orçamento deste ano: planejado → reservado → entregue → pago</h3><ul class="space-y-4">${linhas.map(([r, v, p, c, sg]) => `<li>
+            <div class="flex justify-between gap-3 text-sm"><span>${r}${gl(sg)}</span><span class="font-bold whitespace-nowrap">${brlCurto(v)}${r.startsWith('Planejado') ? '' : ` <span class="text-slate-400 font-normal">· ${pct(p)}</span>`}</span></div>
+            <div class="mt-1.5">${barra(p, c)}</div></li>`).join('')}</ul>
+            <p class="text-[11px] text-slate-400 mt-3">Percentuais calculados sobre a dotação atualizada. A diferença entre empenhado e pago costuma virar “restos a pagar”.</p>`)}</section>`;
+}
+
+function nivel4(d) {
+    const cod = esc(d.ente);
+    const link = (href, ic, t, dsc) => `<a href="${esc(urlSegura(href))}" target="_blank" rel="noopener" class="block rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 hover:border-brand-500">
+        <p class="font-bold"><i class="fa-solid ${ic} mr-1.5 text-brand-600" aria-hidden="true"></i>${t} <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-slate-400" aria-hidden="true"></i></p>
+        <p class="text-xs text-slate-500 mt-1">${dsc}</p></a>`;
+    return `<section aria-labelledby="n4">${titulo(4, 'Transparência aplicada', 'Emendas, contratos e fornecedores: confira nas fontes oficiais.').replace('<h2', '<h2 id="n4"')}
+        <div class="grid sm:grid-cols-2 gap-3">
+            ${d.esfera === 'municipio'
+                ? link(`https://portaldatransparencia.gov.br/localidades/${cod}`, 'fa-map-location-dot', 'Dinheiro federal na sua cidade', 'Portal da Transparência (CGU): repasses, benefícios e despesas da União no município.')
+                : link('https://portaldatransparencia.gov.br/despesas', 'fa-sack-dollar', 'Despesas da União', 'Portal da Transparência (CGU): quanto o governo federal gasta, por órgão e por favorecido.')}
+            ${link('https://portaldatransparencia.gov.br/emendas', 'fa-hand-holding-dollar', 'Emendas parlamentares', 'Quem indicou, quanto, para qual órgão e em que fase está (indicada, empenhada, paga).')}
+            ${link('https://obrasgov.gestao.gov.br/', 'fa-helmet-safety', 'Obras públicas', 'ObrasGov.br: obras financiadas com recursos federais e seu andamento.')}
+            ${link('https://siconfi.tesouro.gov.br/siconfi/pages/public/consulta_finbra/finbra_list.jsf', 'fa-file-lines', 'Balanços completos', 'SICONFI: demonstrativos contábeis do município, com todos os anexos.')}
+        </div>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-3 px-3 py-2 rounded-lg bg-slate-100 dark:bg-slate-800"><i class="fa-solid fa-circle-info mr-1" aria-hidden="true"></i>
+        Estamos preparando a lista de emendas por parlamentar e o ranking dos 10 maiores fornecedores aqui dentro (exige chave gratuita do Portal da Transparência). Até lá, os links acima levam à fonte oficial.</p>
+    </section>`;
+}
+
+function desenhar() {
+    const d = E.dados;
+    $('periodoRotulo').textContent = d ? `${d.instituicao || ''}${d.populacao ? ' · ' + Number(d.populacao).toLocaleString('pt-BR') + ' habitantes' : ''} · ${d.periodo.rotulo}` : '';
+    const painel = $('painel');
+    painel.classList.toggle('hidden', !d);
+    if (!d) return;
+    $('secCalc').classList.toggle('hidden', ABA_FISCAL);
+    painel.innerHTML = (ABA_FISCAL ? nivel1(d) : nivel2(d) + nivel3(d) + nivel4(d)) +
+        `<p class="text-[11px] text-slate-400">Fonte: ${esc(d.fonte)}. Os valores são declarados pelos próprios entes e podem ser retificados.</p>`;
+    if (d.esfera === 'uniao') carregarReservas();
+}
+
+$('painel').addEventListener('click', (ev) => {
+    const b = ev.target.closest('[data-aba]');
+    if (b) { E.aba = b.dataset.aba; desenhar(); }
+});
+
+async function carregar() {
+    const m = E.municipio;
+    $('cidadeRotulo').textContent = m ? `${m.nome} – ${m.uf}` : 'Escolher cidade';
+    desenharEsfera();
+    E.dados = null; $('resCalc').innerHTML = ''; desenhar();
+    const ente = codigoEnte();
+    if (ente == null) {
+        $('estado').innerHTML = cartao(`<p class="text-center text-slate-500"><i class="fa-solid fa-city text-2xl mb-2 block text-slate-300" aria-hidden="true"></i>Escolha uma cidade para ver as contas${E.esfera === 'estado' ? ' do seu estado' : ''}.</p>`);
+        return;
+    }
+    $('estado').innerHTML = '<p class="text-sm text-slate-500" aria-live="polite"><i class="fa-solid fa-spinner fa-spin mr-1.5" aria-hidden="true"></i>Consultando o Tesouro Nacional…</p>';
+    try {
+        E.dados = await api('/api/economia/' + encodeURIComponent(ente));
+        $('estado').innerHTML = '';
+        desenhar();
+    } catch (e) { $('estado').innerHTML = mensagemErro(e); }
+}
+/* ---------- calculadora: para onde vai o meu imposto ---------- */
+const carregando = (t) => `<p class="text-sm text-slate-500"><i class="fa-solid fa-spinner fa-spin mr-1.5" aria-hidden="true"></i>${esc(t)}</p>`;
+const rodapeFonte = (r) => `<p class="text-[11px] text-slate-400 mt-3">Fonte: ${esc(r.fonte && r.fonte.nome ? r.fonte.nome : r.fonte || '')}. Consultado em ${esc(fmtDataHora(r.consultado_em))}.</p>`;
+const pedirCidade = () => cartao(`<p class="text-center text-slate-500"><i class="fa-solid fa-city text-2xl mb-2 block text-slate-300" aria-hidden="true"></i>Escolha uma cidade${E.esfera === 'estado' ? ' para identificar o seu estado' : ''}.</p>`);
+$('btnIR').addEventListener('click', async () => {
+    const sal = Number($('salarioIR').value);
+    if (!(sal > 0)) { $('irNota').textContent = 'Informe o salário bruto mensal.'; return; }
+    $('irNota').textContent = 'Calculando…';
+    try {
+        const r = await api('/api/simulador/ir', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ salario_bruto: sal, dependentes: 0, outras_deducoes: 0 }) });
+        const anual = r.regra_2026.imposto_mensal * 12;
+        $('valorImposto').value = anual.toFixed(2);
+        $('irNota').textContent = `IR retido na fonte pela regra de 2026: ${brl(r.regra_2026.imposto_mensal)}/mês × 12 = ${brl(anual)}/ano (sem dependentes). É imposto da União: use a esfera “União”.`;
+        if (E.esfera !== 'uniao') { E.esfera = 'uniao'; guardar('ic_esfera_economia', E.esfera); desenharEsfera(); carregar(); }
+    } catch (e) { $('irNota').textContent = e.message; }
+});
+$('btnDistribuir').addEventListener('click', distribuir);
+$('valorImposto').addEventListener('keydown', (ev) => { if (ev.key === 'Enter') distribuir(); });
+
+async function distribuir() {
+    const valor = Number($('valorImposto').value);
+    const ente = codigoEnte();
+    if (ente == null) { $('resCalc').innerHTML = pedirCidade(); return; }
+    if (!(valor > 0)) { $('resCalc').innerHTML = cartao('<p class="text-sm text-slate-500">Informe um valor de imposto maior que zero.</p>'); return; }
+    $('resCalc').innerHTML = carregando('Consultando as despesas por função no Tesouro Nacional…');
+    try {
+        const r = await api(`/api/orcamento/imposto/${encodeURIComponent(ente)}?valor=${encodeURIComponent(valor)}`);
+        if (!r.areas.length) { $('resCalc').innerHTML = cartao(`<p class="text-sm">${esc(r.lacuna || 'Sem dados para distribuir.')}</p>`); return; }
+        const maior = Math.max(...r.areas.map((a) => a.pct));
+        $('resCalc').innerHTML = cartao(`
+            <p class="text-sm"><b>${esc(brl(r.valor_anual))}</b> por ano, repartidos como ${esc(r.instituicao || 'o ente')} gasta (${esc(r.periodo.rotulo)}):</p>
+            <ul class="mt-3 space-y-3">${r.areas.map((a) => `<li>
+                <div class="flex justify-between gap-3 text-sm"><span><i class="fa-solid ${esc(a.icone)} w-5 text-slate-400" aria-hidden="true"></i>${esc(a.nome)}</span>
+                <span class="font-semibold whitespace-nowrap">${esc(brl(a.valor))} <span class="text-xs font-normal text-slate-500">(${esc(pct(a.pct))})</span></span></div>
+                <div class="mt-1 h-2.5 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden"><div class="barra h-full bg-brand-500" style="width:${Math.max(1, a.pct / maior * 100)}%"></div></div></li>`).join('')}</ul>
+            <p class="text-xs text-slate-600 dark:text-slate-400 mt-4"><b>Como ler:</b> ${esc(r.aviso)}</p>
+            <p class="text-xs text-slate-600 dark:text-slate-400 mt-1">${esc(r.nota_funcoes)}</p>
+            ${rodapeFonte(r)}`);
+    } catch (e) { $('resCalc').innerHTML = mensagemErro(e); }
+}
+
+
+carregarGlossario().then(carregar);
+</script>
+</body>
+</html>

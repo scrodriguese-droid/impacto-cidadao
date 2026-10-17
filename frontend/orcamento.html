@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leis do orçamento — ImpactoCidadão</title>
+    <meta name="description" content="Para onde vai o seu imposto, em ilustração proporcional, e o ciclo orçamentário (PPA, LDO e LOA) com links para os documentos oficiais.">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="assets/tailwind-config.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Inter', system-ui, sans-serif; }
+        :focus-visible { outline: 2px solid #A92823; outline-offset: 2px; }
+        .barra { transition: width .6s ease; }
+    </style>
+    <link rel="stylesheet" href="assets/brutalista.css">
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-full flex flex-col transition-colors duration-200">
+
+<a href="#conteudo" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-white focus:text-slate-900 focus:p-3">Ir para o conteúdo</a>
+<div id="cabecalho"></div>
+
+<main id="conteudo" class="max-w-4xl mx-auto px-4 sm:px-6 pt-6 pb-10 flex-grow w-full">
+    <h1 class="text-2xl font-extrabold tracking-tight">Leis do orçamento: PPA, LDO e LOA</h1>
+    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Em que fase do planejamento o governo está e o que isso muda na prática. Fontes oficiais, sem estimativas nossas.</p>
+
+    <div class="sticky top-16 z-30 -mx-4 sm:mx-0 px-4 sm:px-0 py-2 mt-3 bg-slate-50/90 dark:bg-slate-900/90 backdrop-blur">
+        <div class="flex flex-wrap items-center gap-x-2 gap-y-2 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 shadow-sm text-sm">
+            <i class="fa-solid fa-location-dot text-rose-500" aria-hidden="true"></i>
+            <span class="font-medium">Cidade:</span>
+            <div class="relative">
+                <button id="btnCidade" type="button" class="inline-flex items-center gap-1.5 font-bold bg-teal-50 dark:bg-teal-950/50 text-teal-800 dark:text-teal-300 border border-teal-200 dark:border-teal-800 rounded-full px-3.5 py-1.5 hover:opacity-90" aria-expanded="false" aria-controls="popCidade">
+                    <i class="fa-solid fa-city text-xs" aria-hidden="true"></i><span id="cidadeRotulo">Escolher cidade</span>
+                </button>
+                <div id="popCidade" class="hidden absolute left-0 top-full mt-2 w-72 z-40 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-xl p-2">
+                    <label for="cidadeBusca" class="sr-only">Buscar município</label>
+                    <input id="cidadeBusca" type="text" autocomplete="off" placeholder="Digite o nome da cidade…"
+                           class="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                    <ul id="cidadeLista" class="mt-1 max-h-60 overflow-auto text-sm" role="listbox"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="segEsfera" class="mt-3 inline-flex flex-wrap gap-1 p-1 rounded-2xl bg-slate-200/70 dark:bg-slate-800" role="radiogroup" aria-label="Esfera de governo"></div>
+
+    <!-- ========================= B. CICLO ========================= -->
+    <section class="mt-6" aria-labelledby="tCiclo">
+        <h2 id="tCiclo" class="text-xl font-bold flex items-center"><i class="fa-solid fa-rotate text-brand-600 mr-2.5" aria-hidden="true"></i>Onde estamos no ciclo orçamentário</h2>
+        <p class="text-sm text-slate-500 dark:text-slate-400">Qual lei está em execução, qual está sendo votada agora e o que isso muda na prática.</p>
+        <div id="resCiclo" class="mt-3" aria-live="polite"></div>
+    </section>
+</main>
+
+<div id="rodape"></div>
+
+<script src="assets/comum.js"></script>
+<script>
+renderLayout('orcamento');
+
+const ESFERAS = [
+    { id: 'municipio', rotulo: 'Município', icone: 'fa-city' },
+    { id: 'estado', rotulo: 'Estado', icone: 'fa-map' },
+    { id: 'uniao', rotulo: 'União', icone: 'fa-flag' },
+];
+const E = { municipio: lerPrefs().municipio || null, esfera: ler('ic_esfera_economia', 'municipio') };
+if (!ESFERAS.some((x) => x.id === E.esfera)) E.esfera = 'municipio';
+const codigoEnte = () => {
+    if (E.esfera === 'uniao') return 1;
+    if (!E.municipio) return null;
+    return E.esfera === 'estado' ? Math.floor(E.municipio.codigo / 100000) : E.municipio.codigo;
+};
+const cartao = (inner, extra = '') => `<div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 ${extra}">${inner}</div>`;
+const pct = (v) => `${Number(v).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%`;
+const pedirCidade = () => cartao(`<p class="text-center text-slate-500"><i class="fa-solid fa-city text-2xl mb-2 block text-slate-300" aria-hidden="true"></i>Escolha uma cidade${E.esfera === 'estado' ? ' para identificar o seu estado' : ''}.</p>`);
+const carregando = (t) => `<p class="text-sm text-slate-500"><i class="fa-solid fa-spinner fa-spin mr-1.5" aria-hidden="true"></i>${esc(t)}</p>`;
+const rodapeFonte = (r) => `<p class="text-[11px] text-slate-400 mt-3">Fonte: ${esc(r.fonte && r.fonte.nome ? r.fonte.nome : r.fonte || '')}. Consultado em ${esc(fmtDataHora(r.consultado_em))}.</p>`;
+
+function desenharEsfera() {
+    $('segEsfera').innerHTML = ESFERAS.map((x) => `<button type="button" role="radio" aria-checked="${E.esfera === x.id}" data-esfera="${x.id}"
+        class="px-3.5 py-2 rounded-xl text-sm font-semibold ${E.esfera === x.id ? 'bg-white dark:bg-slate-700 shadow text-brand-700 dark:text-brand-300' : 'text-slate-500'}">
+        <i class="fa-solid ${x.icone} mr-1.5 text-xs" aria-hidden="true"></i>${x.rotulo}</button>`).join('');
+}
+$('segEsfera').addEventListener('click', (ev) => {
+    const b = ev.target.closest('[data-esfera]');
+    if (!b || b.dataset.esfera === E.esfera) return;
+    E.esfera = b.dataset.esfera; guardar('ic_esfera_economia', E.esfera); atualizar();
+});
+
+/* ---------- cidade ---------- */
+const pop = $('popCidade');
+function alternarCidade(abrir) {
+    const mostrar = abrir ?? pop.classList.contains('hidden');
+    pop.classList.toggle('hidden', !mostrar);
+    $('btnCidade').setAttribute('aria-expanded', String(mostrar));
+    if (mostrar) { $('cidadeBusca').value = ''; $('cidadeLista').innerHTML = ''; setTimeout(() => $('cidadeBusca').focus(), 30); }
+}
+$('btnCidade').addEventListener('click', () => alternarCidade());
+document.addEventListener('click', (ev) => { if (!ev.target.closest('#popCidade') && !ev.target.closest('#btnCidade')) alternarCidade(false); });
+document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') alternarCidade(false); });
+$('cidadeBusca').addEventListener('input', debounce(async () => {
+    const q = $('cidadeBusca').value.trim();
+    if (q.length < 2) { $('cidadeLista').innerHTML = ''; return; }
+    try {
+        const achados = await api('/api/municipios?q=' + encodeURIComponent(q));
+        $('cidadeLista').innerHTML = achados.length
+            ? achados.map((m) => `<li><button type="button" role="option" data-cod="${esc(m.codigo)}" data-nome="${esc(m.nome)}" data-uf="${esc(m.uf)}"
+                class="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700">${esc(m.nome)} <span class="text-slate-400">– ${esc(m.uf)}</span></button></li>`).join('')
+            : '<li class="px-3 py-2 text-slate-500">Nenhum município encontrado.</li>';
+    } catch (e) { $('cidadeLista').innerHTML = `<li class="px-3 py-2 text-rose-600 text-xs">${esc(e.message)}</li>`; }
+}, 250));
+$('cidadeLista').addEventListener('click', (ev) => {
+    const b = ev.target.closest('[data-cod]');
+    if (!b) return;
+    E.municipio = { codigo: Number(b.dataset.cod), nome: b.dataset.nome, uf: b.dataset.uf };
+    salvarPrefsParciais({ municipio: E.municipio });
+    alternarCidade(false); atualizar();
+});
+
+/* ---------- B. ciclo orçamentário ---------- */
+const reaisCurto = (n) => {
+    if (n == null) return '—';
+    const v = Math.abs(n), sg = n < 0 ? '−' : '';
+    if (v >= 1e12) return `${sg}R$ ${(v / 1e12).toLocaleString('pt-BR', { maximumFractionDigits: 2 })} tri`;
+    if (v >= 1e9) return `${sg}R$ ${(v / 1e9).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} bi`;
+    if (v >= 1e6) return `${sg}R$ ${(v / 1e6).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} mi`;
+    return brl(n);
+};
+const ESTADO_COR = {
+    em_execucao: ['bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300', 'bg-emerald-500'],
+    aprovada: ['bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300', 'bg-sky-500'],
+    em_tramitacao: ['bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300', 'bg-amber-500'],
+    nao_enviada: ['bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300', 'bg-slate-400'],
+    sem_fonte: ['bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300', 'bg-slate-400'],
+};
+const IC_TIPO = { PPA: 'fa-binoculars', LDO: 'fa-list-check', LOA: 'fa-file-invoice-dollar' };
+
+function linhaDoTempo(r) {
+    const nos = r.linha_do_tempo.map((n) => {
+        const [chip, ponto] = ESTADO_COR[n.estado] || ESTADO_COR.sem_fonte;
+        const def = (r.tipos.find((t) => t.tipo === n.tipo) || {}).sentido;
+        return `<li class="flex-1 min-w-[12rem] rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
+            <div class="flex items-center justify-between gap-2">
+                <p class="font-bold"><i class="fa-solid ${IC_TIPO[n.tipo] || 'fa-file'} mr-1.5 text-slate-400" aria-hidden="true"></i>${esc(n.tipo)} <span class="font-normal text-slate-500 text-sm">${esc(n.periodo)}</span></p>
+                <span class="w-2.5 h-2.5 rounded-full ${ponto}" aria-hidden="true"></span></div>
+            ${def ? `<p class="text-xs text-slate-500 dark:text-slate-400 mt-1"><span aria-hidden="true">📖</span> <b>O que é:</b> ${esc(def)}</p>` : ''}
+            <span class="inline-block mt-2 px-2.5 py-1 rounded-full text-[11px] font-bold ${chip}">${esc(n.estado_rotulo)}</span>
+            ${n.detalhe ? `<p class="text-xs text-slate-600 dark:text-slate-400 mt-2">${esc(n.detalhe)}</p>` : ''}
+            ${n.url_tramitacao ? `<a class="inline-block mt-2 text-xs underline text-brand-700 dark:text-brand-400" target="_blank" rel="noopener" href="${esc(urlSegura(n.url_tramitacao))}">${esc(n.proposicao)} na Câmara</a>` : ''}</li>`;
+    });
+    return `<div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/40 p-4">
+        <p class="font-bold"><i class="fa-solid fa-calendar-days mr-1.5 text-brand-600" aria-hidden="true"></i>Linha do tempo · ${esc(r.agora.rotulo)}</p>
+        <ol class="mt-3 flex flex-wrap items-stretch gap-3">${nos.join('<li aria-hidden="true" class="hidden md:flex items-center text-slate-400"><i class="fa-solid fa-arrow-right"></i></li>')}</ol>
+        <p class="mt-3 text-sm"><span aria-hidden="true">📌</span> <b>Momento:</b> ${esc(r.momento)}</p></div>`;
+}
+
+function barra(p, cor = 'bg-brand-500') { return `<div class="mt-1 h-2.5 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden"><div class="h-full ${cor}" style="width:${Math.max(1, Math.min(100, p))}%"></div></div>`; }
+
+function cartaoProposta(r) {
+    const pr = r.proposta;
+    if (!pr) return '';
+    const x = pr.resumo, t = x && x.totais;
+    if (!x) {
+        return cartao(`<h3 class="font-bold"><span aria-hidden="true">🗳️</span> Em tramitação: orçamento para ${esc(pr.ementa_ano)} (${esc(pr.proposicao)})</h3>
+            <p class="text-sm mt-2 text-slate-600 dark:text-slate-300">Não conseguimos ler os números do projeto agora. ${esc(pr.situacao)}.</p>
+            <p class="text-xs mt-3 space-x-3"><a class="underline text-brand-700 dark:text-brand-400" target="_blank" rel="noopener" href="${esc(urlSegura(pr.url_texto))}">Texto do projeto</a>
+            <a class="underline text-brand-700 dark:text-brand-400" target="_blank" rel="noopener" href="${esc(urlSegura(pr.url_tramitacao))}">Acompanhar a tramitação</a></p>`, 'mt-4');
+    }
+    const total = t.fiscal_e_seguridade;
+    const partes = [['Orçamento Fiscal (ministérios, poderes e fundos)', t.orcamento_fiscal, 'bg-brand-500'],
+        ['Orçamento da Seguridade (saúde, previdência e assistência)', t.seguridade, 'bg-teal-500'],
+        ['Refinanciamento da dívida (pagar títulos que vencem com novos títulos)', t.refinanciamento_divida, 'bg-amber-500']].filter((q) => q[1] != null);
+    const refin = t.refinanciamento_divida != null && total ? (t.refinanciamento_divida / total) * 100 : null;
+    const dest = x.destaques.map((d) => {
+        const valor = d.unidade === 'reais' ? brl(d.valor) : `R$ ${d.valor.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} bi`;
+        const extra = d.unidade === 'reais' && x.salario_minimo_ano_anterior
+            ? ` <span class="text-xs text-slate-500">(hoje: ${esc(brl(x.salario_minimo_ano_anterior))}, ${((d.valor / x.salario_minimo_ano_anterior - 1) * 100).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}% a mais)</span>` : '';
+        return `<li class="flex justify-between gap-3 py-1.5"><span>${esc(d.rotulo)}<span class="block text-[11px] text-slate-400">Mensagem Presidencial, p. ${esc(d.pagina_pdf)} do PDF</span></span><span class="font-semibold whitespace-nowrap text-right">${esc(valor)}${extra}</span></li>`;
+    }).join('');
+    const comp = pr.comparacao
+        ? `<p class="text-xs text-slate-500 mt-1">${pr.comparacao.variacao_pct >= 0 ? '+' : '−'}${Math.abs(pr.comparacao.variacao_pct).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}% em relação à dotação inicial de ${esc(pr.comparacao.ano_base)} (${esc(reaisCurto(pr.comparacao.valor_base))}). ${esc(pr.comparacao.nota)}</p>` : '';
+    return cartao(`<h3 class="font-bold"><span aria-hidden="true">🗳️</span> O que muda para você: orçamento para ${esc(pr.ementa_ano)} <span class="font-normal text-slate-500">· ${esc(pr.proposicao)}</span></h3>
+        <p class="text-xs text-slate-500">Situação oficial: ${esc(pr.situacao)}.</p>
+        <div class="mt-3"><p class="text-xs text-slate-500">Proposta do Governo: receita estimada e despesa fixada nos Orçamentos Fiscal e da Seguridade</p>
+            <p class="text-3xl font-extrabold">${esc(reaisCurto(total))}</p>${comp}</div>
+        <ul class="mt-3 space-y-2.5 text-sm">${partes.map(([n, v, cor]) => `<li><div class="flex justify-between gap-3"><span>${esc(n)}</span><span class="font-semibold whitespace-nowrap">${esc(reaisCurto(v))} <span class="text-xs font-normal text-slate-500">(${((v / total) * 100).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%)</span></span></div>${barra((v / total) * 100, cor)}</li>`).join('')}</ul>
+        ${refin != null ? `<p class="mt-3 text-xs text-slate-600 dark:text-slate-400"><span aria-hidden="true">💡</span> Cerca de <b>${refin.toLocaleString('pt-BR', { maximumFractionDigits: 0 })}%</b> do total é <b>rolagem da dívida</b>: títulos que vencem e são substituídos por novos. Não é gasto novo com serviços. <a class="underline" href="financiamento.html">Entenda emissões e resgates</a>.</p>` : ''}
+        ${dest ? `<h4 class="font-bold text-sm mt-4">Destaques da Mensagem Presidencial</h4><ul class="divide-y divide-slate-100 dark:divide-slate-700 text-sm">${dest}</ul>` : ''}
+        <p class="mt-4 text-sm"><span aria-hidden="true">⏳</span> <b>Prazo:</b> o projeto precisa voltar do Congresso para sanção até o fim da sessão legislativa, em <b>22 de dezembro</b>.</p>
+        <p class="text-xs mt-3 space-x-3"><a class="underline text-brand-700 dark:text-brand-400" target="_blank" rel="noopener" href="${esc(urlSegura(pr.url_texto))}">Ver o projeto e a mensagem (PDF)</a>
+            <a class="underline text-brand-700 dark:text-brand-400" target="_blank" rel="noopener" href="${esc(urlSegura(pr.url_tramitacao))}">Acompanhar a tramitação</a></p>
+        <p class="text-[11px] text-slate-400 mt-2">${esc(pr.aviso)}</p>`, 'mt-4');
+}
+
+function cartaoLocal(r) {
+    const o = r.orcamento_local;
+    if (!o) {
+        return cartao(`<p class="text-sm text-slate-600 dark:text-slate-300">Este ente ainda não declarou o orçamento do exercício no SICONFI (RREO).</p>`, 'mt-4');
+    }
+    const maior = Math.max(...o.funcoes.map((f) => f.pct || 0), 1);
+    return cartao(`<h3 class="font-bold"><span aria-hidden="true">🏘️</span> Orçamento de ${esc(o.instituicao || 'o ente')}: LOA ${esc(o.ano)}</h3>
+        <p class="text-xs text-slate-500">Valores autorizados na lei (dotação inicial) e declarados ao Tesouro Nacional · ${esc(o.periodo)}.</p>
+        <div class="grid sm:grid-cols-2 gap-4 mt-3">
+            <div><p class="text-xs text-slate-500">Previsão de arrecadação</p><p class="text-2xl font-extrabold">${esc(reaisCurto(o.receita_prevista))}</p></div>
+            <div><p class="text-xs text-slate-500">Despesa autorizada</p><p class="text-2xl font-extrabold">${esc(reaisCurto(o.despesa_autorizada))}</p></div></div>
+        ${o.funcoes.length ? `<p class="text-sm font-semibold mt-4">Onde o dinheiro foi planejado para ser gasto:</p>
+            <ul class="mt-2 space-y-2.5 text-sm">${o.funcoes.slice(0, 8).map((f) => `<li><div class="flex justify-between gap-3"><span><i class="fa-solid ${esc(f.icone)} w-5 text-slate-400" aria-hidden="true"></i>${esc(f.nome)}</span>
+                <span class="font-semibold whitespace-nowrap">${esc(reaisCurto(f.valor))} <span class="text-xs font-normal text-slate-500">(${esc((f.pct || 0).toLocaleString('pt-BR', { maximumFractionDigits: 1 }))}%)</span></span></div>${barra((f.pct || 0) / maior * 100)}</li>`).join('')}</ul>` : ''}
+        <p class="text-xs text-slate-500 mt-3">Para a lista de obras e o texto da lei, consulte o portal do próprio ente: não há base aberta nacional desses documentos.</p>`, 'mt-4');
+}
+
+function detalhes(r) {
+    const prazos = `<ul class="space-y-1 text-sm">${r.prazos.itens.map((i) => `<li><b>${esc(i.tipo)}:</b> ${esc(i.texto)}</li>`).join('')}</ul><p class="text-[11px] text-slate-400 mt-1">${esc(r.prazos.fonte)}</p>`;
+    const docs = r.documentos.length ? `<ul class="space-y-2">${r.documentos.map(docCard).join('')}</ul>` : '';
+    const lacuna = r.lacuna ? `<p class="text-sm text-slate-700 dark:text-slate-300" role="note"><b>Lacuna declarada:</b> ${esc(r.lacuna)}</p>` : '';
+    const links = `<ul class="space-y-1.5 text-sm">${r.links.map((l) => `<li><a class="underline text-brand-700 dark:text-brand-400" target="_blank" rel="noopener" href="${esc(urlSegura(l.nome ? l.url : '#'))}">${esc(l.nome)}</a></li>`).join('')}</ul>`;
+    const bloco = (titulo, corpo) => `<details class="mt-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4"><summary class="cursor-pointer font-semibold">${titulo}</summary><div class="mt-3">${corpo}</div></details>`;
+    return bloco('Prazos constitucionais', prazos)
+        + bloco('Documentos oficiais e fontes', `${docs}${lacuna}<h4 class="font-bold mt-4 mb-2 text-sm">Onde conferir</h4>${links}${r.observacao ? `<p class="text-xs text-slate-600 dark:text-slate-400 mt-3">${esc(r.observacao)}</p>` : ''}${rodapeFonte(r)}`);
+}
+
+function docCard(d) {
+    const selo = d.virou_lei ? ['Virou lei', 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300']
+        : ['Em tramitação', 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'];
+    const alt = d.alteracoes_no_congresso ? ` · ${d.alteracoes_no_congresso} projeto(s) de alteração no Congresso` : '';
+    return `<li class="rounded-xl border border-slate-200 dark:border-slate-700 p-3.5">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+            <p class="font-semibold text-sm">${esc(d.tipo)} ${esc(d.referencia)} <span class="font-normal text-slate-500">· ${esc(d.proposicao)}</span></p>
+            <span class="px-2.5 py-1 rounded-full text-[11px] font-bold ${selo[1]}">${esc(selo[0])}</span></div>
+        <p class="text-xs text-slate-600 dark:text-slate-400 mt-1">${esc(d.situacao)}${d.lei ? ` — ${esc(d.lei)}` : ''}${d.ultima_movimentacao ? ` · última movimentação em ${esc(fmtData(d.ultima_movimentacao))}` : ''}${esc(alt)}</p>
+        <p class="text-xs mt-2 space-x-3">
+            ${d.url_texto ? `<a class="underline text-brand-700 dark:text-brand-400" target="_blank" rel="noopener" href="${esc(urlSegura(d.url_texto))}">Texto do projeto</a>` : ''}
+            <a class="underline text-brand-700 dark:text-brand-400" target="_blank" rel="noopener" href="${esc(urlSegura(d.url_tramitacao))}">Tramitação na Câmara</a></p></li>`;
+}
+
+async function carregarCiclo() {
+    const ente = codigoEnte();
+    if (ente == null) { $('resCiclo').innerHTML = pedirCidade(); return; }
+    $('resCiclo').innerHTML = carregando('Consultando as fontes oficiais (na primeira vez, o texto do projeto do orçamento é lido do PDF e pode levar alguns segundos)…');
+    try {
+        const r = await api('/api/orcamento/ciclo/' + encodeURIComponent(ente));
+        $('resCiclo').innerHTML = linhaDoTempo(r) + (r.esfera === 'uniao' ? cartaoProposta(r) : cartaoLocal(r)) + detalhes(r);
+    } catch (e) { $('resCiclo').innerHTML = mensagemErro(e); }
+}
+
+function atualizar() {
+    const m = E.municipio;
+    $('cidadeRotulo').textContent = m ? `${m.nome} – ${m.uf}` : 'Escolher cidade';
+    desenharEsfera();
+    carregarCiclo();
+}
+atualizar();
+</script>
+</body>
+</html>

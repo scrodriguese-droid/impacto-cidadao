@@ -8,16 +8,18 @@
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="assets/tailwind-config.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body { font-family: 'Inter', system-ui, sans-serif; }
         details > summary { list-style: none; cursor: pointer; }
         details > summary::-webkit-details-marker { display: none; }
-        :focus-visible { outline: 2px solid #0284c7; outline-offset: 2px; }
+        :focus-visible { outline: 2px solid #A92823; outline-offset: 2px; }
     </style>
+    <link rel="stylesheet" href="assets/brutalista.css">
 </head>
 <body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-full flex flex-col transition-colors duration-200">
 
@@ -123,6 +125,38 @@
     <p id="contagem" class="text-xs text-slate-500 dark:text-slate-400 mt-3" aria-live="polite">Carregando…</p>
     <p id="frescor" class="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5"></p>
     <p id="avisoPeriodo" class="hidden mt-2 text-xs text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 rounded-lg px-3 py-2"></p>
+
+    <!-- Autoria dos projetos da Câmara: divisão por tema e projetos por político -->
+    <section id="autoria" class="hidden mt-5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 sm:p-5" aria-labelledby="tAutoria">
+        <h2 id="tAutoria" class="text-lg font-bold"><i class="fa-solid fa-chart-column mr-2 text-brand-600" aria-hidden="true"></i>Quem propõe e o que vira lei</h2>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Projetos de lei (PL, PLP e PEC) da Câmara dos Deputados no período escolhido acima. Só contagem oficial: quantidade não mede qualidade.</p>
+        <p id="autoriaTotais" class="text-sm mt-3"></p>
+        <div class="mt-3" style="height:420px"><canvas id="graficoTemas" role="img" aria-label="Divisão por tema dos projetos criados e dos aprovados"></canvas></div>
+        <p class="text-[11px] text-slate-500 mt-1">Cada barra é a fatia do tema entre todos os temas atribuídos: em azul, os projetos que viraram lei; em cinza, todos os criados. Um projeto pode ter mais de um tema.</p>
+        <div class="mt-5 border-t border-slate-200 dark:border-slate-700 pt-4">
+            <h3 class="font-bold">Divisão por autor</h3>
+            <p class="text-xs text-slate-500">Quem assina os projetos. Azul: viraram lei; cinza: todos os criados.</p>
+            <div id="segAutor" class="mt-2 inline-flex flex-wrap gap-1 p-1 rounded-2xl bg-slate-200/70 dark:bg-slate-800" role="radiogroup" aria-label="Agrupar autores por">
+                <button type="button" role="radio" data-autor="deputados" class="px-3 py-1.5 rounded-xl text-sm font-semibold">Deputados(as)</button>
+                <button type="button" role="radio" data-autor="partidos" class="px-3 py-1.5 rounded-xl text-sm font-semibold">Partidos</button>
+                <button type="button" role="radio" data-autor="tipos" class="px-3 py-1.5 rounded-xl text-sm font-semibold">Tipo de autor</button></div>
+            <div class="mt-3" id="boxAutores" style="height:440px"><canvas id="graficoAutores" role="img" aria-label="Divisão dos projetos por autor"></canvas></div>
+            <p id="notaAutor" class="text-[11px] text-slate-500 mt-1"></p>
+        </div>
+        <div class="mt-5 border-t border-slate-200 dark:border-slate-700 pt-4">
+            <h3 class="font-bold">Onde os projetos que não viraram lei pararam</h3>
+            <p class="text-xs text-slate-500">Órgão em que cada projeto está agora (comissões, Plenário, Mesa), além dos arquivados e dos que já passaram pela Câmara e esperam o Senado. Passe o mouse para ver o nome completo.</p>
+            <div class="mt-3" style="height:440px"><canvas id="graficoParadas" role="img" aria-label="Onde os projetos não aprovados estão parados"></canvas></div>
+        </div>
+        <div class="mt-5 border-t border-slate-200 dark:border-slate-700 pt-4">
+            <label for="buscaPolitico" class="text-sm font-semibold">Ver os projetos de um(a) deputado(a)</label>
+            <input id="buscaPolitico" type="search" autocomplete="off" maxlength="60" placeholder="Nome ou sigla do estado (ex.: SP)"
+                   class="mt-2 w-full sm:w-80 block px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+            <div id="resPolitico" class="mt-2" aria-live="polite"></div>
+            <div id="projPolitico" class="mt-3"></div>
+        </div>
+        <ul id="autoriaNotas" class="mt-4 text-[11px] text-slate-500 list-disc pl-5 space-y-1"></ul>
+    </section>
 
     <!-- Cartões -->
     <div id="lista" class="mt-3 space-y-4"></div>
@@ -531,7 +565,8 @@ function cabecalhoGrupo(temaId) {
     const n = P.temasContagem[temaId];
     return `<div class="pt-4 flex items-baseline gap-x-2 text-slate-700 dark:text-slate-200">
         <h2 class="text-base font-extrabold"><i class="fa-solid ${esc(t.icone)} mr-2 text-brand-600" aria-hidden="true"></i>${esc(t.nome)}</h2>
-        ${n ? `<span class="text-xs text-slate-500">${n} ato${n === 1 ? '' : 's'}</span>` : ''}</div>`;
+        ${n ? `<span class="text-xs text-slate-500">${n} ato${n === 1 ? '' : 's'}</span>` : ''}</div>
+        <div data-ind="${esc(temaId)}" class="text-xs text-slate-600 dark:text-slate-400 mt-1"></div>`;
 }
 
 function painelVazio() {
@@ -553,6 +588,7 @@ function painelVazio() {
 let reqLista = 0;
 async function carregar(acrescentar = false) {
     const minha = ++reqLista;
+    if (!acrescentar) carregarAutoria();
     const params = new URLSearchParams({ ordem: P.ordem, pagina: P.pagina, por_pagina: 10, incluir_pendentes: true, agrupar_por: 'tema' });
     if (P.nivel) params.set('nivel', P.nivel);
     if (P.instancia) params.set('instancia', P.instancia);
@@ -579,6 +615,7 @@ async function carregar(acrescentar = false) {
             html += cartao(p);
         }
         $('lista').innerHTML = html;
+        preencherIndicadores();
         $('btnMais').classList.toggle('hidden', P.itens.length >= r.total);
     } catch (e) { if (minha === reqLista) { $('lista').innerHTML = mensagemErro(e); $('contagem').textContent = ''; } }
 }
@@ -600,6 +637,178 @@ $('lista').addEventListener('click', async (ev) => {
     } catch (e) { alert('Não foi possível registrar o voto: ' + e.message); }
 });
 
+
+/* ====================================================================== *
+ *  Autoria: líderes por tema, projetos por político e divisão por tema (Câmara)
+ * ====================================================================== */
+let reqAutoria = 0, graficoTemas = null;
+const POL = { id: null, tema: '' };
+const AUTOR = { modo: 'deputados', grafico: null }, graficoParadasRef = { g: null };
+function corEixo() { return document.documentElement.classList.contains('dark') ? '#cbd5e1' : '#475569'; }
+function desenharAutores() {
+    const a = P.autoria && P.autoria.autores;
+    if (!a) return;
+    const cor = corEixo();
+    const lin = AUTOR.modo === 'deputados' ? a.deputados.map((x) => ({ r: `${x.nome} (${x.partido}-${x.uf})`, c: x.criados, a: x.aprovados }))
+        : AUTOR.modo === 'partidos' ? a.partidos.map((x) => ({ r: `${x.sigla} (${nf(x.deputados)} dep.)`, c: x.criados, a: x.aprovados }))
+        : a.tipos.map((x) => ({ r: x.tipo, c: x.projetos, a: null }));
+    document.querySelectorAll('#segAutor [data-autor]').forEach((b) => {
+        const on = b.dataset.autor === AUTOR.modo;
+        b.setAttribute('aria-checked', String(on));
+        b.className = 'px-3 py-1.5 rounded-xl text-sm font-semibold ' + (on ? 'bg-white dark:bg-slate-700 shadow text-brand-700 dark:text-brand-300' : 'text-slate-500');
+    });
+    $('notaAutor').textContent = AUTOR.modo === 'deputados' ? 'Os 15 deputados(as) com mais projetos criados no período. Projetos com vários autores contam para cada um.'
+        : AUTOR.modo === 'partidos' ? 'Os 15 partidos com mais projetos assinados no período, pelo partido que a Câmara informa para o(a) autor(a). Quando há autores de partidos diferentes, o projeto conta em cada um.'
+        : 'Quantos projetos têm cada tipo de autor. Um projeto com autores de tipos diferentes conta em cada tipo.';
+    AUTOR.grafico?.destroy();
+    const datasets = [{ label: 'Todos os criados', data: lin.map((x) => x.c), backgroundColor: '#8F8F8B' }];
+    if (lin[0] && lin[0].a !== null) datasets.unshift({ label: 'Aprovados (viraram lei)', data: lin.map((x) => x.a), backgroundColor: '#A92823' });
+    AUTOR.grafico = new Chart($('graficoAutores'), {
+        type: 'bar', data: { labels: lin.map((x) => x.r), datasets },
+        options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, animation: false,
+            plugins: { legend: { labels: { color: cor } }, tooltip: { callbacks: { label: (x) => `${x.dataset.label}: ${nf(x.parsed.x)} projetos` } } },
+            scales: { x: { beginAtZero: true, ticks: { color: cor } }, y: { ticks: { color: cor, autoSkip: false } } } },
+    });
+}
+function desenharParadas() {
+    const a = P.autoria;
+    if (!a) return;
+    const cor = corEixo();
+    const itens = a.paradas.slice(0, 15);
+    const rot = (x) => (x.sigla ? x.sigla : x.onde.length > 28 ? x.onde.slice(0, 27) + '…' : x.onde);
+    const CORES = { comissao: '#A92823', plenario: '#7c3aed', mesa: '#64748b', arquivada: '#be123c', senado: '#059669', outro: '#8F8F8B' };
+    graficoParadasRef.g?.destroy();
+    graficoParadasRef.g = new Chart($('graficoParadas'), {
+        type: 'bar',
+        data: { labels: itens.map(rot), datasets: [{ data: itens.map((x) => x.projetos), backgroundColor: itens.map((x) => CORES[x.etapa] || '#8F8F8B') }] },
+        options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, animation: false,
+            plugins: { legend: { display: false }, tooltip: { callbacks: { title: (x) => itens[x[0].dataIndex].onde, label: (x) => `${nf(x.parsed.x)} projetos parados aqui` } } },
+            scales: { x: { beginAtZero: true, ticks: { color: cor }, title: { display: true, text: 'projetos que não viraram lei', color: cor } }, y: { ticks: { color: cor, autoSkip: false } } } },
+    });
+}
+document.addEventListener('click', (ev) => {
+    const b = ev.target.closest && ev.target.closest('[data-autor]');
+    if (b) { AUTOR.modo = b.dataset.autor; desenharAutores(); }
+});
+
+const nf = (n) => Number(n).toLocaleString('pt-BR');
+function paramsPeriodo() {
+    const iv = intervalo(), q = new URLSearchParams();
+    if (iv.desde) q.set('desde', iv.desde);
+    if (iv.ate) q.set('ate', iv.ate);
+    return q;
+}
+const botaoPolitico = (l) => `<button type="button" data-pol="${l.id}" class="font-semibold underline decoration-dotted hover:text-brand-700 dark:hover:text-brand-400">${esc(l.nome)}</button> <span class="text-slate-500">(${esc(l.partido)}-${esc(l.uf)})</span>`;
+const lider = (l, vazio, unidade) => l
+    ? `${botaoPolitico(l)} · ${nf(l.quantidade)} ${unidade}${l.empatados ? ` <span class="text-slate-500">(empate com mais ${nf(l.empatados)})</span>` : ''}`
+    : `<span class="text-slate-500">${vazio}</span>`;
+
+function preencherIndicadores() {
+    const a = P.autoria;
+    document.querySelectorAll('[data-ind]').forEach((el) => {
+        const c = a && a.campos[el.dataset.ind];
+        if (!c) { el.innerHTML = ''; return; }
+        el.innerHTML = `<span title="Temas da Câmara considerados: ${esc(c.temas_camara.join('; '))}">
+            <i class="fa-solid fa-pen-nib mr-1 text-slate-400" aria-hidden="true"></i><b>Mais projetos criados:</b> ${lider(c.mais_criados, 'nenhum no período', 'projetos')}
+            <span class="mx-1.5 text-slate-300" aria-hidden="true">|</span>
+            <i class="fa-solid fa-check-double mr-1 text-slate-400" aria-hidden="true"></i><b>Mais aprovados:</b> ${lider(c.mais_aprovados, 'nenhum aprovado no período', 'aprovados')}</span>`;
+    });
+}
+
+function desenharGraficoTemas(a) {
+    const cor = document.documentElement.classList.contains('dark') ? '#cbd5e1' : '#475569';
+    const topo = a.temas.slice(0, 15), resto = a.temas.slice(15);
+    const itens = resto.length
+        ? topo.concat([{ nome: 'Outros temas', criados: resto.reduce((s, t) => s + t.criados, 0), aprovados: resto.reduce((s, t) => s + t.aprovados, 0) }])
+        : topo;
+    const totC = a.temas.reduce((s, t) => s + t.criados, 0) || 1, totA = a.temas.reduce((s, t) => s + t.aprovados, 0) || 1;
+    graficoTemas?.destroy();
+    graficoTemas = new Chart($('graficoTemas'), {
+        type: 'bar',
+        data: { labels: itens.map((t) => t.nome), datasets: [
+            { label: 'Aprovados (viraram lei)', data: itens.map((t) => (100 * t.aprovados) / totA), backgroundColor: '#A92823', _n: itens.map((t) => t.aprovados) },
+            { label: 'Todos os criados', data: itens.map((t) => (100 * t.criados) / totC), backgroundColor: '#8F8F8B', _n: itens.map((t) => t.criados) },
+        ] },
+        options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, animation: false,
+            plugins: { legend: { labels: { color: cor } },
+                tooltip: { callbacks: { label: (x) => `${x.dataset.label}: ${x.parsed.x.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}% (${nf(x.dataset._n[x.dataIndex])} projetos)` } } },
+            scales: { x: { beginAtZero: true, ticks: { color: cor, callback: (v) => v + '%' }, title: { display: true, text: '% do total de temas atribuídos', color: cor } },
+                      y: { ticks: { color: cor, autoSkip: false } } } },
+    });
+}
+
+async function carregarAutoria() {
+    const minha = ++reqAutoria;
+    try {
+        const a = await api('/api/autoria/resumo?' + paramsPeriodo());
+        if (minha !== reqAutoria) return;
+        P.autoria = a;
+        $('autoria').classList.remove('hidden');
+        $('autoriaTotais').innerHTML = `<b>${nf(a.total.criados)}</b> projetos criados e <b>${nf(a.total.aprovados)}</b> aprovados (viraram lei) entre ${fmtData(a.periodo.desde)} e ${fmtData(a.periodo.ate)}.
+            ${a.geral.mais_criados ? `<br><span class="text-xs text-slate-600 dark:text-slate-400">Mais projetos criados: ${lider(a.geral.mais_criados, '', 'projetos')} · mais aprovados: ${lider(a.geral.mais_aprovados, 'nenhum no período', 'aprovados')}</span>` : ''}`;
+        $('autoriaNotas').innerHTML = a.notas.map((n) => `<li>${esc(n)}</li>`).join('') +
+            `<li>Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(a.fonte.url))}">${esc(a.fonte.nome)}</a>. Dados coletados em ${esc(fmtDataHora(a.gerado_em))}.</li>`;
+        desenharGraficoTemas(a); desenharAutores(); desenharParadas();
+        preencherIndicadores();
+        if (POL.id) abrirPolitico(POL.id, POL.tema);
+        else if ($('buscaPolitico').value.trim().length >= 2) buscarPolitico();
+    } catch (e) {
+        if (minha !== reqAutoria) return;
+        P.autoria = null; preencherIndicadores();
+        $('autoria').classList.add('hidden');
+    }
+}
+
+async function buscarPolitico() {
+    const q = $('buscaPolitico').value.trim();
+    if (q.length < 2) { $('resPolitico').innerHTML = ''; return; }
+    try {
+        const p = paramsPeriodo(); p.set('q', q);
+        const r = await api('/api/autoria/politicos?' + p);
+        $('resPolitico').innerHTML = r.itens.length
+            ? `<ul class="divide-y divide-slate-200 dark:divide-slate-700">${r.itens.map((d) => `<li class="py-1.5 text-sm flex flex-wrap items-baseline gap-x-2">
+                ${botaoPolitico(d)} <span class="text-xs text-slate-500">${nf(d.criados)} criados · ${nf(d.aprovados)} aprovados</span></li>`).join('')}</ul>`
+            : '<p class="text-sm text-slate-500">Nenhum(a) deputado(a) com projetos encontrado(a). Confira a grafia ou tente a sigla do estado.</p>';
+    } catch (e) { $('resPolitico').innerHTML = mensagemErro(e); }
+}
+
+async function abrirPolitico(id, tema = '') {
+    POL.id = id; POL.tema = tema;
+    const p = paramsPeriodo(); if (tema) p.set('tema', tema);
+    try {
+        const r = await api(`/api/autoria/politicos/${id}?` + p);
+        const pol = r.politico;
+        $('projPolitico').innerHTML = `<div class="rounded-xl border border-slate-200 dark:border-slate-700 p-4">
+            <div class="flex items-start justify-between gap-3"><div>
+                <h3 class="font-bold">${esc(pol.nome)} <span class="font-normal text-slate-500">(${esc(pol.partido)}-${esc(pol.uf)})</span></h3>
+                <p class="text-sm">${nf(r.criados)} projeto(s) criado(s) · ${nf(r.aprovados)} aprovado(s) no período</p></div>
+                <button type="button" data-fechar-pol class="text-xs text-slate-500 underline">fechar</button></div>
+            <label class="block text-xs font-semibold mt-3">Filtrar por tema
+                <select id="temaPolitico" class="mt-1 block bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-sm font-normal">
+                    <option value="">Todos os temas</option>${r.temas.map((t) => `<option value="${t.cod}" ${String(t.cod) === String(tema) ? 'selected' : ''}>${esc(t.nome)} (${nf(t.criados)})</option>`).join('')}</select></label>
+            ${r.paradas.length ? `<p class="text-xs text-slate-600 dark:text-slate-400 mt-3"><b>Onde estão os que não viraram lei:</b> ${r.paradas.slice(0, 5).map((x) => `${esc(x.sigla || x.onde)} (${nf(x.projetos)})`).join(' · ')}</p>` : ''}
+            ${r.total_filtrado > r.limite ? `<p class="text-xs text-slate-500 mt-2">Mostrando os ${nf(r.limite)} mais recentes de ${nf(r.total_filtrado)}.</p>` : ''}
+            <ul class="mt-3 divide-y divide-slate-100 dark:divide-slate-700 max-h-[28rem] overflow-auto">${r.projetos.length ? r.projetos.map((x) => `<li class="py-2.5 text-sm">
+                <div class="flex flex-wrap items-center gap-2"><a class="font-semibold underline" target="_blank" rel="noopener" href="${esc(urlSegura(x.url))}">${esc(x.ident)}</a>
+                    <span class="text-xs text-slate-500">${esc(fmtData(x.data))}</span>
+                    ${x.aprovado ? '<span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">Virou lei</span>'
+                        : `<span class="text-[11px] text-slate-500">${esc(x.situacao || 'Em tramitação')}</span>`}</div>
+                <p class="text-xs text-slate-600 dark:text-slate-400 mt-0.5">${esc(x.ementa)}</p>
+                <p class="text-[11px] text-slate-500 mt-0.5"><b>Autoria:</b> ${esc(x.autores.join(', ') || 'não informada')}</p>
+                ${x.aprovado ? '' : `<p class="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5"><i class="fa-solid fa-location-dot mr-1 text-slate-400" aria-hidden="true"></i><b>Parou em:</b> ${esc(x.parada.onde)}${x.situacao ? ` · ${esc(x.situacao)}` : ''}${x.ultima_movimentacao ? ` · última movimentação em ${esc(fmtData(x.ultima_movimentacao))}` : ''}</p>`}
+                ${x.temas.length ? `<p class="text-[11px] text-slate-400 mt-0.5">${esc(x.temas.join(' · '))}</p>` : ''}</li>`).join('') : '<li class="py-3 text-sm text-slate-500">Nenhum projeto neste tema e período.</li>'}</ul></div>`;
+        $('projPolitico').scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    } catch (e) { $('projPolitico').innerHTML = mensagemErro(e); }
+}
+$('buscaPolitico').addEventListener('input', debounce(buscarPolitico, 250));
+document.addEventListener('click', (ev) => {
+    const b = ev.target.closest && ev.target.closest('[data-pol]');
+    if (b) { abrirPolitico(Number(b.dataset.pol)); return; }
+    if (ev.target.closest && ev.target.closest('[data-fechar-pol]')) { POL.id = null; $('projPolitico').innerHTML = ''; }
+});
+document.addEventListener('change', (ev) => { if (ev.target.id === 'temaPolitico') abrirPolitico(POL.id, ev.target.value); });
+document.getElementById('btnTema')?.addEventListener('click', () => setTimeout(() => { if (P.autoria) { desenharGraficoTemas(P.autoria); desenharAutores(); desenharParadas(); } }, 50));
+
 /* ====================================================================== *
  *  Inicialização
  * ====================================================================== */
@@ -613,6 +822,8 @@ async function iniciar() {
         if (P.perfil && !perfis.some((p) => p.id === P.perfil)) P.perfil = '';
     } catch (e) {
         $('lista').innerHTML = mensagemErro(e); $('contagem').textContent = '';
+        // A autoria dos projetos da Câmara vem de arquivos, não do banco: segue disponível mesmo sem ele.
+        renderPeriodo(); carregarAutoria();
         return;
     }
     $('perfilSelect').innerHTML = '<option value="">Todos os perfis</option>' + P.perfis.map((p) => `<option value="${esc(p.id)}">${esc(p.nome)}</option>`).join('');

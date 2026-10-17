@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventário de tributos — ImpactoCidadão</title>
+    <meta name="description" content="Impostos, contribuições e taxas do Brasil, por esfera de governo, com a arrecadação de cada um e o caminho do dinheiro.">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="assets/tailwind-config.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Inter', system-ui, sans-serif; }
+        :focus-visible { outline: 2px solid #A92823; outline-offset: 2px; }
+        .elo { transition: opacity .15s; }
+        .sk-t { paint-order: stroke fill; stroke: #fff; stroke-width: 3px; stroke-linejoin: round; }
+        .dark .sk-t { stroke: #1e293b; }
+        .elo:hover { opacity: .85 !important; }
+    </style>
+    <link rel="stylesheet" href="assets/brutalista.css">
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-full flex flex-col transition-colors duration-200">
+
+<a href="#conteudo" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-white focus:text-slate-900 focus:p-3">Ir para o conteúdo</a>
+<div id="cabecalho"></div>
+
+<main id="conteudo" class="max-w-7xl mx-auto px-4 sm:px-6 pt-6 pb-10 flex-grow w-full">
+    <h1 class="text-2xl font-extrabold tracking-tight">Inventário de tributos do Brasil</h1>
+    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Quem cobra o quê, quanto arrecada e para onde vai o dinheiro. Uma versão simplificada: nem todo tributo existe em todo lugar, e taxas e regras variam entre estados e municípios.</p>
+
+    <div id="barraContexto" class="mt-4"></div>
+
+    <div class="mt-4 flex flex-wrap items-center gap-3">
+        <div class="inline-flex rounded-xl p-1 bg-slate-200/70 dark:bg-slate-800" role="group" aria-label="Forma de visualizar">
+            <button id="vistaTabela" type="button" class="px-3.5 py-2 rounded-lg text-sm font-semibold"><i class="fa-solid fa-table mr-1.5" aria-hidden="true"></i>Tabela</button>
+            <button id="vistaSankey" type="button" class="px-3.5 py-2 rounded-lg text-sm font-semibold"><i class="fa-solid fa-diagram-project mr-1.5" aria-hidden="true"></i>Diagrama (Sankey)</button>
+        </div>
+        <span id="periodos" class="text-xs text-slate-500 dark:text-slate-400"></span>
+    </div>
+
+    <!-- ================= TABELA ================= -->
+    <div id="painelTabela" class="mt-4">
+        <div class="flex flex-wrap items-center gap-2 text-sm">
+            <div class="relative flex-grow min-w-[12rem] max-w-md">
+                <label for="busca" class="sr-only">Buscar tributo</label>
+                <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400 text-xs" aria-hidden="true"></i>
+                <input id="busca" type="search" maxlength="80" autocomplete="off" placeholder="Buscar: IPTU, combustível, herança…"
+                       class="w-full pl-8 pr-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 focus:outline-none">
+            </div>
+            <div id="chipsTipo" class="flex flex-wrap gap-1.5" role="group" aria-label="Tipo de cobrança"></div>
+            <span id="contagem" class="ml-auto text-xs text-slate-500" aria-live="polite"></span>
+        </div>
+        <div id="chipsEsfera" class="mt-2 flex flex-wrap gap-1.5" role="group" aria-label="Quem cobra"></div>
+        <div id="estado" class="mt-4"></div>
+        <div id="inventario" class="mt-4 space-y-8"></div>
+    </div>
+
+    <!-- ================= SANKEY ================= -->
+    <div id="painelSankey" class="mt-4 hidden">
+        <h2 id="tituloSankey" class="text-xl font-bold"></h2>
+        <div id="perguntas" class="mt-3 flex flex-wrap gap-2" role="group" aria-label="Escolha uma pergunta"></div>
+        <div class="mt-2 flex flex-wrap items-center gap-2 text-xs text-slate-500">
+            <span>Ou veja por esfera de governo:</span>
+            <div id="seletorEsfera" class="inline-flex rounded-xl p-1 bg-slate-200/70 dark:bg-slate-800" role="radiogroup" aria-label="Esfera de governo"></div>
+            <div id="opcaoDestino" class="hidden inline-flex rounded-xl p-1 bg-slate-200/70 dark:bg-slate-800" role="radiogroup" aria-label="Como mostrar as despesas do estado"></div>
+        </div>
+        <p id="respostaSankey" class="mt-3 rounded-xl bg-brand-50 dark:bg-brand-950/40 border border-brand-100 dark:border-brand-900 px-4 py-3 text-sm font-medium" aria-live="polite"></p>
+        <div id="estadoSankey" class="mt-3" aria-live="polite"></div>
+        <div id="caixasSankey" class="mt-3 grid md:grid-cols-2 gap-3"></div>
+        <div id="legendaSankey" class="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs"></div>
+        <div class="mt-3 overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-3 text-slate-800 dark:text-slate-100">
+            <div id="sankey" class="min-w-[900px]"></div>
+        </div>
+        <p id="notaSankey" class="text-[11px] text-slate-500 dark:text-slate-400 mt-2"></p>
+        <div id="cadeiaRepasses" class="mt-6"></div>
+    </div>
+
+    <section class="mt-10 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 text-sm">
+        <h2 class="font-bold text-lg">Como ler este inventário</h2>
+        <ul class="mt-2 list-disc pl-5 space-y-1 text-slate-600 dark:text-slate-400">
+            <li><b>Imposto:</b> cobrado sem uma contrapartida direta do governo ao contribuinte.</li>
+            <li><b>Taxa:</b> ligada a um serviço público específico e divisível ou ao poder de fiscalização do Estado.</li>
+            <li><b>Contribuição:</b> tributo com uma finalidade definida, como a seguridade social ou a iluminação pública.</li>
+            <li><b>Outras cobranças:</b> aparecem no dia a dia, mas não são tributos (como o FGTS, os pedágios e as multas).</li>
+            <li><b>Arrecadação:</b> federal vem do Resultado do Tesouro Nacional (Governo Central, últimos 12 meses). Estadual e municipal vêm do RREO (SICONFI) do estado e da cidade escolhidos, já <b>líquidas de repasses e do Fundeb</b>, por isso são menores que a arrecadação bruta. “—” indica que a fonte aberta não traz aquele tributo.</li>
+            <li>É uma lista de orientação, não substitui a legislação nem a consulta a um contador. “Base legal” indica o dispositivo da Constituição ou da lei de referência, quando há um claro.</li>
+        </ul>
+        <p class="mt-3">Quer ver para onde vai o que você paga? Use a tela <a class="underline text-brand-700 dark:text-brand-400" href="orcamento.html">Para onde vai o seu imposto</a>.</p>
+    </section>
+</main>
+
+<div id="rodape"></div>
+
+<script src="assets/comum.js"></script>
+<script>
+renderLayout('tributos');
+
+const ESFERA_COR = { Federal: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-950 dark:text-yellow-300', Estadual: 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300',
+    Municipal: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300', 'Estadual e Municipal': 'bg-teal-100 text-teal-800 dark:bg-teal-950 dark:text-teal-300',
+    Mista: 'bg-violet-100 text-violet-800 dark:bg-violet-950 dark:text-violet-300', 'Variável': 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300' };
+const TIPOS = ['Imposto', 'Contribuição', 'Taxa', 'Outras cobranças'];
+const ESTADUAIS = new Set(['ICMS', 'IPVA', 'ITCMD']);
+const MUNICIPAIS = new Set(['IPTU', 'ISS', 'ITBI']);
+let GRUPOS = [];
+let A = null;                // arrecadação (API)
+let ctx = null;              // barra de contexto
+const F = { tipo: '', esfera: '', q: '', vista: ler('ic_tributos_vista', 'tabela'), sankeyEsfera: 'federal', pergunta: 'origem' };
+const norm = (t) => String(t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+const reaisCurto = (n) => {
+    if (n == null) return '—';
+    const v = Math.abs(n), s = n < 0 ? '−' : '';
+    if (v >= 1e12) return `${s}R$ ${(v / 1e12).toLocaleString('pt-BR', { maximumFractionDigits: 2 })} tri`;
+    if (v >= 1e9) return `${s}R$ ${(v / 1e9).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} bi`;
+    if (v >= 1e6) return `${s}R$ ${(v / 1e6).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} mi`;
+    return brl(n);
+};
+const municipio = () => (ctx && ctx.municipio) || null;
+
+/* ---------- alternar tabela / diagrama ---------- */
+function vista() {
+    const sank = F.vista === 'sankey';
+    $('painelTabela').classList.toggle('hidden', sank); $('painelSankey').classList.toggle('hidden', !sank);
+    const on = 'bg-white dark:bg-slate-700 shadow text-brand-700 dark:text-brand-300', off = 'text-slate-500';
+    $('vistaTabela').className = `px-3.5 py-2 rounded-lg text-sm font-semibold ${sank ? off : on}`;
+    $('vistaSankey').className = `px-3.5 py-2 rounded-lg text-sm font-semibold ${sank ? on : off}`;
+    $('vistaTabela').setAttribute('aria-pressed', String(!sank)); $('vistaSankey').setAttribute('aria-pressed', String(sank));
+    if (sank) desenharSankey();
+}
+$('vistaTabela').addEventListener('click', () => { F.vista = 'tabela'; guardar('ic_tributos_vista', F.vista); vista(); });
+$('vistaSankey').addEventListener('click', () => { F.vista = 'sankey'; guardar('ic_tributos_vista', F.vista); vista(); });
+
+/* ---------- tabela ---------- */
+function chips() {
+    const chip = (ativo, rot, attr) => `<button type="button" ${attr} aria-pressed="${ativo}" class="px-3 py-1.5 rounded-full text-xs font-semibold border ${ativo
+        ? 'bg-brand-600 border-brand-600 text-white' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-brand-400'}">${esc(rot)}</button>`;
+    $('chipsTipo').innerHTML = chip(!F.tipo, 'Todos os tipos', 'data-tipo=""') + TIPOS.map((t) => chip(F.tipo === t, t, `data-tipo="${esc(t)}"`)).join('');
+    const esferas = ['Federal', 'Estadual', 'Municipal'];
+    $('chipsEsfera').innerHTML = chip(!F.esfera, 'Quem cobra: todos', 'data-esfera=""') + esferas.map((e) => chip(F.esfera === e, e, `data-esfera="${e}"`)).join('');
+}
+$('chipsTipo').addEventListener('click', (ev) => { const b = ev.target.closest('[data-tipo]'); if (b) { F.tipo = b.dataset.tipo; chips(); desenhar(); } });
+$('chipsEsfera').addEventListener('click', (ev) => { const b = ev.target.closest('[data-esfera]'); if (b) { F.esfera = b.dataset.esfera; chips(); desenhar(); } });
+$('busca').addEventListener('input', debounce((ev) => { F.q = norm(ev.target.value.trim()); desenhar(); }, 120));
+
+function celulaArrecadacao(i) {
+    if (!i.arrec_id) return '<span class="text-slate-400">—</span>';
+    const fonte = ESTADUAIS.has(i.arrec_id) ? 'estadual' : MUNICIPAIS.has(i.arrec_id) ? 'municipal' : 'federal';
+    if ((fonte === 'estadual' || fonte === 'municipal') && !municipio()) return '<span class="text-xs text-slate-400">Escolha a cidade</span>';
+    const bloco = A && A[fonte];
+    const v = bloco && bloco.valores ? bloco.valores[i.arrec_id] : null;
+    if (v == null) return `<span class="text-slate-400">${A ? '—' : '…'}</span>`;
+    return `<span class="font-semibold whitespace-nowrap">${esc(reaisCurto(v))}</span>${i.arrec_nota ? `<span class="block text-[11px] text-slate-400 font-normal">${esc(i.arrec_nota)}</span>` : ''}`;
+}
+
+function desenhar() {
+    let total = 0;
+    const html = GRUPOS.map((g) => {
+        if (F.tipo && g.tipo !== F.tipo) return '';
+        if (F.esfera && !(g.esfera.includes(F.esfera) || g.esfera === 'Mista')) return '';
+        const itens = g.itens.filter((i) => !F.q || norm([i.sigla, i.nome, i.onde, g.titulo].join(' ')).includes(F.q));
+        if (!itens.length) return '';
+        total += itens.length;
+        return `<section aria-labelledby="g-${esc(g.id)}">
+            <div class="flex flex-wrap items-center gap-2"><h2 id="g-${esc(g.id)}" class="text-lg font-bold">${esc(g.titulo)}</h2>
+                <span class="px-2.5 py-1 rounded-full text-[11px] font-bold ${ESFERA_COR[g.esfera] || ESFERA_COR['Variável']}">${esc(g.esfera)}</span>
+                <span class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">${esc(g.tipo)}</span></div>
+            ${g.nota ? `<p class="text-xs text-slate-500 dark:text-slate-400 mt-1">${esc(g.nota)}</p>` : ''}
+            <div class="mt-2 overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+                <table class="w-full text-sm"><caption class="sr-only">${esc(g.titulo)}</caption>
+                <thead class="bg-slate-100 dark:bg-slate-700/60 text-left text-xs uppercase tracking-wide text-slate-500 dark:text-slate-300">
+                    <tr><th scope="col" class="p-3 w-52">Tributo</th><th scope="col" class="p-3">Onde ou quando é cobrado</th><th scope="col" class="p-3 w-40 text-right">Arrecadado (12 meses)</th><th scope="col" class="p-3 w-44">Base legal</th></tr></thead>
+                <tbody>${itens.map((i) => `<tr class="border-t border-slate-100 dark:border-slate-700 align-top">
+                    <th scope="row" class="p-3 text-left"><span class="font-bold">${esc(i.sigla)}</span><span class="block text-xs font-normal text-slate-500 dark:text-slate-400">${esc(i.nome)}</span></th>
+                    <td class="p-3 text-slate-700 dark:text-slate-300">${esc(i.onde)}</td>
+                    <td class="p-3 text-right">${celulaArrecadacao(i)}</td>
+                    <td class="p-3 text-xs text-slate-500 dark:text-slate-400">${i.base_legal ? esc(i.base_legal) : '—'}</td></tr>`).join('')}</tbody></table></div>
+        </section>`;
+    }).join('');
+    $('inventario').innerHTML = html || '<p class="text-sm text-slate-500">Nenhum tributo encontrado com estes filtros.</p>';
+    $('contagem').textContent = `${total} cobrança${total === 1 ? '' : 's'}`;
+}
+
+function periodos() {
+    if (!A) { $('periodos').textContent = ''; return; }
+    const p = [];
+    if (A.federal) p.push(`Federal: ${A.federal.periodo} (Tesouro Nacional)`);
+    if (A.estadual) p.push(`Estadual: ${A.estadual.periodo}`);
+    if (A.municipal) p.push(`Municipal (${A.municipal.instituicao || ''}): ${A.municipal.periodo}`);
+    $('periodos').textContent = p.join(' · ');
+}
+
+async function carregarArrecadacao() {
+    const m = municipio();
+    $('estado').innerHTML = '';
+    try {
+        A = await api('/api/tributos/arrecadacao' + (m ? '?municipio=' + encodeURIComponent(m.codigo) : ''));
+        if (A.erros.length) $('estado').innerHTML = `<div class="text-xs text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 rounded-lg px-3 py-2">${A.erros.map(esc).join(' ')}</div>`;
+    } catch (e) { A = { federal: null, estadual: null, municipal: null, erros: [] }; $('estado').innerHTML = mensagemErro(e); }
+    periodos(); desenhar();
+}
+
+/* ---------- dicas em linguagem simples ---------- */
+const DICAS = [
+    ['Cide', 'Contribuição cobrada sobre combustíveis; por lei, financia infraestrutura de transportes e projetos ambientais do setor de petróleo e gás.'],
+    ['ICMS', 'Imposto estadual sobre a venda de mercadorias e alguns serviços. Uma parte vai para as prefeituras.'],
+    ['IPI', 'Imposto federal sobre produtos industrializados.'], ['IOF', 'Imposto federal sobre crédito, câmbio, seguros e investimentos.'],
+    ['Cofins', 'Contribuição federal sobre o faturamento das empresas, para financiar a seguridade social.'],
+    ['PIS/Pasep', 'Contribuição federal sobre o faturamento das empresas; financia o seguro-desemprego e o abono salarial.'],
+    ['CSLL', 'Contribuição sobre o lucro das empresas, para financiar a seguridade social.'],
+    ['FPE', 'Fundos de Participação: parte do Imposto de Renda e do IPI que a lei manda dividir entre estados (FPE) e municípios (FPM).'],
+    ['Fundeb', 'Fundo que reúne verbas de estados e municípios, com complemento da União, para a educação básica.'],
+    ['royalties', 'Pagamento das empresas que exploram petróleo, gás e minérios, dividido com estados e municípios.'],
+    ['Salário-Educação', 'Contribuição das empresas que financia a educação básica pública.'],
+    ['aposentadoria', 'Contribuições de trabalhadores e empresas que pagam as aposentadorias e pensões do INSS.'],
+    ['Conta no vermelho', 'Quando o governo gasta mais do que arrecada (sem contar os juros), a diferença é coberta com dívida pública.'],
+    ['Repasse a Estados', 'Parte da arrecadação federal que a lei obriga a dividir com estados e prefeituras.'],
+    ['Dinheiro reservado', 'Em contabilidade pública, “despesa empenhada”: o governo separou o dinheiro para um gasto, mesmo que ainda não tenha pago.'],
+    ['Dinheiro arrecadado', 'Em contabilidade pública, “receita realizada”: o que já entrou no cofre.'],
+];
+const dicaPara = (nome) => { const n = norm(nome); const d = DICAS.find(([k]) => n.includes(norm(k))); return d ? d[1] : ''; };
+const ajuda = (txt) => (txt ? ` <span class="inline-flex items-center justify-center w-4 h-4 rounded-full bg-slate-200 dark:bg-slate-700 text-[10px] font-bold text-slate-600 dark:text-slate-300 cursor-help align-middle" tabindex="0" role="note" title="${esc(txt)}" aria-label="${esc(txt)}">?</span>` : '');
+
+/* ---------- Sankey (SVG feito à mão: origem → ente → destino) ---------- */
+function sankeySvg(esq, centro, dir, saldo) {
+    // esq/dir: [{nome, valor, cor?, detalhe?}]; saldo: {lado:'esq'|'dir', valor, rotulo} opcional (equilibra os dois lados)
+    const L = esq.filter((x) => x.valor > 0), R2 = dir.filter((x) => x.valor > 0);
+    if (saldo && saldo.valor > 0) (saldo.lado === 'esq' ? L : R2).push({ nome: saldo.rotulo, valor: saldo.valor, cor: '#64748b', saldo: true });
+    const somaL = L.reduce((a, x) => a + x.valor, 0), somaR = R2.reduce((a, x) => a + x.valor, 0), total = Math.max(somaL, somaR);
+    const W = 1400, xE = 480, xC = 690, xD = 920, nw = 20, gap = 14, pad = 24, hMin = 22;
+    const linhas = Math.max(L.length, R2.length);
+    const H0 = Math.max(660, linhas * 44 + 2 * pad);
+    const util = H0 - 2 * pad - gap * (Math.max(L.length, R2.length) - 1);
+    const esc_ = total > 0 ? util / total : 0;   // px por real (valores em reais: da ordem de 1e-10)
+    const alt = (v) => Math.max(v * esc_, hMin);
+    const pct = (v) => `${((v / total) * 100).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%`;
+    const empilha = (lista) => { let y = pad; return lista.map((n) => { const h = alt(n.valor); const o = { ...n, y, h }; y += h + gap; return o; }); };
+    const Ln = empilha(L), Rn = empilha(R2);
+    const fundo = Math.max(Ln.length ? Ln[Ln.length - 1].y + Ln[Ln.length - 1].h : 0, Rn.length ? Rn[Rn.length - 1].y + Rn[Rn.length - 1].h : 0);
+    const H = Math.max(H0, fundo + pad);
+    const hCentro = fundo - pad;
+    const topC = pad;
+    let oc = topC;
+    const elos = [];
+    for (const n of Ln) {   // esquerda → centro
+        const h = n.h, y0 = n.y + h / 2, y1 = oc + h / 2; oc += h;
+        elos.push(`<path class="elo" d="M${xE + nw},${y0} C${(xE + nw + xC) / 2},${y0} ${(xE + nw + xC) / 2},${y1} ${xC},${y1}" stroke="${n.cor}" stroke-opacity="${n.saldo ? 0.45 : 0.55}" stroke-width="${h}" fill="none"><title>${esc(n.nome)}: ${esc(reaisCurto(n.valor))} (${pct(n.valor)})</title></path>`);
+    }
+    oc = topC;
+    for (const n of Rn) {   // centro → direita
+        const h = n.h, y0 = oc + h / 2, y1 = n.y + h / 2; oc += h;
+        elos.push(`<path class="elo" d="M${xC + nw},${y0} C${(xC + nw + xD) / 2},${y0} ${(xC + nw + xD) / 2},${y1} ${xD},${y1}" stroke="${n.saldo ? '#64748b' : (n.cor || '#8F8F8B')}" stroke-opacity="${n.cor && n.cor !== '#8F8F8B' && !n.saldo ? 0.6 : 0.45}" stroke-width="${h}" fill="none"><title>${esc(n.nome)}: ${esc(reaisCurto(n.valor))} (${pct(n.valor)})${n.detalhe ? ' — ' + esc(n.detalhe) : ''}</title></path>`);
+    }
+    const rotulo = (x, y, h, ancora, nome, valor, detalhe) => {
+        const tip = dicaPara(nome) || detalhe || '';
+        return `<text class="sk-t" x="${x}" y="${y + h / 2}" text-anchor="${ancora}" dominant-baseline="middle" fill="currentColor" font-size="14.5"><title>${esc(nome)}: ${esc(reaisCurto(valor))} (${pct(valor)})${tip ? ' — ' + esc(tip) : ''}</title><tspan font-weight="700">${esc(nome.length > 42 ? nome.slice(0, 41) + '…' : nome)}</tspan><tspan dx="8" font-size="13" font-weight="500" fill-opacity="0.9">${esc(reaisCurto(valor))} · ${pct(valor)}</tspan></text>`;
+    };
+    const nosE = Ln.map((n) => `<rect x="${xE}" y="${n.y}" width="${nw}" height="${n.h}" rx="2" fill="${n.cor}"/>` + rotulo(xE - 8, n.y, n.h, 'end', n.nome, n.valor, n.detalhe)).join('');
+    const nosD = Rn.map((n) => `<rect x="${xD}" y="${n.y}" width="${nw}" height="${n.h}" rx="2" fill="${n.saldo ? '#64748b' : (n.cor && n.cor !== '#8F8F8B' ? n.cor : '#475569')}"/>` + rotulo(xD + nw + 8, n.y, n.h, 'start', n.nome, n.valor, n.detalhe)).join('');
+    const centroSvg = `<rect x="${xC}" y="${topC}" width="${nw}" height="${hCentro}" rx="2" fill="#0f172a"/>
+        <text x="${xC + nw / 2}" y="${topC + hCentro / 2}" transform="rotate(-90 ${xC + nw / 2} ${topC + hCentro / 2})" text-anchor="middle" dominant-baseline="middle" fill="#fff" font-size="14" font-weight="700" dy="-0.1">${esc(centro)}</text>`;
+    return `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Diagrama de Sankey: de onde vem o dinheiro, ${esc(centro)} e para onde vai">${elos.join('')}${nosE}${nosD}${centroSvg}</svg>`;
+}
+
+const COR_UNIAO = '#eab308', COR_ESTADO = '#2563eb';
+let R = null;   // repasses entre os entes (API)
+const FINALIDADES = {
+    '2.1': ['Para prefeituras e estados (FPE e FPM)', 'Parte do Imposto de Renda e do IPI que a lei manda dividir entre estados e municípios (inclui a parcela do IPI das exportações).'],
+    '2.2': ['Para o desenvolvimento regional (Norte, Nordeste e Centro-Oeste)', 'Fundos constitucionais que financiam empreendedores e empresas dessas regiões.'],
+    '2.3': ['Para escolas e educação (Salário-Educação)', 'Contribuição das empresas dividida com estados e municípios para a educação básica.'],
+    '2.4': ['Para quem produz petróleo, gás e minérios (royalties)', 'Parte do que as empresas pagam pela exploração de recursos naturais é dividida com estados e municípios.'],
+    '2.5': ['Para estradas e transportes (Cide-Combustíveis)', 'Parte da contribuição sobre combustíveis repassada a estados e municípios, para infraestrutura de transportes.'],
+    '2.6': ['Outras verbas obrigatórias', 'Demais repartições previstas em lei.'],
+};
+async function carregarRepasses() {
+    const m = municipio();
+    try { R = await api('/api/tributos/repasses' + (m ? '?municipio=' + encodeURIComponent(m.codigo) : '')); } catch (_) { R = null; }
+    cadeia();
+}
+// cartão em 3 níveis: de onde → para onde · valor · frase
+function cartaoRepasse(origem, destino, valor, frase, cor, tip) {
+    return `<div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 overflow-hidden" style="border-top:4px solid ${cor}">
+        <div class="p-4"><p class="text-[11px] font-bold tracking-wide uppercase text-slate-500 dark:text-slate-400">${esc(origem)} <span aria-hidden="true">➜</span> ${esc(destino)}</p>
+            <p class="text-3xl font-extrabold mt-1">${esc(reaisCurto(valor))}${ajuda(tip)}</p>
+            <p class="text-sm text-slate-700 dark:text-slate-300 mt-2 leading-snug">${frase}</p></div></div>`;
+}
+function cadeia() {
+    const box = $('cadeiaRepasses');
+    if (!R) { box.innerHTML = ''; return; }
+    const m = municipio(), e = R.estado, mu = R.municipio, u = R.uniao;
+    const p1 = (v, t) => `${((100 * v) / t).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%`;
+    const cards = [];
+    if (u) cards.push(cartaoRepasse('Do Governo Federal', 'para estados e prefeituras', u.transferido_a_estados_e_municipios,
+        `Dinheiro que o Governo Federal reservou para repassar a estados e prefeituras (${esc(u.periodo)}).`, COR_UNIAO, 'Inclui as verbas obrigatórias (FPE e FPM), o SUS, o Fundeb e convênios.'));
+    if (e) cards.push(cartaoRepasse('Do Governo Federal', `para ${e.instituicao.replace('Governo do ', 'o ')}`, e.da_uniao,
+        `Isso representa <b>${p1(e.da_uniao, e.receita_total)}</b> de tudo o que o estado arrecadou no período.`, COR_UNIAO, ''));
+    if (e) cards.push(cartaoRepasse(e.instituicao.replace('Governo do ', 'Do '), 'para as prefeituras do estado', e.aos_municipios,
+        `Equivale a <b>${p1(e.aos_municipios, e.despesa_total)}</b> do dinheiro que o estado reservou para gastar (inclui a parte do ICMS e do IPVA das cidades).`, COR_ESTADO, 'A lei manda dividir com as cidades parte do ICMS e do IPVA.'));
+    if (mu) cards.push(cartaoRepasse('Do Governo Federal', `para a ${mu.instituicao.replace('Prefeitura Municipal de ', 'Prefeitura de ')}`, mu.da_uniao,
+        `Isso representa <b>${p1(mu.da_uniao, mu.receita_total)}</b> de tudo o que a cidade arrecadou no período (para saúde, escolas, asfalto…).`, COR_UNIAO, ''));
+    if (mu) cards.push(cartaoRepasse(`Do ${m ? 'Estado de ' + m.uf : 'Estado'}`, `para a ${mu.instituicao.replace('Prefeitura Municipal de ', 'Prefeitura de ')}`, mu.do_estado,
+        `Isso representa <b>${p1(mu.do_estado, mu.receita_total)}</b> de tudo o que a cidade arrecadou no período.`, COR_ESTADO, 'Principalmente a cota-parte do ICMS e do IPVA.'));
+    const total = R.rtn ? R.rtn.total : 0;
+    const finalidade = R.rtn && R.rtn.itens.length ? `<div class="mt-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5">
+        <h3 class="font-bold">Para onde vai a parte da arrecadação federal que a lei manda repartir</h3>
+        <p class="text-xs text-slate-500 dark:text-slate-400">Brasil, ${esc(R.rtn.periodo)} · total <b>${esc(reaisCurto(total))}</b> (Tesouro Nacional)</p>
+        <ul class="mt-3 space-y-3">${R.rtn.itens.slice().sort((a, b) => b.valor - a.valor).map((i) => { const [rot, tip] = FINALIDADES[i.codigo] || [i.nome, '']; const pc = total ? (100 * i.valor) / total : 0;
+            return `<li><div class="flex justify-between gap-3 text-sm"><span class="font-medium">${esc(rot)}${ajuda(tip)}</span>
+                <span class="font-semibold whitespace-nowrap">${esc(reaisCurto(i.valor))} <span class="text-xs font-normal text-slate-500">(${pc.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%)</span></span></div>
+                <div class="mt-1 h-2.5 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden"><div class="h-full bg-amber-500" style="width:${Math.max(1, pc)}%"></div></div></li>`; }).join('')}</ul></div>` : '';
+    box.innerHTML = `<h3 class="text-lg font-bold">Caminho do dinheiro público</h3>
+        <p class="text-sm text-slate-500 dark:text-slate-400">Quanto cada nível de governo repassa ao seguinte${m ? '' : ' (escolha a cidade para ver o seu estado e a sua prefeitura)'}.</p>
+        <div class="mt-3 grid md:grid-cols-2 xl:grid-cols-3 gap-3">${cards.join('')}</div>
+        <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-3">Valores acumulados no exercício: “dinheiro arrecadado” é a receita realizada e “dinheiro reservado” é a despesa empenhada, conforme o relatório (RREO) de cada ente. Os repasses do Governo Federal incluem FPE/FPM, SUS, Fundeb e convênios, e pequenas diferenças de classificação entre os relatórios são normais.</p>${finalidade}`;
+}
+
+let reqSankey = 0;
+let destinoEstado = 'areas';
+const PERGUNTAS = () => [['cidade', `Quanto ${municipio() ? municipio().nome : 'a minha cidade'} recebeu?`], ['origem', 'De onde vem o imposto?'], ['gasto', 'Onde o governo mais gasta?']];
+function perguntas() {
+    $('perguntas').innerHTML = PERGUNTAS().map(([id, rot]) => `<button type="button" data-q="${id}" aria-pressed="${F.pergunta === id}"
+        class="px-4 py-2 rounded-full text-sm font-semibold border ${F.pergunta === id ? 'bg-brand-600 border-brand-600 text-white' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-brand-400'}">${esc(rot)}</button>`).join('');
+}
+$('perguntas').addEventListener('click', (ev) => {
+    const b = ev.target.closest('[data-q]'); if (!b) return;
+    F.pergunta = b.dataset.q; F.sankeyEsfera = F.pergunta === 'cidade' ? 'municipal' : 'federal'; desenharSankey();
+});
+function opcoesDestino() {
+    const box = $('opcaoDestino');
+    box.classList.toggle('hidden', F.sankeyEsfera !== 'estadual');
+    if (F.sankeyEsfera !== 'estadual') return;
+    box.innerHTML = [['areas', 'Despesas por área'], ['repasses', 'Repasses às prefeituras']].map(([id, rot]) => `<button type="button" role="radio" aria-checked="${destinoEstado === id}" data-dest="${id}"
+        class="px-3 py-1.5 rounded-lg text-xs font-semibold ${destinoEstado === id ? 'bg-white dark:bg-slate-700 shadow text-brand-700 dark:text-brand-300' : 'text-slate-500'}">${rot}</button>`).join('');
+}
+$('opcaoDestino').addEventListener('click', (ev) => { const b = ev.target.closest('[data-dest]'); if (b) { destinoEstado = b.dataset.dest; desenharSankey(); } });
+const ESFERAS_SANKEY = [['federal', 'Governo Federal'], ['estadual', 'Estado'], ['municipal', 'Prefeitura']];
+function seletorEsfera() {
+    $('seletorEsfera').innerHTML = ESFERAS_SANKEY.map(([id, rot]) => `<button type="button" role="radio" aria-checked="${F.sankeyEsfera === id}" data-sk="${id}"
+        class="px-3.5 py-2 rounded-lg text-sm font-semibold ${F.sankeyEsfera === id ? 'bg-white dark:bg-slate-700 shadow text-brand-700 dark:text-brand-300' : 'text-slate-500'}">${rot}</button>`).join('');
+}
+$('seletorEsfera').addEventListener('click', (ev) => { const b = ev.target.closest('[data-sk]'); if (b) { F.sankeyEsfera = b.dataset.sk; F.pergunta = ''; desenharSankey(); } });
+
+const caixa = (titulo, icone, linhas) => `<div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
+    <p class="font-bold"><i class="fa-solid ${icone} mr-1.5 text-brand-600" aria-hidden="true"></i>${esc(titulo)}</p>
+    <ul class="mt-2 space-y-1.5 text-sm">${linhas.map((l) => `<li>${l}</li>`).join('')}</ul></div>`;
+const pc1 = (v, t) => `${((100 * v) / t).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%`;
+
+async function desenharSankey() {
+    const minha = ++reqSankey;
+    if (!F.pergunta && F.pergunta !== '') F.pergunta = 'origem';
+    perguntas(); seletorEsfera(); opcoesDestino();
+    $('legendaSankey').innerHTML = ''; $('sankey').innerHTML = ''; $('notaSankey').textContent = ''; $('caixasSankey').innerHTML = ''; $('respostaSankey').textContent = '';
+    const m = municipio();
+    const TITULOS = { federal: 'De onde vem o imposto do brasileiro e para onde o Governo Federal envia o dinheiro?',
+        estadual: 'De onde vem o dinheiro do seu estado e para onde ele vai?', municipal: 'De onde vem o dinheiro da sua prefeitura e para onde ele vai?' };
+    $('tituloSankey').textContent = TITULOS[F.sankeyEsfera];
+    if (F.sankeyEsfera !== 'federal' && !m) { $('estadoSankey').innerHTML = '<p class="text-sm text-slate-500">Escolha a sua cidade na barra acima para ver o diagrama do estado e da prefeitura.</p>'; return; }
+    $('estadoSankey').innerHTML = '<p class="text-sm text-slate-500"><i class="fa-solid fa-spinner fa-spin mr-1.5" aria-hidden="true"></i>Consultando o Tesouro Nacional…</p>';
+    try {
+        let esq, dir, saldo, centro, legenda, nota, caixas = [];
+        if (F.sankeyEsfera === 'federal') {
+            const x = await api('/api/tributos/fluxo-federal');
+            if (minha !== reqSankey) return;
+            esq = x.esquerda; centro = x.centro.nome;
+            dir = x.direita.map((d) => ({ ...d, cor: d.nome.startsWith('Repasse') ? COR_UNIAO : '#8F8F8B' }));
+            saldo = { lado: x.saldo.valor > 0 ? 'esq' : 'dir', valor: Math.abs(x.saldo.valor), rotulo: x.saldo.rotulo };
+            legenda = Object.values(x.grupos).map((g) => [g.nome, g.cor]).concat([['Repasses a estados e cidades', COR_UNIAO]]);
+            nota = `${x.periodo} · ${x.unidade}. ${x.nota} Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(x.fonte.url))}">${esc(x.fonte.nome)}</a>.`;
+            const base = dir.reduce((a, d) => a + d.valor, 0), maior = dir.slice().sort((a, b) => b.valor - a.valor)[0], rep = dir.find((d) => d.nome.startsWith('Repasse'));
+            caixas = [
+                caixa('Origem: o que entrou no cofre', 'fa-arrow-right-to-bracket', [
+                    `<b>${esc(reaisCurto(x.centro.receita_total))}</b> arrecadados: impostos sobre compras (consumo), sobre a renda e as contribuições da aposentadoria.`,
+                    x.saldo.valor > 0 ? `<b>Faltou no cofre:</b> ${esc(reaisCurto(x.saldo.valor))} cobertos com dívida pública.${ajuda(dicaPara('Conta no vermelho'))}` : '<b>Sobrou no cofre</b> (superávit).']),
+                caixa('Destino: para onde o dinheiro vai', 'fa-arrow-right-from-bracket', [
+                    `<b>Maior gasto:</b> ${esc(maior.nome)} — ${esc(reaisCurto(maior.valor))} (${pc1(maior.valor, base)})`,
+                    rep ? `<b>Repasse a Estados e Cidades:</b> ${esc(reaisCurto(rep.valor))} (${pc1(rep.valor, base)})${ajuda(dicaPara('Repasse a Estados'))}` : ''])];
+            const topO = x.esquerda.slice().sort((a, b) => b.valor - a.valor).slice(0, 3);
+            if (F.pergunta === 'origem') $('respostaSankey').textContent = `Em 12 meses o Governo Federal arrecadou ${reaisCurto(x.centro.receita_total)}. As maiores fontes: ${topO.map((t) => `${t.nome} (${reaisCurto(t.valor)})`).join('; ')}.`;
+            if (F.pergunta === 'gasto') $('respostaSankey').textContent = `O maior gasto do Governo Federal é com ${maior.nome}: ${reaisCurto(maior.valor)}, ${pc1(maior.valor, base)} do total gasto no período.`;
+        } else {
+            const ente = F.sankeyEsfera === 'estadual' ? Math.floor(m.codigo / 100000) : m.codigo;
+            const d = await api('/api/economia/' + encodeURIComponent(ente));
+            if (minha !== reqSankey) return;
+            const COR = { proprios: '#e11d48', transferencias: '#A92823', outras: '#a16207', credito: '#64748b' };
+            esq = [];
+            const reps = F.sankeyEsfera === 'estadual' ? R && R.estado : R && R.municipio;
+            for (const g of d.nivel2.receitas.grupos) {
+                if (g.id === 'transferencias' && reps) {
+                    const daUniao = Math.min(reps.da_uniao || 0, g.valor);
+                    const doEstado = F.sankeyEsfera === 'municipal' ? Math.min(reps.do_estado || 0, g.valor - daUniao) : 0;
+                    esq.push({ nome: 'Repasses do Governo Federal', valor: daUniao, cor: COR_UNIAO });
+                    if (doEstado > 0) esq.push({ nome: 'Repasses do Estado', valor: doEstado, cor: COR_ESTADO });
+                    esq.push({ nome: 'Outras transferências (Fundeb, SUS, convênios)', valor: g.valor - daUniao - doEstado, cor: COR.transferencias });
+                } else esq.push({ nome: g.nome, valor: g.valor, cor: COR[g.id] || '#64748b' });
+            }
+            if (F.sankeyEsfera === 'estadual' && destinoEstado === 'repasses' && R && R.estado) {
+                const emp = R.estado.despesa_total, rep = Math.min(R.estado.aos_municipios, emp);
+                dir = [{ nome: 'Repasses às prefeituras (ICMS, IPVA e outros)', valor: rep, cor: COR_ESTADO }, { nome: 'Demais gastos do Estado', valor: emp - rep, cor: '#8F8F8B' }];
+            } else {
+                const fun = d.nivel2.despesas.funcoes, top = fun.slice(0, 8);
+                const resto = d.nivel2.despesas.total_liquidado - top.reduce((a, f) => a + f.valor, 0);
+                dir = top.map((f) => ({ nome: f.nome, valor: f.valor, cor: '#8F8F8B' }));
+                if (resto > 0) dir.push({ nome: 'Demais áreas', valor: resto, cor: '#8F8F8B' });
+            }
+            const somaE = esq.reduce((a, x) => a + x.valor, 0), somaD = dir.reduce((a, x) => a + x.valor, 0), dif = Math.abs(somaE - somaD);
+            saldo = dif > 0.01 * Math.max(somaE, somaD) ? { lado: somaE >= somaD ? 'dir' : 'esq', valor: dif, rotulo: somaE >= somaD ? 'Arrecadado e ainda não gasto' : 'Conta no vermelho no período' } : null;
+            centro = d.instituicao || (F.sankeyEsfera === 'estadual' ? 'Governo do Estado' : 'Prefeitura');
+            legenda = [['Repasses do Governo Federal', COR_UNIAO], ['Repasses do Estado', COR_ESTADO], ['Impostos próprios', COR.proprios], ['Outras transferências', COR.transferencias], ['Outras receitas', COR.outras], ['Empréstimos', COR.credito]];
+            nota = `${esc(d.instituicao || '')} — ${esc(d.periodo.rotulo)} (acumulado no exercício). “Dinheiro arrecadado” à esquerda (com os repasses de outros governos separados) e “dinheiro gasto” à direita. Fonte: ${esc(d.fonte)}.`;
+            const base = Math.max(somaE, somaD), maior = dir.slice().sort((a, b) => b.valor - a.valor)[0];
+            const rec = esq.filter((q) => q.nome.startsWith('Repasses'));
+            caixas = [
+                caixa('Origem: o que entrou no cofre', 'fa-arrow-right-to-bracket', [`<b>${esc(reaisCurto(somaE - (saldo && saldo.lado === 'esq' ? saldo.valor : 0)))}</b> arrecadados no período.`]
+                    .concat(rec.map((q) => `<b>${esc(q.nome)}:</b> ${esc(reaisCurto(q.valor))} (${pc1(q.valor, base)})`))),
+                caixa('Destino: para onde o dinheiro vai', 'fa-arrow-right-from-bracket', [`<b>Maior gasto:</b> ${esc(maior.nome)} — ${esc(reaisCurto(maior.valor))} (${pc1(maior.valor, base)})`]
+                    .concat(saldo ? [`<b>${esc(saldo.rotulo)}:</b> ${esc(reaisCurto(saldo.valor))}`] : []))];
+            if (F.pergunta === 'cidade' && R && R.municipio) {
+                const mu = R.municipio;
+                $('respostaSankey').textContent = `${m.nome} recebeu ${reaisCurto(mu.da_uniao)} do Governo Federal e ${reaisCurto(mu.do_estado)} do Estado: juntos, ${pc1(mu.da_uniao + mu.do_estado, mu.receita_total)} de tudo o que a prefeitura arrecadou no período (${mu.periodo}).`;
+            }
+        }
+        $('sankey').innerHTML = sankeySvg(esq, centro, dir, saldo);
+        $('legendaSankey').innerHTML = legenda.map(([n, c]) => `<span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm" style="background:${c}"></span>${esc(n)}${ajuda(dicaPara(n))}</span>`).join('');
+        $('caixasSankey').innerHTML = caixas.join('');
+        $('notaSankey').innerHTML = nota;
+        $('respostaSankey').classList.toggle('hidden', !$('respostaSankey').textContent);
+        $('estadoSankey').innerHTML = '';
+    } catch (e) { if (minha === reqSankey) { $('estadoSankey').innerHTML = mensagemErro(e); } }
+}
+
+(async function iniciar() {
+    chips(); vista();
+    try {
+        const r = await fetch('assets/tributos.json');
+        if (!r.ok) throw new Error(`Erro ${r.status} ao carregar o inventário`);
+        GRUPOS = await r.json();
+        desenhar();
+    } catch (e) { $('estado').innerHTML = mensagemErro(e); }
+    ctx = await montarBarraContexto('barraContexto', async () => { carregarArrecadacao(); await carregarRepasses(); if (F.vista === 'sankey') desenharSankey(); });
+    carregarArrecadacao();
+    carregarRepasses().then(() => { if (F.vista === 'sankey') desenharSankey(); });
+})();
+</script>
+</body>
+</html>
