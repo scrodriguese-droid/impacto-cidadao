@@ -44,7 +44,7 @@ function salvarPrefsParciais(parcial) { guardar('ic_prefs', { ...lerPrefs(), ...
 const NAVEGACAO = [
     { id: 'inicio', paginas: ['inicio'], href: 'index.html', icone: 'fa-house', rotulo: 'Início' },
     { id: 'quem', paginas: ['servicos', 'quem'], href: 'servicos.html', icone: 'fa-magnifying-glass-location', rotulo: 'Quem resolve o quê?' },
-    { id: 'orcamento', paginas: ['economia', 'fiscal', 'orcamento', 'tributos', 'simuladores', 'macro', 'financiamento', 'ciclo'], href: 'economia.html', icone: 'fa-coins', rotulo: 'Orçamento e contas públicas' },
+    { id: 'orcamento', paginas: ['economia', 'fiscal', 'orcamento', 'tesouro', 'tributos', 'simuladores', 'macro', 'financiamento', 'ciclo'], href: 'economia.html', icone: 'fa-coins', rotulo: 'Orçamento e contas públicas' },
     { id: 'politicas', paginas: ['politicas'], href: 'politicas.html', icone: 'fa-landmark', rotulo: 'Leis e projetos' },
     { id: 'bancadas', paginas: ['bancadas'], href: 'bancadas.html', icone: 'fa-people-group', rotulo: 'Bancadas' },
     { id: 'planos', paginas: ['planos'], href: 'planos.html', icone: 'fa-flag', rotulo: 'Eleições: planos de governo' },
@@ -60,6 +60,7 @@ const SUBNAVEGACAO = {
         { id: 'economia', href: 'economia.html', rotulo: '1 · De onde vem e vai' },
         { id: 'orcamento', href: 'orcamento.html', rotulo: '2 · Ciclo e leis' },
         { id: 'fiscal', href: 'economia.html?aba=fiscal', rotulo: '3 · Saúde fiscal e tributos' },
+        { id: 'tesouro', href: 'tesourometro.html', rotulo: '4 · Tesourômetro' },
     ],
 };
 // Telas de aprofundamento da mesma área: ficam numa linha secundária e acendem a aba a que pertencem.
@@ -74,6 +75,7 @@ const APROFUNDAR = {
 };
 
 function renderLayout(paginaAtual) {
+    setTimeout(() => carregarColuna(paginaAtual), 0);   // aba lateral de notas do colunista (assets/coluna.json)
     if (!document.querySelector('link[rel="icon"]')) {
         const ic = document.createElement('link');
         ic.rel = 'icon'; ic.type = 'image/png'; ic.href = 'assets/favicon.png';
@@ -265,4 +267,74 @@ if (window.Chart) {
     Chart.defaults.font.family = "'Inter', system-ui, sans-serif";
     Chart.defaults.font.size = 12;
     Chart.defaults.borderColor = 'rgba(17,17,17,.25)';
+}
+
+/* ---------- A Coluna: notas do colunista numa aba lateral ----------
+ * As notas ficam em assets/coluna.json e são escritas à mão (ver o README). Cada nota pertence a uma página
+ * (`pagina`: id da página, lista de ids ou "*") e pode apontar para um trecho dela (`ancora`: seletor CSS), que
+ * ganha um marcador numerado. Sem notas publicadas para a página, nada aparece. Para ver os rascunhos
+ * (`"exibir": false`), abra a página com ?coluna=rascunho. */
+function textoColuna(t) {
+    const inline = (x) => esc(x)
+        .replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, (_, rot, url) => `<a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(url))}">${rot}</a>`)
+        .replace(/`([^`]+)`/g, '<code>$1</code>')
+        .replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>').replace(/(^|[^*])\*([^*]+)\*/g, '$1<i>$2</i>');
+    return String(t || '').split(/\n\s*\n/).map((par) => par.trim()).filter(Boolean)
+        .map((par) => (par.startsWith('> ') ? `<blockquote>${inline(par.slice(2))}</blockquote>` : `<p>${inline(par)}</p>`)).join('');
+}
+async function carregarColuna(pagina) {
+    let dados;
+    try { const r = await fetch('assets/coluna.json'); if (!r.ok) return; dados = await r.json(); } catch (_) { return; }
+    const rascunho = new URLSearchParams(location.search).get('coluna') === 'rascunho';
+    const daPagina = (n) => n.pagina === '*' || n.pagina === pagina || (Array.isArray(n.pagina) && n.pagina.includes(pagina));
+    const notas = (dados.notas || []).filter((n) => daPagina(n) && (n.exibir !== false || rascunho));
+    if (!notas.length) return;
+    const autor = dados.autor || {};
+    const fmt = (d) => (d ? new Date(d + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' }) : '');
+    const aba = document.createElement('button');
+    aba.type = 'button'; aba.className = 'coluna-aba'; aba.setAttribute('aria-expanded', 'false'); aba.setAttribute('aria-controls', 'colunaGaveta');
+    aba.innerHTML = `A Coluna <span>${notas.length}</span>`;
+    const gaveta = document.createElement('aside');
+    gaveta.id = 'colunaGaveta'; gaveta.className = 'gaveta coluna-gaveta'; gaveta.setAttribute('aria-label', 'A Coluna: notas do colunista'); gaveta.setAttribute('aria-hidden', 'true'); gaveta.tabIndex = -1;
+    gaveta.innerHTML = `<div class="flex items-start justify-between gap-3"><div><p class="coluna-selo">✦ A Coluna</p>
+            <p class="coluna-autor">${esc(autor.nome || 'Colunista')}</p>${autor.assinatura ? `<p class="coluna-assin">${esc(autor.assinatura)}</p>` : ''}</div>
+            <button type="button" data-fechar-coluna class="shrink-0" aria-label="Fechar">Fechar ✕</button></div>
+        <p class="coluna-aviso">Opinião e contexto do colunista, separados dos dados oficiais da página.${rascunho ? ' <b>Modo rascunho: notas não publicadas aparecem.</b>' : ''}</p>
+        ${notas.map((n, i) => `<article class="coluna-nota" id="nota-${esc(n.id)}"><p class="coluna-num">${String(i + 1).padStart(2, '0')}${n.exibir === false ? ' · rascunho' : ''}</p>
+            <h3>${esc(n.titulo)}</h3>${n.data ? `<p class="coluna-data">${esc(fmt(n.data))}</p>` : ''}<div class="coluna-texto">${textoColuna(n.texto)}</div>
+            ${n.ancora ? `<p class="coluna-ver"><button type="button" data-ver-nota="${esc(n.id)}">Ver o trecho na página</button></p>` : ''}</article>`).join('')}`;
+    document.body.append(aba, gaveta);
+    const abrir = (id) => {
+        gaveta.classList.add('aberta'); gaveta.setAttribute('aria-hidden', 'false'); aba.setAttribute('aria-expanded', 'true');
+        if (id) {
+            const el = gaveta.querySelector('#nota-' + CSS.escape(id));
+            if (el) { el.scrollIntoView({ block: 'start' }); el.classList.add('coluna-destaque'); setTimeout(() => el.classList.remove('coluna-destaque'), 2200); }
+        }
+    };
+    const fechar = () => { gaveta.classList.remove('aberta'); gaveta.setAttribute('aria-hidden', 'true'); aba.setAttribute('aria-expanded', 'false'); };
+    aba.addEventListener('click', () => (gaveta.classList.contains('aberta') ? fechar() : abrir()));
+    gaveta.addEventListener('click', (ev) => {
+        if (ev.target.closest('[data-fechar-coluna]')) { fechar(); return; }
+        const v = ev.target.closest('[data-ver-nota]');
+        if (!v) return;
+        const n = notas.find((x) => x.id === v.dataset.verNota), alvo = n && document.querySelector(n.ancora);
+        if (alvo) { alvo.scrollIntoView({ behavior: 'smooth', block: 'center' }); alvo.classList.add('coluna-destaque'); setTimeout(() => alvo.classList.remove('coluna-destaque'), 2200); }
+    });
+    document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') fechar(); });
+    // marcadores no texto: a página desenha parte do conteúdo depois de carregar dados, então tenta por alguns segundos
+    const marcar = () => {
+        notas.forEach((n, i) => {
+            if (!n.ancora || document.querySelector(`[data-marca-coluna="${CSS.escape(n.id)}"]`)) return;
+            const alvo = document.querySelector(n.ancora);
+            if (!alvo) return;
+            const m = document.createElement('button');
+            m.type = 'button'; m.className = 'marca-coluna'; m.dataset.marcaColuna = n.id;
+            m.setAttribute('aria-label', `Nota ${i + 1} da Coluna: ${n.titulo}`); m.textContent = `✦ ${i + 1}`;
+            m.addEventListener('click', (ev) => { ev.preventDefault(); ev.stopPropagation(); abrir(n.id); });
+            alvo.append(' ', m);
+        });
+    };
+    marcar();
+    let tentativas = 0;
+    const timer = setInterval(() => { marcar(); if (++tentativas > 25) clearInterval(timer); }, 800);
 }

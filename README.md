@@ -279,3 +279,22 @@ tem um `arrec_id`.
 `GET /api/tributos/repasses?municipio=` — repasses entre os entes: União → estados e municípios (RREO Anexo 01 da União),
 União → estado, estado → municípios e o que o município recebe da União e do estado (RREO Anexo 01 de cada ente), mais a
 repartição legal de receitas da União (Resultado do Tesouro Nacional, linhas 2.x).
+
+
+## A Coluna (notas do colunista)
+
+Cada página pode ter uma aba lateral "A Coluna" com comentários escritos à mão. As notas ficam em
+`frontend/assets/coluna.json`; não há banco nem login, e editar o arquivo é publicar.
+
+```json
+{ "id": "meu-id", "pagina": "tesouro", "ancora": "#tRegras", "titulo": "Título da nota",
+  "data": "2026-10-17", "exibir": true, "texto": "Parágrafo.
+
+Outro, com **negrito**, *itálico* e [link](https://...)." }
+```
+
+* `pagina`: id da página (`inicio`, `servicos`, `quem`, `economia`, `fiscal`, `orcamento`, `tesouro`, `politicas`,
+  `bancadas`, `planos`…), uma lista de ids ou `"*"` para todas.
+* `ancora` (opcional): seletor CSS do trecho que recebe o marcador `✦ N`. Sem ela, a nota só aparece na aba.
+* `exibir: false` guarda o rascunho; ele só aparece abrindo a página com `?coluna=rascunho`.
+* Sem notas publicadas para a página, a aba nem aparece.
