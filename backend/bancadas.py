@@ -46,12 +46,23 @@ def _agora() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
 
 
-def _contar(siglas: list[str | None]) -> list[dict]:
+def _contar(siglas: list[str | None], membros: list[dict] | None = None) -> list[dict]:
+    """Cadeiras por partido (ordem alfabética). Com `membros` (um por sigla, na mesma ordem), cada partido
+    leva também quem ocupa as cadeiras: nome, UF e página oficial, em ordem de estado e nome."""
     cont: dict[str, int] = {}
-    for s in siglas:
+    quem: dict[str, list[dict]] = {}
+    for i, s in enumerate(siglas):
         s = (s or "").strip() or "Sem partido"
         cont[s] = cont.get(s, 0) + 1
-    return [{"sigla": s, "cadeiras": n} for s, n in sorted(cont.items(), key=lambda x: x[0].casefold())]
+        if membros is not None:
+            quem.setdefault(s, []).append(membros[i])
+    saida = []
+    for s, n in sorted(cont.items(), key=lambda x: x[0].casefold()):
+        item = {"sigla": s, "cadeiras": n}
+        if membros is not None:
+            item["membros"] = sorted(quem[s], key=lambda m: ((m.get("uf") or "~"), (m.get("nome") or "").casefold()))
+        saida.append(item)
+    return saida
 
 
 def _limiares(total: int, partidos: list[dict]) -> list[dict]:
@@ -164,7 +175,9 @@ def _deputados() -> list[dict]:
 
 def _camara() -> dict:
     deps = _memo("deputados", _deputados)
-    return _casa("camara", "Câmara dos Deputados", _contar([d["partido"] for d in deps]), URL_CAMARA, PAGINA_CAMARA,
+    return _casa("camara", "Câmara dos Deputados", _contar([d["partido"] for d in deps], [
+        {"nome": d["nome"], "uf": d["uf"], "url": f"https://www.camara.leg.br/deputados/{d['id']}"} for d in deps]),
+                 URL_CAMARA, PAGINA_CAMARA,
                  _presidente_seguro(_presidente_camara))
 
 
@@ -176,10 +189,13 @@ def _senado() -> dict:
         raise ErroFonte("Formato inesperado na resposta do Senado.") from exc
     if isinstance(lista, dict):
         lista = [lista]
-    siglas = [(p.get("IdentificacaoParlamentar") or p).get("SiglaPartidoParlamentar") for p in lista]
+    ident = [p.get("IdentificacaoParlamentar") or p for p in lista]
+    siglas = [i.get("SiglaPartidoParlamentar") for i in ident]
     if not siglas:
         raise ErroFonte("O Senado não retornou senadores.")
-    return _casa("senado", "Senado Federal", _contar(siglas), URL_SENADO, PAGINA_SENADO,
+    membros = [{"nome": i.get("NomeParlamentar"), "uf": i.get("UfParlamentar"),
+                "url": f"https://www25.senado.leg.br/web/senadores/senador/-/perfil/{i.get('CodigoParlamentar')}"} for i in ident]
+    return _casa("senado", "Senado Federal", _contar(siglas, membros), URL_SENADO, PAGINA_SENADO,
                  _presidente_seguro(_presidente_senado))
 
 

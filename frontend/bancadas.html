@@ -106,6 +106,7 @@ function blocoCasa(c) {
         <div class="mt-4 grid lg:grid-cols-2 gap-6">
             <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
                 <div class="grafico" style="height:${Math.max(240, c.partidos.length * 26 + 40)}px"><canvas id="g-${esc(c.id)}" role="img" aria-label="Cadeiras por partido — ${esc(c.nome)}"></canvas></div>
+                <p class="mt-2 text-[11px] text-slate-500"><i class="fa-solid fa-hand-pointer mr-1" aria-hidden="true"></i>Clique em uma barra para ver quem ocupa as cadeiras do partido e de qual estado vem. Também dá para escolher o partido na tabela abaixo.</p>
             </div>
             <div class="space-y-4">
                 <div class="grid sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3 gap-3">${lim}</div>
@@ -119,9 +120,10 @@ function blocoCasa(c) {
                 </div>
             </div>
         </div>
+        <div id="membros-${esc(c.id)}" class="mt-4" aria-live="polite"></div>
         <details class="mt-4 text-sm"><summary class="cursor-pointer font-semibold">Ver tabela de cadeiras</summary>
             <table class="mt-2 text-sm"><thead><tr class="text-left text-xs text-slate-500"><th class="pr-6 py-1">Partido</th><th class="py-1">Cadeiras</th></tr></thead><tbody>
-            ${c.partidos.map((p) => `<tr><td class="pr-6 py-0.5">${esc(p.sigla)}</td><td>${num(p.cadeiras)}</td></tr>`).join('')}</tbody></table>
+            ${c.partidos.map((p) => `<tr><td class="pr-6 py-0.5"><button type="button" data-membros="${esc(c.id)}" data-sigla="${esc(p.sigla)}" class="underline decoration-dotted hover:text-brand-700 dark:hover:text-brand-400">${esc(p.sigla)}</button></td><td>${num(p.cadeiras)}</td></tr>`).join('')}</tbody></table>
         </details>
     </section>`;
 }
@@ -151,6 +153,8 @@ function desenharGrafico(id) {
             datasets: [{ data: c.partidos.map((p) => p.cadeiras),
                 backgroundColor: c.partidos.map((p) => (sel.size && !sel.has(p.sigla) ? '#94a3b8' : '#0284c7')) }] },
         options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, animation: false,
+            onClick: (_ev, els) => { if (els.length) mostrarMembros(id, c.partidos[els[0].index].sigla); },
+            onHover: (ev, els) => { ev.native.target.style.cursor = els.length ? 'pointer' : 'default'; },
             plugins: { legend: { display: false }, tooltip: { callbacks: { label: (x) => `${num(x.parsed.x)} cadeiras` } } },
             scales: { x: { beginAtZero: true, ticks: { color: corTexto() }, title: { display: true, text: 'cadeiras', color: corTexto() } },
                       y: { ticks: { color: corTexto(), autoSkip: false } } } },
@@ -265,6 +269,32 @@ async function carregarAlinhamento(desde, ate) {
 document.addEventListener('click', (ev) => {
     const b = ev.target.closest && ev.target.closest('[data-auto]');
     if (b && ALINH && CASAS.camara) marcarPorAlinhamento(b.dataset.auto);
+});
+
+
+// ---------------- Quem ocupa as cadeiras de um partido ----------------
+function mostrarMembros(id, sigla) {
+    const c = CASAS[id], p = c && c.partidos.find((x) => x.sigla === sigla), alvo = $('membros-' + id);
+    if (!p || !alvo) return;
+    const quem = p.membros || [];
+    const porUf = {};
+    quem.forEach((m) => { porUf[m.uf || '—'] = (porUf[m.uf || '—'] || 0) + 1; });
+    const ufs = Object.entries(porUf).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+    const [um, varios] = id === 'camara' ? ['deputado(a)', 'deputados(as)'] : ['senador(a)', 'senadores(as)'];
+    alvo.innerHTML = `<div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
+        <div class="flex items-start justify-between gap-3">
+            <div><h3 class="font-bold">${esc(p.sigla)} <span class="font-normal text-slate-500">· ${num(p.cadeiras)} ${p.cadeiras === 1 ? um : varios} em exercício na ${esc(c.nome)}</span></h3>
+                <p class="text-xs text-slate-500">Estado de origem: ${ufs.map(([u, n]) => `<b>${esc(u)}</b> ${num(n)}`).join(' · ')}</p></div>
+            <button type="button" data-fechar-membros="${esc(id)}" class="text-xs text-slate-500 underline shrink-0">fechar</button></div>
+        <ul class="mt-3 grid sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-1 text-sm max-h-80 overflow-auto">
+            ${quem.map((m) => `<li class="flex justify-between gap-2"><a class="underline decoration-dotted hover:text-brand-700 dark:hover:text-brand-400" target="_blank" rel="noopener" href="${esc(urlSegura(m.url))}">${esc(m.nome)}</a><span class="text-slate-500">${esc(m.uf || '—')}</span></li>`).join('')}</ul></div>`;
+    alvo.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+}
+document.addEventListener('click', (ev) => {
+    const b = ev.target.closest && ev.target.closest('[data-membros]');
+    if (b) { mostrarMembros(b.dataset.membros, b.dataset.sigla); return; }
+    const f = ev.target.closest && ev.target.closest('[data-fechar-membros]');
+    if (f) $('membros-' + f.dataset.fecharMembros).innerHTML = '';
 });
 
 document.getElementById('btnTema')?.addEventListener('click', () => setTimeout(() => Object.keys(CASAS).forEach(desenharGrafico), 50));
