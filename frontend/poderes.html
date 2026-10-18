@@ -61,7 +61,9 @@ const ABAS = {
                     bloco('Estadual', 'Secretarias de Estado', 'Saúde, Educação, Segurança, Transportes. Cuidam do que é do estado, como a polícia e as rodovias estaduais.', lk(L('https://www.sp.gov.br/', 'Governo de São Paulo'))),
                     bloco('Municipal', 'Secretarias municipais', 'Saúde, Educação, Obras, Assistência Social. É o que mais aparece no dia a dia: posto de saúde, creche, coleta de lixo.', lk('<a class="underline" href="servicos.html">Guia de serviços por esfera</a>')),
                 ])) +
-            secao('03', 'Autarquias e empresas públicas', 'Órgãos ligados ao Executivo, com autonomia para uma função específica.',
+            secao('03', 'Ministérios e verbas da União', 'Quanto cada ministério pode gastar em ' + new Date().getFullYear() + ', quanto já pagou e quais órgãos ficam sob o seu comando. Clique em um ministério para ver os detalhes.',
+                '<div id="ministerios" class="mt-3" role="status"><p class="text-sm">Carregando os ministérios…</p></div>') +
+            secao('04', 'Autarquias e empresas públicas', 'Órgãos ligados ao Executivo, com autonomia para uma função específica.',
                 grade([
                     bloco('Autarquia', 'Banco Central', 'Cuida da moeda, dos juros básicos e da fiscalização dos bancos.', lk(L('https://www.bcb.gov.br/', 'bcb.gov.br'))),
                     bloco('Autarquia', 'INSS', 'Paga aposentadorias, pensões e outros benefícios da Previdência.', lk(L('https://meu.inss.gov.br/', 'Meu INSS'))),
@@ -100,11 +102,46 @@ const ABAS = {
                 ])),
     },
 };
+const reaisCurto = (n) => {
+    const v = Math.abs(n);
+    if (v >= 1e12) return `R$ ${(v / 1e12).toLocaleString('pt-BR', { maximumFractionDigits: 2 })} tri`;
+    if (v >= 1e9) return `R$ ${(v / 1e9).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} bi`;
+    if (v >= 1e6) return `R$ ${(v / 1e6).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} mi`;
+    return brl(n);
+};
+const limparNome = (n) => n.replace(/ - Unidades com vínculo direto$/, ' (administração direta)');
+async function carregarMinisterios() {
+    const alvo = $('ministerios');
+    if (!alvo) return;
+    try {
+        const d = await api('/api/executivo/orgaos');
+        const total = d.orgaos.reduce((t, o) => t + o.totais.atualizado, 0);
+        const pct = (v, t) => (t > 0 ? Math.round((v / t) * 100) : 0);
+        const metrica = (rot, v) => `<div><dt>${rot}</dt><dd>${esc(reaisCurto(v))}</dd></div>`;
+        alvo.innerHTML = `<div class="min-lista">${d.orgaos.map((o) => {
+            const t = o.totais;
+            const nota = o.codigo === '25000' ? '<p class="min-nota">Inclui a renovação da dívida pública (títulos que vencem e são trocados por novos), que não é gasto com serviços. Veja em <a class="underline" href="financiamento.html">Dívida e títulos</a>.</p>' : '';
+            return `<details class="min"><summary><span class="min-nome">${esc(o.nome)}</span>
+                <span class="min-barra" aria-hidden="true"><span style="width:${Math.max(1, pct(t.atualizado, total))}%"></span></span>
+                <span class="min-valor">${esc(reaisCurto(t.atualizado))}</span></summary>
+                <div class="min-corpo">${nota}
+                <dl class="min-metricas">${metrica('Autorizado na lei', t.inicial)}${metrica('Valor atual', t.atualizado)}${metrica('Já reservado (empenhado)', t.empenhado)}${metrica('Já pago', t.realizado)}</dl>
+                <div class="min-cols">
+                    <div><p class="min-tit">Órgãos sob o ministério</p><ul>${o.vinculados.slice(0, 12).map((v) => `<li><span>${esc(limparNome(v.nome))}</span><b>${esc(reaisCurto(v.atualizado))}</b></li>`).join('')}</ul>
+                        ${o.vinculados.length > 12 ? `<p class="ficha-nota">e mais ${o.vinculados.length - 12} órgãos menores</p>` : ''}</div>
+                    <div><p class="min-tit">Em que áreas gasta</p><ul>${o.funcoes.map((f) => `<li><span>${esc(f.nome)}</span><b>${esc(reaisCurto(f.atualizado))}</b></li>`).join('')}</ul></div>
+                </div></div></details>`;
+        }).join('')}</div>
+            <p class="ficha-nota mt-3">Fonte: <a class="underline" target="_blank" rel="noopener" href="https://portaldatransparencia.gov.br/orcamento">Portal da Transparência (CGU), Orçamento da Despesa de ${esc(d.ano)}</a>, coletado em ${esc(new Date(d.coletado_em).toLocaleDateString('pt-BR'))}. Valores do Orçamento Fiscal e da Seguridade Social. A divisão interna em secretarias não consta do orçamento: mostramos os órgãos vinculados (autarquias, fundações, fundos e unidades).</p>`;
+    } catch (e) { alvo.innerHTML = mensagemErro(e); }
+}
+
 const a = ABAS[ABA];
 document.title = a.titulo + ' — ImpactoCidadão';
 $('titulo').textContent = a.titulo;
 $('subtitulo').textContent = a.sub;
 $('corpo').innerHTML = a.html() + `<p class="ficha-nota">Os parlamentares e as bancadas estão na aba <a class="underline" href="bancadas.html">Legislativo</a>. Quem ocupa cada cargo muda a cada eleição ou nomeação: consulte o site oficial de cada órgão.</p>`;
+carregarMinisterios();
 </script>
 </body>
 </html>

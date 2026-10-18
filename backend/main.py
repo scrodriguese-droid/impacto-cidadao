@@ -14,6 +14,7 @@ Convenções:
 from __future__ import annotations
 
 import hashlib
+import json
 import logging
 import re
 import threading
@@ -43,7 +44,7 @@ import macro
 import orcamento
 import tributos
 import simuladores
-from config import cfg
+from config import RAIZ, cfg
 from fontes import buscar_municipios, contexto_municipio
 from schemas import CATEGORIAS, PERFIS, STATUS
 from temas import TERMOS_POR_TEMA, consulta_tsquery
@@ -678,6 +679,15 @@ def servicos_area(area_id: str, municipio: MunicipioQuery = None) -> dict:
 @router.get("/servicos/{area_id}/{slug}", tags=["servicos"])
 def servicos_servico(area_id: str, slug: str, municipio: MunicipioQuery = None) -> dict:
     return _ou_404(_servicos(servicos.servico, area_id, slug, municipio), "Serviço não encontrado.")
+
+
+@router.get("/executivo/orgaos", tags=["executivo"])
+def executivo_orgaos() -> dict:
+    """Orçamento federal por ministério e órgão vinculado (arquivo gerado por backend/coletor_orgaos.py)."""
+    arq = RAIZ / "dados" / "orcamento" / "orgaos.json"
+    if not arq.exists():
+        raise HTTPException(status_code=503, detail="Dados dos ministérios ainda não coletados. Rode: python backend/coletor_orgaos.py")
+    return json.loads(arq.read_text(encoding="utf-8"))
 
 
 @router.get("/competencias/areas", tags=["competencias"])

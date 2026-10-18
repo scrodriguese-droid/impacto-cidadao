@@ -1,0 +1,127 @@
+"""Coletor do orçamento federal por ministério e por órgão vinculado.
+
+Fonte: "Orçamento da Despesa" do Portal da Transparência (CGU), arquivo aberto oficial (~1 MB zipado):
+  https://dadosabertos-download.cgu.gov.br/PortalDaTransparencia/saida/orcamento-despesa/AAAA_OrcamentoDespesa.zip
+
+Cada linha do arquivo é uma ação do orçamento. Aqui somamos por órgão superior (ministérios e órgãos da Presidência) e,
+dentro de cada um, por órgão subordinado (autarquias, fundações, fundos e unidades, como INSS, FNDE, Anvisa) e por função
+(Saúde, Educação...). O resultado compacto é gravado em dados/orcamento/orgaos.json e a API só lê esse arquivo.
+
+Regras (declaradas na tela):
+  * "Orçamento inicial" = o que a lei autorizou; "atualizado" = com créditos e cortes do ano;
+    "empenhado" = reservado para um gasto; "pago/realizado" = o valor que o Portal chama de "orçamento realizado";
+  * só entram órgãos do Poder Executivo e seus órgãos de assessoramento (ministérios, Presidência, AGU, CGU);
+  * o Ministério da Fazenda inclui a renovação (refinanciamento) da dívida pública, que não é gasto com serviços.
+
+Uso (a partir da raiz do projeto):
+    python backend/coletor_orgaos.py              # ano corrente
+    python backend/coletor_orgaos.py --ano 2026
+"""
+from __future__ import annotations
+
+import argparse
+import csv
+import io
+import json
+import logging
+import sys
+import tempfile
+import zipfile
+from collections import defaultdict
+from datetime import date, datetime, timezone
+from pathlib import Path
+
+import httpx
+
+RAIZ = Path(__file__).resolve().parent.parent
+DESTINO = RAIZ / "dados" / "orcamento" / "orgaos.json"
+URL = "https://dadosabertos-download.cgu.gov.br/PortalDaTransparencia/saida/orcamento-despesa/{ano}_OrcamentoDespesa.zip"
+log = logging.getLogger("coletor_orgaos")
+
+EXECUTIVO_EXTRA = {"20000", "37000", "63000", "25201"}  # Presidência, CGU, AGU, Banco Central
+CAMPOS = ("inicial", "atualizado", "empenhado", "realizado")
+
+
+def _num(txt: str) -> float:
+    return float(txt.replace(".", "").replace(",", ".")) if txt else 0.0
+
+
+def _executivo(codigo: str, nome: str) -> bool:
+    return nome.startswith("Ministério") or codigo in EXECUTIVO_EXTRA
+
+
+def _zerar() -> dict:
+    return dict.fromkeys(CAMPOS, 0.0)
+
+
+def _somar(alvo: dict, linha: list[float]) -> None:
+    for campo, v in zip(CAMPOS, linha):
+        alvo[campo] += v
+
+
+def _arred(d: dict) -> dict:
+    return {k: round(v, 2) for k, v in d.items()}
+
+
+def processar(csv_bytes: io.TextIOBase) -> dict:
+    leitor = csv.reader(csv_bytes, delimiter=";")
+    next(leitor)
+    orgaos: dict[str, dict] = {}
+    for r in leitor:
+        cod, nome = r[1], r[2]
+        if not _executivo(cod, nome):
+            continue
+        o = orgaos.setdefault(cod, {"codigo": cod, "nome": nome, "totais": _zerar(), "subs": {}, "funcoes": {}})
+        v = [_num(r[i]) for i in (21, 22, 23, 24)]
+        _somar(o["totais"], v)
+        s = o["subs"].setdefault(r[3], {"codigo": r[3], "nome": r[4], "totais": _zerar()})
+        _somar(s["totais"], v)
+        f = o["funcoes"].setdefault(r[8], _zerar())
+        _somar(f, v)
+    saida = []
+    for o in orgaos.values():
+        subs = sorted(o["subs"].values(), key=lambda s: -s["totais"]["atualizado"])
+        funcoes = sorted(({"nome": n, **_arred(t)} for n, t in o["funcoes"].items()), key=lambda f: -f["atualizado"])
+        saida.append({
+            "codigo": o["codigo"], "nome": o["nome"], "totais": _arred(o["totais"]),
+            "vinculados": [{"codigo": s["codigo"], "nome": s["nome"], **_arred(s["totais"])} for s in subs if s["totais"]["atualizado"] > 0],
+            "funcoes": [f for f in funcoes if f["atualizado"] > 0][:5],
+        })
+    saida.sort(key=lambda o: -o["totais"]["atualizado"])
+    return {"orgaos": saida}
+
+
+def coletar(ano: int) -> dict:
+    url = URL.format(ano=ano)
+    with tempfile.TemporaryDirectory() as tmp:
+        arq = Path(tmp) / "o.zip"
+        with httpx.stream("GET", url, timeout=120, follow_redirects=True) as r:
+            r.raise_for_status()
+            with arq.open("wb") as f:
+                for pedaco in r.iter_bytes():
+                    f.write(pedaco)
+        with zipfile.ZipFile(arq) as z:
+            with z.open(z.namelist()[0]) as bruto:
+                dados = processar(io.TextIOWrapper(bruto, encoding="cp1252", newline=""))
+    dados.update({
+        "ano": ano, "fonte": url,
+        "fonte_nome": "Portal da Transparência (CGU) — Orçamento da Despesa",
+        "coletado_em": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+    })
+    return dados
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--ano", type=int, default=date.today().year)
+    args = ap.parse_args()
+    logging.basicConfig(level=logging.INFO, format="%(message)s")
+    dados = coletar(args.ano)
+    DESTINO.parent.mkdir(parents=True, exist_ok=True)
+    DESTINO.write_text(json.dumps(dados, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+    log.info("%d órgãos gravados em %s", len(dados["orgaos"]), DESTINO)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
