@@ -679,3 +679,11 @@ body.postit-escolhendo, body.postit-escolhendo * { cursor: crosshair !important;
     .ind-cab { display: grid; }
     .ind-cab, .ind-linha { grid-template-columns: 1.1fr 1.5fr 1.4fr; gap: 1.2rem; padding: .9rem .4rem; }
 }
+.ind-linha b small { font-family: var(--fonte-texto); font-size: .7rem; color: var(--vermelho); margin-left: .3rem; }
+.min-chips-i { display: flex; flex-wrap: wrap; gap: .35rem; }
+.min-chip-i { border: 1px solid var(--line); padding: .12rem .45rem; font-size: .72rem; font-weight: 800; }
+.ind-todos { margin-top: .7rem; }
+.ind-todos > summary { cursor: pointer; font-size: .72rem; }
+.ind-todos ul { list-style: none; padding: 0; margin: .5rem 0 0; max-height: 18rem; overflow: auto; }
+.ind-todos li { padding: .3rem 0; border-bottom: 1px solid var(--line); font-size: .8rem; }
+.ind-todos small { color: var(--muted); }

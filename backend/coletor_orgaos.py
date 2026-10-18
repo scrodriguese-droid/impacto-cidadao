@@ -51,6 +51,7 @@ SITES = {c: f"https://www.gov.br/{s}/pt-br" for c, s in {
     "51000": "esporte", "41000": "mcom", "49000": "mda", "65000": "mulheres", "67000": "igualdaderacial", "81000": "mdh",
     "84000": "povosindigenas", "58000": "mpa", "69000": "mempe", "37000": "cgu", "63000": "agu"}.items()}
 SITES["25201"] = "https://www.bcb.gov.br/"
+URL_NATUREZA = "https://estruturaorganizacional.dados.gov.br/doc/natureza-juridica"
 URL_SIORG = "https://estruturaorganizacional.dados.gov.br/doc/estrutura-organizacional/resumida?codigoPoder=1&codigoEsfera=1"
 # código do órgão no SIORG -> código SIAFI usado no orçamento
 SIORG_PARA_SIAFI = {
@@ -118,7 +119,7 @@ def _id(url: str | None) -> str | None:
     return url.rsplit("/", 1)[-1] if url else None
 
 
-def estrutura() -> dict[str, dict]:
+def estrutura() -> tuple[dict[str, dict], dict[str, list[dict]]]:
     """Secretarias (unidades administrativas), entidades vinculadas e nº de colegiados de cada ministério (SIORG)."""
     with tempfile.TemporaryDirectory() as tmp:
         arq = Path(tmp) / "siorg.json"
@@ -128,8 +129,20 @@ def estrutura() -> dict[str, dict]:
                 for pedaco in r.iter_bytes():
                     f.write(pedaco)
         unidades = json.loads(arq.read_text(encoding="utf-8"))["unidades"]
+    naturezas = {
+        str(n["codigoNaturezaJuridica"]): n["descricaoNaturezaJuridica"]
+        for n in httpx.get(URL_NATUREZA, timeout=60, headers={"Accept": "application/json"}).json()["naturezaJuridica"]
+    }
+    por_id = {_id(u["codigoUnidade"]): u for u in unidades}
     filhos: dict[str, list[dict]] = defaultdict(list)
+    indireta: dict[str, list[dict]] = defaultdict(list)
     for u in unidades:
+        if _id(u["codigoTipoUnidade"]) == "entidade":
+            pai = por_id.get(_id(u["codigoUnidadePai"]))
+            indireta[naturezas.get(_id(u.get("codigoNaturezaJuridica")), "Outra")].append(
+                {"nome": u["nome"], "sigla": u.get("sigla"), "orgao": pai["nome"] if pai else None})
+    for lista in indireta.values():
+        lista.sort(key=lambda e: e["nome"])
         filhos[_id(u["codigoUnidadePai"])].append(u)
     tipo = lambda u: _id(u["codigoTipoUnidade"])  # noqa: E731
     saida: dict[str, dict] = {}
@@ -150,7 +163,7 @@ def estrutura() -> dict[str, dict]:
             "entidades": [{"nome": c["nome"], "sigla": c.get("sigla")} for c in diretos if tipo(c) == "entidade"],
             "n_colegiados": sum(1 for c in diretos if tipo(c) == "unidade-colegiada"),
         }
-    return saida
+    return saida, dict(indireta)
 
 
 def coletar(ano: int) -> dict:
@@ -165,7 +178,8 @@ def coletar(ano: int) -> dict:
         with zipfile.ZipFile(arq) as z:
             with z.open(z.namelist()[0]) as bruto:
                 dados = processar(io.TextIOWrapper(bruto, encoding="cp1252", newline=""))
-    est = estrutura()
+    est, indireta = estrutura()
+    dados["indireta"] = indireta
     for o in dados["orgaos"]:
         o["estrutura"] = est.get(o["codigo"])
     dados.update({
