@@ -664,3 +664,8 @@ body.postit-escolhendo, body.postit-escolhendo * { cursor: crosshair !important;
 .min-cols { grid-template-columns: 1fr; }
 @media (min-width: 900px) { .min-cols { grid-template-columns: 1.3fr 1fr; } .min-cols > div:nth-child(3) { grid-column: 1 / -1; } }
 .min > summary { padding: .7rem .6rem !important; }
+.min-quem { display: block; font-size: .74rem; font-weight: 400; color: var(--muted); margin-top: .1rem; }
+.min[open] > summary .min-quem { color: var(--papel); opacity: .8; }
+.min-ministro { margin-bottom: 1rem; font-size: .95rem; }
+.min-ministro > span { font: 800 .66rem/1 var(--fonte-texto); letter-spacing: .12em; text-transform: uppercase; color: var(--vermelho); margin-right: .5rem; }
+.min-ministro small { display: block; font-size: .72rem; color: var(--muted); margin-top: .2rem; }

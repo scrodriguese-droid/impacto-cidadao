@@ -151,10 +151,11 @@ function painelMinisterio(o, total) {
         ${est.n_colegiados ? `<p class="ficha-nota">Além disso, ${esc(est.n_colegiados)} conselhos e comitês.</p>` : ''}</div>` : '';
     const entidades = est && est.entidades.length ? `<div><p class="min-tit">Entidades vinculadas <span>${esc(est.entidades.length)}</span></p>
         <p class="min-chips">${est.entidades.map((e) => `<span title="${esc(e.nome)}">${esc(e.sigla || e.nome)}</span>`).join('')}</p></div>` : '';
-    return `<details class="min"><summary><span class="min-nome">${esc(o.nome)}</span>
+    return `<details class="min"><summary><span class="min-nome">${esc(o.nome)}${o.ministro ? `<span class="min-quem">${esc(o.ministro.nome)}</span>` : ''}</span>
         <span class="min-barra" aria-hidden="true"><span style="width:${Math.max(1, Math.round((t.atualizado / total) * 100))}%"></span></span>
         <span class="min-valor">${esc(reaisCurto(t.atualizado))}</span></summary>
         <div class="min-corpo">${nota}
+        <p class="min-ministro"><span>${o.ministro && /^Ministra/.test(o.ministro.cargo) ? 'Ministra' : 'Ministro'}</span> ${o.ministro ? `<b>${esc(o.ministro.nome)}</b> <small>Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(o.ministro.fonte))}">${esc(o.ministro.fonte_nome)}</a>, conferido em ${esc(new Date(o.ministro.conferido_em + 'T12:00:00').toLocaleDateString('pt-BR'))}</small>` : '<small>Titular ainda não conferido. Consulte o site oficial do ministério.</small>'}</p>
         <dl class="min-metricas">${metrica('Autorizado na lei', t.inicial)}${metrica('Valor atual', t.atualizado)}${metrica('Já reservado (empenhado)', t.empenhado)}${metrica('Já pago', t.realizado)}</dl>
         <div class="min-cols">
             ${secretarias}

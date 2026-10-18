@@ -687,7 +687,12 @@ def executivo_orgaos() -> dict:
     arq = RAIZ / "dados" / "orcamento" / "orgaos.json"
     if not arq.exists():
         raise HTTPException(status_code=503, detail="Dados dos ministérios ainda não coletados. Rode: python backend/coletor_orgaos.py")
-    return json.loads(arq.read_text(encoding="utf-8"))
+    dados = json.loads(arq.read_text(encoding="utf-8"))
+    titulares = RAIZ / "dados" / "ministros.json"
+    mapa = json.loads(titulares.read_text(encoding="utf-8")) if titulares.exists() else {}
+    for o in dados["orgaos"]:
+        o["ministro"] = mapa.get(o["codigo"])
+    return dados
 
 
 @router.get("/competencias/areas", tags=["competencias"])
