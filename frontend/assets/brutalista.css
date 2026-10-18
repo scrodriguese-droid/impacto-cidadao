@@ -542,3 +542,43 @@ body.postit-escolhendo, body.postit-escolhendo * { cursor: crosshair !important;
 .postit-troca button:hover { background: transparent !important; color: var(--vermelho) !important; }
 .postit-contador { margin-top: .3rem; font-size: .7rem; opacity: .75; text-align: right; }
 .postit-contador-fim { opacity: 1; font-weight: 800; color: var(--vermelho) !important; }
+
+/* ---------- Guia de tributos: espécies, direto x indireto, bases ---------- */
+.trib-h { margin: 2.2rem 0 .7rem; padding-top: .7rem; border-top: 3px solid var(--line); font-family: var(--fonte-titulo) !important; font-size: 1.6rem !important; line-height: 1.05; text-transform: uppercase; font-weight: 400 !important; letter-spacing: 0 !important; }
+.trib-especies, .trib-formas, .trib-bases { display: grid; gap: 0; border-top: 1px solid var(--line); border-left: 1px solid var(--line); margin-top: .6rem; }
+@media (min-width: 860px) { .trib-especies, .trib-bases { grid-template-columns: repeat(3, 1fr); } .trib-formas { grid-template-columns: 1fr 1fr; } }
+.trib-especie, .trib-forma, .trib-base { padding: 1rem 1.1rem 1.1rem; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); font-size: .88rem; line-height: 1.5; }
+.trib-tag { font-family: var(--fonte-titulo); font-size: 1.45rem; line-height: 1; text-transform: uppercase; margin-bottom: .5rem; }
+.trib-pergunta { font-size: .86rem; }
+.trib-lista { list-style: none; padding: 0; margin: .8rem 0 0; border-top: 1px solid var(--line); }
+.trib-lista li { display: grid; grid-template-columns: 6.5rem minmax(0, 1fr); gap: .7rem; padding: .5rem 0; border-bottom: 1px solid var(--papel-2); font-size: .84rem; line-height: 1.4; }
+.trib-sigla b { display: block; font-size: .9rem; }
+.trib-esfera { display: inline-block; margin-top: .2rem; padding: .02rem .35rem; border: 1px solid var(--line); font: 800 .56rem/1.5 var(--fonte-texto); letter-spacing: .08em; text-transform: uppercase; }
+.trib-nome { display: block; font-weight: 700; }
+.trib-onde { display: block; color: var(--muted); }
+.trib-compacta li { grid-template-columns: 8rem minmax(0, 1fr); }
+@media (max-width: 640px) { .trib-lista li, .trib-compacta li { grid-template-columns: 1fr; gap: .15rem; } }
+
+/* ---------- Orçamento do ano que vem: bolo, impacto no bolso e prazo ---------- */
+:root { --ocre: #E5A93B; }
+.bolo { display: grid; gap: 0; border-top: 3px solid var(--line); border-left: 1px solid var(--line); margin-top: .6rem; }
+@media (min-width: 860px) { .bolo { grid-template-columns: repeat(3, 1fr); } }
+.bolo-fatia { padding: 1rem 1.1rem 1.2rem; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.bolo-nome { font: 800 .72rem/1.3 var(--fonte-texto); letter-spacing: .1em; text-transform: uppercase; }
+.bolo-valor { font-family: var(--fonte-titulo); font-size: 2.6rem; line-height: 1; margin: .5rem 0 .6rem; }
+.bolo-barra { height: 16px; background: var(--papel-2); border: 1px solid var(--line); }
+.bolo-barra span { display: block; height: 100%; background: var(--fg); }
+.bolo-divida .bolo-barra span { background: var(--vermelho); }
+.bolo-pct { font-weight: 800; font-size: .9rem; margin-top: .45rem; }
+.bolo-desc { font-size: .8rem; color: var(--muted); margin-top: .15rem; }
+.bolo-selo { display: inline-block; margin-top: .7rem; padding: .25rem .55rem; background: var(--vermelho); color: #fff !important; font: 800 .66rem/1.2 var(--fonte-texto); letter-spacing: .08em; text-transform: uppercase; }
+.bolso-titulo { margin: 1.8rem 0 .4rem; font: 800 .72rem/1.3 var(--fonte-texto); letter-spacing: .14em; text-transform: uppercase; padding-top: .7rem; border-top: 3px solid var(--line); }
+.bolso { display: grid; gap: .8rem; margin-top: .6rem; }
+@media (min-width: 700px) { .bolso { grid-template-columns: repeat(4, 1fr); } }
+.bolso-card { padding: 1rem 1rem 1.1rem; border: 2px solid var(--line); }
+.bolso-nome { font: 800 .7rem/1.3 var(--fonte-texto); letter-spacing: .1em; text-transform: uppercase; }
+.bolso-nome i { margin-right: .5rem; font-size: 1rem; vertical-align: -.1rem; }
+.bolso-valor { font-family: var(--fonte-titulo); font-size: 1.7rem; white-space: nowrap; line-height: 1.05; margin: .55rem 0 .35rem; overflow-wrap: anywhere; }
+.bolso-nota { font-size: .78rem; line-height: 1.4; color: var(--muted); }
+.prazo { margin-top: 1.6rem; padding: .85rem 1rem; background: var(--ocre); color: #111 !important; border: 2px solid #111; font-size: .92rem; }
+.prazo * { color: #111 !important; }

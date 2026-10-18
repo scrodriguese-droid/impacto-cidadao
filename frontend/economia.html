@@ -52,8 +52,8 @@
     <div id="estado" class="mt-4"></div>
     <div id="painel" class="hidden mt-4 space-y-8"></div>
     <section id="secTributos" class="hidden mt-12" aria-labelledby="tTrib">
-        <h2 id="tTrib">Guia de tributos: quem cobra o quê</h2>
-        <p class="text-sm text-slate-500 mt-2" style="max-width:70ch">Cada esfera cobra tributos diferentes. Abra uma esfera para ver o que ela cobra, em uma frase cada. Parte do que a União e os Estados arrecadam volta aos municípios por repasses como o FPM, o FPE e a cota do ICMS.</p>
+        <h2 id="tTrib">Guia de tributos: como se classificam</h2>
+        <p class="text-sm text-slate-500 mt-2" style="max-width:70ch">Nem toda cobrança é igual. Há impostos, contribuições e taxas, e os impostos ainda se dividem em diretos e indiretos e pelo que tributam. Parte do que a União e os Estados arrecadam volta aos municípios por repasses como o FPM, o FPE e a cota do ICMS.</p>
         <div id="guiaTributos" class="mt-4"></div>
     </section>
     <section id="secMaisFundo" class="hidden mt-12" aria-labelledby="tFundo">
@@ -518,23 +518,78 @@ async function distribuir() {
 
 
 
-/* ---------- guia de tributos: sanfonas por esfera, sem filtros ---------- */
+/* ---------- guia de tributos: por espécie e por classificação (assets/tributos.json + tributos_classe.json) ---------- */
 async function carregarGuiaTributos() {
     if (!ABA_FISCAL) return;
     try {
-        const grupos = await (await fetch('assets/tributos.json')).json();
-        const esferas = [['Federal', 'União', 'Governo Federal e Congresso'], ['Estadual', 'Estado', 'Governo Estadual e Assembleia'], ['Municipal', 'Município', 'Prefeitura e Câmara Municipal']];
-        const bloco = (g) => `<div class="trib-grupo"><p class="trib-tipo">${esc(g.tipo)}s <span>${esc(g.titulo)}</span></p>${g.nota ? `<p class="ficha-nota">${esc(g.nota)}</p>` : ''}
-            <ul>${g.itens.map((i) => `<li><b>${esc(i.sigla)}</b> <span>${esc(i.nome)}. ${esc(i.onde)}</span></li>`).join('')}</ul></div>`;
-        const feitas = new Set();
-        const sanfonas = esferas.map(([e, nome, quem], k) => {
-            const gs = grupos.filter((g) => g.esfera === e); gs.forEach((g) => feitas.add(g.id));
+        const [grupos, cls] = await Promise.all([fetch('assets/tributos.json').then((r) => r.json()), fetch('assets/tributos_classe.json').then((r) => r.json())]);
+        const ESFERA_GRUPO = { Federal: 'União', Estadual: 'Estado', Municipal: 'Município', Mista: 'Reforma tributária', 'Estadual e Municipal': 'Estados e municípios', 'Variável': 'Varia' };
+        const itens = {};   // sigla -> item completo
+        grupos.forEach((g) => g.itens.forEach((i) => { itens[i.sigla] = { ...i, tipo: g.tipo, esfera: ESFERA_GRUPO[g.esfera] || g.esfera, grupo: g.id }; }));
+        const selo = (e) => `<span class="trib-esfera">${esc(e)}</span>`;
+        const linha = (sigla, extra) => {
+            const i = itens[sigla];
+            if (!i) return '';
+            const e = (cls.impostos[sigla] && cls.impostos[sigla].esfera) || (cls.esfera_de || {})[sigla] || i.esfera;
+            return `<li><div class="trib-sigla"><b>${esc(sigla)}</b>${selo(e)}</div><div><span class="trib-nome">${esc(i.nome)}</span><span class="trib-onde">${esc(extra || i.onde)}</span></div></li>`;
+        };
+        const lista = (siglas, extras = {}) => `<ul class="trib-lista">${siglas.map((s) => linha(s, extras[s])).join('')}</ul>`;
+        const siglasDe = (fn) => Object.keys(cls.impostos).filter(fn);
+        const ordem = (a, b) => ['União', 'Estado', 'Estados e municípios', 'Município'].indexOf(cls.impostos[a].esfera) - ['União', 'Estado', 'Estados e municípios', 'Município'].indexOf(cls.impostos[b].esfera);
+
+        // 1) as três espécies
+        const especies = `<div class="trib-especies">${cls.especies.map((e) => `<div class="trib-especie"><p class="trib-tag">${esc(e.nome)}</p><p>${esc(e.texto)}</p><p class="ficha-nota">${esc(e.base)}</p></div>`).join('')}</div>`;
+
+        // 2) impostos: direto x indireto
+        const formas = `<div class="trib-formas">${cls.formas.map((f) => {
+            const sg = siglasDe((s) => cls.impostos[s].forma === f.id && cls.impostos[s].base).sort(ordem);
+            return `<div class="trib-forma"><p class="trib-tag">${esc(f.nome)}</p><p>${esc(f.texto)}</p><p class="ficha-nota">Exemplos: ${esc(f.ex)}.</p>${lista(sg)}</div>`;
+        }).join('')}</div>`;
+
+        // 3) impostos por base de incidência (o que é tributado)
+        const bases = `<div class="trib-bases">${cls.bases.map((b) => {
+            const sg = Object.keys({ ...cls.impostos, ...cls.base_contribuicoes }).filter((s) => (cls.impostos[s] ? cls.impostos[s].base : cls.base_contribuicoes[s]) === b.id);
+            const ex = sg.map((s) => `<b>${esc(s)}</b>`).join(', ');
+            return `<div class="trib-base"><p class="trib-tag">${esc(b.nome)}</p><p class="trib-pergunta">${esc(b.pergunta)}</p><p class="ficha-nota">Exemplos: ${ex}</p></div>`;
+        }).join('')}</div>
+            <p class="ficha-nota mt-2">PIS, Pasep, Cofins e CSLL são contribuições, mas incidem sobre as mesmas bases. II, IE e IOF aparecem no bloco de política econômica, logo abaixo.</p>`;
+
+        // 4) instrumentos de política econômica
+        const pol = cls.politica;
+        const politica = `<p class="text-sm mt-1" style="max-width:70ch">${esc(pol.texto)}</p>${lista(pol.itens, pol.explica)}`;
+
+        // 5) contribuições por finalidade
+        const contribs = cls.contribuicoes.finalidades.map((f) => `<div class="trib-grupo"><p class="trib-tipo">${esc(f.nome)} <span>${esc(f.base)}</span></p>${lista(f.siglas)}</div>`).join('');
+
+        // 6) taxas (por esfera, curtas)
+        const taxas = ['Federal', 'Estadual', 'Municipal'].map((e) => {
+            const g = grupos.find((x) => x.tipo === 'Taxa' && x.esfera === e);
+            return g ? `<div class="trib-grupo"><p class="trib-tipo">${esc(ESFERA_GRUPO[e])} <span>${esc(g.titulo)}</span></p><ul class="trib-lista trib-compacta">${g.itens.map((i) => `<li><div class="trib-sigla"><b>${esc(i.sigla)}</b></div><div><span class="trib-nome">${esc(i.nome)}</span><span class="trib-onde">${esc(i.onde)}</span></div></li>`).join('')}</ul></div>` : '';
+        }).join('');
+
+        // 7) a lista completa, por esfera, recolhida
+        const completa = [['Federal', 'União', 'Governo Federal e Congresso'], ['Estadual', 'Estado', 'Governo Estadual e Assembleia'], ['Municipal', 'Município', 'Prefeitura e Câmara Municipal']].map(([e, nome, quem], k) => {
+            const gs = grupos.filter((g) => g.esfera === e);
             const n = gs.reduce((s, g) => s + g.itens.length, 0);
-            return `<details class="sanfona" ${k === 0 ? 'open' : ''}><summary>${nome} <span class="sanfona-sub">${esc(quem)} · ${n} cobranças</span></summary><div class="mt-3">${gs.map(bloco).join('')}</div></details>`;
-        });
-        const resto = grupos.filter((g) => !feitas.has(g.id));
-        if (resto.length) sanfonas.push(`<details class="sanfona"><summary>Mistas e outras cobranças <span class="sanfona-sub">dependem do caso · ${resto.reduce((s, g) => s + g.itens.length, 0)} cobranças</span></summary><div class="mt-3">${resto.map(bloco).join('')}</div></details>`);
-        $('guiaTributos').innerHTML = sanfonas.join('') + '<p class="ficha-nota mt-3">Lista de referência, com base legal no inventário completo. Os valores arrecadados de cada tributo estão no <a class="underline" href="tributos.html">inventário de tributos</a>.</p>';
+            return `<details class="sanfona"><summary>${nome} <span class="sanfona-sub">${esc(quem)} · ${n} cobranças</span></summary><div class="mt-3">${gs.map((g) => `<div class="trib-grupo"><p class="trib-tipo">${esc(g.tipo)}s <span>${esc(g.titulo)}</span></p>${g.nota ? `<p class="ficha-nota">${esc(g.nota)}</p>` : ''}
+                <ul class="trib-lista trib-compacta">${g.itens.map((i) => `<li><div class="trib-sigla"><b>${esc(i.sigla)}</b></div><div><span class="trib-nome">${esc(i.nome)}</span><span class="trib-onde">${esc(i.onde)}</span></div></li>`).join('')}</ul></div>`).join('')}</div></details>`;
+        }).join('');
+        const outras = grupos.filter((g) => !['Federal', 'Estadual', 'Municipal'].includes(g.esfera));
+        const nOutras = outras.reduce((s, g) => s + g.itens.length, 0);
+        const sanfonaOutras = outras.length ? `<details class="sanfona"><summary>Mistas e outras cobranças <span class="sanfona-sub">dependem do caso · ${nOutras} cobranças</span></summary><div class="mt-3">${outras.map((g) => `<div class="trib-grupo"><p class="trib-tipo">${esc(g.tipo)} <span>${esc(g.titulo)}</span></p>${g.nota ? `<p class="ficha-nota">${esc(g.nota)}</p>` : ''}
+            <ul class="trib-lista trib-compacta">${g.itens.map((i) => `<li><div class="trib-sigla"><b>${esc(i.sigla)}</b></div><div><span class="trib-nome">${esc(i.nome)}</span><span class="trib-onde">${esc(i.onde)}</span></div></li>`).join('')}</ul></div>`).join('')}</div></details>` : '';
+
+        $('guiaTributos').innerHTML = `
+            ${especies}
+            <h3 class="trib-h">Impostos: direto ou indireto?</h3>${formas}
+            <h3 class="trib-h">Impostos e contribuições: o que é tributado?</h3>${bases}
+            <h3 class="trib-h">${esc(pol.titulo)}</h3>${politica}
+            <h3 class="trib-h">Contribuições: para que o dinheiro vai</h3>
+            <p class="text-sm" style="max-width:70ch">A contribuição tem destino definido na Constituição. Por isso, o que se arrecada com ela não vai para o caixa geral.</p>${contribs}
+            <h3 class="trib-h">Taxas: o serviço ou a fiscalização que se paga</h3>${taxas}
+            <h3 class="trib-h">Lista completa, por esfera</h3>
+            <p class="text-sm mb-2" style="max-width:70ch">Todas as cobranças reunidas, por quem cobra.</p>${completa}${sanfonaOutras}
+            <p class="ficha-nota mt-3">Lista de referência. Os valores arrecadados de cada tributo estão no <a class="underline" href="tributos.html">inventário de tributos</a>.</p>`;
     } catch (e) { $('guiaTributos').innerHTML = mensagemErro(e); }
 }
 carregarGuiaTributos();

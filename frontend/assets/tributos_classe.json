@@ -1,0 +1,221 @@
+{
+  "especies": [
+    {
+      "id": "imposto",
+      "nome": "Imposto",
+      "texto": "Financia as atividades gerais do Estado, sem que haja uma contraprestação específica para quem paga. Você paga IPTU e a prefeitura não está obrigada a lhe devolver um serviço em troca.",
+      "base": "CF, art. 145, I; CTN, art. 16"
+    },
+    {
+      "id": "contribuicao",
+      "nome": "Contribuição",
+      "texto": "Outra espécie de tributo, com finalidade específica definida pela Constituição: o dinheiro é destinado a uma área, como a seguridade social, a educação ou a intervenção no mercado.",
+      "base": "CF, arts. 149, 149-A e 195"
+    },
+    {
+      "id": "taxa",
+      "nome": "Taxa",
+      "texto": "Está ligada a um serviço específico e divisível, que pode ser usado por quem paga, ou ao exercício do poder de polícia, que é a fiscalização. Quem não usa nem é fiscalizado não paga.",
+      "base": "CF, art. 145, II"
+    }
+  ],
+  "formas": [
+    {
+      "id": "direto",
+      "nome": "Imposto direto",
+      "texto": "Incide diretamente sobre uma pessoa ou sobre o seu patrimônio, com identificação do contribuinte. Quem paga é quem tem a renda ou o bem, e o governo precisa saber quanto cada um ganha ou possui.",
+      "ex": "IRPF, IPTU e IPVA"
+    },
+    {
+      "id": "indireto",
+      "nome": "Imposto indireto",
+      "texto": "Incide sobre uma operação ou atividade econômica e costuma estar embutido no preço de um bem ou serviço. A empresa recolhe e repassa ao governo, e o custo normalmente chega ao consumidor.",
+      "ex": "ICMS, IPI e ISS"
+    }
+  ],
+  "bases": [
+    {
+      "id": "consumo",
+      "nome": "Consumo e produção",
+      "pergunta": "Compra, venda, produção ou circulação de bens e serviços."
+    },
+    {
+      "id": "patrimonio",
+      "nome": "Patrimônio",
+      "pergunta": "Propriedade ou transmissão de bens e riqueza acumulada."
+    },
+    {
+      "id": "renda",
+      "nome": "Renda",
+      "pergunta": "Rendimentos obtidos por pessoas ou empresas."
+    }
+  ],
+  "impostos": {
+    "IRPF": {
+      "forma": "direto",
+      "base": "renda",
+      "esfera": "União"
+    },
+    "IRPJ": {
+      "forma": "direto",
+      "base": "renda",
+      "esfera": "União"
+    },
+    "ITR": {
+      "forma": "direto",
+      "base": "patrimonio",
+      "esfera": "União"
+    },
+    "IGF": {
+      "forma": "direto",
+      "base": "patrimonio",
+      "esfera": "União"
+    },
+    "IPVA": {
+      "forma": "direto",
+      "base": "patrimonio",
+      "esfera": "Estado"
+    },
+    "ITCMD": {
+      "forma": "direto",
+      "base": "patrimonio",
+      "esfera": "Estado"
+    },
+    "IPTU": {
+      "forma": "direto",
+      "base": "patrimonio",
+      "esfera": "Município"
+    },
+    "ITBI": {
+      "forma": "direto",
+      "base": "patrimonio",
+      "esfera": "Município"
+    },
+    "IPI": {
+      "forma": "indireto",
+      "base": "consumo",
+      "esfera": "União"
+    },
+    "IS": {
+      "forma": "indireto",
+      "base": "consumo",
+      "esfera": "União"
+    },
+    "ICMS": {
+      "forma": "indireto",
+      "base": "consumo",
+      "esfera": "Estado"
+    },
+    "ISS": {
+      "forma": "indireto",
+      "base": "consumo",
+      "esfera": "Município"
+    },
+    "CBS": {
+      "forma": "indireto",
+      "base": "consumo",
+      "esfera": "União"
+    },
+    "IBS": {
+      "forma": "indireto",
+      "base": "consumo",
+      "esfera": "Estados e municípios"
+    },
+    "II": {
+      "forma": "indireto",
+      "base": null,
+      "esfera": "União"
+    },
+    "IE": {
+      "forma": "indireto",
+      "base": null,
+      "esfera": "União"
+    },
+    "IOF": {
+      "forma": "indireto",
+      "base": null,
+      "esfera": "União"
+    }
+  },
+  "base_contribuicoes": {
+    "PIS": "consumo",
+    "Pasep": "consumo",
+    "Cofins": "consumo",
+    "CSLL": "renda"
+  },
+  "politica": {
+    "titulo": "Tributos como instrumentos de política econômica",
+    "texto": "Além de arrecadar, alguns impostos servem para o governo estimular ou frear atividades. Por isso podem mudar por decisão do Executivo, dentro dos limites da lei, sem esperar uma nova lei.",
+    "itens": [
+      "II",
+      "IE",
+      "IOF"
+    ],
+    "explica": {
+      "II": "Incide sobre importações e pode influenciar o comércio exterior, protegendo ou barateando produtos de fora.",
+      "IE": "Incide sobre determinadas exportações e também pode ser usado para regular operações comerciais.",
+      "IOF": "Incide sobre operações financeiras previstas em lei, como crédito, câmbio e seguros, e pode ser usado como instrumento de política econômica."
+    }
+  },
+  "contribuicoes": {
+    "finalidades": [
+      {
+        "id": "seguridade",
+        "nome": "Seguridade social: previdência, saúde e assistência",
+        "base": "CF, art. 195",
+        "siglas": [
+          "PIS",
+          "Pasep",
+          "Cofins",
+          "CSLL",
+          "Previdenciária do empregado",
+          "Previdenciária individual",
+          "Previdenciária patronal",
+          "CPRB",
+          "CPSS",
+          "Previdenciárias rurais",
+          "Previdenciária estadual",
+          "Previdenciária municipal",
+          "PIS/Pasep-Importação",
+          "Cofins-Importação",
+          "Concursos de prognósticos"
+        ]
+      },
+      {
+        "id": "educacao",
+        "nome": "Educação",
+        "base": "CF, art. 212, § 5º",
+        "siglas": [
+          "Salário-Educação"
+        ]
+      },
+      {
+        "id": "economia",
+        "nome": "Intervenção no mercado e categorias profissionais",
+        "base": "CF, art. 149 e art. 177, § 4º",
+        "siglas": [
+          "Cide-Combustíveis",
+          "Cide-Remessas",
+          "Sistema S",
+          "Atividades rurais",
+          "Setoriais"
+        ]
+      },
+      {
+        "id": "cidade",
+        "nome": "Serviços e obras da cidade",
+        "base": "CF, arts. 145, III e 149-A",
+        "siglas": [
+          "CIP/Cosip",
+          "Contribuição de melhoria"
+        ]
+      }
+    ]
+  },
+  "esfera_de": {
+    "CIP/Cosip": "Município",
+    "Contribuição de melhoria": "Todas as esferas",
+    "Previdenciária estadual": "Estado",
+    "Previdenciária municipal": "Município"
+  }
+}
