@@ -12,6 +12,7 @@
     const PAGINA = window.__PAGINA;
     if (!PAGINA || !/^[a-z0-9_-]{1,40}$/.test(PAGINA)) return;
 
+    const LIMITE = 8000;           // caracteres por post-it (o servidor confere também)
     let ME = { logado: false };
     let NOTAS = [];
     let criando = false;
@@ -24,10 +25,13 @@
 
     /* ---------- chamadas ---------- */
     async function chamar(metodo, caminho, corpo) {
-        const r = await fetch('/api' + caminho, { method: metodo, headers: corpo ? { 'Content-Type': 'application/json' } : undefined, body: corpo ? JSON.stringify(corpo) : undefined, credentials: 'same-origin' });
+        let r;
+        try {
+            r = await fetch('/api' + caminho, { method: metodo, headers: corpo ? { 'Content-Type': 'application/json' } : undefined, body: corpo ? JSON.stringify(corpo) : undefined, credentials: 'same-origin' });
+        } catch (_) { throw new Error('Não consegui falar com o servidor. Ele pode ter sido desligado: tente de novo em instantes.'); }
         let j = null;
         try { j = await r.json(); } catch (_) { /* sem corpo */ }
-        if (!r.ok) throw new Error((j && typeof j.detail === 'string' && j.detail) || (r.status === 422 ? 'Confira os campos.' : `Erro ${r.status}`));
+        if (!r.ok) throw new Error(mensagemDeErro(r.status, j));
         return j;
     }
     async function carregar() {
@@ -36,6 +40,19 @@
         desenharTudo();
     }
 
+    // Diz o que deu errado em vez de um genérico "confira os campos".
+    function mensagemDeErro(status, j) {
+        if (j && typeof j.detail === 'string') return j.detail;
+        if (status === 401) return 'Sua sessão expirou. Entre de novo pela Área do editor.';
+        if (status === 422 && j && Array.isArray(j.detail) && j.detail.length) {
+            const e = j.detail[0], campo = e.loc && e.loc[e.loc.length - 1];
+            if (campo === 'texto' && /at most|max/i.test(e.type + e.msg)) return `O texto passou do limite de ${LIMITE.toLocaleString('pt-BR')} caracteres. Encurte ou divida em dois post-its.`;
+            if (campo === 'texto') return 'Escreva alguma coisa antes de salvar.';
+            if (campo === 'ancora') return 'O trecho escolhido é complexo demais. Escolha um bloco maior (um título ou um parágrafo).';
+            return `Confira o campo "${campo}".`;
+        }
+        return `Erro ${status}`;
+    }
     /* ---------- texto do post-it: negrito, itálico, link e quebra de parágrafo ---------- */
     function formatar(t) {
         const inline = (x) => esc(x)
@@ -88,7 +105,7 @@
             <p class="postit-cab"><b>${esc(n.autor)}</b> · ${esc(quando(n.atualizado_em))}${n.publico ? '' : ' · <span class="postit-rasc">rascunho</span>'}</p>
             ${n.rotulo ? `<p class="postit-trecho">Sobre: ${esc(n.rotulo)}</p>` : ''}
             <div class="postit-texto">${formatar(n.texto)}</div>
-            <p class="postit-acoes">${dono ? `<button type="button" data-postit-editar="${n.id}">Editar</button><button type="button" data-postit-apagar="${n.id}">Apagar</button>` : ''}<button type="button" data-postit-fechar>Fechar</button></p>
+            <p class="postit-acoes">${dono ? `<button type="button" data-postit-publicar="${n.id}">${n.publico ? 'Tirar do ar' : 'Publicar'}</button><button type="button" data-postit-editar="${n.id}">Editar</button><button type="button" data-postit-apagar="${n.id}">Apagar</button>` : ''}<button type="button" data-postit-fechar>Fechar</button></p>
         </div>`;
     }
 
@@ -183,13 +200,17 @@
         f.innerHTML = `<p class="postit-cab"><b>${n ? 'Editar post-it' : 'Novo post-it'}</b></p>
             <p class="postit-trecho">${rotulo ? 'Sobre: ' + esc(rotulo) : 'Sem trecho da página.'}</p>
             <label class="sr-only" for="pitTexto">Texto</label>
-            <textarea id="pitTexto" rows="6" maxlength="2000" placeholder="Escreva a sua nota. Parágrafo novo = linha em branco. **negrito**, *itálico*, [texto](https://link)."></textarea>
+            <textarea id="pitTexto" rows="6" maxlength="${LIMITE}" placeholder="Escreva a sua nota. Parágrafo novo = linha em branco. **negrito**, *itálico*, [texto](https://link)."></textarea>
+            <p class="postit-contador" id="pitContador" aria-live="polite"></p>
             <label class="postit-pub"><input type="checkbox" id="pitPublico"> Publicar para todos os visitantes <span>(desmarcado = rascunho, só você vê)</span></label>
             <p id="pitErro" class="postit-erro" role="alert"></p>
             <p class="postit-acoes"><button type="button" data-pit-salvar>Salvar</button><button type="button" data-pit-cancelar>Cancelar</button></p>`;
         document.body.append(f);
         f.style.position = 'fixed'; f.style.right = '1rem'; f.style.top = '5.5rem'; f.style.left = 'auto';
-        const t = f.querySelector('#pitTexto'); t.value = n ? n.texto : ''; f.querySelector('#pitPublico').checked = n ? n.publico : false; t.focus();
+        const t = f.querySelector('#pitTexto'); t.value = n ? n.texto : '';
+        const cont = f.querySelector('#pitContador');
+        const contar = () => { const q = t.value.length; cont.textContent = `${q.toLocaleString('pt-BR')} de ${LIMITE.toLocaleString('pt-BR')} caracteres`; cont.classList.toggle('postit-contador-fim', q > LIMITE * 0.9); };
+        t.addEventListener('input', contar); contar(); f.querySelector('#pitPublico').checked = n ? n.publico : false; t.focus();
         f.querySelector('[data-pit-cancelar]').addEventListener('click', () => f.remove());
         f.querySelector('[data-pit-salvar]').addEventListener('click', async () => {
             const erro = f.querySelector('#pitErro');
@@ -243,6 +264,13 @@
             return;
         }
         if (t.closest && t.closest('[data-postit-fechar]')) { aberta = null; desenharMarcadores(); return; }
+        const pb = t.closest && t.closest('[data-postit-publicar]');
+        if (pb) {
+            const n = NOTAS.find((x) => x.id === Number(pb.dataset.postitPublicar));
+            if (n) chamar('PUT', '/postits/' + n.id, { pagina: n.pagina, ancora: n.ancora, rotulo: n.rotulo, texto: n.texto, publico: !n.publico })
+                .then(() => carregar()).catch((e) => alert(e.message));
+            return;
+        }
         const ed = t.closest && t.closest('[data-postit-editar]');
         if (ed) { const n = NOTAS.find((x) => x.id === Number(ed.dataset.postitEditar)); aberta = null; desenharMarcadores(); if (n) formulario(n, n.ancora, n.rotulo); return; }
         const ap = t.closest && t.closest('[data-postit-apagar]');

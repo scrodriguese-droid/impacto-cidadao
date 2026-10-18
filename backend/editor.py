@@ -48,6 +48,7 @@ COOKIE = "ic_sessao"
 VALIDADE_DIAS = 14
 MIN_SENHA = 10
 PAPEIS = ("editor",)
+LIMITE_TEXTO = 8000          # caracteres por post-it
 _EMAIL = re.compile(r"^[^@\s]{1,64}@[^@\s]{1,190}\.[^@\s]{2,}$")
 _SCRYPT = {"n": 2 ** 14, "r": 8, "p": 1}
 _inicializado: set[str] = set()
@@ -261,9 +262,9 @@ class EntrarIn(BaseModel):
 
 class PostitIn(BaseModel):
     pagina: str = Field(pattern=r"^[a-z0-9_-]{1,40}$")
-    ancora: str = Field(default="", max_length=400)
+    ancora: str = Field(default="", max_length=600)
     rotulo: str = Field(default="", max_length=160)
-    texto: str = Field(min_length=1, max_length=2000)
+    texto: str = Field(min_length=1, max_length=LIMITE_TEXTO)
     publico: bool = False
 
     @field_validator("texto", "rotulo", "ancora")

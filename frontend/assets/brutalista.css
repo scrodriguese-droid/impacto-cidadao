@@ -540,3 +540,5 @@ body.postit-escolhendo, body.postit-escolhendo * { cursor: crosshair !important;
 .postit-troca { margin-top: 1rem; padding-top: .8rem; border-top: 1px solid var(--line); }
 .postit-troca button { border: 0 !important; background: transparent !important; text-transform: none; letter-spacing: 0; text-decoration: underline; text-underline-offset: 3px; font-size: .82rem; padding: 0; }
 .postit-troca button:hover { background: transparent !important; color: var(--vermelho) !important; }
+.postit-contador { margin-top: .3rem; font-size: .7rem; opacity: .75; text-align: right; }
+.postit-contador-fim { opacity: 1; font-weight: 800; color: var(--vermelho) !important; }

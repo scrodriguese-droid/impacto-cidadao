@@ -108,7 +108,7 @@ def test_validacao_de_pagina_e_texto(app):
     c, _ = entrar(app)
     assert c.post("/api/postits", json={"pagina": "../x", "texto": "a"}).status_code == 422
     assert c.post("/api/postits", json={"pagina": "inicio", "texto": "   "}).status_code == 422
-    assert c.post("/api/postits", json={"pagina": "inicio", "texto": "a" * 2001}).status_code == 422
+    assert c.post("/api/postits", json={"pagina": "inicio", "texto": "a" * (editor.LIMITE_TEXTO + 1)}).status_code == 422
     assert c.get("/api/postits", params={"pagina": "A B"}).status_code == 422
 
 
@@ -167,3 +167,18 @@ def test_convite_so_pelo_mesmo_site(app):
     r = c.post("/api/editor/registrar", json={"codigo": editor.criar_convite(), "email": "x@exemplo.org", "nome": "X", "senha": "senha-nova-bem-longa"},
                headers={"Origin": "https://site-malicioso.example"})
     assert r.status_code == 403
+
+
+def test_texto_no_limite_passa_e_acima_dele_nao(app):
+    c, _ = entrar(app)
+    assert c.post("/api/postits", json={"pagina": "inicio", "texto": "a" * editor.LIMITE_TEXTO}).status_code == 200
+    assert c.post("/api/postits", json={"pagina": "inicio", "texto": "a" * (editor.LIMITE_TEXTO + 1)}).status_code == 422
+
+
+def test_autor_publica_e_despublica_pelo_put(app):
+    c, _ = entrar(app)
+    n = c.post("/api/postits", json={"pagina": "inicio", "texto": "Rascunho"}).json()
+    assert n["publico"] is False
+    r = c.put(f"/api/postits/{n['id']}", json={"pagina": "inicio", "ancora": n["ancora"], "rotulo": n["rotulo"], "texto": n["texto"], "publico": True})
+    assert r.status_code == 200 and r.json()["publico"] is True
+    assert len(TestClient(app).get("/api/postits", params={"pagina": "inicio"}).json()["itens"]) == 1
