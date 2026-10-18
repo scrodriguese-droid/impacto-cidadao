@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Os três poderes — ImpactoCidadão</title>
+    <meta name="description" content="Como se organizam o Executivo, o Legislativo e o Judiciário, e quem fiscaliza e defende o cidadão: Ministério Público, Defensoria e Tribunais de Contas.">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="assets/tailwind-config.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Inter', system-ui, sans-serif; }
+        :focus-visible { outline: 2px solid #A92823; outline-offset: 2px; }
+    </style>
+    <link rel="stylesheet" href="assets/brutalista.css">
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-full flex flex-col transition-colors duration-200">
+
+<a href="#conteudo" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-white focus:text-slate-900 focus:p-3">Ir para o conteúdo</a>
+<div id="cabecalho"></div>
+
+<main id="conteudo" class="max-w-6xl mx-auto px-4 sm:px-6 pt-6 pb-10 flex-grow w-full space-y-10">
+    <header>
+        <h1 id="titulo" class="text-2xl font-extrabold tracking-tight"></h1>
+        <p id="subtitulo" class="text-sm text-slate-500 dark:text-slate-400 mt-1"></p>
+    </header>
+    <div id="corpo" class="space-y-10"></div>
+</main>
+
+<div id="rodape"></div>
+<script src="assets/comum.js"></script>
+<script>
+const PARAM = new URLSearchParams(location.search).get('aba');
+const ABA = PARAM === 'judiciario' ? 'judiciario' : PARAM === 'controle' ? 'controle' : 'executivo';
+renderLayout(ABA);
+
+const L = (href, txt) => `<a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(href))}">${esc(txt)}</a>`;
+const bloco = (kicker, titulo, texto, extra = '') => `<div class="poder-bloco"><p class="poder-kicker">${esc(kicker)}</p><h3>${esc(titulo)}</h3><p>${esc(texto)}</p>${extra}</div>`;
+const grade = (blocos) => `<div class="poder-grade">${blocos.join('')}</div>`;
+const secao = (num, titulo, intro, corpo) => `<section><h2>${esc(titulo)}</h2>${intro ? `<p class="text-sm mt-1" style="max-width:70ch">${esc(intro)}</p>` : ''}${corpo}</section>`;
+const lk = (...a) => `<p class="poder-link">${a.join(' · ')}</p>`;
+
+const ABAS = {
+    executivo: {
+        titulo: 'Poder Executivo',
+        sub: 'Quem administra e executa: transforma as leis e o orçamento em escola, posto de saúde, estrada e benefício.',
+        html: () =>
+            secao('01', 'Quem chefia, em cada esfera', 'O chefe do Executivo é eleito a cada quatro anos, junto com o vice.',
+                grade([
+                    bloco('União', 'Presidente da República', 'Chefia o Governo Federal, com o Vice-Presidente. Escolhe os ministros.'),
+                    bloco('Estado', 'Governador', 'Chefia o governo do estado, com o Vice-Governador. Escolhe os secretários estaduais.'),
+                    bloco('Município', 'Prefeito', 'Chefia a prefeitura, com o Vice-Prefeito. Escolhe os secretários municipais.'),
+                ])) +
+            secao('02', 'Ministérios, pastas e secretarias: quem executa o quê', 'A mesma divisão por área se repete nas três esferas. Só muda o nome: na União são ministérios; nos estados e municípios, secretarias.',
+                grade([
+                    bloco('Federal', 'Ministérios', 'Saúde, Educação, Cidades, Fazenda, Justiça e outros. Cada um é comandado por um ministro e cuida de uma área do país inteiro.', lk(L('https://www.gov.br/', 'Portal gov.br'))),
+                    bloco('Estadual', 'Secretarias de Estado', 'Saúde, Educação, Segurança, Transportes. Cuidam do que é do estado, como a polícia e as rodovias estaduais.', lk(L('https://www.sp.gov.br/', 'Governo de São Paulo'))),
+                    bloco('Municipal', 'Secretarias municipais', 'Saúde, Educação, Obras, Assistência Social. É o que mais aparece no dia a dia: posto de saúde, creche, coleta de lixo.', lk('<a class="underline" href="servicos.html">Guia de serviços por esfera</a>')),
+                ])) +
+            secao('03', 'Autarquias e empresas públicas', 'Órgãos ligados ao Executivo, com autonomia para uma função específica.',
+                grade([
+                    bloco('Autarquia', 'Banco Central', 'Cuida da moeda, dos juros básicos e da fiscalização dos bancos.', lk(L('https://www.bcb.gov.br/', 'bcb.gov.br'))),
+                    bloco('Autarquia', 'INSS', 'Paga aposentadorias, pensões e outros benefícios da Previdência.', lk(L('https://meu.inss.gov.br/', 'Meu INSS'))),
+                    bloco('Autarquia', 'Anvisa', 'Fiscaliza e autoriza medicamentos, alimentos e produtos de saúde.', lk(L('https://www.gov.br/anvisa/', 'gov.br/anvisa'))),
+                    bloco('Autarquia', 'Ibama', 'Fiscaliza e licencia atividades que afetam o meio ambiente.', lk(L('https://www.gov.br/ibama/', 'gov.br/ibama'))),
+                    bloco('Empresa pública', 'Caixa Econômica Federal', 'Banco público: paga benefícios sociais e FGTS e financia a casa própria.', lk(L('https://www.caixa.gov.br/', 'caixa.gov.br'))),
+                    bloco('Empresa pública', 'Correios', 'Serviço postal em todo o território nacional.', lk(L('https://www.correios.com.br/', 'correios.com.br'))),
+                ])),
+    },
+    judiciario: {
+        titulo: 'Poder Judiciário',
+        sub: 'Onde se busca a justiça: interpreta as leis e decide os conflitos, inclusive os que envolvem o próprio governo.',
+        html: () =>
+            secao('01', 'A cúpula e os tribunais', 'Os casos começam, em regra, com um juiz e podem subir a tribunais maiores por recurso.',
+                grade([
+                    bloco('Cúpula', 'STF: Supremo Tribunal Federal', 'Guarda da Constituição. Julga se uma lei respeita a Constituição.', lk(L('https://www.stf.jus.br/', 'stf.jus.br'))),
+                    bloco('Cúpula', 'STJ: Superior Tribunal de Justiça', 'Uniformiza a interpretação das leis federais em todo o país.', lk(L('https://www.stj.jus.br/', 'stj.jus.br'))),
+                    bloco('Estado', 'Tribunais de Justiça e juízes de direito', 'Cuidam dos casos do dia a dia: família, contratos, vizinhança, crimes comuns.', lk(L('https://www.tjsp.jus.br/', 'TJSP'))),
+                ])) +
+            secao('02', 'Justiça especializada', 'Cada ramo cuida de um tipo de assunto.',
+                grade([
+                    bloco('Trabalho', 'Justiça do Trabalho', 'Conflitos entre trabalhadores e empregadores, com base na CLT.', lk(L('https://www.tst.jus.br/', 'tst.jus.br'))),
+                    bloco('Eleitoral', 'TSE e TREs', 'Organizam as eleições e julgam questões eleitorais.', lk(L('https://www.tse.jus.br/', 'tse.jus.br'))),
+                    bloco('Federal', 'Justiça Federal', 'Casos em que a União, o INSS ou outro órgão federal é parte.', lk(L('https://www.cjf.jus.br/', 'cjf.jus.br'))),
+                ])),
+    },
+    controle: {
+        titulo: 'Fiscalização e defesa',
+        sub: 'Para onde ir quando é preciso fiscalizar o governo ou defender um direito sem pagar advogado.',
+        html: () =>
+            secao('01', 'Quem fiscaliza e quem defende', 'Esses órgãos têm autonomia para atuar, inclusive contra governos.',
+                grade([
+                    bloco('Fiscal da lei', 'Ministério Público (MPF e MPSP)', 'Entra com ação civil pública contra governos e empresas. Defende o patrimônio público, o meio ambiente e a saúde, inclusive o SUS.', lk(L('https://www.mpf.mp.br/', 'mpf.mp.br'), L('https://www.mpsp.mp.br/', 'mpsp.mp.br'))),
+                    bloco('Defesa gratuita', 'Defensoria Pública (DPU e DPESP)', 'Advogados gratuitos para quem não pode pagar: guarda de filhos, remédios pela via judicial, despejo e defesa criminal.', lk(L('https://www.dpu.def.br/', 'dpu.def.br'), L('https://www.defensoria.sp.def.br/', 'defensoria.sp.def.br'))),
+                    bloco('Auditoria das contas', 'Tribunais de Contas (TCU e TCESP)', 'Auditam as contas e as licitações de governos e prefeituras. O TCESP fiscaliza os municípios paulistas.', lk(L('https://portal.tcu.gov.br/', 'tcu.gov.br'), L('https://www.tce.sp.gov.br/', 'tce.sp.gov.br'))),
+                ])),
+    },
+};
+const a = ABAS[ABA];
+document.title = a.titulo + ' — ImpactoCidadão';
+$('titulo').textContent = a.titulo;
+$('subtitulo').textContent = a.sub;
+$('corpo').innerHTML = a.html() + `<p class="ficha-nota">Os parlamentares e as bancadas estão na aba <a class="underline" href="bancadas.html">Legislativo</a>. Quem ocupa cada cargo muda a cada eleição ou nomeação: consulte o site oficial de cada órgão.</p>`;
+</script>
+</body>
+</html>

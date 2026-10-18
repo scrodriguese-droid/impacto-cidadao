@@ -582,3 +582,24 @@ body.postit-escolhendo, body.postit-escolhendo * { cursor: crosshair !important;
 .bolso-nota { font-size: .78rem; line-height: 1.4; color: var(--muted); }
 .prazo { margin-top: 1.6rem; padding: .85rem 1rem; background: var(--ocre); color: #111 !important; border: 2px solid #111; font-size: .92rem; }
 .prazo * { color: #111 !important; }
+
+/* ---------- Os três poderes ---------- */
+.poder-num { font: 800 .72rem/1 var(--fonte-texto); letter-spacing: .14em; color: var(--vermelho); }
+.poder-h { font-family: var(--fonte-titulo); font-size: 2rem; line-height: 1.05; text-transform: uppercase; margin-top: .3rem; padding-bottom: .5rem; border-bottom: 3px solid var(--line); }
+.poder-grade { display: grid; border-top: 3px solid var(--line); border-left: 1px solid var(--line); margin-top: .9rem; }
+@media (min-width: 760px) { .poder-grade { grid-template-columns: repeat(3, 1fr); } }
+.poder-bloco { padding: 1rem 1.1rem 1.2rem; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.poder-kicker { font: 800 .66rem/1.2 var(--fonte-texto); letter-spacing: .12em; text-transform: uppercase; color: var(--vermelho); }
+.poder-bloco h3 { font-family: var(--fonte-titulo); font-size: 1.45rem; line-height: 1.1; text-transform: uppercase; margin: .4rem 0 .5rem; }
+.poder-bloco p:not(.poder-kicker) { font-size: .86rem; line-height: 1.5; }
+.poder-link { margin-top: .7rem; font-size: .78rem !important; font-weight: 700; }
+
+/* abas da área: em telas estreitas viram grade 2×2 (o último item não fica sozinho na 2ª linha) */
+@media (max-width: 900px) {
+    nav[aria-label="Telas desta área"] > div:first-child { display: grid !important; grid-template-columns: 1fr 1fr; width: 100%; }
+    nav[aria-label="Telas desta área"] > div:first-child > * { border-bottom: 1px solid var(--line) !important; text-align: center; }
+    nav[aria-label="Telas desta área"] > div:first-child > *:nth-child(2n) { border-right: 0 !important; }
+    nav[aria-label="Telas desta área"] > div:first-child > *:nth-last-child(-n+2):nth-child(odd),
+    nav[aria-label="Telas desta área"] > div:first-child > *:last-child,
+    nav[aria-label="Telas desta área"] > div:first-child > *:nth-last-child(2):nth-child(odd) { border-bottom: 0 !important; }
+}

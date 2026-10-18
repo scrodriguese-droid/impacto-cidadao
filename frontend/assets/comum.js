@@ -46,7 +46,7 @@ const NAVEGACAO = [
     { id: 'quem', paginas: ['servicos', 'quem'], href: 'servicos.html', icone: 'fa-magnifying-glass-location', rotulo: 'Quem resolve o quê?' },
     { id: 'orcamento', paginas: ['economia', 'fiscal', 'orcamento', 'tesouro', 'tributos', 'simuladores', 'macro', 'financiamento', 'ciclo'], href: 'economia.html', icone: 'fa-coins', rotulo: 'Orçamento e contas públicas' },
     { id: 'politicas', paginas: ['politicas'], href: 'politicas.html', icone: 'fa-landmark', rotulo: 'Leis e projetos' },
-    { id: 'bancadas', paginas: ['bancadas'], href: 'bancadas.html', icone: 'fa-people-group', rotulo: 'Bancadas' },
+    { id: 'poderes', paginas: ['executivo', 'bancadas', 'judiciario', 'controle'], href: 'poderes.html', icone: 'fa-building-columns', rotulo: 'Conheça os três poderes' },
     { id: 'planos', paginas: ['planos'], href: 'planos.html', icone: 'fa-flag', rotulo: 'Eleições: planos de governo' },
 ];
 const NAV_GLOSSARIO = { id: 'glossario', paginas: ['glossario'], href: 'glossario.html', icone: 'fa-book', rotulo: 'Glossário' };
@@ -55,6 +55,12 @@ const SUBNAVEGACAO = {
     quem: [
         { id: 'servicos', href: 'servicos.html', rotulo: 'Guia de serviços' },
         { id: 'quem', href: 'quem-resolve.html', rotulo: 'Buscador e mapa' },
+    ],
+    poderes: [
+        { id: 'executivo', href: 'poderes.html', rotulo: 'Executivo' },
+        { id: 'bancadas', href: 'bancadas.html', rotulo: 'Legislativo' },
+        { id: 'judiciario', href: 'poderes.html?aba=judiciario', rotulo: 'Judiciário' },
+        { id: 'controle', href: 'poderes.html?aba=controle', rotulo: 'Fiscalização e defesa' },
     ],
     orcamento: [
         { id: 'economia', href: 'economia.html', rotulo: '1 · De onde vem e vai' },
