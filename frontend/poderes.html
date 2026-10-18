@@ -180,6 +180,27 @@ async function blocoFederal() {
     } catch (e) { $('ministerios').innerHTML = mensagemErro(e); }
 }
 
+const autarquiasLocais = (estadual) => {
+    const sp = MUNICIPIO && MUNICIPIO.uf === 'SP';
+    if (estadual) {
+        return secao('03', 'Autarquias e entidades do estado', sp ? 'Exemplos do estado de São Paulo, órgãos com autonomia para uma função específica.' : 'Cada estado organiza as suas. Os exemplos abaixo existem, com nomes próprios, na maioria dos estados.',
+            grade(sp ? [
+                bloco('Autarquia', 'Detran-SP', 'Cuida de habilitação (CNH), registro e licenciamento de veículos.', lk(L('https://www.detran.sp.gov.br/', 'detran.sp.gov.br'))),
+                bloco('Autarquia', 'USP, Unicamp e Unesp', 'Universidades estaduais, administradas de forma autárquica, com autonomia didática e financeira.', lk(L('https://www.usp.br/', 'usp.br'), L('https://www.unicamp.br/', 'unicamp.br'), L('https://www.unesp.br/', 'unesp.br'))),
+                bloco('Autarquia', 'DAEE', 'Departamento de Águas e Energia Elétrica: gerencia os recursos hídricos do estado e as outorgas de uso da água.', lk(L('https://www.daee.sp.gov.br/', 'daee.sp.gov.br'))),
+            ] : [
+                bloco('Autarquia', 'Detran', 'Cuida de habilitação (CNH), registro e licenciamento de veículos.'),
+                bloco('Autarquia', 'Universidades estaduais', 'Onde existem, são administradas de forma autárquica, com autonomia didática e financeira.'),
+                bloco('Autarquia', 'Órgão de recursos hídricos', 'Gerencia os recursos hídricos e as outorgas de uso da água.'),
+            ]));
+    }
+    return secao('03', 'Autarquias e entidades do município', 'Exemplos comuns. Cada cidade tem a sua organização: confira no portal da prefeitura.',
+        grade([
+            bloco('Autarquia', 'Serviço de água e esgoto (SAAE, DAE e similares)', 'Gerencia o saneamento local sem depender da secretaria de obras. Em algumas cidades o serviço é prestado por empresa concessionária.'),
+            bloco('Autarquia', 'Instituto de previdência municipal (IPREM)', 'Gere a aposentadoria e as pensões dos servidores do município. Existe nas cidades que têm regime próprio de previdência.'),
+        ]));
+};
+
 async function blocoLocal(esfera) {
     const estadual = esfera === 'estadual';
     const chefe = estadual
@@ -190,6 +211,7 @@ async function blocoLocal(esfera) {
         + secao('02', estadual ? 'Secretarias de Estado e verbas' : 'Secretarias municipais e verbas',
             'Cada área do orçamento costuma corresponder a uma secretaria (Saúde, Educação, Obras, Assistência Social). O valor é o autorizado na lei orçamentária do ano.',
             `${intro}<div id="verbasLocal" class="mt-4" role="status"></div>`)
+        + autarquiasLocais(estadual)
         + '<p class="ficha-nota">Para saber o que cada esfera faz e onde pedir cada serviço, veja o <a class="underline" href="servicos.html">Guia de serviços</a>.</p>';
     ligarCidade();
     if (!MUNICIPIO) return;
