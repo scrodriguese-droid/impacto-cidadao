@@ -84,6 +84,9 @@ def _db() -> Iterator[sqlite3.Connection]:
                         editor_id INTEGER NOT NULL REFERENCES editores(id) ON DELETE CASCADE,
                         criado_em TEXT NOT NULL, atualizado_em TEXT NOT NULL);
                     CREATE INDEX IF NOT EXISTS ix_postits_pagina ON postits(pagina);
+                    CREATE TABLE IF NOT EXISTS convites (
+                        codigo_hash TEXT PRIMARY KEY, papel TEXT NOT NULL DEFAULT 'editor',
+                        criado_em TEXT NOT NULL, expira_em TEXT NOT NULL, usado_em TEXT);
                 """)
                 _inicializado.add(chave)
         yield conn
@@ -132,6 +135,57 @@ def criar_editor(email: str, nome: str, senha: str, papel: str = "editor") -> in
             raise ValueError("Já existe uma conta com este e-mail.")
         return c.execute("INSERT INTO editores (email, nome, papel, senha_hash, criado_em) VALUES (?,?,?,?,?)",
                          (email, nome.strip(), papel, hash_senha(senha), _agora())).lastrowid
+
+
+# --------------------------------------------------------------------------- #
+# Convites: o administrador gera um código de uso único; quem o recebe cria a própria conta (e a própria senha) pelo
+# navegador. Assim a senha nunca passa por terminal alheio, chat ou arquivo, e continua sem haver cadastro aberto.
+# --------------------------------------------------------------------------- #
+VALIDADE_CONVITE_MIN = 60
+_ALFABETO = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"      # sem I, O, 0, 1: não se confunde ao digitar
+
+
+def criar_convite(papel: str = "editor", minutos: int = VALIDADE_CONVITE_MIN) -> str:
+    if papel not in PAPEIS:
+        raise ValueError("Papel inválido.")
+    codigo = "-".join("".join(secrets.choice(_ALFABETO) for _ in range(4)) for _ in range(3))
+    agora = datetime.now(timezone.utc)
+    with _db() as c:
+        c.execute("INSERT INTO convites (codigo_hash, papel, criado_em, expira_em) VALUES (?,?,?,?)",
+                  (_hash_token(codigo), papel, agora.isoformat(timespec="seconds"),
+                   (agora + timedelta(minutes=minutos)).isoformat(timespec="seconds")))
+    return codigo
+
+
+def _normalizar_codigo(codigo: str) -> str:
+    return re.sub(r"[^A-Z0-9]", "", codigo.upper())
+
+
+def usar_convite(codigo: str, email: str, nome: str, senha: str) -> int:
+    """Valida o convite e cria a conta, na mesma transação do uso do código (não dá para usar duas vezes)."""
+    limpo = _normalizar_codigo(codigo)
+    formatado = "-".join(limpo[i:i + 4] for i in range(0, 12, 4)) if len(limpo) == 12 else ""
+    agora = _agora()
+    with _db() as c:
+        c.execute("BEGIN IMMEDIATE")
+        conv = c.execute("SELECT papel FROM convites WHERE codigo_hash = ? AND usado_em IS NULL AND expira_em > ?",
+                         (_hash_token(formatado), agora)).fetchone() if formatado else None
+        if not conv:
+            raise PermissionError("Convite inválido, vencido ou já usado.")
+        # valida e cria; qualquer erro desfaz tudo (o convite continua válido para tentar de novo)
+        email = email.strip().lower()
+        if not _EMAIL.match(email):
+            raise ValueError("E-mail inválido.")
+        if not nome.strip():
+            raise ValueError("Informe o nome.")
+        if len(senha) < MIN_SENHA:
+            raise ValueError(f"A senha precisa ter pelo menos {MIN_SENHA} caracteres.")
+        if c.execute("SELECT 1 FROM editores WHERE email = ?", (email,)).fetchone():
+            raise ValueError("Já existe uma conta com este e-mail.")
+        eid = c.execute("INSERT INTO editores (email, nome, papel, senha_hash, criado_em) VALUES (?,?,?,?,?)",
+                        (email, nome.strip(), conv["papel"], hash_senha(senha), agora)).lastrowid
+        c.execute("UPDATE convites SET usado_em = ? WHERE codigo_hash = ?", (agora, _hash_token(formatado)))
+        return eid
 
 
 # --------------------------------------------------------------------------- #
@@ -249,6 +303,28 @@ def entrar(dados: EntrarIn, request: Request, resposta: Response) -> dict:
     return {"logado": True, "nome": e["nome"], "papel": e["papel"]}
 
 
+class RegistrarIn(BaseModel):
+    codigo: str = Field(min_length=1, max_length=40)
+    email: str = Field(max_length=254)
+    nome: str = Field(min_length=1, max_length=80)
+    senha: str = Field(min_length=1, max_length=200)
+
+
+@router.post("/editor/registrar", dependencies=[Depends(mesma_origem)])
+def registrar(dados: RegistrarIn, request: Request, resposta: Response) -> dict:
+    chaves = (f"ip:{_ip(request)}", "convite")
+    if _falhas.bloqueado(*chaves):
+        raise HTTPException(status_code=429, detail="Muitas tentativas. Aguarde alguns minutos e tente de novo.")
+    try:
+        usar_convite(dados.codigo, dados.email, dados.nome, dados.senha)
+    except PermissionError as exc:
+        _falhas.registrar(*chaves)
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    return entrar(EntrarIn(email=dados.email, senha=dados.senha), request, resposta)
+
+
 @router.post("/editor/sair", dependencies=[Depends(mesma_origem)])
 def sair(request: Request, resposta: Response) -> dict:
     token = request.cookies.get(COOKIE)
@@ -339,6 +415,8 @@ def main() -> int:
     c = sub.add_parser("criar", help="cria uma conta de editor")
     c.add_argument("--email", required=True)
     c.add_argument("--nome", required=True)
+    cv = sub.add_parser("convite", help="gera um código de convite de uso único (vale 60 minutos)")
+    cv.add_argument("--minutos", type=int, default=VALIDADE_CONVITE_MIN)
     sub.add_parser("listar", help="lista as contas")
     s = sub.add_parser("senha", help="troca a senha de uma conta (encerra as sessões dela)")
     s.add_argument("--email", required=True)
@@ -349,6 +427,10 @@ def main() -> int:
         if a.cmd == "criar":
             criar_editor(a.email, a.nome, _pedir_senha())
             print(f"Conta de editor criada: {a.email.strip().lower()}")
+        elif a.cmd == "convite":
+            codigo = criar_convite(minutos=a.minutos)
+            print(f"Código de convite (uso único, vale {a.minutos} min): {codigo}")
+            print("Quem receber abre o site, Área do editor, \"Tenho um convite\", e cria a própria conta e senha.")
         elif a.cmd == "listar":
             with _db() as conn:
                 for l in conn.execute("SELECT email, nome, papel, criado_em FROM editores ORDER BY id"):

@@ -536,3 +536,7 @@ body.postit-escolhendo, body.postit-escolhendo * { cursor: crosshair !important;
 .postit-login .postit-acoes button.bg-brand-600 { background: var(--vermelho) !important; color: #fff !important; border-color: var(--vermelho) !important; }
 @media (max-width: 640px) { .postit-dock { left: .5rem; right: .5rem; bottom: .5rem; } .postit-dock > * { flex: 1; padding: .55rem .4rem; } .postit-lista { right: .5rem; bottom: 4rem; } }
 .postit-marca[hidden] { display: none !important; }
+.postit-mostrar { display: flex !important; align-items: center; gap: .5rem; text-transform: none !important; letter-spacing: 0 !important; font-weight: 600 !important; font-size: .78rem !important; }
+.postit-troca { margin-top: 1rem; padding-top: .8rem; border-top: 1px solid var(--line); }
+.postit-troca button { border: 0 !important; background: transparent !important; text-transform: none; letter-spacing: 0; text-decoration: underline; text-underline-offset: 3px; font-size: .82rem; padding: 0; }
+.postit-troca button:hover { background: transparent !important; color: var(--vermelho) !important; }

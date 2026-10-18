@@ -118,3 +118,52 @@ def test_escrita_de_outro_site_e_recusada(app):
     assert r.status_code == 403
     r = c.post("/api/editor/entrar", json={"email": "ana@exemplo.org", "senha": "senha-bem-longa-1"}, headers={"Origin": "https://site-malicioso.example"})
     assert r.status_code == 403
+
+
+# --------------------------------------------------------------------------- #
+# Convites: criar a própria conta pelo navegador, sem cadastro aberto
+# --------------------------------------------------------------------------- #
+def registrar(app, codigo, email="nova@exemplo.org", senha="senha-nova-bem-longa", nome="Nova"):
+    c = TestClient(app)
+    return c, c.post("/api/editor/registrar", json={"codigo": codigo, "email": email, "nome": nome, "senha": senha})
+
+
+def test_convite_cria_conta_e_ja_entra(app):
+    codigo = editor.criar_convite()
+    c, r = registrar(app, codigo.lower())               # aceita minúsculas
+    assert r.status_code == 200 and r.json()["nome"] == "Nova"
+    assert c.get("/api/editor/eu").json()["nome"] == "Nova"
+    assert entrar(app, "nova@exemplo.org", "senha-nova-bem-longa")[1].status_code == 200
+
+
+def test_convite_vale_uma_vez_so(app):
+    codigo = editor.criar_convite()
+    assert registrar(app, codigo)[1].status_code == 200
+    assert registrar(app, codigo, email="outra@exemplo.org")[1].status_code == 403
+
+
+def test_convite_vencido_ou_falso_e_recusado(app):
+    vencido = editor.criar_convite(minutos=-1)
+    assert registrar(app, vencido)[1].status_code == 403
+    assert registrar(app, "AAAA-BBBB-CCCC")[1].status_code == 403
+    assert registrar(app, "curto")[1].status_code == 403
+
+
+def test_erro_de_validacao_nao_gasta_o_convite(app):
+    codigo = editor.criar_convite()
+    assert registrar(app, codigo, senha="curta")[1].status_code == 422
+    assert registrar(app, codigo, email="ana@exemplo.org")[1].status_code == 422     # e-mail já existe
+    assert registrar(app, codigo)[1].status_code == 200                               # o convite continua valendo
+
+
+def test_chutes_de_convite_sao_bloqueados(app):
+    for _ in range(5):
+        assert registrar(app, "AAAA-BBBB-CCCC")[1].status_code == 403
+    assert registrar(app, editor.criar_convite())[1].status_code == 429
+
+
+def test_convite_so_pelo_mesmo_site(app):
+    c = TestClient(app)
+    r = c.post("/api/editor/registrar", json={"codigo": editor.criar_convite(), "email": "x@exemplo.org", "nome": "X", "senha": "senha-nova-bem-longa"},
+               headers={"Origin": "https://site-malicioso.example"})
+    assert r.status_code == 403

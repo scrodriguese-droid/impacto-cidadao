@@ -131,31 +131,44 @@
         b.innerHTML = ME.logado ? `<i class="fa-solid fa-user-pen w-5 text-center" aria-hidden="true"></i><span>Editor: ${esc(ME.nome)} (sair)</span>`
             : '<i class="fa-solid fa-user-pen w-5 text-center" aria-hidden="true"></i><span>Área do editor</span>';
     }
-    function abrirLogin() {
+    function abrirLogin(modo) {
         let d = document.getElementById('dlgEditor');
-        if (!d) {
-            d = document.createElement('dialog');
-            d.id = 'dlgEditor'; d.className = 'w-[92vw] max-w-sm p-0';
-            d.innerHTML = `<form method="dialog" class="postit-login" id="formEditor" autocomplete="on">
-                <p class="postit-selo">Área do editor</p><h2>Entrar</h2>
-                <p class="ficha-nota">Só para quem tem conta de editor. A conta é criada pela administração do site.</p>
-                <label for="edEmail">E-mail</label><input id="edEmail" type="email" required autocomplete="username" maxlength="254">
-                <label for="edSenha">Senha</label><input id="edSenha" type="password" required autocomplete="current-password" maxlength="200">
-                <p id="edErro" class="postit-erro" role="alert"></p>
-                <p class="postit-acoes"><button type="submit" id="edEnviar" class="bg-brand-600">Entrar</button><button type="button" id="edFechar">Cancelar</button></p></form>`;
-            document.body.append(d);
-            d.querySelector('#edFechar').addEventListener('click', () => d.close());
-            d.querySelector('#formEditor').addEventListener('submit', async (ev) => {
-                ev.preventDefault();
-                const erro = d.querySelector('#edErro'), env = d.querySelector('#edEnviar');
-                erro.textContent = ''; env.disabled = true;
-                try {
-                    await chamar('POST', '/editor/entrar', { email: d.querySelector('#edEmail').value, senha: d.querySelector('#edSenha').value });
-                    d.querySelector('#edSenha').value = ''; d.close(); await carregar();
-                } catch (e) { erro.textContent = e.message; } finally { env.disabled = false; }
-            });
-        }
-        d.showModal(); d.querySelector('#edEmail').focus();
+        if (d) d.remove();   // sempre refeito: entra com a conta ou cria a conta com um convite
+        const convite = modo === 'convite';
+        d = document.createElement('dialog');
+        d.id = 'dlgEditor'; d.className = 'w-[92vw] max-w-sm p-0';
+        d.innerHTML = `<form method="dialog" class="postit-login" id="formEditor" autocomplete="on">
+            <p class="postit-selo">Área do editor</p><h2>${convite ? 'Criar conta' : 'Entrar'}</h2>
+            <p class="ficha-nota">${convite ? 'Com o código de convite que a administração te deu, defina o seu e-mail e a sua senha.' : 'Só para quem tem conta de editor.'}</p>
+            ${convite ? `<label for="edCodigo">Código do convite</label><input id="edCodigo" type="text" required autocomplete="off" maxlength="40" placeholder="XXXX-XXXX-XXXX">
+                <label for="edNome">Nome (como assina os post-its)</label><input id="edNome" type="text" required autocomplete="name" maxlength="80">` : ''}
+            <label for="edEmail">E-mail</label><input id="edEmail" type="email" required autocomplete="username" maxlength="254">
+            <label for="edSenha">${convite ? 'Crie uma senha (mínimo de 10 caracteres)' : 'Senha'}</label><input id="edSenha" type="password" required autocomplete="${convite ? 'new-password' : 'current-password'}" maxlength="200" ${convite ? 'minlength="10"' : ''}>
+            ${convite ? '<label for="edSenha2">Repita a senha</label><input id="edSenha2" type="password" required autocomplete="new-password" maxlength="200" minlength="10">' : ''}
+            <label class="postit-mostrar"><input type="checkbox" id="edMostrar"> Mostrar a senha enquanto digito</label>
+            <p id="edErro" class="postit-erro" role="alert"></p>
+            <p class="postit-acoes"><button type="submit" id="edEnviar" class="bg-brand-600">${convite ? 'Criar conta e entrar' : 'Entrar'}</button><button type="button" id="edFechar">Cancelar</button></p>
+            <p class="postit-troca"><button type="button" id="edTroca">${convite ? 'Já tenho conta' : 'Tenho um convite'}</button></p></form>`;
+        document.body.append(d);
+        const senhas = () => [...d.querySelectorAll('#edSenha, #edSenha2')];
+        d.querySelector('#edMostrar').addEventListener('change', (ev) => senhas().forEach((i) => { i.type = ev.target.checked ? 'text' : 'password'; }));
+        d.querySelector('#edFechar').addEventListener('click', () => d.close());
+        d.querySelector('#edTroca').addEventListener('click', () => abrirLogin(convite ? 'entrar' : 'convite'));
+        d.querySelector('#formEditor').addEventListener('submit', async (ev) => {
+            ev.preventDefault();
+            const erro = d.querySelector('#edErro'), env = d.querySelector('#edEnviar');
+            erro.textContent = '';
+            const email = d.querySelector('#edEmail').value, senha = d.querySelector('#edSenha').value;
+            if (convite && senha !== d.querySelector('#edSenha2').value) { erro.textContent = 'As senhas não conferem.'; return; }
+            env.disabled = true;
+            try {
+                if (convite) await chamar('POST', '/editor/registrar', { codigo: d.querySelector('#edCodigo').value, nome: d.querySelector('#edNome').value, email, senha });
+                else await chamar('POST', '/editor/entrar', { email, senha });
+                d.close(); await carregar();
+            } catch (e) { erro.textContent = e.message; } finally { env.disabled = false; }
+        });
+        d.addEventListener('close', () => senhas().forEach((i) => { i.value = ''; }));
+        d.showModal(); d.querySelector(convite ? '#edCodigo' : '#edEmail').focus();
     }
     async function sair() {
         try { await chamar('POST', '/editor/sair'); } catch (_) { /* a sessão expira de qualquer jeito */ }
