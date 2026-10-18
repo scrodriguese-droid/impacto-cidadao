@@ -669,3 +669,13 @@ body.postit-escolhendo, body.postit-escolhendo * { cursor: crosshair !important;
 .min-ministro { margin-bottom: 1rem; font-size: .95rem; }
 .min-ministro > span { font: 800 .66rem/1 var(--fonte-texto); letter-spacing: .12em; text-transform: uppercase; color: var(--vermelho); margin-right: .5rem; }
 .min-ministro small { display: block; font-size: .72rem; color: var(--muted); margin-top: .2rem; }
+
+/* ---------- Administração indireta (tabela) ---------- */
+.ind-tabela { margin-top: .9rem; border-top: 3px solid var(--line); }
+.ind-cab, .ind-linha { display: grid; grid-template-columns: 1fr; gap: .3rem; padding: .8rem .2rem; border-bottom: 1px solid var(--line); font-size: .86rem; line-height: 1.45; }
+.ind-cab { display: none; font: 800 .66rem/1.2 var(--fonte-texto); letter-spacing: .12em; text-transform: uppercase; color: var(--vermelho); border-bottom: 2px solid var(--line); }
+.ind-linha b { font-family: var(--fonte-titulo); font-weight: 400; font-size: 1.25rem; text-transform: uppercase; line-height: 1.1; }
+@media (min-width: 860px) {
+    .ind-cab { display: grid; }
+    .ind-cab, .ind-linha { grid-template-columns: 1.1fr 1.5fr 1.4fr; gap: 1.2rem; padding: .9rem .4rem; }
+}

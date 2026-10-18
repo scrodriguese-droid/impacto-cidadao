@@ -116,16 +116,6 @@ function ligarCidade() {
 
 const chefeFederal = () => secao('01', 'Quem chefia', 'Eleito a cada quatro anos, junto com o vice.',
     grade([bloco('União', 'Presidente da República', 'Chefia o Governo Federal, com o Vice-Presidente. Escolhe os ministros, que comandam os ministérios.')]));
-const entidadesFederais = () => secao('03', 'Autarquias e empresas públicas', 'Órgãos ligados ao Executivo, com autonomia para uma função específica.',
-    grade([
-        bloco('Autarquia', 'Banco Central', 'Cuida da moeda, dos juros básicos e da fiscalização dos bancos.', lk(L('https://www.bcb.gov.br/', 'bcb.gov.br'))),
-        bloco('Autarquia', 'INSS', 'Paga aposentadorias, pensões e outros benefícios da Previdência.', lk(L('https://meu.inss.gov.br/', 'Meu INSS'))),
-        bloco('Autarquia', 'Anvisa', 'Fiscaliza e autoriza medicamentos, alimentos e produtos de saúde.', lk(L('https://www.gov.br/anvisa/', 'gov.br/anvisa'))),
-        bloco('Autarquia', 'Ibama', 'Fiscaliza e licencia atividades que afetam o meio ambiente.', lk(L('https://www.gov.br/ibama/', 'gov.br/ibama'))),
-        bloco('Empresa pública', 'Caixa Econômica Federal', 'Banco público: paga benefícios sociais e FGTS e financia a casa própria.', lk(L('https://www.caixa.gov.br/', 'caixa.gov.br'))),
-        bloco('Empresa pública', 'Correios', 'Serviço postal em todo o território nacional.', lk(L('https://www.correios.com.br/', 'correios.com.br'))),
-    ]));
-
 const reaisCurto = (n) => {
     const v = Math.abs(n);
     if (v >= 1e12) return `R$ ${(v / 1e12).toLocaleString('pt-BR', { maximumFractionDigits: 2 })} tri`;
@@ -170,7 +160,7 @@ function painelMinisterio(o, total) {
 async function blocoFederal() {
     const corpo = $('execCorpo');
     corpo.innerHTML = chefeFederal() + secao('02', 'Ministérios: secretarias e verbas', 'Cada ministério com o que pode gastar em ' + new Date().getFullYear() + ', quanto já pagou e como se divide por dentro. Clique para abrir.',
-        '<div id="ministerios" class="mt-3" role="status"><p class="text-sm">Carregando os ministérios…</p></div>') + entidadesFederais();
+        '<div id="ministerios" class="mt-3" role="status"><p class="text-sm">Carregando os ministérios…</p></div>') + administracaoIndireta('federal');
     try {
         DADOS_ORGAOS = DADOS_ORGAOS || await api('/api/executivo/orgaos');
         const d = DADOS_ORGAOS;
@@ -180,25 +170,47 @@ async function blocoFederal() {
     } catch (e) { $('ministerios').innerHTML = mensagemErro(e); }
 }
 
-const autarquiasLocais = (estadual) => {
-    const sp = MUNICIPIO && MUNICIPIO.uf === 'SP';
-    if (estadual) {
-        return secao('03', 'Autarquias e entidades do estado', sp ? 'Exemplos do estado de São Paulo, órgãos com autonomia para uma função específica.' : 'Cada estado organiza as suas. Os exemplos abaixo existem, com nomes próprios, na maioria dos estados.',
-            grade(sp ? [
-                bloco('Autarquia', 'Detran-SP', 'Cuida de habilitação (CNH), registro e licenciamento de veículos.', lk(L('https://www.detran.sp.gov.br/', 'detran.sp.gov.br'))),
-                bloco('Autarquia', 'USP, Unicamp e Unesp', 'Universidades estaduais, administradas de forma autárquica, com autonomia didática e financeira.', lk(L('https://www.usp.br/', 'usp.br'), L('https://www.unicamp.br/', 'unicamp.br'), L('https://www.unesp.br/', 'unesp.br'))),
-                bloco('Autarquia', 'DAEE', 'Departamento de Águas e Energia Elétrica: gerencia os recursos hídricos do estado e as outorgas de uso da água.', lk(L('https://www.daee.sp.gov.br/', 'daee.sp.gov.br'))),
-            ] : [
-                bloco('Autarquia', 'Detran', 'Cuida de habilitação (CNH), registro e licenciamento de veículos.'),
-                bloco('Autarquia', 'Universidades estaduais', 'Onde existem, são administradas de forma autárquica, com autonomia didática e financeira.'),
-                bloco('Autarquia', 'Órgão de recursos hídricos', 'Gerencia os recursos hídricos e as outorgas de uso da água.'),
-            ]));
-    }
-    return secao('03', 'Autarquias e entidades do município', 'Exemplos comuns. Cada cidade tem a sua organização: confira no portal da prefeitura.',
-        grade([
-            bloco('Autarquia', 'Serviço de água e esgoto (SAAE, DAE e similares)', 'Gerencia o saneamento local sem depender da secretaria de obras. Em algumas cidades o serviço é prestado por empresa concessionária.'),
-            bloco('Autarquia', 'Instituto de previdência municipal (IPREM)', 'Gere a aposentadoria e as pensões dos servidores do município. Existe nas cidades que têm regime próprio de previdência.'),
-        ]));
+const ENTIDADES = [
+    { nome: 'Autarquias', carac: 'Prestam serviços públicos com autonomia técnica e administrativa, sem fins lucrativos.' },
+    { nome: 'Empresas públicas', carac: 'Capital 100% público. Atuam no mercado, como uma empresa, mas pertencem ao governo.' },
+    { nome: 'Sociedades de economia mista', carac: 'Capital público e privado, com o governo no controle. Organizadas como sociedade anônima.' },
+    { nome: 'Fundações públicas', carac: 'Patrimônio público destinado a fins sociais, culturais, científicos ou de pesquisa.' },
+];
+const EXEMPLOS = {
+    federal: [
+        [['INSS', 'https://meu.inss.gov.br/'], ['Anvisa', 'https://www.gov.br/anvisa/'], ['Ibama', 'https://www.gov.br/ibama/'], ['Banco Central', 'https://www.bcb.gov.br/']],
+        [['Caixa Econômica Federal', 'https://www.caixa.gov.br/'], ['Correios', 'https://www.correios.com.br/']],
+        [['Petrobras', 'https://petrobras.com.br/'], ['Banco do Brasil', 'https://www.bb.com.br/']],
+        [['Fiocruz', 'https://portal.fiocruz.br/'], ['IBGE', 'https://www.ibge.gov.br/']],
+    ],
+    sp: [
+        [['Detran-SP', 'https://www.detran.sp.gov.br/'], ['USP', 'https://www.usp.br/'], ['Unicamp', 'https://www.unicamp.br/'], ['Unesp', 'https://www.unesp.br/'], ['DAEE', 'https://www.daee.sp.gov.br/']],
+        [],
+        [['Metrô-SP', 'https://www.metro.sp.gov.br/']],
+        [['Fundação Procon-SP', 'https://www.procon.sp.gov.br/'], ['Fundação Casa', 'https://www.fundacaocasa.sp.gov.br/']],
+    ],
+    estadual: [
+        [['Detran'], ['Universidades estaduais'], ['Órgão de recursos hídricos']],
+        [], [['Companhias estaduais de transporte ou de energia']], [['Fundações estaduais de cultura, saúde e pesquisa']],
+    ],
+    municipal: [
+        [['Serviço de água e esgoto (SAAE, DAE e similares)'], ['Instituto de previdência municipal (IPREM)']],
+        [['Empresas municipais de transporte ou de processamento de dados']], [['Companhias municipais de saneamento ou transporte']], [['Fundações municipais de cultura, esporte e saúde']],
+    ],
+};
+const administracaoIndireta = (esfera) => {
+    const sp = esfera === 'estadual' && MUNICIPIO && MUNICIPIO.uf === 'SP';
+    const ex = EXEMPLOS[sp ? 'sp' : esfera];
+    const rot = { federal: 'Federal', estadual: sp ? 'São Paulo' : 'Estadual', municipal: 'Municipal' }[esfera];
+    const item = ([nome, url]) => (url ? L(url, nome) : esc(nome));
+    const intro = esfera === 'federal'
+        ? 'Entidades criadas pelo governo para executar funções específicas, ligadas ao ministério da área.'
+        : 'Entidades criadas pelo governo para executar funções específicas. Os exemplos mostram o que costuma existir: cada ' + (esfera === 'estadual' ? 'estado' : 'cidade') + ' tem a sua organização, confira no portal oficial.';
+    return secao('03', 'Administração indireta', intro,
+        `<div class="ind-tabela" role="table" aria-label="Entidades da administração indireta">
+            <div class="ind-cab" role="row"><span>Entidade</span><span>Característica</span><span>Exemplos (${esc(rot)})</span></div>
+            ${ENTIDADES.map((e, k) => `<div class="ind-linha" role="row"><b>${esc(e.nome)}</b><span>${esc(e.carac)}</span>
+                <span>${ex[k].length ? ex[k].map(item).join(' · ') : '<em>Varia de estado para estado.</em>'}</span></div>`).join('')}</div>`);
 };
 
 async function blocoLocal(esfera) {
@@ -211,7 +223,7 @@ async function blocoLocal(esfera) {
         + secao('02', estadual ? 'Secretarias de Estado e verbas' : 'Secretarias municipais e verbas',
             'Cada área do orçamento costuma corresponder a uma secretaria (Saúde, Educação, Obras, Assistência Social). O valor é o autorizado na lei orçamentária do ano.',
             `${intro}<div id="verbasLocal" class="mt-4" role="status"></div>`)
-        + autarquiasLocais(estadual)
+        + administracaoIndireta(esfera)
         + '<p class="ficha-nota">Para saber o que cada esfera faz e onde pedir cada serviço, veja o <a class="underline" href="servicos.html">Guia de serviços</a>.</p>';
     ligarCidade();
     if (!MUNICIPIO) return;
