@@ -14,6 +14,7 @@ from __future__ import annotations
 import io
 import logging
 import re
+import threading
 import time
 import unicodedata
 from datetime import date
@@ -55,8 +56,45 @@ def _verificacao_tls():
         return True
 
 
+class Disjuntor:
+    """Para de consultar uma fonte que está recusando ou travando, por um tempo.
+
+    Sem isto, cada visita refaz a consulta e espera de novo (o Banco Central chegou a segurar cada pedido por ~20 s antes de
+    recusar, e uma tela que pede 10 séries levava minutos). Aberto, o disjuntor falha na hora; passado o prazo, uma nova
+    chamada testa a fonte, e um sucesso fecha o disjuntor.
+    """
+
+    def __init__(self, nome: str, pausa_s: float = 300.0) -> None:
+        self.nome, self.pausa = nome, pausa_s
+        self._ate = 0.0
+        self._trava = threading.Lock()
+
+    def aberto(self) -> bool:
+        return time.monotonic() < self._ate
+
+    def restante_s(self) -> int:
+        return max(0, int(self._ate - time.monotonic()))
+
+    def exigir_fechado(self) -> None:
+        if self.aberto():
+            raise ErroFonte(f"{self.nome} está recusando as consultas; nova tentativa automática em ~{self.restante_s() // 60 + 1} min.")
+
+    def falhou(self) -> None:
+        with self._trava:
+            self._ate = time.monotonic() + self.pausa
+        log.warning("%s: consultas recusadas; pausa de %d s.", self.nome, int(self.pausa))
+
+    def ok(self) -> None:
+        with self._trava:
+            self._ate = 0.0
+
+
+DISJUNTOR_BCB = Disjuntor("Banco Central (SGS)")   # compartilhado por macro.py e economia.py
+
+
 class ClienteHTTP:
-    def __init__(self, base_url: str = "", *, pausa: float = 0.15, timeout: float = 45.0) -> None:
+    def __init__(self, base_url: str = "", *, pausa: float = 0.15, timeout: float = 45.0, tentativas: int = 5) -> None:
+        self._tentativas = tentativas
         self._cliente = httpx.Client(
             base_url=base_url,
             headers={"User-Agent": cfg.user_agent, "Accept": "application/json"},
@@ -69,7 +107,7 @@ class ClienteHTTP:
     def get(self, url: str, params: dict | None = None, *, accept: str | None = None) -> httpx.Response:
         cabecalhos = {"Accept": accept} if accept else None
         ultimo: Exception | None = None
-        for tentativa in range(5):
+        for tentativa in range(self._tentativas):
             if tentativa:
                 time.sleep(min(2 ** tentativa, 20))
             try:

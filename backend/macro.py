@@ -21,11 +21,12 @@ from collections import defaultdict
 from datetime import date, datetime, timezone
 from typing import Any
 
-from fontes import ClienteHTTP, ErroFonte
+from fontes import DISJUNTOR_BCB, ClienteHTTP, ErroFonte
 
 log = logging.getLogger("impacto.macro")
 
 _http = ClienteHTTP(pausa=0.05, timeout=60.0)
+_http_sgs = ClienteHTTP(pausa=0.05, timeout=12.0, tentativas=1)   # o SGS segura pedidos recusados por ~20 s: não esperamos tanto
 _http_arquivos = ClienteHTTP(pausa=0.05, timeout=240.0)  # CSV/XLSX do Tesouro (10–15 MB)
 
 TTL_S = 6 * 3600
@@ -168,15 +169,20 @@ def _num(txt: Any) -> float | None:
 
 
 def _json_com_nova_tentativa(url: str, params: dict) -> Any:
-    """O SGS às vezes devolve uma página de erro com status 200; tenta de novo antes de desistir."""
+    """O SGS às vezes devolve uma página de erro com status 200; tenta mais uma vez antes de desistir.
+    Se as duas falharem, o disjuntor abre e as próximas chamadas falham na hora (ver `Disjuntor`)."""
+    DISJUNTOR_BCB.exigir_fechado()
     ultimo: Exception | None = None
-    for tentativa in range(4):
+    for tentativa in range(2):
         if tentativa:
-            time.sleep(2 * tentativa)
+            time.sleep(1)
         try:
-            return _http.json(url, params)
+            dados = _http_sgs.json(url, params)
+            DISJUNTOR_BCB.ok()
+            return dados
         except ErroFonte as exc:
             ultimo = exc
+    DISJUNTOR_BCB.falhou()
     raise ErroFonte(str(ultimo))
 
 

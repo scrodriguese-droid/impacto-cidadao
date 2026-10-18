@@ -20,12 +20,13 @@ from datetime import date
 from typing import Any
 
 import macro
-from fontes import ClienteHTTP, ErroFonte, normalizar
+from fontes import DISJUNTOR_BCB, ClienteHTTP, ErroFonte, normalizar
 
 log = logging.getLogger("impacto.economia")
 
 BASE = "https://apidatalake.tesouro.gov.br/ords/siconfi/tt"
 _http = ClienteHTTP(pausa=0.05, timeout=60.0)
+_http_sgs = ClienteHTTP(pausa=0.05, timeout=12.0, tentativas=1)   # o SGS segura pedidos recusados por ~20 s
 
 TTL_S = 6 * 3600
 _cache: dict[tuple, tuple[float, Any]] = {}
@@ -277,9 +278,12 @@ def _ipca_acumulado(ano: int, mes_fim: int) -> float | None:
     if chave in _cache and agora - _cache[chave][0] < TTL_S:
         return _cache[chave][1]
     try:
-        serie = _http.json(f"{BCB_SGS}.{IPCA_MENSAL}/dados", {
+        DISJUNTOR_BCB.exigir_fechado()
+        serie = _http_sgs.json(f"{BCB_SGS}.{IPCA_MENSAL}/dados", {
             "formato": "json", "dataInicial": f"01/01/{ano}", "dataFinal": f"28/{mes_fim:02d}/{ano}"})
+        DISJUNTOR_BCB.ok()
     except ErroFonte:
+        DISJUNTOR_BCB.falhou()
         return None
     if not isinstance(serie, list) or len(serie) < mes_fim:
         return None  # série incompleta: não estimamos os meses que faltam
