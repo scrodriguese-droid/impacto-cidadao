@@ -39,6 +39,16 @@ URL = "https://dadosabertos-download.cgu.gov.br/PortalDaTransparencia/saida/orca
 log = logging.getLogger("coletor_orgaos")
 
 EXECUTIVO_EXTRA = {"20000", "37000", "63000", "25201"}  # Presidência, CGU, AGU, Banco Central
+# Página oficial de cada órgão (código SIAFI -> endereço); todos conferidos em 18/10/2026. A estrutura interna
+# (secretarias e organograma) fica nessas páginas: o orçamento não a detalha.
+SITES = {c: f"https://www.gov.br/{s}/pt-br" for c, s in {
+    "25000": "fazenda", "33000": "previdencia", "55000": "mds", "36000": "saude", "26000": "mec", "52000": "defesa",
+    "40000": "trabalho-e-emprego", "32000": "mme", "20000": "planalto", "53000": "mdr", "44000": "mma", "46000": "gestao",
+    "24000": "mcti", "30000": "mj", "68000": "portos-e-aeroportos", "22000": "agricultura", "39000": "transportes",
+    "56000": "cidades", "47000": "planejamento", "28000": "mdic", "35000": "mre", "42000": "cultura", "54000": "turismo",
+    "51000": "esporte", "41000": "mcom", "49000": "mda", "65000": "mulheres", "67000": "igualdaderacial", "81000": "mdh",
+    "84000": "povosindigenas", "58000": "mpa", "69000": "mempe", "37000": "cgu", "63000": "agu"}.items()}
+SITES["25201"] = "https://www.bcb.gov.br/"
 CAMPOS = ("inicial", "atualizado", "empenhado", "realizado")
 
 
@@ -83,7 +93,7 @@ def processar(csv_bytes: io.TextIOBase) -> dict:
         subs = sorted(o["subs"].values(), key=lambda s: -s["totais"]["atualizado"])
         funcoes = sorted(({"nome": n, **_arred(t)} for n, t in o["funcoes"].items()), key=lambda f: -f["atualizado"])
         saida.append({
-            "codigo": o["codigo"], "nome": o["nome"], "totais": _arred(o["totais"]),
+            "codigo": o["codigo"], "nome": o["nome"], "site": SITES.get(o["codigo"]), "totais": _arred(o["totais"]),
             "vinculados": [{"codigo": s["codigo"], "nome": s["nome"], **_arred(s["totais"])} for s in subs if s["totais"]["atualizado"] > 0],
             "funcoes": [f for f in funcoes if f["atualizado"] > 0][:5],
         })

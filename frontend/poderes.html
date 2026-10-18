@@ -125,14 +125,15 @@ async function carregarMinisterios() {
                 <span class="min-barra" aria-hidden="true"><span style="width:${Math.max(1, pct(t.atualizado, total))}%"></span></span>
                 <span class="min-valor">${esc(reaisCurto(t.atualizado))}</span></summary>
                 <div class="min-corpo">${nota}
+                ${o.site ? `<p class="min-site"><a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(o.site))}">Ver organograma e secretarias no site oficial</a></p>` : ''}
                 <dl class="min-metricas">${metrica('Autorizado na lei', t.inicial)}${metrica('Valor atual', t.atualizado)}${metrica('Já reservado (empenhado)', t.empenhado)}${metrica('Já pago', t.realizado)}</dl>
                 <div class="min-cols">
-                    <div><p class="min-tit">Órgãos sob o ministério</p><ul>${o.vinculados.slice(0, 12).map((v) => `<li><span>${esc(limparNome(v.nome))}</span><b>${esc(reaisCurto(v.atualizado))}</b></li>`).join('')}</ul>
+                    <div><p class="min-tit">Autarquias, fundos e unidades com orçamento próprio</p><ul>${o.vinculados.slice(0, 12).map((v) => `<li><span>${esc(limparNome(v.nome))}</span><b>${esc(reaisCurto(v.atualizado))}</b></li>`).join('')}</ul>
                         ${o.vinculados.length > 12 ? `<p class="ficha-nota">e mais ${o.vinculados.length - 12} órgãos menores</p>` : ''}</div>
-                    <div><p class="min-tit">Em que áreas gasta</p><ul>${o.funcoes.map((f) => `<li><span>${esc(f.nome)}</span><b>${esc(reaisCurto(f.atualizado))}</b></li>`).join('')}</ul></div>
+                    <div><p class="min-tit">Áreas em que gasta</p><ul>${o.funcoes.map((f) => `<li><span>${esc(f.nome)}</span><b>${esc(reaisCurto(f.atualizado))}</b></li>`).join('')}</ul></div>
                 </div></div></details>`;
         }).join('')}</div>
-            <p class="ficha-nota mt-3">Fonte: <a class="underline" target="_blank" rel="noopener" href="https://portaldatransparencia.gov.br/orcamento">Portal da Transparência (CGU), Orçamento da Despesa de ${esc(d.ano)}</a>, coletado em ${esc(new Date(d.coletado_em).toLocaleDateString('pt-BR'))}. Valores do Orçamento Fiscal e da Seguridade Social. A divisão interna em secretarias não consta do orçamento: mostramos os órgãos vinculados (autarquias, fundações, fundos e unidades).</p>`;
+            <p class="ficha-nota mt-3">Fonte: <a class="underline" target="_blank" rel="noopener" href="https://portaldatransparencia.gov.br/orcamento">Portal da Transparência (CGU), Orçamento da Despesa de ${esc(d.ano)}</a>, coletado em ${esc(new Date(d.coletado_em).toLocaleDateString('pt-BR'))}. Valores do Orçamento Fiscal e da Seguridade Social. As secretarias e o organograma não constam do orçamento: estão no site oficial de cada ministério (link em cada um).</p>`;
     } catch (e) { alvo.innerHTML = mensagemErro(e); }
 }
 

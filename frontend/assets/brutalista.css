@@ -631,3 +631,4 @@ body.postit-escolhendo, body.postit-escolhendo * { cursor: crosshair !important;
 @media (max-width: 640px) { .min > summary { grid-template-columns: 1fr auto; } .min-barra { display: none; } }
 .min > summary { text-transform: none; letter-spacing: 0; font-size: .88rem; font-weight: 400; }
 .min > summary, .min > summary * { text-decoration: none !important; }
+.min-site { font-size: .84rem; font-weight: 700; margin-bottom: 1rem; }
