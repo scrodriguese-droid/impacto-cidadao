@@ -11,6 +11,8 @@ Regras (declaradas na tela):
   * "Orçamento inicial" = o que a lei autorizou; "atualizado" = com créditos e cortes do ano;
     "empenhado" = reservado para um gasto; "pago/realizado" = o valor que o Portal chama de "orçamento realizado";
   * só entram órgãos do Poder Executivo e seus órgãos de assessoramento (ministérios, Presidência, AGU, CGU);
+  * a estrutura (secretarias, unidades e entidades vinculadas) vem do SIORG, o cadastro oficial da estrutura do Executivo federal
+    (https://estruturaorganizacional.dados.gov.br); o orçamento não a detalha, então não há verba por secretaria;
   * o Ministério da Fazenda inclui a renovação (refinanciamento) da dívida pública, que não é gasto com serviços.
 
 Uso (a partir da raiz do projeto):
@@ -49,6 +51,17 @@ SITES = {c: f"https://www.gov.br/{s}/pt-br" for c, s in {
     "51000": "esporte", "41000": "mcom", "49000": "mda", "65000": "mulheres", "67000": "igualdaderacial", "81000": "mdh",
     "84000": "povosindigenas", "58000": "mpa", "69000": "mempe", "37000": "cgu", "63000": "agu"}.items()}
 SITES["25201"] = "https://www.bcb.gov.br/"
+URL_SIORG = "https://estruturaorganizacional.dados.gov.br/doc/estrutura-organizacional/resumida?codigoPoder=1&codigoEsfera=1"
+# código do órgão no SIORG -> código SIAFI usado no orçamento
+SIORG_PARA_SIAFI = {
+    "26": "20000", "46": "63000", "214460": "37000", "244": "26000", "263": "35000", "304": "36000", "1927": "44000",
+    "2852": "32000", "41066": "52000", "72084": "54000", "235881": "30000", "264359": "41000", "267175": "24000",
+    "308793": "22000", "308794": "49000", "308795": "58000", "308796": "55000", "308797": "51000", "308798": "56000",
+    "308799": "53000", "308800": "25000", "308803": "46000", "308804": "47000", "308814": "28000", "308815": "65000",
+    "308816": "81000", "308817": "68000", "308818": "39000", "308819": "33000", "308820": "40000", "308821": "42000",
+    "308823": "67000", "308824": "84000", "330683": "69000",
+}
+MAX_UNIDADES, MAX_SUB = 40, 14
 CAMPOS = ("inicial", "atualizado", "empenhado", "realizado")
 
 
@@ -101,6 +114,45 @@ def processar(csv_bytes: io.TextIOBase) -> dict:
     return {"orgaos": saida}
 
 
+def _id(url: str | None) -> str | None:
+    return url.rsplit("/", 1)[-1] if url else None
+
+
+def estrutura() -> dict[str, dict]:
+    """Secretarias (unidades administrativas), entidades vinculadas e nº de colegiados de cada ministério (SIORG)."""
+    with tempfile.TemporaryDirectory() as tmp:
+        arq = Path(tmp) / "siorg.json"
+        with httpx.stream("GET", URL_SIORG, timeout=300, follow_redirects=True) as r:
+            r.raise_for_status()
+            with arq.open("wb") as f:
+                for pedaco in r.iter_bytes():
+                    f.write(pedaco)
+        unidades = json.loads(arq.read_text(encoding="utf-8"))["unidades"]
+    filhos: dict[str, list[dict]] = defaultdict(list)
+    for u in unidades:
+        filhos[_id(u["codigoUnidadePai"])].append(u)
+    tipo = lambda u: _id(u["codigoTipoUnidade"])  # noqa: E731
+    saida: dict[str, dict] = {}
+    for u in unidades:
+        siafi = SIORG_PARA_SIAFI.get(_id(u["codigoUnidade"])) if tipo(u) == "orgao" else None
+        if not siafi:
+            continue
+        diretos = filhos[_id(u["codigoUnidade"])]
+        unid = [c for c in diretos if tipo(c) in ("unidade-administrativa", "orgao")]
+        saida[siafi] = {
+            "sigla": u.get("sigla"),
+            "unidades": [{
+                "nome": c["nome"], "sigla": c.get("sigla"),
+                "subunidades": [x["nome"] for x in filhos[_id(c["codigoUnidade"])] if tipo(x) == "unidade-administrativa"][:MAX_SUB],
+                "n_sub": sum(1 for x in filhos[_id(c["codigoUnidade"])] if tipo(x) == "unidade-administrativa"),
+            } for c in unid[:MAX_UNIDADES]],
+            "n_unidades": len(unid),
+            "entidades": [{"nome": c["nome"], "sigla": c.get("sigla")} for c in diretos if tipo(c) == "entidade"],
+            "n_colegiados": sum(1 for c in diretos if tipo(c) == "unidade-colegiada"),
+        }
+    return saida
+
+
 def coletar(ano: int) -> dict:
     url = URL.format(ano=ano)
     with tempfile.TemporaryDirectory() as tmp:
@@ -113,8 +165,11 @@ def coletar(ano: int) -> dict:
         with zipfile.ZipFile(arq) as z:
             with z.open(z.namelist()[0]) as bruto:
                 dados = processar(io.TextIOWrapper(bruto, encoding="cp1252", newline=""))
+    est = estrutura()
+    for o in dados["orgaos"]:
+        o["estrutura"] = est.get(o["codigo"])
     dados.update({
-        "ano": ano, "fonte": url,
+        "ano": ano, "fonte_estrutura": URL_SIORG, "fonte": url,
         "fonte_nome": "Portal da Transparência (CGU) — Orçamento da Despesa",
         "coletado_em": datetime.now(timezone.utc).isoformat(timespec="seconds"),
     })
