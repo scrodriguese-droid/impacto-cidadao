@@ -690,3 +690,15 @@ body.postit-escolhendo, body.postit-escolhendo * { cursor: crosshair !important;
 .ind-todos ul { list-style: none; padding: 0; margin: .5rem 0 0; max-height: 18rem; overflow: auto; }
 .ind-todos li { padding: .3rem 0; border-bottom: 1px solid var(--line); font-size: .8rem; }
 .ind-todos small { color: var(--muted); }
+
+/* ---------- Linha do tempo do ciclo orçamentário: PPA, LDO e LOA alinhados ---------- */
+.ciclo { display: grid; grid-template-columns: 1fr; gap: 0 1.4rem; list-style: none; padding: 0; margin: 0; }
+@media (min-width: 860px) { .ciclo { grid-template-columns: repeat(3, 1fr); } }
+.ciclo-no { display: grid; grid-row: span 5; grid-template-rows: subgrid; row-gap: .6rem; align-content: start;
+    border-top: 3px solid var(--line); padding: .9rem 0 1.2rem; margin: 0; background: transparent !important; border-left: 0 !important; border-right: 0 !important; border-bottom: 0 !important; border-radius: 0 !important; }
+@supports not (grid-template-rows: subgrid) { .ciclo-no { grid-template-rows: auto auto auto auto auto; } }
+.ciclo-cab { display: flex; justify-content: space-between; align-items: baseline; gap: .6rem; }
+.ciclo-ponto { flex: none; width: .8rem !important; height: .8rem !important; border-radius: 0 !important; display: inline-block; }
+.ciclo-def, .ciclo-det, .ciclo-link { margin: 0 !important; }
+.ciclo-chip { margin: 0 !important; }
+.ciclo-cab { min-height: 1.6rem; align-items: center !important; }
