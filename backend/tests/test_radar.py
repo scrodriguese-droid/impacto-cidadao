@@ -203,3 +203,46 @@ def test_historico_fiscal_resume_com_fatos_e_traz_marcos_com_fonte(monkeypatch):
     for m in hf["marcos"]:                       # contexto verificável: toda norma citada traz data e link oficial
         assert m["url"].startswith("https://www.planalto.gov.br/") and m["data"] and m["titulo"]
     assert [m["mes"] for m in hf["marcos"]] == sorted(m["mes"] for m in hf["marcos"])
+
+
+# --- cache com "último valor guardado" quando a fonte cai --------------------------------------------------------------
+class _Relogio:
+    def __init__(self):
+        self.t = 1_000_000.0
+
+    def __call__(self):
+        return self.t
+
+
+def _produzir(respostas):
+    chamadas = []
+
+    def produzir():
+        chamadas.append(1)
+        r = respostas.pop(0)
+        if isinstance(r, Exception):
+            raise r
+        return r
+    return produzir, chamadas
+
+
+def test_memo_usa_o_ultimo_valor_quando_a_fonte_cai_e_so_tenta_de_novo_depois(monkeypatch):
+    relogio = _Relogio()
+    monkeypatch.setattr(macro.time, "time", relogio)
+    chave = ("teste", "memo-1")
+    produzir, chamadas = _produzir([42, macro.ErroFonte("BCB fora do ar"), 43])
+    assert macro._memo(chave, produzir) == 42
+    relogio.t += macro.TTL_S + 1                       # o valor venceu e a fonte caiu
+    assert macro._memo(chave, produzir) == 42          # devolve o último valor guardado
+    assert len(chamadas) == 2
+    relogio.t += 60                                    # ainda dentro da pausa: nem consulta a fonte
+    assert macro._memo(chave, produzir) == 42 and len(chamadas) == 2
+    relogio.t += macro.NOVA_TENTATIVA_S                # passou a pausa: consulta e pega o dado novo
+    assert macro._memo(chave, produzir) == 43 and len(chamadas) == 3
+
+
+def test_memo_sem_nenhum_valor_guardado_propaga_o_erro(monkeypatch):
+    monkeypatch.setattr(macro.time, "time", _Relogio())
+    produzir, _ = _produzir([macro.ErroFonte("BCB fora do ar")])
+    with pytest.raises(macro.ErroFonte):
+        macro._memo(("teste", "memo-2"), produzir)

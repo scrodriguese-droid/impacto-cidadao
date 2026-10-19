@@ -30,6 +30,7 @@ _http_sgs = ClienteHTTP(pausa=0.05, timeout=12.0, tentativas=1)   # o SGS segura
 _http_arquivos = ClienteHTTP(pausa=0.05, timeout=240.0)  # CSV/XLSX do Tesouro (10–15 MB)
 
 TTL_S = 6 * 3600
+NOVA_TENTATIVA_S = 300   # com a fonte fora do ar, usa o último valor guardado e só tenta de novo depois disto
 _cache: dict[tuple, tuple[float, Any]] = {}
 
 SGS = "https://api.bcb.gov.br/dados/serie/bcdata.sgs"
@@ -47,7 +48,9 @@ _travas: dict[tuple, threading.Lock] = defaultdict(threading.Lock)
 
 
 def _memo(chave: tuple, produzir):  # noqa: ANN001
-    """Cache com TTL; requisições simultâneas à mesma fonte esperam uma só consulta (sem baixar 2x)."""
+    """Cache com TTL; requisições simultâneas à mesma fonte esperam uma só consulta (sem baixar 2x).
+    Se a fonte falhar depois de o valor vencer, devolve o último valor guardado (cada indicador mostra a própria data de
+    referência) e só consulta de novo daqui a NOVA_TENTATIVA_S; sem nenhum valor guardado, o erro segue adiante."""
     agora = time.time()
     if chave in _cache and agora - _cache[chave][0] < TTL_S:
         return _cache[chave][1]
@@ -55,7 +58,15 @@ def _memo(chave: tuple, produzir):  # noqa: ANN001
         agora = time.time()
         if chave in _cache and agora - _cache[chave][0] < TTL_S:
             return _cache[chave][1]
-        valor = produzir()
+        try:
+            valor = produzir()
+        except Exception as exc:  # noqa: BLE001 — qualquer falha da fonte: vale mais o dado de ontem do que a tela vazia
+            if chave not in _cache:
+                raise
+            log.warning("fonte %s indisponível (%s): mantendo o último valor guardado", chave[:2], exc)
+            valor = _cache[chave][1]
+            _cache[chave] = (agora - TTL_S + NOVA_TENTATIVA_S, valor)
+            return valor
         _cache[chave] = (agora, valor)
         return valor
 

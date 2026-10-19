@@ -450,7 +450,12 @@ function perspectivaHistorica(h) {
     </details>`;
 }
 function radarEconomico(dg) {
-    if (!dg || !dg.fiscal) return '';
+    if (!dg || !dg.fiscal) {
+        return `<div class="radar-aviso" role="status"><b>Radar econômico indisponível agora.</b>
+            Ele usa séries do Banco Central e do IBGE, que podem não ter respondido. Atualize a página em alguns minutos; os números abaixo seguem valendo.</div>`;
+    }
+    const avisoSocial = dg.social ? '' : `<div class="radar-aviso" role="status"><b>O painel de economia e vida da população não carregou.</b>
+        Ele usa dados do IBGE, que não responderam. Atualize a página em alguns minutos.</div>`;
     const paineis = [dg.social ? painelSocial(dg.social) : null, painelFiscal(dg.fiscal)].filter(Boolean).map((p) => `<div class="radar-painel">
         <p class="radar-pergunta">${esc(p.nome)} · dados de ${esc(p.referencia.slice(5, 7))}/${esc(p.referencia.slice(0, 4))}</p>
         <p class="radar-veredito">${esc(p.rotulo)}</p>
@@ -465,6 +470,7 @@ function radarEconomico(dg) {
         .map(([t, p]) => `<p class="ficha-nota mt-2"><b>${t}.</b> ${esc(p.criterio)} Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(p.fonte.url))}">${esc(p.fonte.nome)}</a>.</p>`).join('');
     return `<div class="radar" id="radar">
         <p class="radar-sub">${esc(dg.subtitulo)}. Um quadro não anula o outro.</p>
+        ${avisoSocial}
         <div class="radar-paineis">${paineis}</div>
         <p class="ficha-nota mt-2">↑ melhorou · → estável · ↓ piorou, sempre em comparação com 12 meses antes. A seta indica se o quadro melhorou ou piorou, não se o número subiu ou caiu.</p>
         <div class="radar-destaque">
@@ -500,7 +506,7 @@ function nivel1(d) {
         : '';
     const fatia = (f, rot) => f ? `<li class="flex justify-between gap-3"><span>${rot}</span><span class="font-bold">${pct(f.pct)} da despesa · ${brlCurto(f.valor)}</span></li>` : '';
     return `<section aria-labelledby="n1"><h2 id="n1">As contas estão em dia?</h2>
-        ${d.esfera === 'uniao' && sf ? radarEconomico(sf.diagnostico) : ''}
+        ${d.esfera === 'uniao' ? radarEconomico(sf && sf.diagnostico) : ''}
         <p class="text-sm text-slate-500 mt-2" style="max-width:70ch">Estes números respondem à pergunta. Abaixo deles, o detalhe de cada um.</p>
         <div class="cartazes mt-4">${cDivida}${cLrf}${cPrim}${cPib}</div>
         <details class="sanfona mt-6"><summary>Ver todos os números da situação fiscal</summary>
