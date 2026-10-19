@@ -10,6 +10,9 @@ import editor
 def app(tmp_path, monkeypatch):
     monkeypatch.setattr(editor, "ARQUIVO_DB", tmp_path / "editor.db")
     monkeypatch.setattr(editor, "_falhas", editor._Falhas(maximo=5, janela_s=600))
+    if editor._usa_postgres():   # EDITOR_BANCO=postgres: parte de tabelas vazias a cada teste
+        with editor._db() as c:
+            c.execute("TRUNCATE postits, sessoes, convites, editores RESTART IDENTITY CASCADE")
     a = FastAPI()
     a.include_router(editor.router)
     editor.criar_editor("ana@exemplo.org", "Ana", "senha-bem-longa-1")

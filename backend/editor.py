@@ -11,8 +11,10 @@ Desenho, em poucas linhas:
     no banco guardamos só o SHA-256 do token, então um vazamento do arquivo não entrega sessões válidas.
   * Tentativas de entrar erradas bloqueiam por um tempo (por IP e por e-mail). Escritas conferem a origem da
     requisição, além do SameSite, contra pedidos vindos de outros sites.
-  * Os dados vão para um SQLite próprio (dados/editor/editor.db, fora do git), independente do PostgreSQL do restante
-    do app, para a edição funcionar mesmo com o banco principal desligado.
+  * Por padrão os dados vão para um SQLite próprio (dados/editor/editor.db, fora do git), independente do PostgreSQL
+    do restante do app, para a edição funcionar mesmo com o banco principal desligado.
+  * Em hospedagem sem disco permanente (plano gratuito do Render, por exemplo), defina EDITOR_BANCO=postgres: as mesmas
+    tabelas passam a ficar no PostgreSQL de DATABASE_URL (Supabase) e sobrevivem a reinícios.
 """
 from __future__ import annotations
 
@@ -56,14 +58,91 @@ _trava = threading.Lock()
 
 
 # --------------------------------------------------------------------------- #
-# Banco (SQLite)
+# Banco (SQLite por padrão; PostgreSQL com EDITOR_BANCO=postgres)
 # --------------------------------------------------------------------------- #
 def _agora() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
 
 
+_DDL_SQLITE = """
+    CREATE TABLE IF NOT EXISTS editores (
+        id INTEGER PRIMARY KEY, email TEXT NOT NULL UNIQUE, nome TEXT NOT NULL,
+        papel TEXT NOT NULL DEFAULT 'editor', senha_hash TEXT NOT NULL, criado_em TEXT NOT NULL);
+    CREATE TABLE IF NOT EXISTS sessoes (
+        token_hash TEXT PRIMARY KEY, editor_id INTEGER NOT NULL REFERENCES editores(id) ON DELETE CASCADE,
+        criado_em TEXT NOT NULL, expira_em TEXT NOT NULL);
+    CREATE TABLE IF NOT EXISTS postits (
+        id INTEGER PRIMARY KEY, pagina TEXT NOT NULL, ancora TEXT NOT NULL DEFAULT '', rotulo TEXT NOT NULL DEFAULT '',
+        texto TEXT NOT NULL, publico INTEGER NOT NULL DEFAULT 0,
+        editor_id INTEGER NOT NULL REFERENCES editores(id) ON DELETE CASCADE,
+        criado_em TEXT NOT NULL, atualizado_em TEXT NOT NULL);
+    CREATE INDEX IF NOT EXISTS ix_postits_pagina ON postits(pagina);
+    CREATE TABLE IF NOT EXISTS convites (
+        codigo_hash TEXT PRIMARY KEY, papel TEXT NOT NULL DEFAULT 'editor',
+        criado_em TEXT NOT NULL, expira_em TEXT NOT NULL, usado_em TEXT);
+"""
+_DDL_PG = _DDL_SQLITE.replace("id INTEGER PRIMARY KEY", "id BIGSERIAL PRIMARY KEY").replace(
+    "editor_id INTEGER NOT NULL", "editor_id BIGINT NOT NULL")
+
+
+def _usa_postgres() -> bool:
+    return os.environ.get("EDITOR_BANCO", "sqlite").strip().lower() == "postgres"
+
+
+class _Cursor:
+    """Resultado de uma consulta, com a mesma cara nos dois bancos (fetchone, fetchall, rowcount, lastrowid)."""
+
+    def __init__(self, cur, lastrowid=None) -> None:  # noqa: ANN001
+        self._cur, self.lastrowid = cur, lastrowid
+        self.rowcount = cur.rowcount
+
+    def fetchone(self):  # noqa: ANN201
+        return self._cur.fetchone()
+
+    def fetchall(self):  # noqa: ANN201
+        return self._cur.fetchall()
+
+    def __iter__(self):  # noqa: ANN204
+        return iter(self._cur.fetchall())
+
+
+class _ConexaoPG:
+    """Adapta o psycopg ao uso do SQLite acima: marcador ?, lastrowid e BEGIN IMMEDIATE."""
+
+    def __init__(self, conn) -> None:  # noqa: ANN001
+        self._c = conn
+
+    def execute(self, sql: str, params: tuple = ()) -> _Cursor:
+        if sql.strip().upper() == "BEGIN IMMEDIATE":
+            # o convite é conferido e gasto na mesma transação: trava a tabela para dois pedidos não passarem juntos
+            return _Cursor(self._c.execute("LOCK TABLE convites IN SHARE ROW EXCLUSIVE MODE"))
+        sql = sql.replace("?", "%s")
+        insere = sql.lstrip().upper().startswith("INSERT INTO") and "RETURNING" not in sql.upper()
+        # só as tabelas com id numérico devolvem o id (sessoes e convites usam hash como chave)
+        com_id = insere and any(t in sql for t in ("INTO editores", "INTO postits"))
+        cur = self._c.execute(sql + (" RETURNING id" if com_id else ""), params)
+        return _Cursor(cur, cur.fetchone()["id"] if com_id else None)
+
+
+_pg_pronto = False
+
+
 @contextmanager
-def _db() -> Iterator[sqlite3.Connection]:
+def _db() -> Iterator[object]:
+    if _usa_postgres():
+        global _pg_pronto
+        import psycopg
+        from psycopg.rows import dict_row
+        from config import cfg
+        with psycopg.connect(cfg.database_url, row_factory=dict_row, prepare_threshold=None) as conn:
+            if not _pg_pronto:
+                with _trava:
+                    for comando in [c.strip() for c in _DDL_PG.split(";") if c.strip()]:
+                        conn.execute(comando)
+                    conn.commit()
+                    _pg_pronto = True
+            yield _ConexaoPG(conn)
+        return
     ARQUIVO_DB.parent.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(ARQUIVO_DB, timeout=10)
     conn.row_factory = sqlite3.Row
@@ -72,23 +151,7 @@ def _db() -> Iterator[sqlite3.Connection]:
         chave = str(ARQUIVO_DB)
         if chave not in _inicializado:
             with _trava:
-                conn.executescript("""
-                    CREATE TABLE IF NOT EXISTS editores (
-                        id INTEGER PRIMARY KEY, email TEXT NOT NULL UNIQUE, nome TEXT NOT NULL,
-                        papel TEXT NOT NULL DEFAULT 'editor', senha_hash TEXT NOT NULL, criado_em TEXT NOT NULL);
-                    CREATE TABLE IF NOT EXISTS sessoes (
-                        token_hash TEXT PRIMARY KEY, editor_id INTEGER NOT NULL REFERENCES editores(id) ON DELETE CASCADE,
-                        criado_em TEXT NOT NULL, expira_em TEXT NOT NULL);
-                    CREATE TABLE IF NOT EXISTS postits (
-                        id INTEGER PRIMARY KEY, pagina TEXT NOT NULL, ancora TEXT NOT NULL DEFAULT '', rotulo TEXT NOT NULL DEFAULT '',
-                        texto TEXT NOT NULL, publico INTEGER NOT NULL DEFAULT 0,
-                        editor_id INTEGER NOT NULL REFERENCES editores(id) ON DELETE CASCADE,
-                        criado_em TEXT NOT NULL, atualizado_em TEXT NOT NULL);
-                    CREATE INDEX IF NOT EXISTS ix_postits_pagina ON postits(pagina);
-                    CREATE TABLE IF NOT EXISTS convites (
-                        codigo_hash TEXT PRIMARY KEY, papel TEXT NOT NULL DEFAULT 'editor',
-                        criado_em TEXT NOT NULL, expira_em TEXT NOT NULL, usado_em TEXT);
-                """)
+                conn.executescript(_DDL_SQLITE)
                 _inicializado.add(chave)
         yield conn
         conn.commit()

@@ -1,0 +1,22 @@
+# Publicação no Render (plano gratuito). Passo a passo em PUBLICAR.md.
+services:
+  - type: web
+    name: impacto-cidadao
+    runtime: python
+    plan: free
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: uvicorn main:app --app-dir backend --host 0.0.0.0 --port $PORT --proxy-headers --forwarded-allow-ips='*'
+    healthCheckPath: /api/saude
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.3
+      - key: EDITOR_BANCO
+        value: postgres
+      - key: DATABASE_URL        # connection string do Supabase (pooler); preencha no painel do Render
+        sync: false
+      - key: CORS_ORIGINS        # endereço público do site, ex.: https://impacto-cidadao.onrender.com
+        sync: false
+      - key: VOTO_SAL
+        generateValue: true
+      - key: CONTATO_EMAIL       # opcional: e-mail de contato enviado às APIs oficiais
+        sync: false

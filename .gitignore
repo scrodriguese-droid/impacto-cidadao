@@ -16,8 +16,8 @@ logs/
 # PDFs baixados / colocados manualmente (podem ser grandes)
 dados/planos/*.pdf
 dados/planos/cache/
-# Resumo do projeto da LOA (extraído do PDF oficial)
-dados/orcamento/
+# (dados/orcamento, dados/autoria e dados/votacoes são versionados: o servidor gratuito não tem disco permanente
+#  e não roda os coletores; ao recoletar no seu PC, faça commit dos arquivos novos)
 # Cache dos equipamentos públicos (OpenStreetMap)
 dados/equipamentos/
 
@@ -27,9 +27,6 @@ Thumbs.db
 .idea/
 .vscode/
 
-# Dados de autoria gerados pelo coletor (grandes, reproduzíveis)
-dados/autoria/
-dados/votacoes/
 
 # Contas de editor e post-its (SQLite local, com hashes de senha: nunca versionar)
 dados/editor/
