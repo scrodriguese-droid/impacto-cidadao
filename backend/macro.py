@@ -381,9 +381,9 @@ ESTAGIOS_FISCAL = [
     {"id": "deterioracao", "rotulo": "Em deterioração", "resumo": "Sinais de pressão e a dívida em alta: a trajetória das contas está piorando."},
 ]
 ESTAGIOS_SOCIAL = [
-    {"id": "melhora", "rotulo": "Melhora", "resumo": "Os indicadores de trabalho, preços e crescimento estão melhores que há um ano."},
+    {"id": "melhora", "rotulo": "Melhora", "resumo": "Trabalho, renda, preços e crescimento estão melhores que há um ano."},
     {"id": "estabilidade", "rotulo": "Estabilidade", "resumo": "Os indicadores se compensam: há avanços e recuos."},
-    {"id": "piora", "rotulo": "Piora", "resumo": "Os indicadores de trabalho, preços e crescimento estão piores que há um ano."},
+    {"id": "piora", "rotulo": "Piora", "resumo": "Trabalho, renda, preços e crescimento estão piores que há um ano."},
 ]
 # Limites do radar: critério EDITORIAL do projeto (não é métrica oficial); os números vêm das séries oficiais.
 # Cada sinal fiscal LIGA ao atingir o limite e só DESLIGA depois de recuar a “desliga”: evita que o radar oscile
@@ -401,6 +401,8 @@ MARGEM_META = 0.25             # p.p. que o IPCA precisa recuar para dentro da b
 PIB_CRESCENDO = 1.0            # % acumulado em 4 trimestres a partir do qual a economia “cresce”
 LAG_PIB_MESES = 3              # o PIB do trimestre sai cerca de 2 meses depois do fim do trimestre
 LAG_DESEMPREGO_MESES = 1       # a PNAD sai cerca de 1 mês depois do fim do trimestre móvel
+TOL_RENDIMENTO = 1.0           # % de variação do rendimento real contra o mesmo trimestre móvel do ano anterior
+TOL_INFORMALIDADE = 0.5        # p.p. contra o mesmo trimestre do ano anterior (maior é pior)
 
 
 def _fmt(v: float, dec: int = 1) -> str:
@@ -427,6 +429,33 @@ def _tendencia(atual: float, antes: float | None, tol: float) -> str | None:
     if antes is None:
         return None
     return "piora" if atual - antes >= tol else "melhora" if atual - antes <= -tol else "estavel"
+
+
+def _sidra_pnad(tabela: int, variavel: int, trimestre_civil: bool) -> dict[str, dict[str, Any]]:
+    """Série da PNAD Contínua por mês de fim do período (AAAA-MM): trimestre móvel (código AAAAMM) ou trimestre civil (AAAAQQ)."""
+    def produzir() -> dict[str, dict[str, Any]]:
+        linhas = _http.json(f"{SIDRA}/t/{tabela}/n1/all/v/{variavel}/p/all", {"formato": "json"})
+        saida: dict[str, dict[str, Any]] = {}
+        for r in linhas[1:]:
+            v, cod = _num(r.get("V")), str(r.get("D3C", ""))
+            if v is None or len(cod) != 6:
+                continue
+            chave = f"{cod[:4]}-{int(cod[4:]) * 3:02d}" if trimestre_civil else f"{cod[:4]}-{cod[4:]}"
+            saida[chave] = {"valor": v, "ref": r.get("D3N")}
+        return saida
+    return _memo(("sidra", tabela, variavel), produzir)
+
+
+def _sidra_rendimento() -> dict[str, dict[str, Any]]:
+    """Rendimento médio mensal REAL (a preços do último trimestre) do trabalho habitual, pessoas ocupadas de 14 anos
+    ou mais (PNAD Contínua, tabela 6390, variável 5933), em trimestre móvel. Em reais."""
+    return _sidra_pnad(6390, 5933, trimestre_civil=False)
+
+
+def _sidra_informalidade() -> dict[str, dict[str, Any]]:
+    """Taxa de informalidade das pessoas ocupadas de 14 anos ou mais (PNAD Contínua, tabela 8529, variável 12466), por
+    trimestre civil. Em %."""
+    return _sidra_pnad(8529, 12466, trimestre_civil=True)
 
 
 def _sidra_pib() -> dict[str, dict[str, Any]]:
@@ -518,6 +547,8 @@ def classificar_social_historico(desde: str = "2013-01") -> list[dict]:
     desemp = {p["data"][:7]: p for p in _sidra_desemprego()}
     ipca = {p["data"][:7]: p["valor"] for p in serie("ipca12")["pontos"]}
     pib = _sidra_pib()
+    renda = _sidra_rendimento()
+    informal = _sidra_informalidade()
     # Inflação “fora da meta”, com margem de saída: depois de estourar a banda, só volta a “dentro” ao recuar
     # MARGEM_META p.p. para dentro dela (evita oscilar quando o IPCA anda em cima do teto).
     fora: dict[str, bool] = {}
@@ -544,6 +575,24 @@ def classificar_social_historico(desde: str = "2013-01") -> list[dict]:
                           "referencia": d[1].get("referencia"), "valor_antes": antes["valor"] if antes else None,
                           "status": st, "rotulo": {"melhora": "Menor que há 1 ano", "piora": "Maior que há 1 ano", "estavel": "Parecido com há 1 ano"}[st],
                           "regra": f"melhora/piora se variar ≥ {_fmt(TOL_DESEMPREGO)} p.p. em 12 meses"})
+        i = _ate(informal, _mes_antes(m, LAG_DESEMPREGO_MESES))
+        if i:
+            antes_i = informal.get(_mes_antes(i[0], 12))
+            delta_i = None if antes_i is None else round(i[1]["valor"] - antes_i["valor"], 2)
+            st = "estavel" if delta_i is None else "melhora" if delta_i <= -TOL_INFORMALIDADE else "piora" if delta_i >= TOL_INFORMALIDADE else "estavel"
+            itens.append({"id": "informalidade", "nome": "Informalidade (PNAD Contínua)", "valor": i[1]["valor"], "unidade": "% dos ocupados",
+                          "referencia": i[1]["ref"], "valor_antes": antes_i["valor"] if antes_i else None, "variacao_pp": delta_i,
+                          "status": st, "rotulo": {"melhora": "Menor que há 1 ano", "piora": "Maior que há 1 ano", "estavel": "Parecida com há 1 ano"}[st],
+                          "regra": f"melhora/piora se variar ≥ {_fmt(TOL_INFORMALIDADE)} p.p. em 12 meses"})
+        r_ = _ate(renda, _mes_antes(m, LAG_DESEMPREGO_MESES))
+        if r_:
+            antes_r = renda.get(_mes_antes(r_[0], 12))
+            var_r = None if antes_r is None else round((r_[1]["valor"] / antes_r["valor"] - 1) * 100, 2)
+            st = "estavel" if var_r is None else "melhora" if var_r >= TOL_RENDIMENTO else "piora" if var_r <= -TOL_RENDIMENTO else "estavel"
+            itens.append({"id": "rendimento", "nome": "Rendimento real do trabalho (PNAD Contínua)", "valor": r_[1]["valor"], "unidade": "R$ por mês",
+                          "formato": "reais", "referencia": r_[1]["ref"], "valor_antes": antes_r["valor"] if antes_r else None, "variacao_pct": var_r,
+                          "status": st, "rotulo": {"melhora": "Poder de compra maior", "piora": "Poder de compra menor", "estavel": "Poder de compra parecido"}[st],
+                          "regra": f"melhora/piora se variar ≥ {_fmt(TOL_RENDIMENTO)}% em 12 meses, já descontada a inflação"})
         meta = _meta_inflacao(m)
         if meta:
             centro, tol = meta
@@ -574,8 +623,8 @@ def classificar_social_historico(desde: str = "2013-01") -> list[dict]:
 
 
 def _frase_social(est: str) -> str:
-    return {"melhora": "emprego, preços e crescimento melhoram", "estabilidade": "emprego, preços e crescimento ficam estáveis",
-            "piora": "emprego, preços e crescimento pioram"}[est]
+    return {"melhora": "trabalho, renda, preços e crescimento melhoram", "estabilidade": "trabalho, renda, preços e crescimento ficam estáveis",
+            "piora": "trabalho, renda, preços e crescimento pioram"}[est]
 
 
 def _frase_fiscal(est: str) -> str:
@@ -601,18 +650,23 @@ def _cotidiano(fis: dict, soc: dict, v: dict) -> dict:
                     "disponível para hospitais, escolas, creches e obras, o que tende a reduzir o espaço para investimentos.")
         if est == "deterioracao":
             servicos += " Com a dívida em alta, esse espaço tende a encolher nos próximos anos se nada mudar."
+    # Aqui só entra o que traduz a vida da pessoa; os números completos de cada indicador já estão na lista do painel.
     por_id = {i["id"]: i for i in soc["itens"]}
     partes = []
     d = por_id.get("desemprego")
     if d:
         comp = "" if d["valor_antes"] is None else f" (há um ano: {_fmt(d['valor_antes'])}%)"
         partes.append(f"O desemprego está em {_fmt(d['valor'])}%{comp}.")
+    rd = por_id.get("rendimento")
+    if rd and rd["variacao_pct"] is not None and rd["status"] != "estavel":
+        sentido = "acima" if rd["variacao_pct"] > 0 else "abaixo"
+        partes.append(f"O rendimento médio do trabalho, já descontada a inflação, está {_fmt(abs(rd['variacao_pct']))}% {sentido} do de um ano atrás "
+                      f"(R$ {_fmt(rd['valor'], 0)} por mês).")
+    elif rd:
+        partes.append(f"O rendimento médio do trabalho, já descontada a inflação, está parecido com o de um ano atrás (R$ {_fmt(rd['valor'], 0)} por mês).")
     i = por_id.get("inflacao")
-    if i:
-        partes.append(f"A inflação em 12 meses é de {_fmt(i['valor'])}%, {i['rotulo'].lower()} (banda de {_fmt(i['meta']['piso'])}% a {_fmt(i['meta']['teto'])}%).")
-    p = por_id.get("pib")
-    if p:
-        partes.append(f"A economia cresceu {_fmt(p['valor'])}% nos últimos 4 trimestres ({p['referencia']}).")
+    if i and i["status"] == "piora":
+        partes.append(f"A inflação em 12 meses ({_fmt(i['valor'])}%) está {i['rotulo'].lower()}.")
     fecho = {
         ("melhora", "sustentavel"): "Os ganhos em trabalho e renda convivem com contas públicas equilibradas.",
         ("melhora", "pressao"): "Os ganhos em trabalho e renda convivem com contas públicas sob pressão: um quadro não anula o outro.",
@@ -630,7 +684,7 @@ def _cotidiano(fis: dict, soc: dict, v: dict) -> dict:
     return {"titulo": f"Na prática: {_frase_social(soc['estagio'])}, {contraste} {_frase_fiscal(est)}",
             "itens": [{"tema": "Crédito e juros", "texto": credito},
                       {"tema": "Saúde, educação e investimentos", "texto": servicos},
-                      {"tema": "Emprego, renda e preços", "texto": " ".join(partes + [fecho])}]}
+                      {"tema": "Emprego, renda e preços", "texto": "\n".join(partes + [fecho])}]}
 
 
 def diagnostico_economico() -> dict:
@@ -668,11 +722,12 @@ def diagnostico_economico() -> dict:
         social = {"estagios": ESTAGIOS_SOCIAL, "atual": soc_hoje["estagio"], "estagio": soc_hoje["estagio"], "indice": ids.index(soc_hoje["estagio"]),
                   "rotulo": ESTAGIOS_SOCIAL[ids.index(soc_hoje["estagio"])]["rotulo"], "itens": soc_hoje["itens"], "referencia": f"{soc_hoje['mes']}-01",
                   "criterio": ("Regra do ImpactoCidadão, não é uma classificação oficial. Cada indicador é comparado com o mesmo período de um ano antes: "
-                               f"desemprego melhora ou piora se variar {_fmt(TOL_DESEMPREGO)} p.p. ou mais; inflação conta como melhora se voltou à banda da meta "
+                               f"desemprego e informalidade melhoram ou pioram se variarem {_fmt(TOL_DESEMPREGO)} p.p. ou mais; o rendimento real do trabalho (já descontada a inflação) "
+                               f"melhora ou piora se variar {_fmt(TOL_RENDIMENTO)}% ou mais; inflação conta como melhora se voltou à banda da meta "
                                f"do CMN e como piora se está fora dela; PIB real conta como crescendo se o acumulado em 4 trimestres for de {_fmt(PIB_CRESCENDO)}% ou mais "
                                "e como encolhendo se for negativo. Melhora ou piora = vantagem de pelo menos 2 indicadores num sentido; o resto é estabilidade. "
-                               "Informalidade, rendimento real, pobreza e desigualdade ainda não entram."),
-                  "fonte": {"nome": "IBGE (PNAD Contínua, Contas Nacionais Trimestrais) e Banco Central (IPCA e meta de inflação)", "url": "https://sidra.ibge.gov.br/"}}
+                               "Pobreza e desigualdade ainda não entram."),
+                  "fonte": {"nome": "IBGE (PNAD Contínua: desemprego, informalidade e rendimento; Contas Nacionais Trimestrais) e Banco Central (IPCA e meta de inflação)", "url": "https://sidra.ibge.gov.br/"}}
     contexto = {"selic": selic, "ipca12": ipca12, "juro_real": juro_real, "juros_pib": juros_pib,
                 "juros_rs": jur12_rs * 1e6 if jur12_rs is not None else None}
     return {"titulo": "Radar econômico do Brasil", "subtitulo": "Economia e contas públicas: dois lados do Brasil", "fiscal": fiscal, "social": social,
