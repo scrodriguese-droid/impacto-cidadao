@@ -664,69 +664,87 @@ def _historico_fiscal(hist: list[dict], juro_real_atual: float | None = None) ->
             "fonte": {"nome": "Banco Central do Brasil — SGS (séries 13762, 5727, 13522, 432)", "url": "https://dadosabertos.bcb.gov.br/"}}
 
 
-def _frase_social(est: str) -> str:
-    return {"melhora": "trabalho, renda, preços e crescimento melhoram", "estabilidade": "trabalho, renda, preços e crescimento ficam estáveis",
-            "piora": "trabalho, renda, preços e crescimento pioram"}[est]
+def _manchete(soc_est: str | None, est: str) -> str:
+    """Título curto do bloco "na prática": o lado econômico e o lado fiscal, em poucas palavras."""
+    fiscal = {"poucos_sinais": "contas com poucos sinais de pressão", "pressao_sem_alta": "contas sob pressão",
+              "pressao_com_alta": "contas sob pressão e dívida em alta"}[est]
+    if soc_est is None:
+        return fiscal.capitalize()
+    social = {"melhora": "Economia melhora", "estabilidade": "Economia estável", "piora": "Economia piora"}[soc_est]
+    social_bom, fiscal_bom = soc_est in ("melhora", "estabilidade"), est == "poucos_sinais"
+    return f"{social}, {'e' if social_bom == fiscal_bom else 'mas'} {fiscal}"
 
 
-def _frase_fiscal(est: str) -> str:
-    return {"poucos_sinais": "as contas públicas têm poucos sinais de pressão", "pressao_sem_alta": "as contas públicas mostram pressão, com a dívida sem alta",
-            "pressao_com_alta": "as contas públicas mostram pressão e a dívida está em alta"}[est]
-
-
-def _cotidiano(fis: dict, soc: dict, v: dict) -> dict:
-    """Tradução para a vida real. Mostra os dois lados: o que o fiscal significa para o crédito e os serviços
-    públicos, e o que a economia está entregando em emprego, renda e preços."""
+def _cotidiano(fis: dict, soc: dict | None, v: dict) -> dict:
+    """Tradução para a vida real, em cartões escaneáveis: cada um abre com UM número, seguido de frases curtas
+    (o trecho entre ** ** é o que merece negrito). Mostra os dois lados: o que o fiscal significa para o crédito e os
+    serviços públicos, e o que a economia entrega em emprego, renda e preços. Sem os dados do IBGE (`soc` None), só o fiscal."""
     est = fis["estagio"]
-    juros_rs = f" (cerca de {_fmt_rs(v['juros_rs'])} em 12 meses)" if v.get("juros_rs") else ""
     juro_on = any(s["id"] == "juro_real" and s["disparado"] for s in fis["sinais"])
-    credito = (f"A Selic está em {_fmt(v['selic'], 2)}% ao ano e a inflação em {_fmt(v['ipca12'])}%: sobram {_fmt(v['juro_real'])} pontos de juro real. "
-               "Na prática, cartão, cheque especial e financiamentos tendem a custar caro, e empresas costumam adiar investimentos e contratações."
-               if juro_on else
-               f"Com a Selic em {_fmt(v['selic'], 2)}% ao ano e a inflação em {_fmt(v['ipca12'])}%, o juro real é de {_fmt(v['juro_real'])} pontos: "
-               "o crédito tende a ser mais acessível, e financiar a casa, o carro ou o negócio pesa menos no orçamento.")
-    if est == "poucos_sinais":
-        servicos = f"Os juros da dívida consomem {_fmt(v['juros_pib'])}% do PIB{juros_rs}: sobra mais espaço no orçamento para saúde, educação e obras."
+    if juro_on:
+        pontos_credito = ["Cartão, cheque especial e financiamentos **tendem a custar caro**.",
+                          "Empresas **costumam adiar** investimentos e contratações."]
     else:
-        servicos = (f"Só de juros, o setor público paga {_fmt(v['juros_pib'])}% do PIB{juros_rs}. Cada real que vai para os credores é um real que não está "
-                    "disponível para hospitais, escolas, creches e obras, o que tende a reduzir o espaço para investimentos.")
+        pontos_credito = ["O crédito **tende a ser mais acessível**: financiar a casa, o carro ou o negócio pesa menos no orçamento."]
+    credito = {"tema": "Crédito e juros",
+               "destaque": {"valor": f"{_fmt(v['juro_real'])} p.p.",
+                            "legenda": f"de juro real (Selic {_fmt(v['selic'], 2)}% − inflação {_fmt(v['ipca12'])}%)"},
+               "pontos": pontos_credito}
+
+    if v.get("juros_rs"):
+        destaque_juros = {"valor": _fmt_rs(v["juros_rs"]), "legenda": f"pagos em juros da dívida em 12 meses ({_fmt(v['juros_pib'])}% do PIB)"}
+    else:
+        destaque_juros = {"valor": f"{_fmt(v['juros_pib'])}% do PIB", "legenda": "em juros da dívida em 12 meses"}
+    if est == "poucos_sinais":
+        pontos_servicos = ["Sobra **mais espaço** no orçamento para saúde, educação e obras."]
+    else:
+        pontos_servicos = ["Cada real pago em juros **não está disponível** para hospitais, escolas, creches e obras."]
         if est == "pressao_com_alta":
-            servicos += " Com a dívida em alta, a conta de juros tende a pesar ainda mais."
+            pontos_servicos.append("Com a dívida em alta, a conta de juros **tende a pesar ainda mais**.")
+    servicos = {"tema": "Saúde, educação e investimentos", "destaque": destaque_juros, "pontos": pontos_servicos}
+    itens = [credito, servicos]
+    resultado = {"titulo": _manchete(soc["estagio"] if soc else None, est), "itens": itens}
+    if not soc:
+        return resultado
+
     # Aqui só entra o que traduz a vida da pessoa; os números completos de cada indicador já estão na lista do painel.
     por_id = {i["id"]: i for i in soc["itens"]}
-    partes = []
-    d = por_id.get("desemprego")
+    d, rd, infl = por_id.get("desemprego"), por_id.get("rendimento"), por_id.get("inflacao")
+    pontos = []
+    if rd:
+        reais = f"R$ {_fmt(rd['valor'], 0)} por mês, já descontada a inflação"
+        if rd["variacao_pct"] is not None and rd["status"] != "estavel":
+            sentido = "acima" if rd["variacao_pct"] > 0 else "abaixo"
+            pontos.append(f"Rendimento do trabalho **{_fmt(abs(rd['variacao_pct']))}% {sentido}** do de um ano atrás ({reais}).")
+        else:
+            pontos.append(f"Rendimento do trabalho **parecido** com o de um ano atrás ({reais}).")
+    if infl and infl["status"] == "piora":
+        pontos.append(f"Inflação em 12 meses ({_fmt(infl['valor'])}%) **{infl['rotulo'].lower()}**.")
     if d:
         comp = "" if d["valor_antes"] is None else f" (há um ano: {_fmt(d['valor_antes'])}%)"
-        partes.append(f"O desemprego está em {_fmt(d['valor'])}%{comp}.")
-    rd = por_id.get("rendimento")
-    if rd and rd["variacao_pct"] is not None and rd["status"] != "estavel":
-        sentido = "acima" if rd["variacao_pct"] > 0 else "abaixo"
-        partes.append(f"O rendimento médio do trabalho, já descontada a inflação, está {_fmt(abs(rd['variacao_pct']))}% {sentido} do de um ano atrás "
-                      f"(R$ {_fmt(rd['valor'], 0)} por mês).")
+        destaque = {"valor": f"{_fmt(d['valor'])}%", "legenda": f"de desemprego{comp}"}
     elif rd:
-        partes.append(f"O rendimento médio do trabalho, já descontada a inflação, está parecido com o de um ano atrás (R$ {_fmt(rd['valor'], 0)} por mês).")
-    i = por_id.get("inflacao")
-    if i and i["status"] == "piora":
-        partes.append(f"A inflação em 12 meses ({_fmt(i['valor'])}%) está {i['rotulo'].lower()}.")
-    fecho = {
-        ("melhora", "poucos_sinais"): "Os ganhos em trabalho e renda convivem com poucos sinais de pressão nas contas públicas.",
-        ("melhora", "pressao_sem_alta"): "Os ganhos em trabalho e renda convivem com sinais de pressão nas contas públicas, sem alta da dívida: um quadro não anula o outro.",
-        ("melhora", "pressao_com_alta"): "Os ganhos em trabalho e renda convivem com sinais de pressão nas contas públicas e a dívida em alta: um quadro não anula o outro.",
-        ("estabilidade", "poucos_sinais"): "No conjunto, o quadro econômico e social está estável, com poucos sinais de pressão nas contas públicas.",
-        ("estabilidade", "pressao_sem_alta"): "No conjunto, o quadro econômico e social está estável, mas há sinais de pressão nas contas públicas, sem alta da dívida.",
-        ("estabilidade", "pressao_com_alta"): "No conjunto, o quadro econômico e social está estável, mas há sinais de pressão nas contas públicas e a dívida está em alta.",
-        ("piora", "poucos_sinais"): "A economia piora, ainda que as contas públicas tenham poucos sinais de pressão.",
-        ("piora", "pressao_sem_alta"): "A economia piora e há sinais de pressão nas contas públicas, sem alta da dívida.",
-        ("piora", "pressao_com_alta"): "A economia piora e há sinais de pressão nas contas públicas, com a dívida em alta.",
+        destaque = {"valor": f"R$ {_fmt(rd['valor'], 0)}", "legenda": "de rendimento médio do trabalho por mês"}
+        pontos = pontos[1:] or ["Sem dados de desemprego do IBGE agora."]
+    else:
+        destaque = {"valor": "—", "legenda": "sem dados do IBGE agora"}
+    itens.append({"tema": "Emprego, renda e preços", "destaque": destaque, "pontos": pontos or ["Sem outros destaques neste período."]})
+
+    conjunto = {
+        ("melhora", "poucos_sinais"): "Os ganhos em trabalho e renda convivem com **poucos sinais de pressão** nas contas públicas.",
+        ("melhora", "pressao_sem_alta"): "Os ganhos em trabalho e renda convivem com sinais de pressão nas contas públicas, sem alta da dívida: **um quadro não anula o outro**.",
+        ("melhora", "pressao_com_alta"): "Os ganhos em trabalho e renda convivem com sinais de pressão nas contas públicas e a dívida em alta: **um quadro não anula o outro**.",
+        ("estabilidade", "poucos_sinais"): "No conjunto, o quadro econômico e social está **estável**, com poucos sinais de pressão nas contas públicas.",
+        ("estabilidade", "pressao_sem_alta"): "No conjunto, o quadro econômico e social está **estável**, mas há sinais de pressão nas contas públicas, sem alta da dívida.",
+        ("estabilidade", "pressao_com_alta"): "No conjunto, o quadro econômico e social está **estável**, mas há sinais de pressão nas contas públicas e a dívida está em alta.",
+        ("piora", "poucos_sinais"): "A economia **piora**, ainda que as contas públicas tenham poucos sinais de pressão.",
+        ("piora", "pressao_sem_alta"): "A economia **piora** e há sinais de pressão nas contas públicas, sem alta da dívida.",
+        ("piora", "pressao_com_alta"): "A economia **piora** e há sinais de pressão nas contas públicas, com a dívida em alta.",
     }[(soc["estagio"], est)]
     if juro_on and est != "poucos_sinais":
-        fecho += " Juros altos mantidos por muito tempo tendem a esfriar a economia."
-    contraste = "mas" if (soc["estagio"] == "melhora") != (est == "poucos_sinais") and soc["estagio"] != "estabilidade" else "e"
-    return {"titulo": f"Na prática: {_frase_social(soc['estagio'])}, {contraste} {_frase_fiscal(est)}",
-            "itens": [{"tema": "Crédito e juros", "texto": credito},
-                      {"tema": "Saúde, educação e investimentos", "texto": servicos},
-                      {"tema": "Emprego, renda e preços", "texto": "\n".join(partes + [fecho])}]}
+        conjunto += " Juros altos mantidos por muito tempo **tendem a esfriar a economia**."
+    resultado["conjunto"] = conjunto
+    return resultado
 
 
 def diagnostico_economico() -> dict:
@@ -774,16 +792,7 @@ def diagnostico_economico() -> dict:
                 "juros_rs": jur12_rs * 1e6 if jur12_rs is not None else None}
     return {"titulo": "Radar econômico do Brasil", "subtitulo": "Economia e contas públicas: dois lados do Brasil", "fiscal": fiscal, "social": social,
             "historico": _historico_fiscal(hist, juro_real),
-            "cotidiano": _cotidiano(fiscal, social, contexto) if social else _cotidiano_so_fiscal(fiscal, contexto)}
-
-
-def _cotidiano_so_fiscal(fis: dict, v: dict) -> dict:
-    """Sem os dados do IBGE: só o lado fiscal, sem inventar o lado social."""
-    vazio = {"estagio": "estabilidade", "itens": []}
-    c = _cotidiano(fis, vazio, v)
-    c["titulo"] = f"Na prática: {_frase_fiscal(fis['estagio'])}"
-    c["itens"] = c["itens"][:2]
-    return c
+            "cotidiano": _cotidiano(fiscal, social, contexto)}
 
 
 def pib_12_meses(ano: int) -> float | None:

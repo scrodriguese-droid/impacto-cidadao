@@ -136,16 +136,54 @@ def test_social_queda_da_renda_com_inflacao_alta_segura_a_melhora(monkeypatch):
     assert x["estagio"] == "estabilidade"
 
 
-def test_cotidiano_mostra_os_dois_lados_sem_repetir_a_lista(monkeypatch):
+_CTX = {"selic": 14.0, "ipca12": 7.0, "juro_real": 7.0, "juros_pib": 8.9, "juros_rs": 1.18e12}
+_FIS = {"estagio": "pressao_com_alta", "sinais": [{"id": "juro_real", "disparado": True}]}
+
+
+def _cartao(c, tema):
+    return next(i for i in c["itens"] if i["tema"] == tema)
+
+
+def test_cotidiano_cada_cartao_abre_com_um_numero_e_tem_frases_curtas(monkeypatch):
     soc = _social(monkeypatch, 7.0, 6.0, ipca=7.0, pib_acum4=2.5, renda=(3000, 3200), informal=(38.0, 37.0))
-    fis = {"estagio": "pressao_com_alta", "sinais": [{"id": "juro_real", "disparado": True}]}
-    ctx = {"selic": 14.0, "ipca12": 7.0, "juro_real": 7.0, "juros_pib": 8.9, "juros_rs": 1.18e12}
-    c = macro._cotidiano(fis, soc, ctx)
-    renda = next(i["texto"] for i in c["itens"] if i["tema"] == "Emprego, renda e preços")
-    assert "desemprego" in renda and "rendimento" in renda.lower() and "acima do de um ano atrás" in renda
-    assert "informalidade" not in renda.lower() and "PIB" not in renda   # já estão na lista do painel
-    assert "acima do teto da meta" in renda                               # inflação fora da banda é dita
-    assert "melhoram" in c["titulo"] and "dívida está em alta" in c["titulo"]
+    c = macro._cotidiano(_FIS, soc, _CTX)
+    assert len(c["itens"]) == 3
+    for item in c["itens"]:
+        assert item["destaque"]["valor"] and item["destaque"]["legenda"]
+        assert 1 <= len(item["pontos"]) <= 3
+        assert all(len(t) <= 130 for t in item["pontos"]), item["pontos"]            # frases curtas, sem parede de texto
+        assert all(t.count("**") % 2 == 0 for t in item["pontos"])                  # negrito sempre fechado
+    assert _cartao(c, "Crédito e juros")["destaque"]["valor"] == "7,0 p.p."
+    assert _cartao(c, "Saúde, educação e investimentos")["destaque"]["valor"] == "R$ 1,18 tri"
+    assert _cartao(c, "Emprego, renda e preços")["destaque"]["valor"] == "6,0%"
+
+
+def test_cotidiano_manchete_curta_e_conteudo_dos_dois_lados(monkeypatch):
+    soc = _social(monkeypatch, 7.0, 6.0, ipca=7.0, pib_acum4=2.5, renda=(3000, 3200), informal=(38.0, 37.0))
+    c = macro._cotidiano(_FIS, soc, _CTX)
+    assert c["titulo"] == "Economia melhora, mas contas sob pressão e dívida em alta"
+    assert len(c["titulo"]) <= 70
+    renda = " ".join(_cartao(c, "Emprego, renda e preços")["pontos"]).replace("**", "")
+    assert "6,7% acima" in renda and "acima do teto da meta" in renda
+    assert "informalidade" not in renda.lower() and "PIB" not in renda               # já estão na lista do painel
+    assert "um quadro não anula o outro" in c["conjunto"]
+
+
+@pytest.mark.parametrize("soc_est,est,esperado", [
+    ("estabilidade", "poucos_sinais", "Economia estável, e contas com poucos sinais de pressão"),
+    ("estabilidade", "pressao_com_alta", "Economia estável, mas contas sob pressão e dívida em alta"),
+    ("piora", "poucos_sinais", "Economia piora, mas contas com poucos sinais de pressão"),
+    ("piora", "pressao_sem_alta", "Economia piora, e contas sob pressão"),
+    (None, "pressao_com_alta", "Contas sob pressão e dívida em alta"),
+])
+def test_manchete(soc_est, est, esperado):
+    assert macro._manchete(soc_est, est) == esperado
+
+
+def test_cotidiano_sem_dados_do_ibge_mostra_so_o_lado_fiscal():
+    c = macro._cotidiano(_FIS, None, _CTX)
+    assert [i["tema"] for i in c["itens"]] == ["Crédito e juros", "Saúde, educação e investimentos"]
+    assert c["titulo"] == "Contas sob pressão e dívida em alta" and "conjunto" not in c
 
 
 def test_rotulos_fiscais_descrevem_sem_julgar():
