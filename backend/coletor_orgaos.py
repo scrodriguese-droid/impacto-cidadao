@@ -137,13 +137,13 @@ def estrutura() -> tuple[dict[str, dict], dict[str, list[dict]]]:
     filhos: dict[str, list[dict]] = defaultdict(list)
     indireta: dict[str, list[dict]] = defaultdict(list)
     for u in unidades:
+        filhos[_id(u["codigoUnidadePai"])].append(u)
         if _id(u["codigoTipoUnidade"]) == "entidade":
             pai = por_id.get(_id(u["codigoUnidadePai"]))
             indireta[naturezas.get(_id(u.get("codigoNaturezaJuridica")), "Outra")].append(
                 {"nome": u["nome"], "sigla": u.get("sigla"), "orgao": pai["nome"] if pai else None})
     for lista in indireta.values():
         lista.sort(key=lambda e: e["nome"])
-        filhos[_id(u["codigoUnidadePai"])].append(u)
     tipo = lambda u: _id(u["codigoTipoUnidade"])  # noqa: E731
     saida: dict[str, dict] = {}
     for u in unidades:
@@ -182,6 +182,9 @@ def coletar(ano: int) -> dict:
     dados["indireta"] = indireta
     for o in dados["orgaos"]:
         o["estrutura"] = est.get(o["codigo"])
+    # trava de segurança: se o SIORG vier incompleto, não grava (a automação não pode publicar a tela sem secretarias)
+    if sum(1 for o in dados["orgaos"] if o["estrutura"] and o["estrutura"]["n_unidades"]) < 30:
+        raise RuntimeError("Estrutura do SIORG incompleta: menos de 30 ministérios com secretarias. Nada foi gravado.")
     dados.update({
         "ano": ano, "fonte_estrutura": URL_SIORG, "fonte": url,
         "fonte_nome": "Portal da Transparência (CGU) — Orçamento da Despesa",
