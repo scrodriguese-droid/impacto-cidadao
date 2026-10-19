@@ -1,0 +1,123 @@
+# Atualiza os arquivos de dados que ficam no repositório (e que o servidor publica):
+#   * toda segunda-feira: ministérios e verbas (Portal da Transparência + SIORG) e votações da Câmara;
+#   * todo dia 1º do mês: autoria dos projetos (arquivos grandes da Câmara).
+# Se algo mudou, o robô faz commit na main e o Render publica de novo sozinho.
+# Também roda sob demanda (aba Actions -> Atualizar arquivos de dados -> Run workflow).
+name: Atualizar arquivos de dados
+
+on:
+  schedule:
+    - cron: "0 8 * * 1"       # segundas, 08:00 UTC
+    - cron: "0 8 1 * *"       # dia 1º, 08:00 UTC
+  workflow_dispatch:
+    inputs:
+      autoria:
+        description: "Recoletar também a autoria dos projetos (lento, ~13 MB)"
+        type: boolean
+        default: false
+
+concurrency:
+  group: atualizar-arquivos
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  atualizar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      CONTATO_EMAIL: ${{ secrets.CONTATO_EMAIL }}
+      PYTHONUTF8: "1"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Instalar dependências
+        run: pip install -r backend/requirements.txt
+
+      - name: Ministérios e verbas (Portal da Transparência + SIORG)
+        run: python backend/coletor_orgaos.py
+
+      - name: Votações da Câmara
+        if: always()
+        run: python backend/coletor_votacoes.py
+
+      - name: Autoria dos projetos (mensal ou sob demanda)
+        if: always() && (github.event.schedule == '0 8 1 * *' || github.event.inputs.autoria == 'true')
+        run: python backend/coletor_autoria.py
+
+      - name: Publicar o que mudou
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add dados/orcamento dados/votacoes dados/autoria
+          if git diff --cached --quiet; then
+            echo "Nada mudou."
+          else
+            git commit -m "Dados atualizados automaticamente ($(date -u +%Y-%m-%d))"
+            git push origin HEAD:main
+          fi
+
+# Coleta diária de leis, medidas provisórias e planos de governo: grava no banco (Supabase).
+# Roda sozinha todo dia e também sob demanda (aba Actions -> Coleta diária -> Run workflow).
+# Segredos necessários (Settings -> Secrets and variables -> Actions): DATABASE_URL.
+# Opcionais: ANTHROPIC_API_KEY (tradução por IA; sem ela os atos entram como "pendentes") e CONTATO_EMAIL.
+name: Coleta diária
+
+on:
+  schedule:
+    - cron: "30 9 * * *"      # 09:30 UTC = 06:30 em Brasília
+  workflow_dispatch:
+    inputs:
+      dias:
+        description: "Janela de apresentação das leis, em dias"
+        default: "30"
+
+concurrency:
+  group: coleta-diaria
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  coletar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      CONTATO_EMAIL: ${{ secrets.CONTATO_EMAIL }}
+      PYTHONUTF8: "1"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Instalar dependências
+        run: pip install -r backend/requirements.txt
+
+      - name: Conferir o banco
+        run: |
+          if [ -z "$DATABASE_URL" ]; then echo "Segredo DATABASE_URL não configurado."; exit 1; fi
+
+      - name: Leis e medidas provisórias (Câmara e Senado)
+        run: python backend/coletor.py --dias "${{ github.event.inputs.dias || '30' }}"
+
+      - name: Planos de governo (TSE)
+        if: always()
+        run: python backend/coletor_candidatos.py
