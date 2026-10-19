@@ -452,10 +452,44 @@ def _situacao_subnacional(ente: int, a1: list[dict], a6: list[dict], deficits: d
     }
 
 
+def _situacao_uniao_so_dpf() -> dict | None:
+    """Plano B da União quando as séries do Banco Central não respondem: o estoque da Dívida Pública Federal vem do
+    Tesouro Nacional (Tesouro Transparente), fonte independente do BCB. Sem PIB, o estoque aparece em reais."""
+    d = macro._estoque_dpf()
+    evolucao = d["evolucao"]
+    if not evolucao:
+        return None
+    ref = d["referencia"]
+    atual = float(d["total"])
+    dezembro = next((e["valor"] for e in reversed(evolucao) if e["mes"] == f"{int(ref[:4]) - 1}-12"), None)
+    var_pct = round((atual / dezembro - 1) * 100, 1) if dezembro else None
+    tendencia = None if var_pct is None else ("alta" if var_pct > 0.5 else "queda" if var_pct < -0.5 else "estavel")
+    bc = next((c["valor"] for c in d.get("por_classe", []) if c["nome"] == "Banco Central"), None)
+    parte_bc = f" Inclui R$ {bc / 1e12:,.2f} tri em títulos na carteira do Banco Central.".replace(".", ",") if bc else ""
+    return {
+        "universo": "Governo Federal (Dívida Pública Federal)",
+        "referencia": ref,
+        "fluxo": {"periodo": None, "itens": [], "leitura": "O resultado fiscal consolidado depende de séries do Banco Central, que não responderam agora."},
+        "estoque": {
+            "itens": [{"id": "dpf", "nome": "Dívida Pública Federal (títulos, interna e externa)", "valor_rs": atual,
+                       "rotulo_pct": f"Dívida Pública Federal, estoque em {ref[5:7]}/{ref[:4]}", "variacao_pct": var_pct}],
+            "tendencia": tendencia,
+            "nota": "Valor em reais, sem comparar com o PIB: a proporção do PIB vem do Banco Central, fora do ar agora." + parte_bc,
+        },
+        "custo": {"itens": [], "leitura": "Os juros e a Selic vêm do Banco Central, que não respondeu agora."},
+        "capacidade": {"itens": [], "indisponivel": "O peso na economia depende do PIB, do Banco Central, que não respondeu agora."},
+        "fonte": {"nome": "Tesouro Nacional — Estoque da Dívida Pública Federal", "url": d["pagina"]},
+    }
+
+
 def _situacao_fiscal(ente: int, esfera: str, a1: list[dict], a6: list[dict], deficits: dict, pessoal: dict | None, instituicao: str | None) -> dict | None:
     try:
         if esfera == "uniao":
-            s = macro.situacao_fiscal_brasil()
+            try:
+                s = macro.situacao_fiscal_brasil()
+            except Exception as exc:  # noqa: BLE001 — Banco Central fora do ar: mostra ao menos o estoque da DPF (Tesouro)
+                log.warning("situação fiscal do BCB indisponível, usando o estoque da DPF: %s", exc)
+                return _situacao_uniao_so_dpf()
             s["capacidade"] = _capacidade_uniao()
             return s
         return _situacao_subnacional(ente, a1, a6, deficits, pessoal, instituicao)
