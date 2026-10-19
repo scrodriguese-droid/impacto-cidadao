@@ -198,7 +198,7 @@ html, body { overflow-x: clip; }
 /* ---------- correções de diagramação ---------- */
 /* Anton só existe em peso 400: sem isso o navegador "engrossa" o traço e a letra borra */
 h1, h2, h2 *, p[class*="text-3xl"], p[class*="text-2xl"], span[class*="text-3xl"], span[class*="text-2xl"], div[class*="text-3xl"], footer h4,
-.radar-estagio b, .radar-veredito, .radar-sub, .radar-item-valor, .radar-stat, .radar-destaque-cab h3 {
+.radar-sub, .radar-item-valor, .radar-stat, .radar-secao-h, .radar-destaque-cab h3 {
     font-synthesis: none; font-weight: 400 !important;
 }
 /* a régua do quadro e a régua do título não se empilham: dentro de um quadro, a régua é a do quadro */
@@ -418,19 +418,6 @@ a.chip-link:hover { background: var(--ativo); color: var(--ativo-fg); }
 /* Radar de saúde econômica: medidor em 4 estágios + caixa “na prática” */
 .radar { margin-bottom: 2rem; }
 .radar-pergunta { font: 800 .68rem/1.3 var(--fonte-texto); letter-spacing: .14em; text-transform: uppercase; }
-.radar-veredito { font-family: var(--fonte-titulo); font-size: clamp(2rem, 4vw, 3.2rem); line-height: 1; text-transform: uppercase; margin: .3rem 0 .2rem; }
-.radar-medidor { display: grid; grid-template-columns: repeat(4, 1fr); border: 3px solid var(--line); margin: 2.1rem 0 0; list-style: none; padding: 0; position: relative; }
-.radar-estagio { position: relative; padding: .9rem .7rem 1rem; border-right: 1px solid var(--line); min-height: 5.2rem; }
-.radar-estagio:last-child { border-right: 0; }
-.radar-estagio b { display: block; font-family: var(--fonte-titulo); font-weight: 400; font-size: clamp(.85rem, 1.7vw, 1.25rem); line-height: 1.1; text-transform: uppercase; letter-spacing: .01em; }
-.radar-estagio span { display: block; font-size: .78rem; line-height: 1.4; font-weight: 500; margin-top: .45rem; }
-.radar-estagio-n { font: 800 .62rem/1 var(--fonte-texto); letter-spacing: .14em; margin-bottom: .4rem; }
-.radar-estagio.passado { background: repeating-linear-gradient(135deg, transparent 0 8px, rgba(128,128,128,.12) 8px 9px); }
-.radar-estagio.atual { background: var(--ativo); color: var(--ativo-fg); }
-.radar-estagio.atual.grave { background: var(--vermelho); color: #fff; }
-.radar-estagio.atual::before { content: "▼ Hoje"; position: absolute; left: 0; right: 0; top: -1.65rem; font: 800 .66rem/1 var(--fonte-texto); letter-spacing: .12em; text-transform: uppercase; color: var(--ativo); white-space: nowrap; }
-.radar-estagio.atual.grave::before { color: var(--vermelho); }
-@media (max-width: 640px) { .radar-medidor { grid-template-columns: 1fr 1fr; } .radar-estagio:nth-child(2) { border-right: 0; } .radar-estagio:nth-child(-n+2) { border-bottom: 1px solid var(--line); } .radar-estagio.atual::before { font-size: .58rem; letter-spacing: .06em; } }
 .radar-sinais { display: grid; gap: .45rem; margin-top: 1rem; font-size: .86rem; line-height: 1.4; font-weight: 400; }
 .radar-sinais li { list-style: none; }
 .radar-sinais .on { font-weight: 600; }
@@ -438,20 +425,41 @@ a.chip-link:hover { background: var(--ativo); color: var(--ativo-fg); }
 .radar-sinais .on::before { content: "● "; color: var(--vermelho); }
 .radar-sinais .off::before { content: "○ "; }
 .radar-pergunta--anual { margin-top: 1.8rem; }
+/* confronto política fiscal × política monetária */
+.radar-secao-h { font-family: var(--fonte-titulo); font-size: clamp(1.35rem, 2.4vw, 1.9rem); line-height: 1.1; letter-spacing: 0; text-transform: uppercase; margin-top: .3rem; }
+.radar-confronto { display: grid; gap: 2.2rem 2rem; margin-top: .4rem; }
+@media (min-width: 900px) { .radar-confronto { grid-template-columns: 1fr 1fr; } }
+.radar-lado { border-top: 3px solid var(--line); padding-top: .9rem; }
+.radar-confronto > .radar-lado { margin-top: 0 !important; }   /* a regra global "section + section" empurrava a 2ª coluna */
+.radar-social { margin-top: 2rem; border-top: 3px solid var(--line); padding-top: .9rem; }
+.radar-conexao { border: 3px solid var(--line); margin-top: 1.8rem; padding: 1.1rem 1.3rem 1.3rem; }
+.radar-conexao-total { font: 800 .72rem/1.3 var(--fonte-texto); letter-spacing: .08em; text-transform: uppercase; margin-top: .9rem; }
+.radar-barra { display: flex; height: 1.7rem; border: 2px solid var(--line); margin-top: .4rem; }
+.radar-barra-parte { display: block; min-width: 3px; }
+.radar-barra-parte--0 { background: rgba(128,128,128,.55); }
+.radar-barra-parte--1 { background: var(--vermelho); }
+.radar-barra-leg { font-size: .82rem; line-height: 1.5; margin-top: .45rem; }
+.radar-barra-chip { display: inline-block; width: .8rem; height: .8rem; border: 1px solid var(--line); margin-right: .35rem; vertical-align: -1px; }
+.radar-barra-chip--0 { background: rgba(128,128,128,.55); }
+.radar-barra-chip--1 { background: var(--vermelho); }
+.radar-conexao-colunas { display: grid; gap: 1.2rem 2rem; margin-top: 1.1rem; padding-top: 1rem; border-top: 1px solid var(--line); }
+@media (min-width: 900px) { .radar-conexao-colunas { grid-template-columns: 1fr 1fr; } }
+.radar-conexao-colunas h4, .radar-leitura h4 { font: 800 .72rem/1.3 var(--fonte-texto); letter-spacing: .1em; text-transform: uppercase; color: var(--vermelho); }
+.radar-conexao-colunas h4 span { color: inherit; font-weight: 600; letter-spacing: .04em; }
+.radar-conexao-colunas .radar-pontos { border-top: 0; margin-top: .5rem; padding-top: 0; }
+.radar-visoes { margin-top: 1.8rem; border-top: 3px solid var(--line); padding-top: .9rem; }
+.radar-visoes-colunas { display: grid; margin-top: 1rem; border: 2px solid var(--line); }
+@media (min-width: 900px) { .radar-visoes-colunas { grid-template-columns: 1fr 1fr; } .radar-leitura + .radar-leitura { border-left: 1px solid var(--line); } }
+.radar-leitura { padding: 1rem 1.2rem 1.2rem; font-size: .92rem; line-height: 1.5; }
+.radar-leitura + .radar-leitura { border-top: 1px solid var(--line); }
+@media (min-width: 900px) { .radar-leitura + .radar-leitura { border-top: 0; } }
+.radar-leitura p { margin-top: .5rem; }
+.radar-leitura-rot { font: 800 .66rem/1.2 var(--fonte-texto); letter-spacing: .1em; text-transform: uppercase; margin-top: .9rem !important; }
+.radar-leitura .radar-pontos { border-top: 0; margin-top: .4rem; padding-top: 0; }
+.radar-visoes .radar-conjunto { border: 2px solid var(--line); border-top: 0; }
 .radar-aviso { border: 2px solid var(--line); border-left: 6px solid var(--vermelho); padding: .85rem 1.1rem; margin: 1rem 0; font-size: .92rem; line-height: 1.5; max-width: 70ch; }
 .radar-sub { font-size: .95rem; line-height: 1.5; font-weight: 500; margin: .4rem 0 1.4rem; max-width: 70ch; }
-.radar-paineis { display: grid; gap: 2.4rem 2rem; }
-@media (min-width: 980px) { .radar-paineis { grid-template-columns: 1fr 1fr; } }
-.radar-painel .radar-veredito { font-size: clamp(1.7rem, 3vw, 2.5rem); }
 .radar-legenda { font-size: .88rem; line-height: 1.45; max-width: 52ch; min-height: 2.6em; }
-.radar-medidor--3 { grid-template-columns: repeat(3, 1fr); }
-.radar-medidor--3 .radar-estagio { min-height: 0; padding: .7rem .8rem .8rem; }
-@media (max-width: 640px) {
-    .radar-medidor--3 { grid-template-columns: 1fr; margin-top: 1rem; }
-    .radar-medidor--3 .radar-estagio { border-right: 0; border-bottom: 1px solid var(--line); min-height: 0; }
-    .radar-medidor--3 .radar-estagio:last-child { border-bottom: 0; }
-    .radar-medidor--3 .radar-estagio.atual::before { top: .8rem; left: auto; right: .7rem; }
-}
 .radar-itens { margin-top: 1rem; display: grid; }
 .radar-itens li { list-style: none; padding: .7rem 0; border-top: 1px solid var(--line); display: grid; grid-template-columns: 1fr auto; gap: .15rem 1rem; }
 .radar-itens li:first-child { border-top: 2px solid var(--line); }
