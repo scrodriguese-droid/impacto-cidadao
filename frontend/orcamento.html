@@ -143,18 +143,18 @@ function linhaDoTempo(r) {
     const nos = r.linha_do_tempo.map((n) => {
         const [chip, ponto] = ESTADO_COR[n.estado] || ESTADO_COR.sem_fonte;
         const def = (r.tipos.find((t) => t.tipo === n.tipo) || {}).sentido;
-        return `<li class="flex-1 min-w-[12rem] rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
-            <div class="flex items-center justify-between gap-2">
-                <p class="font-bold"><i class="fa-solid ${IC_TIPO[n.tipo] || 'fa-file'} mr-1.5 text-slate-400" aria-hidden="true"></i>${esc(n.tipo)} <span class="font-normal text-slate-500 text-sm">${esc(n.periodo)}</span></p>
-                <span class="w-2.5 h-2.5 rounded-full ${ponto}" aria-hidden="true"></span></div>
-            ${def ? `<p class="text-xs text-slate-500 dark:text-slate-400 mt-1"><b>O que é:</b> ${esc(def)}</p>` : ''}
-            <span class="inline-block mt-2 px-2.5 py-1 rounded-full text-[11px] font-bold ${chip}">${esc(n.estado_rotulo)}</span>
-            ${n.detalhe ? `<p class="text-xs text-slate-600 dark:text-slate-400 mt-2">${esc(n.detalhe)}</p>` : ''}
-            ${n.url_tramitacao ? `<a class="inline-block mt-2 text-xs underline text-brand-700 dark:text-brand-400" target="_blank" rel="noopener" href="${esc(urlSegura(n.url_tramitacao))}">${esc(n.proposicao)} na Câmara</a>` : ''}</li>`;
+        // cinco linhas fixas por etapa (cabeçalho, definição, situação, detalhe, link): assim as três colunas se alinham
+        return `<li class="ciclo-no">
+            <div class="ciclo-cab"><p class="font-bold"><i class="fa-solid ${IC_TIPO[n.tipo] || 'fa-file'} mr-1.5 text-slate-400" aria-hidden="true"></i>${esc(n.tipo)} <span class="font-normal text-slate-500 text-sm">${esc(n.periodo)}</span></p>
+                <span class="ciclo-ponto ${ponto}" aria-hidden="true"></span></div>
+            <p class="ciclo-def text-xs text-slate-500 dark:text-slate-400">${def ? `<b>O que é:</b> ${esc(def)}` : ''}</p>
+            <div><span class="ciclo-chip inline-block px-2.5 py-1 rounded-full text-[11px] font-bold ${chip}">${esc(n.estado_rotulo)}</span></div>
+            <p class="ciclo-det text-xs text-slate-600 dark:text-slate-400">${n.detalhe ? esc(n.detalhe) : ''}</p>
+            <p class="ciclo-link text-xs">${n.url_tramitacao ? `<a class="underline text-brand-700 dark:text-brand-400" target="_blank" rel="noopener" href="${esc(urlSegura(n.url_tramitacao))}">${esc(n.proposicao)} na Câmara</a>` : ''}</p></li>`;
     });
     return `<div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/40 p-4">
         <p class="font-bold"><i class="fa-solid fa-calendar-days mr-1.5 text-brand-600" aria-hidden="true"></i>Linha do tempo · ${esc(r.agora.rotulo)}</p>
-        <ol class="mt-3 flex flex-wrap items-stretch gap-3">${nos.join('<li aria-hidden="true" class="hidden md:flex items-center text-slate-400"><i class="fa-solid fa-arrow-right"></i></li>')}</ol>
+        <ol class="ciclo mt-3">${nos.join('')}</ol>
         <p class="mt-3 text-sm"><b>Momento:</b> ${esc(r.momento)}</p></div>`;
 }
 
