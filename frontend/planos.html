@@ -20,6 +20,13 @@
         details[open] > summary .chev { transform: rotate(180deg); }
         .chev { transition: transform .15s ease; }
         .scroll-x { scrollbar-width: thin; }
+        /* palavra buscada: marca-texto simples, sem caixa nem barra, para não invadir a linha de cima/baixo */
+        mark.destaque-busca { background: rgba(251, 191, 36, .45) !important; color: inherit !important; padding: 0 .1em !important; margin: 0 !important; border: 0 !important; border-radius: 2px;
+            line-height: inherit; -webkit-box-decoration-break: clone; box-decoration-break: clone; display: inline !important; }
+        mark.destaque-busca::before, mark.destaque-busca::after { content: none !important; }
+        /* os cartões ocupam toda a largura: 1 candidato por coluna mínima de 20rem, sem sobrar espaço vazio */
+        #candidatosGrid { display: grid; grid-template-columns: repeat(var(--colunas, 2), minmax(0, 1fr)); gap: 1.25rem; }
+        #candidatosGrid > .col-span-full { grid-column: 1 / -1; }
         :focus-visible { outline: 2px solid #A92823; outline-offset: 2px; }
     </style>
     <link rel="stylesheet" href="assets/brutalista.css">
@@ -48,9 +55,9 @@
             <p><b>Isto é informação, não recomendação de voto.</b> Quando existe resumo, ele é gerado por inteligência artificial a partir do plano oficial e conferido automaticamente contra o PDF, mas pode conter imprecisões. A busca por palavra mostra apenas trechos literais, sem interpretação. Confira sempre o trecho original. O que um plano promete não é garantia de execução: depende do Congresso, do orçamento e, muitas vezes, de estados e prefeituras.</p>
         </div>
 
-        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 mb-5">
-            <div id="temaChips" class="flex gap-2 overflow-x-auto scroll-x pb-1" role="radiogroup" aria-label="Tema"></div>
-            <label class="inline-flex items-center space-x-2 text-sm shrink-0 cursor-pointer">
+        <div class="flex flex-col gap-3 mb-5">
+            <div id="temaChips" class="flex flex-wrap gap-2" role="radiogroup" aria-label="Tema"></div>
+            <label class="inline-flex items-center space-x-2 text-sm cursor-pointer self-start">
                 <input id="chkTurno2" type="checkbox" class="rounded border-slate-300 text-brand-600 focus:ring-brand-500">
                 <span>Somente candidatos no <b>2º turno</b></span>
             </label>
@@ -67,7 +74,7 @@
             <button type="submit" class="px-4 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold">Buscar</button>
         </form>
 
-        <div id="candidatosGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5" aria-live="polite"></div>
+        <div id="candidatosGrid" aria-live="polite"></div>
     </section>
 
 </main>
@@ -158,7 +165,7 @@ function cartaoProposta(p) {
 /* Trechos literais (busca por palavra-chave, sem IA). Os ⟦marcadores⟧ vêm do servidor; o texto é escapado antes. */
 function marcar(txt) {
     const limpo = esc(String(txt).replace(/\s+/g, ' ').trim());
-    return limpo.replace(/⟦/g, '<mark class="bg-amber-200 dark:bg-amber-500/40 text-inherit rounded px-0.5">').replace(/⟧/g, '</mark>');
+    return limpo.replace(/⟦/g, '<mark class="destaque-busca">').replace(/⟧/g, '</mark>');
 }
 function trechosHtml(b, pdf) {
     if (!b) return '';
@@ -211,6 +218,14 @@ function cartaoCandidato(c, b, modo) {
 }
 
 let reqCandidatos = 0;
+/* Colunas = nº de candidatos (no máximo 3 em tela larga, 2 em média, 1 no celular): poucos candidatos ocupam a largura toda. */
+function ajustarColunas() {
+    const g = $('candidatosGrid');
+    const n = [...g.children].filter((e) => !e.classList.contains('col-span-full')).length || 1;
+    const max = innerWidth >= 1100 ? 3 : innerWidth >= 700 ? 2 : 1;
+    g.style.setProperty('--colunas', Math.min(n, max));
+}
+addEventListener('resize', ajustarColunas);
 async function carregarCandidatos() {
     const grade = $('candidatosGrid');
     const minha = ++reqCandidatos;
@@ -252,6 +267,7 @@ async function carregarCandidatos() {
             const pop = cmp.municipio.populacao;
             grade.insertAdjacentHTML('afterbegin', `<p class="col-span-full text-xs text-slate-500 dark:text-slate-400"><i class="fa-solid fa-city mr-1" aria-hidden="true"></i>${esc(cmp.municipio.nome)}/${esc(cmp.municipio.uf)} — ${esc(cmp.municipio.regiao)} · ${pop.valor.toLocaleString('pt-BR')} habitantes (estimativa IBGE ${esc(pop.ano)}).</p>`);
         }
+        ajustarColunas();
     } catch (e) { if (minha === reqCandidatos) grade.innerHTML = `<div class="col-span-full">${mensagemErro(e)}</div>`; }
 }
 $('candidatosGrid').addEventListener('click', (ev) => {

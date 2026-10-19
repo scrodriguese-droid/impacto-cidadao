@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "impacto",
+      "runtimeExecutable": "C:/Users/elois/.venvs/impacto/Scripts/python.exe",
+      "runtimeArgs": ["-m", "uvicorn", "main:app", "--app-dir", "backend", "--port", "8000"],
+      "port": 8000
+    }
+  ]
+}
