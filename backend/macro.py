@@ -469,6 +469,67 @@ def _sidra_informalidade() -> dict[str, dict[str, Any]]:
     return _sidra_pnad(8529, 12466, trimestre_civil=True)
 
 
+# Pobreza e desigualdade: séries ANUAIS do IBGE, divulgadas meses (às vezes mais de um ano) depois do período. Por isso aparecem
+# à parte, com o ano à vista, e NÃO entram no estágio do painel, que compara com 12 meses antes.
+DESIGUALDADE = [
+    dict(id="gini", nome="Desigualdade de renda (índice de Gini)", tabela=7435, variavel=10681, unidade="índice (0 a 1)", dec=3, tol=0.01,
+         rotulos=("Menos desigualdade", "Mais desigualdade", "Parecida com o ano anterior"),
+         regra="melhora/piora se variar 0,01 ou mais contra o ano anterior (maior é pior)",
+         fonte="PNAD Contínua, tabela 7435: rendimento domiciliar per capita, a preços médios do ano"),
+    dict(id="pobreza_nacional", nome="População abaixo da linha de pobreza nacional", tabela=5877, variavel=9948, unidade="% da população", dec=1, tol=1.0,
+         rotulos=("Menos gente abaixo da linha", "Mais gente abaixo da linha", "Parecida com o ano anterior"),
+         regra="melhora/piora se variar 1,0 p.p. ou mais contra o ano anterior (maior é pior)",
+         fonte="IBGE, ODS 1.2.1 (tabela 5877)"),
+    dict(id="pobreza_internacional", nome="População abaixo da linha de pobreza internacional", tabela=5817, variavel=9617, unidade="% da população", dec=1, tol=0.5,
+         rotulos=("Menos gente abaixo da linha", "Mais gente abaixo da linha", "Parecida com o ano anterior"),
+         regra="melhora/piora se variar 0,5 p.p. ou mais contra o ano anterior (maior é pior)",
+         fonte="IBGE, ODS 1.1.1 (tabela 5817)"),
+]
+
+
+def _sidra_anual(tabela: int, variavel: int) -> dict[int, float]:
+    """Série anual do SIDRA (D3C = ano) como {ano: valor}."""
+    def produzir() -> dict[int, float]:
+        linhas = _http.json(f"{SIDRA}/t/{tabela}/n1/all/v/{variavel}/p/all", {"formato": "json"})
+        saida: dict[int, float] = {}
+        for r in linhas[1:]:
+            v, cod = _num(r.get("V")), str(r.get("D3C", ""))
+            if v is not None and len(cod) == 4 and cod.isdigit():
+                saida[int(cod)] = v
+        return saida
+    return _memo(("sidra-anual", tabela, variavel), produzir)
+
+
+def desigualdade_e_pobreza() -> dict | None:
+    """Gini e pobreza (IBGE): o dado mais recente de CADA série, contra o ano anterior e contra o início da série.
+    Cada série tem o seu último ano (o Gini costuma sair antes da pobreza). Sem nenhuma série, devolve None."""
+    itens = []
+    for cfg in DESIGUALDADE:
+        try:
+            serie_ = _sidra_anual(cfg["tabela"], cfg["variavel"])
+        except Exception as exc:  # noqa: BLE001 — uma série fora do ar não derruba as outras
+            log.warning("série %s indisponível: %s", cfg["id"], exc)
+            continue
+        if not serie_:
+            continue
+        ano, inicio = max(serie_), min(serie_)
+        antes = serie_.get(ano - 1)
+        delta = None if antes is None else round(serie_[ano] - antes, 4)
+        st = "estavel" if delta is None else "melhora" if delta <= -cfg["tol"] else "piora" if delta >= cfg["tol"] else "estavel"
+        itens.append({"id": cfg["id"], "nome": cfg["nome"], "valor": serie_[ano], "unidade": cfg["unidade"], "dec": cfg["dec"], "ano": ano,
+                      "valor_antes": antes, "ano_antes": ano - 1 if antes is not None else None,
+                      "valor_inicio": serie_[inicio] if inicio != ano else None, "ano_inicio": inicio if inicio != ano else None,
+                      "status": st, "rotulo": cfg["rotulos"][{"melhora": 0, "piora": 1, "estavel": 2}[st]], "regra": cfg["regra"], "fonte": cfg["fonte"]})
+    if not itens:
+        return None
+    return {"itens": itens,
+            "criterio": ("São séries anuais e saem com meses de atraso (o Gini costuma sair antes da pobreza), por isso aparecem à parte, com o ano "
+                         "de cada dado, e não entram no estágio acima, que compara com 12 meses antes. Cada uma é comparada com o ano anterior: "
+                         "para o Gini, 0,01 ou mais; para a pobreza, 1,0 p.p. (linha nacional) ou 0,5 p.p. (linha internacional). As linhas de pobreza "
+                         "são as definidas pelo IBGE para acompanhar os Objetivos de Desenvolvimento Sustentável (ver a ficha metodológica de cada indicador)."),
+            "fonte": {"nome": "IBGE — PNAD Contínua e indicadores dos Objetivos de Desenvolvimento Sustentável", "url": "https://odsbrasil.gov.br/objetivo1/indicador111"}}
+
+
 def _sidra_pib() -> dict[str, dict[str, Any]]:
     """PIB real trimestral (IBGE, Contas Nacionais Trimestrais, tabela 5932): acumulado em 4 trimestres e trimestre
     contra o anterior. As chaves são o mês de fim do trimestre (AAAA-03, -06, -09, -12)."""
@@ -790,14 +851,14 @@ def diagnostico_economico() -> dict:
     social = None
     if soc_hoje:
         ids = [e["id"] for e in ESTAGIOS_SOCIAL]
-        social = {"estagios": ESTAGIOS_SOCIAL, "atual": soc_hoje["estagio"], "estagio": soc_hoje["estagio"], "indice": ids.index(soc_hoje["estagio"]),
+        social = {"desigualdade": desigualdade_e_pobreza(), "estagios": ESTAGIOS_SOCIAL, "atual": soc_hoje["estagio"], "estagio": soc_hoje["estagio"], "indice": ids.index(soc_hoje["estagio"]),
                   "rotulo": ESTAGIOS_SOCIAL[ids.index(soc_hoje["estagio"])]["rotulo"], "itens": soc_hoje["itens"], "referencia": f"{soc_hoje['mes']}-01",
                   "criterio": ("Regra do ImpactoCidadão, não é uma classificação oficial. Cada indicador é comparado com o mesmo período de um ano antes: "
                                f"desemprego e informalidade melhoram ou pioram se variarem {_fmt(TOL_DESEMPREGO)} p.p. ou mais; o rendimento real do trabalho (já descontada a inflação) "
                                f"melhora ou piora se variar {_fmt(TOL_RENDIMENTO)}% ou mais; inflação conta como melhora se voltou à banda da meta "
                                f"do CMN e como piora se está fora dela; PIB real conta como crescendo se o acumulado em 4 trimestres for de {_fmt(PIB_CRESCENDO)}% ou mais "
                                "e como encolhendo se for negativo. Melhora ou piora = vantagem de pelo menos 2 indicadores num sentido; o resto é estabilidade. "
-                               "Pobreza e desigualdade ainda não entram."),
+                               "Pobreza e desigualdade (anuais, com defasagem) aparecem à parte e não entram no estágio."),
                   "fonte": {"nome": "IBGE (PNAD Contínua: desemprego, informalidade e rendimento; Contas Nacionais Trimestrais) e Banco Central (IPCA e meta de inflação)", "url": "https://sidra.ibge.gov.br/"}}
     contexto = {"selic": selic, "ipca12": ipca12, "juro_real": juro_real, "juros_pib": juros_pib,
                 "juros_rs": jur12_rs * 1e6 if jur12_rs is not None else None}

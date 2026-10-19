@@ -246,3 +246,61 @@ def test_memo_sem_nenhum_valor_guardado_propaga_o_erro(monkeypatch):
     produzir, _ = _produzir([macro.ErroFonte("BCB fora do ar")])
     with pytest.raises(macro.ErroFonte):
         macro._memo(("teste", "memo-2"), produzir)
+
+
+# --- pobreza e desigualdade (séries anuais, à parte do estágio) ---------------------------------------------------------
+def _anuais(monkeypatch, series):
+    """`series`: {id_da_serie: {ano: valor}}; a série ausente falha (como uma fonte fora do ar)."""
+    por_tabela = {cfg["tabela"]: series.get(cfg["id"]) for cfg in macro.DESIGUALDADE}
+
+    def falso(tabela, variavel):
+        if por_tabela[tabela] is None:
+            raise macro.ErroFonte("IBGE fora do ar")
+        return por_tabela[tabela]
+    monkeypatch.setattr(macro, "_sidra_anual", falso)
+
+
+def _item(d, id_):
+    return next(i for i in d["itens"] if i["id"] == id_)
+
+
+def test_desigualdade_cada_serie_usa_o_seu_ultimo_ano(monkeypatch):
+    _anuais(monkeypatch, {"gini": {2023: 0.517, 2024: 0.504, 2025: 0.511},
+                          "pobreza_nacional": {2012: 36.8, 2023: 29.8, 2024: 26.5},
+                          "pobreza_internacional": {2023: 5.8, 2024: 4.7}})
+    d = macro.desigualdade_e_pobreza()
+    assert _item(d, "gini")["ano"] == 2025 and _item(d, "pobreza_nacional")["ano"] == 2024
+    assert _item(d, "pobreza_nacional")["valor_antes"] == 29.8 and _item(d, "pobreza_nacional")["valor_inicio"] == 36.8
+    assert _item(d, "pobreza_nacional")["ano_inicio"] == 2012
+
+
+@pytest.mark.parametrize("antes,agora,esperado", [(0.504, 0.511, "estavel"), (0.504, 0.514, "piora"), (0.520, 0.510, "melhora")])
+def test_gini_muda_de_estado_com_0_01(monkeypatch, antes, agora, esperado):
+    _anuais(monkeypatch, {"gini": {2024: antes, 2025: agora}})
+    assert _item(macro.desigualdade_e_pobreza(), "gini")["status"] == esperado
+
+
+@pytest.mark.parametrize("antes,agora,esperado", [(29.8, 26.5, "melhora"), (26.5, 27.0, "estavel"), (26.5, 28.0, "piora")])
+def test_pobreza_nacional_muda_de_estado_com_1_pp(monkeypatch, antes, agora, esperado):
+    _anuais(monkeypatch, {"pobreza_nacional": {2023: antes, 2024: agora}})
+    assert _item(macro.desigualdade_e_pobreza(), "pobreza_nacional")["status"] == esperado
+
+
+def test_desigualdade_sem_ano_anterior_e_estavel_e_nao_inventa_comparacao(monkeypatch):
+    _anuais(monkeypatch, {"gini": {2025: 0.511}})
+    i = _item(macro.desigualdade_e_pobreza(), "gini")
+    assert i["status"] == "estavel" and i["valor_antes"] is None and i["ano_antes"] is None and i["valor_inicio"] is None
+
+
+def test_desigualdade_uma_serie_fora_do_ar_nao_derruba_as_outras_e_tudo_fora_devolve_none(monkeypatch):
+    _anuais(monkeypatch, {"gini": {2024: 0.504, 2025: 0.511}})
+    d = macro.desigualdade_e_pobreza()
+    assert [i["id"] for i in d["itens"]] == ["gini"]
+    _anuais(monkeypatch, {})
+    assert macro.desigualdade_e_pobreza() is None
+
+
+def test_pobreza_e_desigualdade_nao_entram_no_estagio_social(monkeypatch):
+    # o estágio compara com 12 meses antes; as séries anuais ficam fora da conta
+    x = _social(monkeypatch, 6.0, 6.0, ipca=3.0, pib_acum4=2.0)
+    assert all(i["id"] not in ("gini", "pobreza_nacional", "pobreza_internacional") for i in x["itens"])

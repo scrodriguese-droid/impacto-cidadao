@@ -364,6 +364,24 @@ function painelFiscal(f) {
             ? ` · <b class="radar-seta radar-seta--${s.tendencia}">${SETA[s.tendencia]}</b> (há 12 meses: ${pc(s.valor_antes, 1)}${esc(un(s))})` : ''}</span></li>`).join('');
     return { ...f, nome: 'Situação fiscal', grave: f.indice === f.estagios.length - 1, lista: itens };
 }
+/* Pobreza e desigualdade: séries ANUAIS, com o ano de cada dado à vista; ficam à parte e não entram no estágio */
+function blocoAnual(dz) {
+    if (!dz || !dz.itens || !dz.itens.length) return '';
+    const num = (v, dec) => Number(v).toLocaleString('pt-BR', { minimumFractionDigits: dec, maximumFractionDigits: dec });
+    const itens = dz.itens.map((i) => {
+        const u = i.id === 'gini' ? '' : '%';
+        const marca = { melhora: '↑', piora: '↓', estavel: '→' }[i.status];
+        const antes = i.valor_antes != null ? ` · em ${i.ano_antes}: ${num(i.valor_antes, i.dec)}${u}` : '';
+        const inicio = i.valor_inicio != null ? ` · em ${i.ano_inicio}: ${num(i.valor_inicio, i.dec)}${u}` : '';
+        return `<li><span class="radar-item-nome">${esc(i.nome)}</span>
+            <span class="radar-item-valor">${num(i.valor, i.dec)}${u} <small>em ${i.ano}</small></span>
+            <span class="radar-item-nota"><b class="radar-seta radar-seta--${i.status}">${marca} ${esc(i.rotulo)}</b>${antes}${inicio}</span></li>`;
+    }).join('');
+    return `<p class="radar-pergunta radar-pergunta--anual">Pobreza e desigualdade · dados anuais</p>
+        <ul class="radar-itens">${itens}</ul>
+        <p class="ficha-nota">Saem uma vez por ano, com atraso, e não entram no estágio acima; a seta compara com o ano anterior.
+            <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(dz.fonte.url))}">Ficha do IBGE ↗</a></p>`;
+}
 function painelSocial(sc) {
     const reais = (v) => `R$ ${Number(v).toLocaleString('pt-BR', { maximumFractionDigits: 0 })}`;
     const itens = sc.itens.map((i) => {
@@ -380,7 +398,7 @@ function painelSocial(sc) {
             <span class="radar-item-valor">${i.formato === 'reais' ? reais(i.valor) + ' <small>por mês</small>' : pc(i.valor, 1) + '%'}${i.id === 'pib' ? ' <small>de crescimento</small>' : ''}</span>
             <span class="radar-item-nota"><b class="radar-seta radar-seta--${i.status}">${marca} ${esc(i.rotulo)}</b> · ${comp}</span></li>`;
     }).join('');
-    return { ...sc, nome: 'Economia e vida da população', grave: sc.indice === sc.estagios.length - 1, lista: itens };
+    return { ...sc, nome: 'Economia e vida da população', grave: sc.indice === sc.estagios.length - 1, lista: itens, anual: blocoAnual(sc.desigualdade) };
 }
 /* Perspectiva histórica: dívida, déficit nominal e juro real desde 2011, com a faixa do estágio de cada mês e marcos verificáveis */
 function graficoHistorico(h, chave, titulo, un, dec) {
@@ -461,7 +479,7 @@ function radarEconomico(dg) {
         <p class="radar-veredito">${esc(p.rotulo)}</p>
         <p class="radar-legenda">${esc(p.estagios[p.indice].resumo)}</p>
         ${medidorRadar(p)}
-        <ul class="radar-itens">${p.lista}</ul></div>`).join('');
+        <ul class="radar-itens">${p.lista}</ul>${p.anual || ''}</div>`).join('');
     const negrito = (t) => esc(t).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
     const itens = dg.cotidiano.itens.map((i) => `<div class="radar-destaque-item"><h4>${esc(i.tema)}</h4>
         <p class="radar-stat">${esc(i.destaque.valor)}</p><p class="radar-stat-leg">${esc(i.destaque.legenda)}</p>
