@@ -197,7 +197,8 @@ html, body { overflow-x: clip; }
 
 /* ---------- correções de diagramação ---------- */
 /* Anton só existe em peso 400: sem isso o navegador "engrossa" o traço e a letra borra */
-h1, h2, h2 *, p[class*="text-3xl"], p[class*="text-2xl"], span[class*="text-3xl"], span[class*="text-2xl"], div[class*="text-3xl"], footer h4 {
+h1, h2, h2 *, p[class*="text-3xl"], p[class*="text-2xl"], span[class*="text-3xl"], span[class*="text-2xl"], div[class*="text-3xl"], footer h4,
+.radar-estagio b, .radar-veredito, .radar-destaque-cab h3 {
     font-synthesis: none; font-weight: 400 !important;
 }
 /* a régua do quadro e a régua do título não se empilham: dentro de um quadro, a régua é a do quadro */
@@ -421,18 +422,19 @@ a.chip-link:hover { background: var(--ativo); color: var(--ativo-fg); }
 .radar-medidor { display: grid; grid-template-columns: repeat(4, 1fr); border: 3px solid var(--line); margin: 2.1rem 0 0; list-style: none; padding: 0; position: relative; }
 .radar-estagio { position: relative; padding: .9rem .7rem 1rem; border-right: 1px solid var(--line); min-height: 5.2rem; }
 .radar-estagio:last-child { border-right: 0; }
-.radar-estagio b { display: block; font-family: var(--fonte-titulo); font-size: clamp(.85rem, 1.7vw, 1.25rem); line-height: 1.05; text-transform: uppercase; }
-.radar-estagio span { display: block; font-size: .74rem; line-height: 1.35; margin-top: .35rem; }
+.radar-estagio b { display: block; font-family: var(--fonte-titulo); font-weight: 400; font-size: clamp(.85rem, 1.7vw, 1.25rem); line-height: 1.1; text-transform: uppercase; letter-spacing: .01em; }
+.radar-estagio span { display: block; font-size: .78rem; line-height: 1.4; font-weight: 500; margin-top: .45rem; }
 .radar-estagio-n { font: 800 .62rem/1 var(--fonte-texto); letter-spacing: .14em; margin-bottom: .4rem; }
-.radar-estagio.passado { background: repeating-linear-gradient(135deg, transparent 0 6px, rgba(128,128,128,.22) 6px 7px); }
+.radar-estagio.passado { background: repeating-linear-gradient(135deg, transparent 0 8px, rgba(128,128,128,.12) 8px 9px); }
 .radar-estagio.atual { background: var(--ativo); color: var(--ativo-fg); }
 .radar-estagio.atual.grave { background: var(--vermelho); color: #fff; }
 .radar-estagio.atual::before { content: "▼ O país está aqui"; position: absolute; left: -3px; right: -3px; top: -1.65rem; font: 800 .66rem/1 var(--fonte-texto); letter-spacing: .12em; text-transform: uppercase; color: var(--ativo); white-space: nowrap; }
 .radar-estagio.atual.grave::before { color: var(--vermelho); }
 @media (max-width: 640px) { .radar-medidor { grid-template-columns: 1fr 1fr; } .radar-estagio:nth-child(2) { border-right: 0; } .radar-estagio:nth-child(-n+2) { border-bottom: 1px solid var(--line); } .radar-estagio.atual::before { font-size: .58rem; letter-spacing: .06em; } }
-.radar-sinais { display: flex; flex-wrap: wrap; gap: .5rem 1.1rem; margin-top: .9rem; font-size: .8rem; }
+.radar-sinais { display: grid; gap: .45rem; margin-top: 1rem; font-size: .86rem; line-height: 1.4; font-weight: 400; }
 .radar-sinais li { list-style: none; }
-.radar-sinais .on { font-weight: 800; }
+.radar-sinais .on { font-weight: 600; }
+.radar-sinais li span { font-weight: 400; }
 .radar-sinais .on::before { content: "● "; color: var(--vermelho); }
 .radar-sinais .off::before { content: "○ "; }
 .radar-destaque { border: 3px solid var(--line); margin-top: 1.4rem; }
