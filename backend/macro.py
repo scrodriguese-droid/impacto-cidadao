@@ -376,9 +376,9 @@ def situacao_fiscal_brasil() -> dict:
 # Radar econômico do Brasil: dois diagnósticos separados (situação fiscal × economia e vida da população)
 # --------------------------------------------------------------------------- #
 ESTAGIOS_FISCAL = [
-    {"id": "sustentavel", "rotulo": "Sustentável", "resumo": "Dívida e juros sob controle; as contas se mantêm sem apertar o orçamento."},
-    {"id": "pressao", "rotulo": "Sob pressão", "resumo": "Dívida, déficit ou juros altos pesam nas contas, mas a dívida não está disparando."},
-    {"id": "deterioracao", "rotulo": "Em deterioração", "resumo": "Sinais de pressão e a dívida em alta: a trajetória das contas está piorando."},
+    {"id": "poucos_sinais", "rotulo": "Poucos sinais de pressão", "resumo": "Nenhum sinal acima dos limites do projeto, ou só um, com a dívida sem alta."},
+    {"id": "pressao_sem_alta", "rotulo": "Pressão, dívida sem alta", "resumo": "Dois ou mais sinais acima dos limites, mas a dívida bruta não subiu 1 p.p. em 12 meses."},
+    {"id": "pressao_com_alta", "rotulo": "Pressão e dívida em alta", "resumo": "Há sinal acima do limite e a dívida bruta subiu 1 p.p. ou mais em 12 meses."},
 ]
 ESTAGIOS_SOCIAL = [
     {"id": "melhora", "rotulo": "Melhora", "resumo": "Trabalho, renda, preços e crescimento estão melhores que há um ano."},
@@ -523,12 +523,13 @@ def classificar_historico(desde: str = "2011-01") -> list[dict]:
         sobe_antes = sobe
         insolvente = (valores["divida"] >= LIM_DIVIDA_INSOLVENCIA and dados["primario12"][m] > 0  # BCB: positivo = déficit
                       and var_div is not None and var_div > 0)
-        if insolvente or (n >= MIN_SINAIS_PRESSAO and sobe):
-            est = "deterioracao"
-        elif n >= MIN_SINAIS_PRESSAO or (n >= 1 and sobe):
-            est = "pressao"
+        # Os rótulos descrevem exatamente o que foi medido: o 3º estágio exige a dívida em alta; o 2º, não.
+        if insolvente or (n >= 1 and sobe):
+            est = "pressao_com_alta"
+        elif n >= MIN_SINAIS_PRESSAO:
+            est = "pressao_sem_alta"
         else:
-            est = "sustentavel"
+            est = "poucos_sinais"
         saida.append({"mes": m, "estagio": est, "sinais": sinais, "var_divida_12m": None if var_div is None else round(var_div, 2),
                       "insolvente": insolvente, "selic": _selic_em(selic, m), "ipca12": dados["ipca12"][m]})
     return saida
@@ -622,14 +623,55 @@ def classificar_social_historico(desde: str = "2013-01") -> list[dict]:
     return saida
 
 
+# Marcos institucionais para dar contexto ao gráfico de longo prazo. São datas de normas publicadas: o gráfico NÃO afirma
+# que uma norma causou uma mudança na dívida.
+MARCOS = [
+    {"mes": "2016-12", "data": "15/12/2016", "titulo": "Emenda Constitucional 95: teto de gastos",
+     "url": "https://www.planalto.gov.br/ccivil_03/constituicao/emendas/emc/emc95.htm"},
+    {"mes": "2020-03", "data": "20/03/2020", "titulo": "Estado de calamidade pública reconhecido pelo Congresso na pandemia (Decreto Legislativo 6/2020)",
+     "url": "https://www.planalto.gov.br/ccivil_03/portaria/dlg6-2020.htm"},
+    {"mes": "2023-08", "data": "30/08/2023", "titulo": "Lei Complementar 200: novo arcabouço fiscal",
+     "url": "https://www.planalto.gov.br/ccivil_03/leis/lcp/lcp200.htm"},
+]
+_MESES_ABREV = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"]
+
+
+def _rotulo_mes(mes: str) -> str:
+    return f"{_MESES_ABREV[int(mes[5:7]) - 1]}/{mes[:4]}"
+
+
+def _historico_fiscal(hist: list[dict], juro_real_atual: float | None = None) -> dict:
+    """Série mensal de dívida bruta, déficit nominal e juro real (desde 2011) com o estágio de cada mês, para o gráfico
+    de longo prazo, e uma frase-resumo só com fatos da série."""
+    ids = [e["id"] for e in ESTAGIOS_FISCAL]
+    pontos = []
+    for x in hist:
+        v = {s["id"]: s["valor"] for s in x["sinais"]}
+        pontos.append({"mes": x["mes"], "divida": v["divida"], "nominal": v["nominal"], "juro_real": v["juro_real"], "estagio": ids.index(x["estagio"])})
+    primeiro, ultimo = pontos[0], pontos[-1]
+    if juro_real_atual is not None:   # o último ponto usa a Selic e o IPCA mais recentes, como o painel
+        ultimo["juro_real"] = juro_real_atual
+    menor = min(pontos, key=lambda p: p["divida"])
+    maior = max(pontos, key=lambda p: p["divida"])
+    resumo = (f"A dívida bruta do governo geral foi de {_fmt(primeiro['divida'])}% do PIB em {_rotulo_mes(primeiro['mes'])} para "
+              f"{_fmt(ultimo['divida'])}% em {_rotulo_mes(ultimo['mes'])}. Na série, o ponto mais baixo foi {_fmt(menor['divida'])}% "
+              f"({_rotulo_mes(menor['mes'])}) e o mais alto, {_fmt(maior['divida'])}% ({_rotulo_mes(maior['mes'])}).")
+    anos = [str(a) for a in range(int(primeiro["mes"][:4]), int(ultimo["mes"][:4]), 3)]
+    por_mes = {p["mes"]: p for p in pontos}
+    tabela = [por_mes[f"{a}-12"] for a in anos if f"{a}-12" in por_mes] + [ultimo]
+    return {"pontos": pontos, "marcos": MARCOS, "resumo": resumo, "tabela": tabela,
+            "inicio": primeiro["mes"], "fim": ultimo["mes"],
+            "fonte": {"nome": "Banco Central do Brasil — SGS (séries 13762, 5727, 13522, 432)", "url": "https://dadosabertos.bcb.gov.br/"}}
+
+
 def _frase_social(est: str) -> str:
     return {"melhora": "trabalho, renda, preços e crescimento melhoram", "estabilidade": "trabalho, renda, preços e crescimento ficam estáveis",
             "piora": "trabalho, renda, preços e crescimento pioram"}[est]
 
 
 def _frase_fiscal(est: str) -> str:
-    return {"sustentavel": "as contas públicas estão sustentáveis", "pressao": "as contas públicas estão sob pressão",
-            "deterioracao": "as contas públicas estão em deterioração"}[est]
+    return {"poucos_sinais": "as contas públicas têm poucos sinais de pressão", "pressao_sem_alta": "as contas públicas mostram pressão, com a dívida sem alta",
+            "pressao_com_alta": "as contas públicas mostram pressão e a dívida está em alta"}[est]
 
 
 def _cotidiano(fis: dict, soc: dict, v: dict) -> dict:
@@ -643,13 +685,13 @@ def _cotidiano(fis: dict, soc: dict, v: dict) -> dict:
                if juro_on else
                f"Com a Selic em {_fmt(v['selic'], 2)}% ao ano e a inflação em {_fmt(v['ipca12'])}%, o juro real é de {_fmt(v['juro_real'])} pontos: "
                "o crédito tende a ser mais acessível, e financiar a casa, o carro ou o negócio pesa menos no orçamento.")
-    if est == "sustentavel":
+    if est == "poucos_sinais":
         servicos = f"Os juros da dívida consomem {_fmt(v['juros_pib'])}% do PIB{juros_rs}: sobra mais espaço no orçamento para saúde, educação e obras."
     else:
         servicos = (f"Só de juros, o setor público paga {_fmt(v['juros_pib'])}% do PIB{juros_rs}. Cada real que vai para os credores é um real que não está "
                     "disponível para hospitais, escolas, creches e obras, o que tende a reduzir o espaço para investimentos.")
-        if est == "deterioracao":
-            servicos += " Com a dívida em alta, esse espaço tende a encolher nos próximos anos se nada mudar."
+        if est == "pressao_com_alta":
+            servicos += " Com a dívida em alta, a conta de juros tende a pesar ainda mais."
     # Aqui só entra o que traduz a vida da pessoa; os números completos de cada indicador já estão na lista do painel.
     por_id = {i["id"]: i for i in soc["itens"]}
     partes = []
@@ -668,19 +710,19 @@ def _cotidiano(fis: dict, soc: dict, v: dict) -> dict:
     if i and i["status"] == "piora":
         partes.append(f"A inflação em 12 meses ({_fmt(i['valor'])}%) está {i['rotulo'].lower()}.")
     fecho = {
-        ("melhora", "sustentavel"): "Os ganhos em trabalho e renda convivem com contas públicas equilibradas.",
-        ("melhora", "pressao"): "Os ganhos em trabalho e renda convivem com contas públicas sob pressão: um quadro não anula o outro.",
-        ("melhora", "deterioracao"): "Os ganhos em trabalho e renda convivem com contas públicas em deterioração: um quadro não anula o outro.",
-        ("estabilidade", "sustentavel"): "No conjunto, o quadro econômico e social está estável, sem peso das contas públicas.",
-        ("estabilidade", "pressao"): "No conjunto, o quadro econômico e social está estável, mas as contas públicas estão sob pressão.",
-        ("estabilidade", "deterioracao"): "No conjunto, o quadro econômico e social está estável, mas as contas públicas estão em deterioração.",
-        ("piora", "sustentavel"): "A economia piora, ainda que as contas públicas estejam sustentáveis.",
-        ("piora", "pressao"): "A economia piora e as contas públicas estão sob pressão.",
-        ("piora", "deterioracao"): "A economia piora e as contas públicas estão em deterioração.",
+        ("melhora", "poucos_sinais"): "Os ganhos em trabalho e renda convivem com poucos sinais de pressão nas contas públicas.",
+        ("melhora", "pressao_sem_alta"): "Os ganhos em trabalho e renda convivem com sinais de pressão nas contas públicas, sem alta da dívida: um quadro não anula o outro.",
+        ("melhora", "pressao_com_alta"): "Os ganhos em trabalho e renda convivem com sinais de pressão nas contas públicas e a dívida em alta: um quadro não anula o outro.",
+        ("estabilidade", "poucos_sinais"): "No conjunto, o quadro econômico e social está estável, com poucos sinais de pressão nas contas públicas.",
+        ("estabilidade", "pressao_sem_alta"): "No conjunto, o quadro econômico e social está estável, mas há sinais de pressão nas contas públicas, sem alta da dívida.",
+        ("estabilidade", "pressao_com_alta"): "No conjunto, o quadro econômico e social está estável, mas há sinais de pressão nas contas públicas e a dívida está em alta.",
+        ("piora", "poucos_sinais"): "A economia piora, ainda que as contas públicas tenham poucos sinais de pressão.",
+        ("piora", "pressao_sem_alta"): "A economia piora e há sinais de pressão nas contas públicas, sem alta da dívida.",
+        ("piora", "pressao_com_alta"): "A economia piora e há sinais de pressão nas contas públicas, com a dívida em alta.",
     }[(soc["estagio"], est)]
-    if juro_on and est != "sustentavel":
+    if juro_on and est != "poucos_sinais":
         fecho += " Juros altos mantidos por muito tempo tendem a esfriar a economia."
-    contraste = "mas" if (soc["estagio"] == "melhora") != (est == "sustentavel") and soc["estagio"] != "estabilidade" else "e"
+    contraste = "mas" if (soc["estagio"] == "melhora") != (est == "poucos_sinais") and soc["estagio"] != "estabilidade" else "e"
     return {"titulo": f"Na prática: {_frase_social(soc['estagio'])}, {contraste} {_frase_fiscal(est)}",
             "itens": [{"tema": "Crédito e juros", "texto": credito},
                       {"tema": "Saúde, educação e investimentos", "texto": servicos},
@@ -709,12 +751,12 @@ def diagnostico_economico() -> dict:
     fiscal = {"estagios": ESTAGIOS_FISCAL, "atual": hoje["estagio"], "indice": [e["id"] for e in ESTAGIOS_FISCAL].index(hoje["estagio"]),
               "rotulo": ESTAGIOS_FISCAL[[e["id"] for e in ESTAGIOS_FISCAL].index(hoje["estagio"])]["rotulo"],
               "sinais": sinais, "var_divida_12m": hoje["var_divida_12m"], "referencia": f"{hoje['mes']}-01", "estagio": hoje["estagio"],
-              "criterio": ("Regra do ImpactoCidadão, não é uma classificação oficial. Cada sinal liga num limite e só desliga depois de recuar "
-                           "(dívida bruta: liga em 75% do PIB, desliga abaixo de 70%; déficit nominal em 12 meses: 5% / 4%; juro real: 6 p.p. / 5). "
-                           "A dívida bruta “em alta” = subiu 1 p.p. ou mais em 12 meses, e só deixa de estar quando para de subir. "
-                           "Sob pressão = 2 ou mais sinais ligados, ou 1 sinal com a dívida em alta. "
-                           "Em deterioração = 2 ou mais sinais ligados com a dívida em alta, ou dívida acima de 100% do PIB "
-                           "com déficit primário e em alta. A tendência de cada sinal compara com 12 meses antes."),
+              "criterio": ("Regra do ImpactoCidadão, não é uma classificação oficial, e descreve o que foi medido, sem julgar a gestão. Cada sinal liga num limite "
+                           "e só desliga depois de recuar (dívida bruta: liga em 75% do PIB, desliga abaixo de 70%; déficit nominal em 12 meses: 5% / 4%; "
+                           "juro real: 6 p.p. / 5). A dívida bruta “em alta” = subiu 1 p.p. ou mais em 12 meses, e só deixa de estar quando para de subir. "
+                           "Pressão e dívida em alta = pelo menos 1 sinal ligado e a dívida em alta, ou dívida acima de 100% do PIB com déficit primário e em alta. "
+                           "Pressão, dívida sem alta = 2 ou mais sinais ligados, sem a dívida em alta. Poucos sinais de pressão = o restante. A tendência de cada "
+                           "sinal compara com 12 meses antes. Estes são retratos de 12 meses: veja a perspectiva histórica abaixo para o contexto de longo prazo."),
               "fonte": {"nome": "Banco Central do Brasil — SGS (séries 13762, 5727, 5760, 5793, 432, 13522)", "url": "https://dadosabertos.bcb.gov.br/"}}
     social = None
     if soc_hoje:
@@ -731,6 +773,7 @@ def diagnostico_economico() -> dict:
     contexto = {"selic": selic, "ipca12": ipca12, "juro_real": juro_real, "juros_pib": juros_pib,
                 "juros_rs": jur12_rs * 1e6 if jur12_rs is not None else None}
     return {"titulo": "Radar econômico do Brasil", "subtitulo": "Economia e contas públicas: dois lados do Brasil", "fiscal": fiscal, "social": social,
+            "historico": _historico_fiscal(hist, juro_real),
             "cotidiano": _cotidiano(fiscal, social, contexto) if social else _cotidiano_so_fiscal(fiscal, contexto)}
 
 
