@@ -86,6 +86,10 @@ CATALOGO: dict[str, dict] = {
                        unidade="% da força de trabalho", frequencia="trimestre móvel, divulgada todo mês", tipo="taxa",
                        mede="Pessoas de 14 anos ou mais que procuraram trabalho e não encontraram, como % da força de trabalho.",
                        interpreta="Cada observação cobre um trimestre móvel (ex.: jul-ago-set). Não é o mesmo que o desemprego mensal de outras fontes."),
+    "ibcbr": dict(fonte="bcb", codigo=24364, grupo="Atividade econômica", nome="IBC-Br — índice de atividade (dessazonalizado)",
+                  unidade="índice (2002 = 100)", frequencia="mensal", tipo="taxa",
+                  mede="Prévia mensal do nível de atividade da economia, calculada pelo Banco Central, já sem o efeito das estações do ano.",
+                  interpreta="Serve de termômetro do PIB entre uma divulgação trimestral e outra. Não é o PIB oficial do IBGE."),
     "primario": dict(fonte="bcb", codigo=4649, grupo="Resultado fiscal", nome="Resultado primário — fluxo mensal",
                      unidade="R$ milhões", frequencia="mensal", tipo="valor", nota=FISCAL_NOTA,
                      mede="Receitas menos despesas, sem contar juros. Mostra se o governo gasta mais do que arrecada antes de pagar a dívida.",
@@ -323,7 +327,18 @@ def situacao_fiscal_brasil() -> dict:
     tendencia = None if variacao is None else ("alta" if variacao > 0.05 else "queda" if variacao < -0.05 else "estavel")
 
     custo_impl = round(jur_pib / dlsp["valor"] * 100, 1) if dlsp["valor"] else None
+    pib = None
+    if dlsp["valor"] and dlsp_rs["data"] == dlsp["data"]:
+        pib = {"valor_rs": dlsp_rs["valor"] * 1e6 / (dlsp["valor"] / 100), "data": dlsp["data"],
+               "nota": "Derivado do saldo da dívida líquida (R$ ÷ % do PIB) divulgado pelo Banco Central; é o PIB acumulado em 12 meses."}
+    try:
+        diagnostico = diagnostico_economico()
+    except Exception as exc:  # noqa: BLE001 — o radar nunca derruba a situação fiscal
+        log.warning("diagnóstico econômico indisponível: %s", exc)
+        diagnostico = None
     return {
+        "diagnostico": diagnostico,
+        "pib": pib,
         "universo": "Setor público consolidado (União, estados, municípios e estatais; Banco Central)",
         "referencia": fim,
         "fluxo": {"periodo": f"12 meses até {fim[5:7]}/{fim[:4]}" if fim else None, "itens": itens_fluxo, "leitura": leitura},
@@ -349,6 +364,185 @@ def situacao_fiscal_brasil() -> dict:
             "leitura": "Quanto da riqueza do país vai apenas para remunerar a dívida. Os juros acompanham a Selic: quando ela sobe, a dívida fica mais cara.",
         },
         "fonte": {"nome": "Banco Central do Brasil — SGS (séries 4649, 4583, 4616, 5793, 5727, 5760, 13762, 4513, 4478, 432)",
+                  "url": "https://dadosabertos.bcb.gov.br/"},
+    }
+
+
+# --------------------------------------------------------------------------- #
+# Radar de saúde econômica — 4 estágios
+# --------------------------------------------------------------------------- #
+ESTAGIOS = [
+    {"id": "desenvolvimento", "rotulo": "Desenvolvimento", "resumo": "Economia crescendo e contas sob controle."},
+    {"id": "recessao", "rotulo": "Recessão", "resumo": "A atividade econômica encolhe por dois trimestres seguidos."},
+    {"id": "aperto", "rotulo": "Crise / Aperto", "resumo": "Dívida alta, juros pesados e crédito caro apertam o Estado e as famílias."},
+    {"id": "insolvencia", "rotulo": "Risco de insolvência", "resumo": "A dívida cresce sozinha e o país corre risco de não conseguir pagá-la."},
+]
+# Limites do radar: critério EDITORIAL do projeto (não é métrica oficial); os números vêm das séries oficiais.
+# Cada sinal LIGA ao atingir o limite e só DESLIGA depois de recuar a “desliga”: evita que o radar oscile
+# quando o indicador anda em cima da linha.
+SINAIS_APERTO = {
+    "divida": dict(nome="Dívida bruta do governo geral", unidade="% do PIB", liga=75.0, desliga=70.0),
+    "nominal": dict(nome="Déficit nominal (12 meses)", unidade="% do PIB", liga=5.0, desliga=4.0),
+    "juro_real": dict(nome="Juro real (Selic − IPCA 12 meses)", unidade="p.p.", liga=6.0, desliga=5.0),
+}
+MIN_SINAIS_APERTO = 2
+QUEDA_MIN_RECESSAO = 0.5    # queda acumulada do IBC-Br nos dois trimestres, em %
+LIM_DIVIDA_INSOLVENCIA = 100.0
+
+
+def _fmt(v: float, dec: int = 1) -> str:
+    return f"{v:,.{dec}f}".replace(",", "X").replace(".", ",").replace("X", ".")
+
+
+def _fmt_rs(valor_rs: float) -> str:
+    return f"R$ {_fmt(valor_rs / 1e12, 2)} tri" if abs(valor_rs) >= 1e12 else f"R$ {_fmt(valor_rs / 1e9, 0)} bi"
+
+
+def _mes_antes(mes: str, n: int) -> str:
+    idx = int(mes[:4]) * 12 + int(mes[5:7]) - 1 - n
+    return f"{idx // 12}-{idx % 12 + 1:02d}"
+
+
+def _atividade_em(ibc: dict[str, float], mes: str) -> dict | None:
+    """IBC-Br: média dos 3 últimos meses contra os 3 anteriores, duas vezes seguidas (trimestres que terminam em `mes`)."""
+    medias = []
+    for k in range(3):
+        v = [ibc.get(_mes_antes(mes, 3 * k + j)) for j in range(3)]
+        if None in v:
+            return None
+        medias.append(sum(v) / 3)
+    var = [(medias[0] / medias[1] - 1) * 100, (medias[1] / medias[2] - 1) * 100]
+    acum = (medias[0] / medias[2] - 1) * 100
+    return {"variacoes_pct": [round(var[1], 2), round(var[0], 2)], "acumulada_pct": round(acum, 2),
+            "recessao": var[0] < 0 and var[1] < 0 and acum <= -QUEDA_MIN_RECESSAO}
+
+
+def _selic_em(pts: list[dict], mes: str) -> float | None:
+    v = None
+    for p in pts:
+        if p["data"][:7] > mes:
+            break
+        v = p["valor"]
+    return v
+
+
+def _dados_mensais() -> tuple[dict[str, dict[str, float]], list[dict]]:
+    """Séries do radar indexadas por mês (AAAA-MM) e a Selic (só as mudanças de meta)."""
+    chaves = ("dbgg_pib", "nominal12", "primario12", "ipca12")
+    dados = {k: {p["data"][:7]: p["valor"] for p in serie(k)["pontos"]} for k in chaves}
+    try:
+        dados["ibcbr"] = {p["data"][:7]: p["valor"] for p in serie("ibcbr")["pontos"]}
+    except Exception:  # noqa: BLE001 — sem a série o radar segue só com os sinais fiscais
+        dados["ibcbr"] = {}
+    return dados, serie("selic")["pontos"]
+
+
+def classificar_historico(desde: str = "2011-01") -> list[dict]:
+    """Estágio do radar mês a mês (com a memória dos sinais). O último item é o diagnóstico de hoje;
+    o restante serve para conferir o critério contra o que de fato aconteceu."""
+    dados, selic = _dados_mensais()
+    meses = sorted(m for m in dados["nominal12"]
+                   if m >= desde and m in dados["dbgg_pib"] and m in dados["ipca12"] and m in dados["primario12"])
+    ligados: set[str] = set()
+    saida: list[dict] = []
+    for m in meses:
+        s_selic = _selic_em(selic, m)
+        if s_selic is None:
+            continue
+        valores = {"divida": dados["dbgg_pib"][m], "nominal": dados["nominal12"][m], "juro_real": round(s_selic - dados["ipca12"][m], 2)}
+        sinais = []
+        for sid, cfg in SINAIS_APERTO.items():
+            v = valores[sid]
+            on = v >= cfg["liga"] or (sid in ligados and v >= cfg["desliga"])
+            (ligados.add if on else ligados.discard)(sid)
+            sinais.append({"id": sid, "nome": cfg["nome"], "valor": v, "unidade": cfg["unidade"], "disparado": on,
+                           "regra": f"liga em ≥ {_fmt(cfg['liga'], 0)}, desliga abaixo de {_fmt(cfg['desliga'], 0)}"})
+        ativ = _atividade_em(dados["ibcbr"], m)
+        antes = dados["dbgg_pib"].get(_mes_antes(m, 12))
+        n = sum(x["disparado"] for x in sinais)
+        if valores["divida"] >= LIM_DIVIDA_INSOLVENCIA and dados["primario12"][m] > 0 and antes is not None and valores["divida"] > antes:  # BCB: positivo = déficit
+            est = "insolvencia"
+        elif n >= MIN_SINAIS_APERTO:
+            est = "aperto"
+        elif ativ and ativ["recessao"]:
+            est = "recessao"
+        else:
+            est = "desenvolvimento"
+        saida.append({"mes": m, "estagio": est, "sinais": sinais, "atividade": ativ, "selic": s_selic,
+                      "ipca12": dados["ipca12"][m]})
+    return saida
+
+
+def _cotidiano(est: str, v: dict) -> dict:
+    """Tradução para a vida real: o que as métricas significam para crédito, serviços públicos e renda."""
+    juros_rs = f" (cerca de {_fmt_rs(v['juros_rs'])} em 12 meses)" if v.get("juros_rs") else ""
+    credito = {
+        "desenvolvimento": f"Com a Selic em {_fmt(v['selic'], 2)}% ao ano e a inflação em {_fmt(v['ipca12'])}%, o crédito tende a ser mais acessível: financiar a casa, o carro ou o negócio pesa menos no orçamento.",
+        "recessao": "Com a atividade em queda, bancos e empresas tendem a ficar mais cautelosos: o crédito encurta, a inadimplência costuma subir e investir em um negócio novo fica mais arriscado.",
+        "aperto": f"A Selic está em {_fmt(v['selic'], 2)}% ao ano e a inflação em {_fmt(v['ipca12'])}%: sobram {_fmt(v['juro_real'])} pontos de juro real. Na prática, cartão, cheque especial e financiamentos tendem a custar caro, e empresas costumam adiar investimentos e contratações.",
+        "insolvencia": "Quando o país perde a confiança de quem lhe empresta, os juros tendem a disparar para todos: o crédito fica escasso ou proibitivo para famílias e empresas.",
+    }[est]
+    servicos = {
+        "desenvolvimento": f"Os juros da dívida consomem {_fmt(v['juros_pib'])}% do PIB{juros_rs}: sobra mais espaço no orçamento para saúde, educação e obras.",
+        "recessao": "A arrecadação tende a cair junto com a renda e o emprego, e o governo fica com menos dinheiro para saúde, educação e obras justamente quando mais gente precisa.",
+        "aperto": f"Só de juros, o setor público paga {_fmt(v['juros_pib'])}% do PIB{juros_rs}. Cada real que vai para os credores é um real que não está disponível para hospitais, escolas, creches e obras, o que tende a reduzir o espaço para investimentos.",
+        "insolvencia": "O orçamento passa a ser engolido pela dívida: sobra pouco para saúde e educação, e cortes ou aumento de impostos tendem a deixar de ser escolha.",
+    }[est]
+    emprego = f" A taxa de desemprego está em {_fmt(v['desemprego'])}%." if v.get("desemprego") is not None else ""
+    renda = {
+        "desenvolvimento": "A economia cresce e o ambiente é favorável a vagas e a aumento de renda." + emprego,
+        "recessao": "O cenário tende a trazer menos vagas, renda estagnada ou em queda e mais famílias endividadas." + emprego,
+        "aperto": f"Com o governo gastando mais do que arrecada, a dívida cresce, e os juros altos mantidos para segurar a inflação ({_fmt(v['ipca12'])}% em 12 meses) tendem a esfriar a economia: menos vagas e menos renda.{emprego}",
+        "insolvencia": "O cenário tende a trazer inflação alta, moeda desvalorizada e perda do poder de compra, com risco de um ajuste fiscal abrupto." + emprego,
+    }[est]
+    titulo = {
+        "desenvolvimento": "Na prática: as contas públicas não estão pesando sobre o seu dia a dia",
+        "recessao": "Na prática: a economia encolhe, e isso tende a chegar ao emprego e ao crédito",
+        "aperto": "Na prática: o país gasta muito para pagar a dívida, e parte da conta tende a chegar ao seu bolso",
+        "insolvencia": "Na prática: o país corre o risco de não ter margem para pagar a própria dívida",
+    }[est]
+    return {"titulo": titulo, "itens": [
+        {"tema": "Crédito e juros", "texto": credito},
+        {"tema": "Saúde, educação e investimentos", "texto": servicos},
+        {"tema": "Emprego e renda", "texto": renda}]}
+
+
+def diagnostico_economico() -> dict:
+    """Em qual dos 4 estágios o país está, com os sinais que levam à conclusão (regras abertas, limites do projeto)."""
+    hist = classificar_historico()
+    if not hist:
+        raise ErroFonte("Sem dados suficientes para o radar de saúde econômica.")
+    hoje = hist[-1]
+    try:
+        desemp = _ultimos("desemprego", 1)[0]["valor"]
+    except Exception:  # noqa: BLE001 — IBGE fora do ar: o texto do cotidiano omite a taxa
+        desemp = None
+    jur12_rs, _ = _soma_12_meses("juros")
+    juros_pib = _ultimos("juros12", 1)[0]["valor"]
+    # Juros e inflação saem mais cedo que o resultado fiscal: o texto e o sinal usam o dado mais recente de cada um.
+    selic = _ultimos("selic", 1)[0]["valor"]
+    ipca12 = _ultimos("ipca12", 1)[0]["valor"]
+    juro_real = round(selic - ipca12, 2)
+    sinais = [{**s, "valor": juro_real} if s["id"] == "juro_real" else s for s in hoje["sinais"]]
+    ativ = hoje["atividade"]
+    if ativ:
+        sinais.append({"id": "atividade", "nome": "Atividade (IBC-Br, últimos 2 trimestres)", "valor": ativ["acumulada_pct"],
+                       "unidade": "% acumulado", "disparado": ativ["recessao"],
+                       "regra": f"queda em 2 trimestres seguidos, somando ≥ {_fmt(QUEDA_MIN_RECESSAO)}%"})
+    idx = [e["id"] for e in ESTAGIOS].index(hoje["estagio"])
+    contexto = {"selic": selic, "ipca12": ipca12, "juro_real": juro_real, "juros_pib": juros_pib,
+                "juros_rs": jur12_rs * 1e6 if jur12_rs is not None else None, "desemprego": desemp}
+    return {
+        "estagios": ESTAGIOS, "atual": hoje["estagio"], "indice": idx, "rotulo": ESTAGIOS[idx]["rotulo"],
+        "sinais_aperto": sum(s["disparado"] for s in hoje["sinais"]), "sinais": sinais, "atividade": ativ,
+        "referencia": f"{hoje['mes']}-01",
+        "cotidiano": _cotidiano(hoje["estagio"], contexto),
+        "criterio": ("Regra do ImpactoCidadão, não é uma classificação oficial. Crise/Aperto = pelo menos 2 de 3 sinais ligados: dívida bruta "
+                     "(liga em 75% do PIB, desliga abaixo de 70%), déficit nominal em 12 meses (liga em 5%, desliga abaixo de 4%) e juro real "
+                     "(liga em 6 p.p., desliga abaixo de 5). A margem de saída evita que o radar oscile quando o número anda em cima da linha. "
+                     "Recessão = IBC-Br em queda por 2 trimestres seguidos, somando ao menos 0,5%. "
+                     "Risco de insolvência = dívida ≥ 100% do PIB, déficit primário e dívida subindo em 12 meses. Vale o estágio mais grave que se aplica."),
+        "fonte": {"nome": "Banco Central do Brasil — SGS (séries 13762, 5727, 5760, 5793, 432, 13522, 24364) e IBGE — PNAD Contínua",
                   "url": "https://dadosabertos.bcb.gov.br/"},
     }
 
