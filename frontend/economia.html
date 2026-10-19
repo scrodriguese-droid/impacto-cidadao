@@ -350,19 +350,41 @@ const cartaz = (rotulo, grande, sub, nota, alerta) => `<div class="cartaz${alert
 
 /* Radar econômico: dois diagnósticos separados (economia e vida da população × situação fiscal) + tradução para o dia a dia */
 const SETA = { piora: '↓ piorou', melhora: '↑ melhorou', estavel: '→ estável' };
-function medidorRadar(p) {
-    const celulas = p.estagios.map((e, i) => `<li class="radar-estagio${i === p.indice ? ' atual' + (p.grave ? ' grave' : '') : ''}"${i === p.indice ? ' aria-current="step"' : ''}>
-        <p class="radar-estagio-n">${i + 1}</p><b>${esc(e.rotulo)}</b></li>`).join('');
-    return `<ol class="radar-medidor radar-medidor--3" aria-label="${esc(p.nome)}: ${esc(p.rotulo)}, ${p.indice + 1} de ${p.estagios.length}">${celulas}</ol>`;
+const negrito = (t) => esc(t).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');   // o backend marca o negrito com **
+/* Política fiscal × política monetária: cada lado com os seus números (Banco Central) e a tendência contra 12 meses antes */
+function itemConfronto(i) {
+    const seta = i.tendencia ? ` · <b class="radar-seta radar-seta--${i.tendencia}">${SETA[i.tendencia]}</b>` : '';
+    return `<li><span class="radar-item-nome">${esc(i.nome)}</span>
+        <span class="radar-item-valor">${esc(i.valor)}</span>
+        <span class="radar-item-nota">${esc(i.detalhe)}${seta}${i.antes ? ` (${esc(i.antes)})` : ''}</span></li>`;
 }
-function painelFiscal(f) {
-    // “maior é pior” em todos os sinais fiscais: a seta já vem do backend (piorou/melhorou/estável contra 12 meses antes)
-    const un = (s) => (s.unidade === 'p.p.' ? ' p.p.' : '%' + (s.unidade.includes('PIB') ? ' do PIB' : ''));
-    const itens = f.sinais.map((s) => `<li><span class="radar-item-nome">${esc(s.nome)}</span>
-        <span class="radar-item-valor">${pc(s.valor, 1)}${esc(un(s))}</span>
-        <span class="radar-item-nota">${s.disparado ? '● sinal ligado' : '○ sinal desligado'} · ${esc(s.regra)}${s.tendencia && s.valor_antes != null
-            ? ` · <b class="radar-seta radar-seta--${s.tendencia}">${SETA[s.tendencia]}</b> (há 12 meses: ${pc(s.valor_antes, 1)}${esc(un(s))})` : ''}</span></li>`).join('');
-    return { ...f, nome: 'Situação fiscal', grave: f.indice === f.estagios.length - 1, lista: itens };
+function colunaConfronto(c) {
+    return `<section class="radar-lado"><p class="radar-pergunta">${esc(c.nome)}</p><h3 class="radar-secao-h">${esc(c.quem)}</h3>
+        <p class="radar-legenda">${esc(c.papel)}</p><ul class="radar-itens">${c.itens.map(itemConfronto).join('')}</ul></section>`;
+}
+/* Onde as duas políticas se encontram: o déficit nominal é o resultado primário somado aos juros (fatos × interpretação) */
+function faixaConexao(cx) {
+    const b = cx.barra;
+    const barra = b ? `<p class="radar-conexao-total">${esc(b.total)}</p>
+        <div class="radar-barra" role="img" aria-label="${esc(b.total)}: ${b.partes.map((x) => `${esc(x.nome)} ${esc(x.txt)} do PIB`).join(' e ')}">
+            ${b.partes.map((x, k) => `<span class="radar-barra-parte radar-barra-parte--${k}" style="flex-grow:${Math.max(Math.abs(x.pct), 0.05)}"></span>`).join('')}</div>
+        <p class="radar-barra-leg">${b.partes.map((x, k) => `<span class="radar-barra-chip radar-barra-chip--${k}"></span>${esc(x.nome)}: <b>${esc(x.txt)}</b> do PIB`).join(' &nbsp;+&nbsp; ')}</p>` : '';
+    return `<div class="radar-conexao">
+        <h3 class="radar-secao-h">Onde as duas políticas se encontram</h3>
+        ${barra}
+        <div class="radar-conexao-colunas">
+            <div><h4>O que as contas mostram <span>(fatos)</span></h4><ul class="radar-pontos">${cx.fatos.map((t) => `<li>${esc(t)}</li>`).join('')}</ul></div>
+            <div><h4>Como se costuma explicar <span>(interpretação)</span></h4><ul class="radar-pontos">${cx.interpretacao.map((t) => `<li>${esc(t)}</li>`).join('')}</ul></div>
+        </div></div>`;
+}
+/* Duas leituras econômicas, lado a lado e atribuídas: argumento, números que a sustentam e a objeção da outra */
+function visoes(v) {
+    const cartao = (l) => `<div class="radar-leitura"><h4>${esc(l.nome)}</h4><p>${esc(l.argumento)}</p>
+        <p class="radar-leitura-rot">Números que a sustentam</p><ul class="radar-pontos">${l.numeros.map((t) => `<li>${esc(t)}</li>`).join('')}</ul>
+        <p class="radar-leitura-rot">Objeção da outra leitura</p><p>${esc(l.objecao)}</p></div>`;
+    return `<div class="radar-visoes"><h3 class="radar-secao-h">${esc(v.titulo)}</h3><p class="radar-legenda">${esc(v.intro)}</p>
+        <div class="radar-visoes-colunas">${v.leituras.map(cartao).join('')}</div>
+        <p class="radar-conjunto">${esc(v.concordam)}</p></div>`;
 }
 /* Pobreza e desigualdade: séries ANUAIS, com o ano de cada dado à vista; ficam à parte e não entram no estágio */
 function blocoAnual(dz) {
@@ -379,7 +401,7 @@ function blocoAnual(dz) {
     }).join('');
     return `<p class="radar-pergunta radar-pergunta--anual">Pobreza e desigualdade · dados anuais</p>
         <ul class="radar-itens">${itens}</ul>
-        <p class="ficha-nota">Saem uma vez por ano, com atraso, e não entram no estágio acima; a seta compara com o ano anterior.
+        <p class="ficha-nota">Saem uma vez por ano, com atraso; a seta compara com o ano anterior.
             <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(dz.fonte.url))}">Ficha do IBGE ↗</a></p>`;
 }
 function painelSocial(sc) {
@@ -398,7 +420,10 @@ function painelSocial(sc) {
             <span class="radar-item-valor">${i.formato === 'reais' ? reais(i.valor) + ' <small>por mês</small>' : pc(i.valor, 1) + '%'}${i.id === 'pib' ? ' <small>de crescimento</small>' : ''}</span>
             <span class="radar-item-nota"><b class="radar-seta radar-seta--${i.status}">${marca} ${esc(i.rotulo)}</b> · ${comp}</span></li>`;
     }).join('');
-    return { ...sc, nome: 'Economia e vida da população', grave: sc.indice === sc.estagios.length - 1, lista: itens, anual: blocoAnual(sc.desigualdade) };
+    return `<section class="radar-social"><p class="radar-pergunta">Economia e vida da população · dados de ${esc(sc.referencia.slice(5, 7))}/${esc(sc.referencia.slice(0, 4))}</p>
+        <h3 class="radar-secao-h">Trabalho, renda, preços e crescimento</h3>
+        <p class="radar-legenda">Como a economia está entregando em relação a 12 meses antes. ↑ melhorou · → estável · ↓ piorou (a seta indica se o quadro melhorou ou piorou, não se o número subiu ou caiu).</p>
+        <ul class="radar-itens">${itens}</ul>${blocoAnual(sc.desigualdade)}</section>`;
 }
 /* Perspectiva histórica: dívida, déficit nominal e juro real desde 2011, com a faixa do estágio de cada mês e marcos verificáveis */
 function graficoHistorico(h, chave, titulo, un, dec) {
@@ -474,27 +499,24 @@ function radarEconomico(dg) {
     }
     const avisoSocial = dg.social ? '' : `<div class="radar-aviso" role="status"><b>O painel de economia e vida da população não carregou.</b>
         Ele usa dados do IBGE, que não responderam. Atualize a página em alguns minutos.</div>`;
-    const paineis = [dg.social ? painelSocial(dg.social) : null, painelFiscal(dg.fiscal)].filter(Boolean).map((p) => `<div class="radar-painel">
-        <p class="radar-pergunta">${esc(p.nome)} · dados de ${esc(p.referencia.slice(5, 7))}/${esc(p.referencia.slice(0, 4))}</p>
-        <p class="radar-veredito">${esc(p.rotulo)}</p>
-        <p class="radar-legenda">${esc(p.estagios[p.indice].resumo)}</p>
-        ${medidorRadar(p)}
-        <ul class="radar-itens">${p.lista}</ul>${p.anual || ''}</div>`).join('');
-    const negrito = (t) => esc(t).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    const c = dg.confronto;
+    const confronto = c ? `<div class="radar-confronto">${colunaConfronto(c.fiscal)}${colunaConfronto(c.monetaria)}</div>
+        <p class="ficha-nota mt-2">↑ melhorou · → estável · ↓ piorou, sempre em comparação com 12 meses antes. Fonte dos números: Banco Central (despesa primária: SICONFI).</p>
+        ${faixaConexao(c.conexao)}${visoes(c.visoes)}`
+        : `<div class="radar-aviso" role="status"><b>O confronto entre política fiscal e monetária não carregou.</b> Atualize a página em alguns minutos.</div>`;
     const itens = dg.cotidiano.itens.map((i) => `<div class="radar-destaque-item"><h4>${esc(i.tema)}</h4>
         <p class="radar-stat">${esc(i.destaque.valor)}</p><p class="radar-stat-leg">${esc(i.destaque.legenda)}</p>
         <ul class="radar-pontos">${i.pontos.map((t) => `<li>${negrito(t)}</li>`).join('')}</ul></div>`).join('');
     const criterios = [dg.social ? ['Economia e vida da população', dg.social] : null, ['Situação fiscal', dg.fiscal]].filter(Boolean)
         .map(([t, p]) => `<p class="ficha-nota mt-2"><b>${t}.</b> ${esc(p.criterio)} Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(p.fonte.url))}">${esc(p.fonte.nome)}</a>.</p>`).join('');
     return `<div class="radar" id="radar">
-        <p class="radar-sub">${esc(dg.subtitulo)}. Um quadro não anula o outro.</p>
-        ${avisoSocial}
-        <div class="radar-paineis">${paineis}</div>
-        <p class="ficha-nota mt-2">↑ melhorou · → estável · ↓ piorou, sempre em comparação com 12 meses antes. A seta indica se o quadro melhorou ou piorou, não se o número subiu ou caiu.</p>
+        <p class="radar-sub">${esc(dg.subtitulo)}.</p>
+        ${confronto}
         <div class="radar-destaque">
             <div class="radar-destaque-cab"><p>O que isso significa para a sua vida</p><h3>${esc(dg.cotidiano.titulo)}</h3></div>
             <div class="radar-destaque-corpo">${itens}</div>
             ${dg.cotidiano.conjunto ? `<p class="radar-conjunto">${negrito(dg.cotidiano.conjunto)}</p>` : ''}</div>
+        ${avisoSocial}${dg.social ? painelSocial(dg.social) : ''}
         ${perspectivaHistorica(dg.historico)}
         <details class="sanfona mt-4"><summary>Como classificamos</summary>
             ${criterios}
@@ -514,7 +536,12 @@ function nivel1(d) {
         ? cartaz(`Folha de pessoal${gl('LRF')}`, pct(p.pct_rcl), `da receita · limite de alerta ${pct(p.limite_alerta)} · limite legal ${pct(p.limite_maximo)}`,
             `${NIVEL_LRF[p.nivel] || NIVEL_LRF.indefinido}. Lei de Responsabilidade Fiscal, Poder Executivo, ${esc(p.referencia)}.`, p.nivel && p.nivel !== 'ok')
         : cartaz(`Folha de pessoal${gl('LRF')}`, '—', 'O ente não publicou o relatório mais recente.', '');
-    const cPrim = prim && prim.valor != null
+    const bcbPrim = d.esfera === 'uniao' && sf && sf.fluxo && sf.fluxo.itens.find((i) => i.id === 'primario');
+    const cPrim = bcbPrim
+        ? cartaz(`Resultado primário${gl('DEFICIT_PRIMARIO')}`, brlCurto(Math.abs(bcbPrim.valor_rs)),
+            `${bcbPrim.situacao === 'deficit' ? 'Déficit' : 'Superávit'}${bcbPrim.pct_pib != null ? ` · ${pc(Math.abs(bcbPrim.pct_pib), 2)}% do PIB` : ''}`,
+            'Últimos 12 meses, setor público consolidado (Banco Central): receitas menos gastos, sem contar juros e amortização da dívida.', bcbPrim.situacao === 'deficit')
+        : prim && prim.valor != null
         ? cartaz(`Resultado primário${gl('DEFICIT_PRIMARIO')}`, brlCurto(Math.abs(prim.valor)), prim.valor >= 0 ? 'Déficit' : 'Superávit',
             'Receitas menos gastos, sem contar juros e amortização da dívida.', prim.valor >= 0)
         : cartaz('Resultado primário', '—', 'Indisponível neste período.', '');
@@ -530,7 +557,7 @@ function nivel1(d) {
         <details class="sanfona mt-6"><summary>Ver todos os números da situação fiscal</summary>
             <div class="mt-4">${situacaoFiscal(d)}
                 <ul class="text-sm space-y-1 mb-4">${fatia(n.saude, 'Saúde')}${fatia(n.educacao, 'Educação')}</ul>
-                ${deficits(d)}${d.esfera === 'uniao' ? reservasEsqueleto() : ''}
+                ${deficits(d)}${d.esfera === 'uniao' ? `<p class="ficha-nota mt-2" style="max-width:75ch">Atenção: no Governo Federal, os déficits acima vêm do RREO (SICONFI): despesas <b>empenhadas</b> menos receitas arrecadadas, acumulado no ano. É um método diferente do resultado primário do Banco Central (setor público consolidado, 12 meses), que é o usado no confronto e no cartaz “Resultado primário”; por isso os valores não são comparáveis.</p>` : ''}${d.esfera === 'uniao' ? reservasEsqueleto() : ''}
                 <p class="ficha-nota mt-3">Saúde e Educação: fatia da despesa liquidada por função. Os mínimos constitucionais (15% e 25% da receita de impostos) são apurados em demonstrativos próprios: confira no portal oficial do ente.</p></div></details></section>`;
 }
 

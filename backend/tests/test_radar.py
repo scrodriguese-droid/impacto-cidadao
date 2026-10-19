@@ -304,3 +304,73 @@ def test_pobreza_e_desigualdade_nao_entram_no_estagio_social(monkeypatch):
     # o estágio compara com 12 meses antes; as séries anuais ficam fora da conta
     x = _social(monkeypatch, 6.0, 6.0, ipca=3.0, pib_acum4=2.0)
     assert all(i["id"] not in ("gini", "pobreza_nacional", "pobreza_internacional") for i in x["itens"])
+
+
+# --- confronto política fiscal × política monetária --------------------------------------------------------------------
+def _dg(**mudancas):
+    base = {"referencia": "2026-08", "primario_pct": 0.62, "primario_pct_antes": 0.19, "primario_rs": 82.1e9, "nominal_pct": 9.48,
+            "divida_pct": 82.87, "divida_antes": 77.31, "divida_tendencia": "piora", "juros_pct": 8.86, "juros_pct_antes": 7.6, "juros_rs": 1.182e12,
+            "selic": 13.75, "selic_antes": 15.0, "selic_desde": "2026-09-17", "ipca12": 4.58, "meta_inflacao": (3.0, 1.5), "juro_real": 9.17,
+            "juro_real_antes": 9.87, "juro_real_tendencia": "estavel", "desemprego": {"valor": 5.3, "antes": 5.6, "ref": "jun-jul-ago 2026"}}
+    base.update(mudancas)
+    return {"base": base}
+
+
+_CAP = {"periodo": "exercício de 2025 (Governo Federal, sem operações financeiras)", "itens": [{"id": "despesa", "pct": 23.5, "valor_rs": 3.0e12}]}
+
+
+def test_confronto_cada_lado_tem_os_seus_numeros_do_banco_central():
+    c = macro.montar_confronto(_dg(), _CAP)
+    fisc = {i["id"]: i for i in c["fiscal"]["itens"]}
+    mon = {i["id"]: i for i in c["monetaria"]["itens"]}
+    assert list(fisc) == ["primario", "despesa_primaria", "divida"] and list(mon) == ["selic", "juro_real", "juros_divida"]
+    assert fisc["primario"]["valor"] == "R$ 82 bi" and "0,62% do PIB" in fisc["primario"]["detalhe"] and fisc["primario"]["tendencia"] == "piora"
+    assert fisc["divida"]["valor"] == "82,9% do PIB" and "R$" not in fisc["divida"]["valor"]            # sem misturar com o estoque da DPF
+    assert fisc["despesa_primaria"]["detalhe"] == "R$ 3,00 tri do Governo Federal, exercício de 2025"
+    assert mon["selic"]["valor"] == "13,75% ao ano" and "17/09/2026" in mon["selic"]["detalhe"] and mon["selic"]["antes"].startswith("há 12 meses: 15,00%")
+    assert mon["juros_divida"]["valor"] == "R$ 1,18 tri"
+    assert c["fiscal"]["quem"].startswith("Governo") and c["monetaria"]["quem"].startswith("Banco Central")
+
+
+def test_confronto_sem_despesa_primaria_nao_inventa_o_item():
+    c = macro.montar_confronto(_dg(), {"itens": [], "indisponivel": "SICONFI fora do ar"})
+    assert [i["id"] for i in c["fiscal"]["itens"]] == ["primario", "divida"]
+
+
+def test_confronto_o_deficit_nominal_e_primario_mais_juros():
+    cx = macro.montar_confronto(_dg(), _CAP)["conexao"]
+    assert cx["barra"]["total"] == "Déficit nominal: 9,5% do PIB"
+    assert [p["pct"] for p in cx["barra"]["partes"]] == [0.62, 8.86] and cx["juros_no_deficit"] == 93
+    assert any("é a soma do resultado primário (0,62%) com esses juros (8,9%)" in t for t in cx["fatos"])
+    assert any("desemprego" in t for t in cx["fatos"])
+    # o que é interpretação fica separado dos fatos e sai com ressalva
+    assert all("tendem" in t or "objeto de debate" in t for t in cx["interpretacao"])
+
+
+def test_confronto_sem_a_conta_fechar_nao_desenha_a_barra():
+    cx = macro.montar_confronto(_dg(nominal_pct=5.0), _CAP)["conexao"]
+    assert cx["barra"] is None and cx["juros_no_deficit"] is None
+    assert not any("é a soma do resultado primário" in t for t in cx["fatos"])
+
+
+def test_visoes_sao_atribuidas_simetricas_e_trazem_numeros_e_objecao():
+    v = macro.montar_confronto(_dg(), _CAP)["visoes"]
+    assert len(v["leituras"]) == 2 and "não adota nenhuma" in v["intro"]
+    for leitura in v["leituras"]:
+        assert leitura["argumento"].startswith("Defende que")                         # atribuído, não afirmado como fato do site
+        assert leitura["numeros"] and leitura["objecao"].startswith("A outra leitura responde")
+    a, b = (len(x["argumento"]) for x in v["leituras"])
+    assert max(a, b) / min(a, b) < 1.5                                                # nenhuma leitura ganha mais espaço
+    assert "(93%)" in v["concordam"] and "concordam" in v["concordam"]
+    assert "acima do teto da meta" in v["leituras"][1]["objecao"]                    # inflação de 4,58% contra o teto de 4,5%
+
+
+def test_visoes_com_juros_pequenos_no_deficit_nao_dizem_que_concordam_sobre_juros():
+    v = macro.montar_confronto(_dg(primario_pct=6.0, juros_pct=3.0, nominal_pct=9.0), _CAP)["visoes"]
+    assert "concordam num ponto" not in v["concordam"]
+
+
+def test_cotidiano_nao_diz_que_os_juros_foram_pagos():
+    c = macro._cotidiano(_FIS, None, _CTX)
+    legenda = _cartao(c, "Saúde, educação e investimentos")["destaque"]["legenda"]
+    assert "pagos" not in legenda and "de juros sobre a dívida" in legenda               # a série do BCB é de juros pagos E incorridos

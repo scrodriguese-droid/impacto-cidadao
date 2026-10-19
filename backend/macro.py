@@ -764,7 +764,7 @@ def _cotidiano(fis: dict, soc: dict | None, v: dict) -> dict:
                "pontos": pontos_credito}
 
     if v.get("juros_rs"):
-        destaque_juros = {"valor": _fmt_rs(v["juros_rs"]), "legenda": f"pagos em juros da dívida em 12 meses ({_fmt(v['juros_pib'])}% do PIB)"}
+        destaque_juros = {"valor": _fmt_rs(v["juros_rs"]), "legenda": f"de juros sobre a dívida em 12 meses ({_fmt(v['juros_pib'])}% do PIB)"}
     else:
         destaque_juros = {"valor": f"{_fmt(v['juros_pib'])}% do PIB", "legenda": "em juros da dívida em 12 meses"}
     if est == "poucos_sinais":
@@ -862,9 +862,128 @@ def diagnostico_economico() -> dict:
                   "fonte": {"nome": "IBGE (PNAD Contínua: desemprego, informalidade e rendimento; Contas Nacionais Trimestrais) e Banco Central (IPCA e meta de inflação)", "url": "https://sidra.ibge.gov.br/"}}
     contexto = {"selic": selic, "ipca12": ipca12, "juro_real": juro_real, "juros_pib": juros_pib,
                 "juros_rs": jur12_rs * 1e6 if jur12_rs is not None else None}
-    return {"titulo": "Radar econômico do Brasil", "subtitulo": "Economia e contas públicas: dois lados do Brasil", "fiscal": fiscal, "social": social,
+    ref = hoje["mes"]
+    por_mes = lambda chave: {p["data"][:7]: p["valor"] for p in serie(chave)["pontos"]}  # noqa: E731
+    prim_pct, juros_pct = por_mes("primario12"), por_mes("juros12")
+    prim_rs, _ = _soma_12_meses("primario")
+    pts_selic = serie("selic")["pontos"]
+    ult_ipca = _ultimos("ipca12", 1)[0]["data"][:7]
+    sin = {x["id"]: x for x in sinais}
+    desemprego = next((i for i in (soc_hoje or {}).get("itens", []) if i["id"] == "desemprego"), None)
+    base = {"referencia": ref, "primario_pct": prim_pct[ref], "primario_pct_antes": prim_pct.get(_mes_antes(ref, 12)),
+            "primario_rs": prim_rs * 1e6 if prim_rs is not None else None,
+            "nominal_pct": sin["nominal"]["valor"], "divida_pct": sin["divida"]["valor"], "divida_antes": sin["divida"]["valor_antes"],
+            "divida_tendencia": sin["divida"]["tendencia"],
+            "juros_pct": juros_pib, "juros_pct_antes": juros_pct.get(_mes_antes(ref, 12)),
+            "juros_rs": jur12_rs * 1e6 if jur12_rs is not None else None,
+            "selic": selic, "selic_antes": _selic_em(pts_selic, _mes_antes(pts_selic[-1]["data"][:7], 12)),
+            "selic_desde": next((p["data"] for p in reversed(pts_selic) if not p.get("mantida")), None),
+            "ipca12": ipca12, "meta_inflacao": _meta_inflacao(ult_ipca),
+            "juro_real": juro_real, "juro_real_antes": sin["juro_real"]["valor_antes"], "juro_real_tendencia": sin["juro_real"]["tendencia"],
+            "desemprego": None if not desemprego else {"valor": desemprego["valor"], "antes": desemprego["valor_antes"], "ref": desemprego["referencia"]}}
+    return {"base": base, "titulo": "Radar econômico do Brasil", "subtitulo": "Economia e contas públicas: dois lados do Brasil", "fiscal": fiscal, "social": social,
             "historico": _historico_fiscal(hist, juro_real),
             "cotidiano": _cotidiano(fiscal, social, contexto)}
+
+
+def _data_br(iso: str | None) -> str | None:
+    return None if not iso else f"{iso[8:10]}/{iso[5:7]}/{iso[:4]}"
+
+
+def montar_confronto(dg: dict, capacidade: dict | None = None) -> dict:
+    """Política fiscal (Governo) × política monetária (Banco Central): os números de cada lado, como se encontram nos
+    juros e duas leituras econômicas, simétricas e atribuídas. Tudo vem do Banco Central, exceto a despesa primária
+    (SICONFI, `capacidade`). Separa o que é FATO (aritmética das contas) do que é INTERPRETAÇÃO."""
+    b = dg["base"]
+    n, prim, jur = b["nominal_pct"], b["primario_pct"], b["juros_pct"]
+
+    def antes_txt(v, dec=1, un="%", extra=" do PIB"):
+        return None if v is None else f"há 12 meses: {_fmt(v, dec)}{un}{extra}"
+
+    # --- coluna fiscal ---
+    deficit = b["primario_pct"] > 0   # BCB: positivo = déficit
+    fiscal = []
+    if b["primario_rs"] is not None:
+        fiscal.append({"id": "primario", "nome": "Resultado primário (12 meses)", "valor": _fmt_rs(abs(b["primario_rs"])),
+                       "detalhe": f"{'déficit' if deficit else 'superávit'} de {_fmt(abs(prim), 2)}% do PIB: gastos menos arrecadação, sem contar juros",
+                       "tendencia": _tendencia(prim, b["primario_pct_antes"], 0.3), "antes": antes_txt(b["primario_pct_antes"], 2),
+                       "fonte": "Banco Central, setor público consolidado"})
+    desp = next((i for i in (capacidade or {}).get("itens", []) if i.get("id") == "despesa"), None)
+    if desp:
+        fiscal.append({"id": "despesa_primaria", "nome": "Despesa primária total", "valor": f"{_fmt(desp['pct'])}% do PIB",
+                       "detalhe": f"{_fmt_rs(desp['valor_rs'])} do Governo Federal, {(capacidade or {}).get('periodo', '').split(' (')[0]}",
+                       "tendencia": None, "antes": None, "fonte": "SICONFI e PIB derivado do Banco Central"})
+    fiscal.append({"id": "divida", "nome": "Dívida bruta do governo geral", "valor": f"{_fmt(b['divida_pct'])}% do PIB",
+                   "detalhe": "União, estados e municípios; referência de alerta do projeto: 75% do PIB",
+                   "tendencia": b["divida_tendencia"], "antes": antes_txt(b["divida_antes"]), "fonte": "Banco Central"})
+
+    # --- coluna monetária ---
+    desde = _data_br(b["selic_desde"])
+    monetaria = [
+        {"id": "selic", "nome": "Meta da taxa Selic", "valor": f"{_fmt(b['selic'], 2)}% ao ano",
+         "detalhe": f"meta fixada pelo Copom{f' desde {desde}' if desde else ''}", "tendencia": None,
+         "antes": antes_txt(b["selic_antes"], 2, "%", " ao ano"), "fonte": "Banco Central"},
+        {"id": "juro_real", "nome": "Juro real (Selic − IPCA)", "valor": f"{_fmt(b['juro_real'])} p.p.",
+         "detalhe": f"Selic de {_fmt(b['selic'], 2)}% menos inflação em 12 meses de {_fmt(b['ipca12'])}%",
+         "tendencia": b["juro_real_tendencia"], "antes": antes_txt(b["juro_real_antes"], 1, " p.p.", ""), "fonte": "Banco Central"},
+    ]
+    if b["juros_rs"] is not None:
+        monetaria.append({"id": "juros_divida", "nome": "Juros sobre a dívida (12 meses)", "valor": _fmt_rs(b["juros_rs"]),
+                          "detalhe": f"{_fmt(jur)}% do PIB em juros nominais, pagos e acumulados",
+                          "tendencia": _tendencia(jur, b["juros_pct_antes"], 0.5), "antes": antes_txt(b["juros_pct_antes"]), "fonte": "Banco Central"})
+
+    # --- conexão: déficit nominal = primário + juros (identidade do Banco Central) ---
+    fechou = abs(prim + jur - n) <= 0.1
+    share = round(jur / n * 100) if n > 0 and fechou else None
+    fatos = [f"A Selic está em {_fmt(b['selic'], 2)}% ao ano e a inflação em 12 meses em {_fmt(b['ipca12'])}%: o juro real é de {_fmt(b['juro_real'])} p.p."]
+    if b["juros_rs"] is not None:
+        fatos.append(f"Os juros sobre a dívida somam {_fmt_rs(b['juros_rs'])} em 12 meses ({_fmt(jur)}% do PIB).")
+    if fechou:
+        fatos.append(f"O déficit nominal ({_fmt(n)}% do PIB) é a soma do resultado primário ({_fmt(prim, 2)}%) com esses juros ({_fmt(jur)}%).")
+    if b["divida_antes"] is not None:
+        fatos.append(f"A dívida bruta foi de {_fmt(b['divida_antes'])}% para {_fmt(b['divida_pct'])}% do PIB em 12 meses.")
+    if b["desemprego"]:
+        fatos.append(f"No mesmo período, o desemprego está em {_fmt(b['desemprego']['valor'])}% ({b['desemprego']['ref']}).")
+    meta = b["meta_inflacao"]
+    fora = None if not meta else ("acima do teto da meta" if b["ipca12"] > meta[0] + meta[1]
+                                  else "abaixo do piso da meta" if b["ipca12"] < meta[0] - meta[1] else "dentro da meta")
+    interpretacao = [
+        "Como se costuma explicar: o Banco Central mantém a Selic alta para levar a inflação de volta à meta, e juros mais altos tendem a encarecer a "
+        "dívida pública e o crédito.",
+        "Quanto desse custo é inevitável e qual o melhor remédio (cortar gastos, reduzir juros ou ambos) é objeto de debate: veja as duas leituras abaixo."]
+    conexao = {"fatos": fatos, "interpretacao": interpretacao,
+               "barra": None if not fechou else {"total": f"Déficit nominal: {_fmt(n)}% do PIB",
+                                                  "partes": [{"nome": "Resultado primário", "pct": prim, "txt": f"{_fmt(prim, 2)}%"},
+                                                             {"nome": "Juros da dívida", "pct": jur, "txt": f"{_fmt(jur)}%"}]},
+               "juros_no_deficit": share}
+
+    # --- duas leituras, simétricas: argumento, números que a sustentam, e a objeção da outra ---
+    var = None if b["divida_antes"] is None else round(b["divida_pct"] - b["divida_antes"], 1)
+    var_txt = "" if var is None else f" ({'+' if var >= 0 else '−'}{_fmt(abs(var))} p.p. em 12 meses)"
+    infla = f"hoje em {_fmt(b['ipca12'])}%" + (f", {fora}" if fora else "")
+    fiscalista = {"nome": "Leitura fiscalista (ortodoxa)",
+                  "argumento": f"Defende que, com a dívida bruta em {_fmt(b['divida_pct'])}% do PIB{var_txt}, o governo precisa conter o gasto para recuperar a "
+                               "confiança de quem financia a dívida; com menos risco, a Selic poderia cair com segurança.",
+                  "numeros": [f"Dívida bruta de {_fmt(b['divida_pct'])}% do PIB{var_txt}", f"Déficit nominal de {_fmt(n)}% do PIB"],
+                  "objecao": "A outra leitura responde que cortar gasto pode frear o crescimento e a arrecadação, e que o resultado primário é pequeno diante dos juros."}
+    desenv = {"nome": "Leitura desenvolvimentista",
+              "argumento": f"Defende que o resultado primário é de apenas {_fmt(abs(prim), 2)}% do PIB e que o déficit nominal vem sobretudo dos juros, ligados a um "
+                           f"juro real de {_fmt(b['juro_real'])} p.p.; reduzir a Selic aliviaria as contas mais do que cortar gasto, que sustenta emprego e renda.",
+              "numeros": ([f"Juros são {share}% do déficit nominal ({_fmt(jur)}% de {_fmt(n)}% do PIB)"] if share is not None else [])
+                         + [f"Juro real de {_fmt(b['juro_real'])} p.p."],
+              "objecao": f"A outra leitura responde que baixar os juros sem um sinal fiscal pode pressionar a inflação ({infla}) e o risco, o que encareceria a dívida."}
+    concordam = (f"As duas leituras concordam num ponto: hoje a maior parte do déficit nominal são juros ({share}%). Divergem sobre a causa e sobre o remédio."
+                 if share is not None and share >= 50 else
+                 "As duas leituras divergem sobre a causa do déficit e sobre o remédio; os números acima ajudam a conferir cada argumento.")
+    return {"fiscal": {"nome": "Política fiscal", "quem": "Governo (Ministério da Fazenda)",
+                       "papel": "Arrecada, gasta com serviços públicos e investimentos e se endivida.", "itens": fiscal},
+            "monetaria": {"nome": "Política monetária", "quem": "Banco Central (Copom)",
+                          "papel": "Fixa a taxa Selic para manter a inflação dentro da meta.", "itens": monetaria},
+            "conexao": conexao,
+            "visoes": {"titulo": "Duas leituras sobre o que fazer",
+                       "intro": "Economistas discordam sobre o remédio. Estas são as duas leituras mais comuns, com o que cada uma aponta nos números e a "
+                                "objeção da outra. O ImpactoCidadão não adota nenhuma delas.",
+                       "leituras": [fiscalista, desenv], "concordam": concordam}}
 
 
 def pib_12_meses(ano: int) -> float | None:

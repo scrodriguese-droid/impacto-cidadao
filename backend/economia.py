@@ -491,6 +491,11 @@ def _situacao_fiscal(ente: int, esfera: str, a1: list[dict], a6: list[dict], def
                 log.warning("situação fiscal do BCB indisponível, usando o estoque da DPF: %s", exc)
                 return _situacao_uniao_so_dpf()
             s["capacidade"] = _capacidade_uniao()
+            if s.get("diagnostico"):
+                try:
+                    s["diagnostico"]["confronto"] = macro.montar_confronto(s["diagnostico"], s["capacidade"])
+                except Exception as exc:  # noqa: BLE001 — o confronto nunca derruba o resto da tela
+                    log.warning("confronto fiscal × monetária indisponível: %s", exc)
             return s
         return _situacao_subnacional(ente, a1, a6, deficits, pessoal, instituicao)
     except Exception as exc:  # noqa: BLE001 — o painel antigo continua útil sem esta seção
