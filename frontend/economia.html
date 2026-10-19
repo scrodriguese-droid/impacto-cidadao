@@ -348,6 +348,30 @@ const NIVEL_LRF = {
 const cartaz = (rotulo, grande, sub, nota, alerta) => `<div class="cartaz${alerta ? ' cartaz-alerta' : ''}"><p class="cartaz-rotulo">${rotulo}</p><p class="cartaz-num">${grande}</p>
     <p class="cartaz-sub">${sub}</p>${nota ? `<p class="cartaz-nota">${nota}</p>` : ''}</div>`;
 
+/* Radar de saúde econômica: medidor em 4 estágios + tradução para o dia a dia (só para a União) */
+function radarEconomico(dg) {
+    if (!dg) return '';
+    const grave = dg.indice >= 2;
+    const medidor = dg.estagios.map((e, i) => `<li class="radar-estagio${i === dg.indice ? ' atual' + (grave ? ' grave' : '') : i < dg.indice ? ' passado' : ''}"${i === dg.indice ? ' aria-current="step"' : ''}>
+        <p class="radar-estagio-n">${i + 1}</p><b>${esc(e.rotulo)}</b><span>${esc(e.resumo)}</span></li>`).join('');
+    const un = (s) => (s.unidade === 'p.p.' ? ' p.p.' : s.unidade.startsWith('% do PIB') ? '% do PIB' : '%');
+    const sinais = dg.sinais.map((s) => `<li class="${s.disparado ? 'on' : 'off'}">${esc(s.nome)}: ${pc(s.valor, 1)}${esc(un(s))}
+        <span class="text-slate-500">(${s.disparado ? 'sinal ligado' : 'sinal desligado'} · ${esc(s.regra)})</span></li>`).join('');
+    const itens = dg.cotidiano.itens.map((i) => `<div class="radar-destaque-item"><h4>${esc(i.tema)}</h4><p>${esc(i.texto)}</p></div>`).join('');
+    return `<div class="radar" id="radar">
+        <p class="radar-pergunta">Radar de saúde econômica · Brasil</p>
+        <p class="radar-veredito">${esc(dg.rotulo)}</p>
+        <ol class="radar-medidor" aria-label="Estágio da saúde econômica do país: ${esc(dg.rotulo)}, ${dg.indice + 1} de 4">${medidor}</ol>
+        <ul class="radar-sinais" aria-label="Sinais que levaram a esta classificação">${sinais}</ul>
+        <div class="radar-destaque">
+            <div class="radar-destaque-cab"><p>O que isso significa para a sua vida</p><h3>${esc(dg.cotidiano.titulo)}</h3></div>
+            <div class="radar-destaque-corpo">${itens}</div></div>
+        <details class="sanfona mt-4"><summary>Como classificamos</summary>
+            <p class="ficha-nota mt-2">${esc(dg.criterio)} Dados de ${esc(dg.referencia.slice(5, 7))}/${esc(dg.referencia.slice(0, 4))}.
+                Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(dg.fonte.url))}">${esc(dg.fonte.nome)}</a>.</p></details>
+    </div>`;
+}
+
 function nivel1(d) {
     const n = d.nivel1, p = n.lrf_pessoal, sf = d.situacao_fiscal, prim = d.deficits && d.deficits.primario;
     const div = sf && sf.estoque.itens[0];
@@ -364,10 +388,15 @@ function nivel1(d) {
         ? cartaz(`Resultado primário${gl('DEFICIT_PRIMARIO')}`, brlCurto(Math.abs(prim.valor)), prim.valor >= 0 ? 'Déficit' : 'Superávit',
             'Receitas menos gastos, sem contar juros e amortização da dívida.', prim.valor >= 0)
         : cartaz('Resultado primário', '—', 'Indisponível neste período.', '');
+    const cPib = sf && sf.pib
+        ? cartaz('PIB, 12 meses', brlCurto(sf.pib.valor_rs), `até ${esc(sf.pib.data.slice(5, 7))}/${esc(sf.pib.data.slice(0, 4))}`,
+            'Soma de tudo o que o país produz em um ano (bens e serviços). É a régua das contas públicas: dívida, déficit e juros em % do PIB mostram o tamanho do problema em relação à riqueza do país. Valor derivado de séries do Banco Central.')
+        : '';
     const fatia = (f, rot) => f ? `<li class="flex justify-between gap-3"><span>${rot}</span><span class="font-bold">${pct(f.pct)} da despesa · ${brlCurto(f.valor)}</span></li>` : '';
     return `<section aria-labelledby="n1"><h2 id="n1">Saúde fiscal: as contas estão em dia?</h2>
-        <p class="text-sm text-slate-500 mt-2" style="max-width:70ch">Três números respondem à pergunta. Abaixo deles, o detalhe de cada um.</p>
-        <div class="cartazes mt-4">${cDivida}${cLrf}${cPrim}</div>
+        ${d.esfera === 'uniao' && sf ? radarEconomico(sf.diagnostico) : ''}
+        <p class="text-sm text-slate-500 mt-2" style="max-width:70ch">Estes números respondem à pergunta. Abaixo deles, o detalhe de cada um.</p>
+        <div class="cartazes mt-4">${cDivida}${cLrf}${cPrim}${cPib}</div>
         <details class="sanfona mt-6"><summary>Ver todos os números da situação fiscal</summary>
             <div class="mt-4">${situacaoFiscal(d)}
                 <ul class="text-sm space-y-1 mb-4">${fatia(n.saude, 'Saúde')}${fatia(n.educacao, 'Educação')}</ul>

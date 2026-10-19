@@ -400,7 +400,7 @@ a.chip-link:hover { background: var(--ativo); color: var(--ativo-fg); }
 
 /* ---------- Orçamento e contas públicas: cartazes, colunas e sanfonas ---------- */
 .cartazes { display: grid; gap: 0; border-top: 3px solid var(--line); border-left: 1px solid var(--line); }
-@media (min-width: 860px) { .cartazes { grid-template-columns: repeat(3, 1fr); } }
+@media (min-width: 860px) { .cartazes { grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); } }
 .cartaz { padding: 1.3rem 1.3rem 1.4rem; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
 .cartaz-rotulo { font: 800 .68rem/1.3 var(--fonte-texto); letter-spacing: .14em; text-transform: uppercase; }
 .cartaz-num { font-family: var(--fonte-titulo); font-size: clamp(2rem, 3.4vw, 3.1rem); overflow-wrap: anywhere; line-height: 1; margin: .5rem 0 .35rem; }
@@ -408,6 +408,38 @@ a.chip-link:hover { background: var(--ativo); color: var(--ativo-fg); }
 .cartaz-nota { font-size: .78rem; line-height: 1.45; color: var(--muted); margin-top: .5rem; }
 .cartaz-alerta { background: var(--vermelho); color: #fff; }
 .cartaz-alerta .cartaz-nota, .cartaz-alerta .cartaz-rotulo, .cartaz-alerta .cartaz-sub, .cartaz-alerta a { color: #fff !important; }
+/* Radar de saúde econômica: medidor em 4 estágios + caixa “na prática” */
+.radar { margin-bottom: 2rem; }
+.radar-pergunta { font: 800 .68rem/1.3 var(--fonte-texto); letter-spacing: .14em; text-transform: uppercase; }
+.radar-veredito { font-family: var(--fonte-titulo); font-size: clamp(2rem, 4vw, 3.2rem); line-height: 1; text-transform: uppercase; margin: .3rem 0 .2rem; }
+.radar-medidor { display: grid; grid-template-columns: repeat(4, 1fr); border: 3px solid var(--line); margin: 2.1rem 0 0; list-style: none; padding: 0; position: relative; }
+.radar-estagio { position: relative; padding: .9rem .7rem 1rem; border-right: 1px solid var(--line); min-height: 5.2rem; }
+.radar-estagio:last-child { border-right: 0; }
+.radar-estagio b { display: block; font-family: var(--fonte-titulo); font-size: clamp(.85rem, 1.7vw, 1.25rem); line-height: 1.05; text-transform: uppercase; }
+.radar-estagio span { display: block; font-size: .74rem; line-height: 1.35; margin-top: .35rem; }
+.radar-estagio-n { font: 800 .62rem/1 var(--fonte-texto); letter-spacing: .14em; margin-bottom: .4rem; }
+.radar-estagio.passado { background: repeating-linear-gradient(135deg, transparent 0 6px, rgba(128,128,128,.22) 6px 7px); }
+.radar-estagio.atual { background: var(--ativo); color: var(--ativo-fg); }
+.radar-estagio.atual.grave { background: var(--vermelho); color: #fff; }
+.radar-estagio.atual::before { content: "▼ O país está aqui"; position: absolute; left: -3px; right: -3px; top: -1.65rem; font: 800 .66rem/1 var(--fonte-texto); letter-spacing: .12em; text-transform: uppercase; color: var(--ativo); white-space: nowrap; }
+.radar-estagio.atual.grave::before { color: var(--vermelho); }
+@media (max-width: 640px) { .radar-medidor { grid-template-columns: 1fr 1fr; } .radar-estagio:nth-child(2) { border-right: 0; } .radar-estagio:nth-child(-n+2) { border-bottom: 1px solid var(--line); } .radar-estagio.atual::before { font-size: .58rem; letter-spacing: .06em; } }
+.radar-sinais { display: flex; flex-wrap: wrap; gap: .5rem 1.1rem; margin-top: .9rem; font-size: .8rem; }
+.radar-sinais li { list-style: none; }
+.radar-sinais .on { font-weight: 800; }
+.radar-sinais .on::before { content: "● "; color: var(--vermelho); }
+.radar-sinais .off::before { content: "○ "; }
+.radar-destaque { border: 3px solid var(--line); margin-top: 1.4rem; }
+.radar-destaque-cab { background: var(--ativo); color: var(--ativo-fg); padding: 1rem 1.3rem; }
+.radar-destaque-cab p { font: 800 .64rem/1.2 var(--fonte-texto); letter-spacing: .14em; text-transform: uppercase; opacity: .8; }
+.radar-destaque-cab h3 { font-family: var(--fonte-titulo); font-size: clamp(1.3rem, 2.6vw, 2rem); line-height: 1.1; text-transform: uppercase; margin-top: .3rem; }
+.radar-destaque-corpo { display: grid; }
+@media (min-width: 860px) { .radar-destaque-corpo { grid-template-columns: repeat(3, 1fr); } .radar-destaque-item + .radar-destaque-item { border-left: 1px solid var(--line); } }
+.radar-destaque-item { padding: 1.1rem 1.3rem 1.3rem; border-top: 1px solid var(--line); }
+.radar-destaque-item:first-child { border-top: 0; }
+@media (min-width: 860px) { .radar-destaque-item { border-top: 0; } }
+.radar-destaque-item h4 { font: 800 .72rem/1.3 var(--fonte-texto); letter-spacing: .12em; text-transform: uppercase; color: var(--vermelho); }
+.radar-destaque-item p { font-size: .95rem; line-height: 1.55; margin-top: .45rem; }
 .entrada-saida { display: grid; gap: 0; border-top: 3px solid var(--line); }
 @media (min-width: 900px) { .entrada-saida { grid-template-columns: 1fr 1fr; } .es-col + .es-col { border-left: 1px solid var(--line); } }
 .es-col { padding: 1.2rem 1.3rem 1.4rem; }
@@ -693,7 +725,7 @@ body.postit-escolhendo, body.postit-escolhendo * { cursor: crosshair !important;
 
 /* ---------- Linha do tempo do ciclo orçamentário: PPA, LDO e LOA alinhados ---------- */
 .ciclo { display: grid; grid-template-columns: 1fr; gap: 0 1.4rem; list-style: none; padding: 0; margin: 0; }
-@media (min-width: 860px) { .ciclo { grid-template-columns: repeat(3, 1fr); } }
+@media (min-width: 860px) { .ciclo { grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); } }
 .ciclo-no { display: grid; grid-row: span 5; grid-template-rows: subgrid; row-gap: .6rem; align-content: start;
     border-top: 3px solid var(--line); padding: .9rem 0 1.2rem; margin: 0; background: transparent !important; border-left: 0 !important; border-right: 0 !important; border-bottom: 0 !important; border-radius: 0 !important; }
 @supports not (grid-template-rows: subgrid) { .ciclo-no { grid-template-rows: auto auto auto auto auto; } }
