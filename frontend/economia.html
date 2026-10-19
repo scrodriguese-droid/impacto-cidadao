@@ -362,7 +362,7 @@ function painelFiscal(f) {
         <span class="radar-item-valor">${pc(s.valor, 1)}${esc(un(s))}</span>
         <span class="radar-item-nota">${s.disparado ? '● sinal ligado' : '○ sinal desligado'} · ${esc(s.regra)}${s.tendencia && s.valor_antes != null
             ? ` · <b class="radar-seta radar-seta--${s.tendencia}">${SETA[s.tendencia]}</b> (há 12 meses: ${pc(s.valor_antes, 1)}${esc(un(s))})` : ''}</span></li>`).join('');
-    return { ...f, nome: 'Situação fiscal', grave: f.indice > 0, lista: itens };
+    return { ...f, nome: 'Situação fiscal', grave: f.indice === f.estagios.length - 1, lista: itens };
 }
 function painelSocial(sc) {
     const reais = (v) => `R$ ${Number(v).toLocaleString('pt-BR', { maximumFractionDigits: 0 })}`;
@@ -382,6 +382,73 @@ function painelSocial(sc) {
     }).join('');
     return { ...sc, nome: 'Economia e vida da população', grave: sc.indice === sc.estagios.length - 1, lista: itens };
 }
+/* Perspectiva histórica: dívida, déficit nominal e juro real desde 2011, com a faixa do estágio de cada mês e marcos verificáveis */
+function graficoHistorico(h, chave, titulo, un, dec) {
+    const W = 320, H = 190, L = 34, R = 50, T = 20, B = 24;
+    const pts = h.pontos, n = pts.length;
+    const vals = pts.map((p) => p[chave]);
+    let lo = Math.min(...vals), hi = Math.max(...vals);
+    if (chave !== 'divida') lo = Math.min(lo, 0);
+    const folga = (hi - lo) * 0.08 || 1;
+    hi += folga; if (chave === 'divida') lo -= folga;
+    const x = (i) => L + ((W - L - R) * i) / (n - 1);
+    const y = (v) => T + (H - T - B) * (1 - (v - lo) / (hi - lo));
+    const f = (v) => Number(v).toLocaleString('pt-BR', { minimumFractionDigits: dec, maximumFractionDigits: dec });
+    // faixas: cinza = pressão com a dívida sem alta; vermelha = pressão e dívida em alta
+    let faixas = '', ini = 0;
+    for (let i = 1; i <= n; i++) {
+        if (i === n || pts[i].estagio !== pts[ini].estagio) {
+            if (pts[ini].estagio > 0) faixas += `<rect class="rg-faixa rg-faixa--${pts[ini].estagio}" x="${x(ini).toFixed(1)}" y="${T}" width="${(x(Math.min(i, n - 1)) - x(ini)).toFixed(1)}" height="${H - T - B}"/>`;
+            ini = i;
+        }
+    }
+    const marcos = h.marcos.map((m, k) => {
+        const i = pts.findIndex((p) => p.mes >= m.mes);
+        return i < 0 ? '' : `<line class="rg-marco" x1="${x(i).toFixed(1)}" x2="${x(i).toFixed(1)}" y1="${T - 4}" y2="${H - B}"/>
+            <text class="rg-txt rg-num" x="${x(i).toFixed(1)}" y="${T - 7}" text-anchor="middle">${k + 1}</text>`;
+    }).join('');
+    const ticks = [Math.min(...vals), (Math.min(...vals) + Math.max(...vals)) / 2, Math.max(...vals)]
+        .map((v) => `<line class="rg-grade" x1="${L}" x2="${W - R}" y1="${y(v).toFixed(1)}" y2="${y(v).toFixed(1)}"/>
+            <text class="rg-txt" x="${L - 4}" y="${(y(v) + 3).toFixed(1)}" text-anchor="end">${f(v)}</text>`).join('');
+    const zero = lo < 0 && hi > 0 ? `<line class="rg-zero" x1="${L}" x2="${W - R}" y1="${y(0).toFixed(1)}" y2="${y(0).toFixed(1)}"/>` : '';
+    const ano0 = Number(pts[0].mes.slice(0, 4));
+    const anos = [];
+    for (let a = ano0; a <= Number(pts[n - 1].mes.slice(0, 4)); a += 5) {
+        const i = pts.findIndex((p) => p.mes.startsWith(String(a)));
+        if (i >= 0) anos.push(`<text class="rg-txt" x="${x(i).toFixed(1)}" y="${H - 8}" text-anchor="middle">${a}</text>`);
+    }
+    const linha = pts.map((p, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)} ${y(p[chave]).toFixed(1)}`).join('');
+    const ult = pts[n - 1];
+    return `<figure class="radar-grafico"><figcaption>${esc(titulo)}</figcaption>
+        <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(titulo)}: de ${f(pts[0][chave])}${esc(un)} em ${esc(pts[0].mes)} para ${f(ult[chave])}${esc(un)} em ${esc(ult.mes)}">
+            ${faixas}${ticks}${zero}${marcos}
+            <path class="rg-linha" d="${linha}"/>
+            <circle class="rg-ponto" cx="${x(n - 1).toFixed(1)}" cy="${y(ult[chave]).toFixed(1)}" r="3"/>
+            <text class="rg-txt rg-fim" x="${(x(n - 1) + 6).toFixed(1)}" y="${(y(ult[chave]) + 3).toFixed(1)}">${f(ult[chave])}${esc(un)}</text>
+            ${anos.join('')}
+        </svg></figure>`;
+}
+function perspectivaHistorica(h) {
+    if (!h || !h.pontos || h.pontos.length < 24) return '';
+    const mes = (m) => `${m.slice(5, 7)}/${m.slice(0, 4)}`;
+    const linhas = h.tabela.map((t) => `<tr><td>${esc(mes(t.mes))}</td><td>${pc(t.divida, 1)}%</td><td>${pc(t.nominal, 1)}%</td><td>${pc(t.juro_real, 1)} p.p.</td></tr>`).join('');
+    const marcos = h.marcos.map((m, k) => `<li><b>${k + 1}</b> ${esc(m.data)} · ${esc(m.titulo)}
+        <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(m.url))}">norma ↗</a></li>`).join('');
+    return `<details class="sanfona mt-4"><summary>Perspectiva histórica: ${esc(h.inicio.slice(0, 4))} até hoje</summary>
+        <p class="ficha-nota mt-2" style="max-width:75ch">${esc(h.resumo)} Um ano isolado mostra só um trecho: a dívida e os juros andam em ciclos longos.</p>
+        <div class="radar-historico mt-3">
+            ${graficoHistorico(h, 'divida', 'Dívida bruta (% do PIB)', '%', 0)}
+            ${graficoHistorico(h, 'nominal', 'Déficit nominal em 12 meses (% do PIB)', '%', 1)}
+            ${graficoHistorico(h, 'juro_real', 'Juro real (Selic − IPCA, p.p.)', '', 1)}
+        </div>
+        <p class="ficha-nota mt-2"><span class="rg-legenda rg-legenda--1"></span> faixa cinza: pressão, dívida sem alta · <span class="rg-legenda rg-legenda--2"></span> faixa vermelha: pressão e dívida em alta (o estágio do radar em cada mês).</p>
+        <ol class="radar-marcos mt-3">${marcos}</ol>
+        <p class="ficha-nota">Os marcos são só contexto, com a data da norma: o gráfico não afirma que uma norma causou qualquer mudança na dívida, que costuma responder com anos de defasagem a juros, crescimento e resultados fiscais.</p>
+        <details class="mt-2"><summary class="text-sm">Ver os valores</summary>
+            <table class="radar-tabela"><thead><tr><th>Mês</th><th>Dívida bruta</th><th>Déficit nominal</th><th>Juro real</th></tr></thead><tbody>${linhas}</tbody></table></details>
+        <p class="ficha-nota">Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(h.fonte.url))}">${esc(h.fonte.nome)}</a>.</p>
+    </details>`;
+}
 function radarEconomico(dg) {
     if (!dg || !dg.fiscal) return '';
     const paineis = [dg.social ? painelSocial(dg.social) : null, painelFiscal(dg.fiscal)].filter(Boolean).map((p) => `<div class="radar-painel">
@@ -400,6 +467,7 @@ function radarEconomico(dg) {
         <div class="radar-destaque">
             <div class="radar-destaque-cab"><p>O que isso significa para a sua vida</p><h3>${esc(dg.cotidiano.titulo)}</h3></div>
             <div class="radar-destaque-corpo">${itens}</div></div>
+        ${perspectivaHistorica(dg.historico)}
         <details class="sanfona mt-4"><summary>Como classificamos</summary>
             ${criterios}
             <p class="ficha-nota mt-2">Os limites são escolhas do projeto, não verdades universais, e a tendência compara cada indicador com 12 meses antes.</p></details>

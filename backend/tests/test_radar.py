@@ -20,28 +20,28 @@ def _fiscal(monkeypatch, divida, nominal, ipca=5.0, selic=11.0, primario=1.0, de
     return macro.classificar_historico(desde)
 
 
-def test_fiscal_sustentavel_sem_sinais(monkeypatch):
+def test_fiscal_poucos_sinais_sem_nenhum_sinal(monkeypatch):
     h = _fiscal(monkeypatch, 60.0, 2.0, ipca=5.0, selic=7.0)
-    assert h[-1]["estagio"] == "sustentavel"
+    assert h[-1]["estagio"] == "poucos_sinais"
 
 
-def test_fiscal_sob_pressao_com_dois_sinais_e_divida_estavel(monkeypatch):
+def test_fiscal_pressao_sem_alta_com_dois_sinais_e_divida_estavel(monkeypatch):
     # dívida alta e parada, déficit nominal alto: 2 sinais ligados, mas a dívida não sobe
     h = _fiscal(monkeypatch, 80.0, 7.0, ipca=5.0, selic=7.0)
-    assert h[-1]["estagio"] == "pressao"
+    assert h[-1]["estagio"] == "pressao_sem_alta"
     assert sum(s["disparado"] for s in h[-1]["sinais"]) == 2
 
 
-def test_fiscal_em_deterioracao_com_dois_sinais_e_divida_subindo(monkeypatch):
+def test_fiscal_pressao_com_alta_com_dois_sinais_e_divida_subindo(monkeypatch):
     divida = [70.0 + i * 0.5 for i in range(36)]  # +6 p.p. em 12 meses
     h = _fiscal(monkeypatch, divida, 7.0, ipca=5.0, selic=7.0)
-    assert h[-1]["estagio"] == "deterioracao"
+    assert h[-1]["estagio"] == "pressao_com_alta"
 
 
-def test_fiscal_um_sinal_com_divida_subindo_vira_pressao(monkeypatch):
+def test_fiscal_um_sinal_com_divida_subindo_ja_e_pressao_com_alta(monkeypatch):
     divida = [50.0 + i * 0.3 for i in range(36)]  # sobe 3,6 p.p. em 12 meses, sem chegar a 75%
     h = _fiscal(monkeypatch, divida, 6.0, ipca=5.0, selic=7.0)
-    assert h[-1]["estagio"] == "pressao"
+    assert h[-1]["estagio"] == "pressao_com_alta"
 
 
 def test_fiscal_margem_de_saida_evita_oscilar_no_limite(monkeypatch):
@@ -57,8 +57,8 @@ def test_fiscal_alta_da_divida_tambem_tem_margem_de_saida(monkeypatch):
     divida = [70.0] * 12 + [71.5] * 6 + [70.5] * 18
     h = _fiscal(monkeypatch, divida, 6.0, ipca=5.0, selic=7.0, desde="2021-01")
     assert h[0]["var_divida_12m"] == pytest.approx(1.5)
-    # 1 sinal (nominal) + dívida em alta => sob pressão enquanto a dívida seguir acima do nível de 12 meses antes
-    assert h[0]["estagio"] == "pressao"
+    # 1 sinal (nominal) + dívida em alta => 3º estágio enquanto a dívida seguir acima do nível de 12 meses antes
+    assert h[0]["estagio"] == "pressao_com_alta"
 
 
 def _social(monkeypatch, desemprego_antes, desemprego, ipca, pib_acum4, ipca_antes=None, renda=None, informal=None):
@@ -138,11 +138,30 @@ def test_social_queda_da_renda_com_inflacao_alta_segura_a_melhora(monkeypatch):
 
 def test_cotidiano_mostra_os_dois_lados_sem_repetir_a_lista(monkeypatch):
     soc = _social(monkeypatch, 7.0, 6.0, ipca=7.0, pib_acum4=2.5, renda=(3000, 3200), informal=(38.0, 37.0))
-    fis = {"estagio": "deterioracao", "sinais": [{"id": "juro_real", "disparado": True}]}
+    fis = {"estagio": "pressao_com_alta", "sinais": [{"id": "juro_real", "disparado": True}]}
     ctx = {"selic": 14.0, "ipca12": 7.0, "juro_real": 7.0, "juros_pib": 8.9, "juros_rs": 1.18e12}
     c = macro._cotidiano(fis, soc, ctx)
     renda = next(i["texto"] for i in c["itens"] if i["tema"] == "Emprego, renda e preços")
     assert "desemprego" in renda and "rendimento" in renda.lower() and "acima do de um ano atrás" in renda
     assert "informalidade" not in renda.lower() and "PIB" not in renda   # já estão na lista do painel
     assert "acima do teto da meta" in renda                               # inflação fora da banda é dita
-    assert "melhoram" in c["titulo"] and "deterioração" in c["titulo"]
+    assert "melhoram" in c["titulo"] and "dívida está em alta" in c["titulo"]
+
+
+def test_rotulos_fiscais_descrevem_sem_julgar():
+    rotulos = " ".join(e["rotulo"] + " " + e["resumo"] for e in macro.ESTAGIOS_FISCAL).lower()
+    for palavra in ("crise", "deterior", "insolv", "sustentável", "grave"):
+        assert palavra not in rotulos
+
+
+def test_historico_fiscal_resume_com_fatos_e_traz_marcos_com_fonte(monkeypatch):
+    divida = [50.0 + i for i in range(36)]
+    h = _fiscal(monkeypatch, divida, 3.0, ipca=5.0, selic=7.0, desde="2020-01")
+    hf = macro._historico_fiscal(h)
+    assert hf["pontos"][0]["mes"] == "2020-01" and hf["pontos"][-1]["divida"] == 85.0
+    assert "50,0% do PIB em jan/2020 para 85,0% em dez/2022" in hf["resumo"]
+    assert "mais baixo foi 50,0%" in hf["resumo"] and "mais alto, 85,0%" in hf["resumo"]
+    assert hf["tabela"][-1]["mes"] == "2022-12"
+    for m in hf["marcos"]:                       # contexto verificável: toda norma citada traz data e link oficial
+        assert m["url"].startswith("https://www.planalto.gov.br/") and m["data"] and m["titulo"]
+    assert [m["mes"] for m in hf["marcos"]] == sorted(m["mes"] for m in hf["marcos"])
