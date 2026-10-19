@@ -17,6 +17,13 @@
         body { font-family: 'Inter', system-ui, sans-serif; }
         details > summary { list-style: none; cursor: pointer; }
         details > summary::-webkit-details-marker { display: none; }
+        /* aba lateral com os projetos do(a) deputado(a): abre ao lado do gráfico, sem tirar o leitor do lugar */
+        .gaveta-projetos { position: fixed; top: 0; right: 0; bottom: 0; z-index: 60; width: min(100vw, 30rem); overflow-y: auto; padding: .75rem; box-shadow: -6px 0 24px rgba(0,0,0,.25); border-left: 2px solid #111; }
+        .gaveta-projetos:empty { display: none; }
+        .gaveta-projetos { background: var(--papel) !important; color: var(--fg) !important; }
+        /* em telas largas, abre espaço para a aba em vez de cobrir o conteúdo */
+        @media (min-width: 1280px) { body:has(.gaveta-projetos:not(:empty)) main#conteudo { padding-right: 31rem !important; max-width: none !important; } }
+        .gaveta-projetos ul { max-height: none !important; overflow: visible !important; }
         :focus-visible { outline: 2px solid #A92823; outline-offset: 2px; }
     </style>
     <link rel="stylesheet" href="assets/brutalista.css">
@@ -126,16 +133,55 @@
     <p id="frescor" class="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5"></p>
     <p id="avisoPeriodo" class="hidden mt-2 text-xs text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 rounded-lg px-3 py-2"></p>
 
+    <!-- Infográfico: caminho de uma proposta até virar lei (conteúdo fixo, regras da Constituição) -->
+    <section id="processo" class="mt-5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 sm:p-5" aria-labelledby="tProcesso">
+        <h2 id="tProcesso" class="text-lg font-bold"><i class="fa-solid fa-route mr-2 text-brand-600" aria-hidden="true"></i>Como uma ideia vira lei</h2>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">O caminho da tramitação legislativa em 5 etapas, em linguagem simples. Vale para o Congresso; em Assembleias e Câmaras Municipais o roteiro é parecido, com as diferenças indicadas.</p>
+        <ol class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5 list-none p-0">
+            <li class="relative rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 p-3">
+                <p class="text-[11px] font-extrabold tracking-wider text-brand-700 dark:text-brand-400">01</p>
+                <h3 class="font-bold text-sm leading-tight">Proposta e protocolo</h3>
+                <p class="mt-2 text-xs"><b>O que acontece:</b> um parlamentar, o Executivo ou a população (iniciativa popular) apresenta o texto: PL, PLP ou PEC.</p>
+                <p class="mt-2 text-xs text-slate-600 dark:text-slate-400"><b>Descomplicando:</b> o projeto ganha um número (ex.: PL 1234/2026), mas ainda é só uma ideia no papel.</p>
+            </li>
+            <li class="relative rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 p-3">
+                <p class="text-[11px] font-extrabold tracking-wider text-brand-700 dark:text-brand-400">02</p>
+                <h3 class="font-bold text-sm leading-tight">Relator e comissões</h3>
+                <p class="mt-2 text-xs"><b>O que acontece:</b> a CCJ (Constituição e Justiça) confere se o texto é legal e constitucional; comissões temáticas (Saúde, Educação, Finanças…) analisam o conteúdo. Um relator dá o parecer.</p>
+                <p class="mt-2 text-xs text-slate-600 dark:text-slate-400"><b>Descomplicando:</b> é a etapa em que muitos projetos ficam parados ou são arquivados. <a class="underline" href="#autoria">Veja onde pararam</a>.</p>
+            </li>
+            <li class="relative rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 p-3">
+                <p class="text-[11px] font-extrabold tracking-wider text-brand-700 dark:text-brand-400">03</p>
+                <h3 class="font-bold text-sm leading-tight">Plenário e votação</h3>
+                <p class="mt-2 text-xs"><b>O que acontece:</b> aprovado nas comissões, o texto vai à discussão e votação de todos os deputados (ou vereadores).</p>
+                <p class="mt-2 text-xs text-slate-600 dark:text-slate-400"><b>Descomplicando:</b> exige maioria simples (dos presentes), absoluta (metade mais um de todos) ou 3/5 em PEC (308 dos 513 deputados), em dois turnos.</p>
+            </li>
+            <li class="relative rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 p-3">
+                <p class="text-[11px] font-extrabold tracking-wider text-brand-700 dark:text-brand-400">04</p>
+                <h3 class="font-bold text-sm leading-tight">Casa revisora</h3>
+                <p class="mt-2 text-xs"><b>O que acontece:</b> no âmbito federal, o que nasce na Câmara é revisado pelo Senado, e vice-versa. Se for alterado, volta à Casa de origem.</p>
+                <p class="mt-2 text-xs text-slate-600 dark:text-slate-400"><b>Descomplicando:</b> na Câmara Municipal e na Assembleia Legislativa há uma só Casa: esta etapa não existe e o texto segue para a sanção.</p>
+            </li>
+            <li class="relative rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 p-3">
+                <p class="text-[11px] font-extrabold tracking-wider text-brand-700 dark:text-brand-400">05</p>
+                <h3 class="font-bold text-sm leading-tight">Sanção ou veto</h3>
+                <p class="mt-2 text-xs"><b>O que acontece:</b> o chefe do Executivo (Presidente, Governador ou Prefeito) tem 15 dias úteis para sancionar, transformando o texto em lei, ou vetar (total ou parcialmente).</p>
+                <p class="mt-2 text-xs text-slate-600 dark:text-slate-400"><b>Descomplicando:</b> o Legislativo pode derrubar o veto por maioria absoluta. Emendas à Constituição (PEC) não passam por sanção: são promulgadas pelo Congresso.</p>
+            </li>
+        </ol>
+        <p class="mt-3 text-[11px] text-slate-500">Fonte: Constituição Federal, arts. 59 a 69 (processo legislativo) e art. 66 (sanção e veto); regimentos internos da Câmara dos Deputados e do Senado Federal. Os prazos e quóruns municipais e estaduais seguem a Lei Orgânica e a Constituição Estadual de cada ente.</p>
+    </section>
+
     <!-- Autoria dos projetos da Câmara: divisão por tema e projetos por político -->
     <section id="autoria" class="hidden mt-5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 sm:p-5" aria-labelledby="tAutoria">
         <h2 id="tAutoria" class="text-lg font-bold"><i class="fa-solid fa-chart-column mr-2 text-brand-600" aria-hidden="true"></i>Quem propõe e o que vira lei</h2>
         <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Projetos de lei (PL, PLP e PEC) da Câmara dos Deputados no período escolhido acima. Só contagem oficial: quantidade não mede qualidade.</p>
         <p id="autoriaTotais" class="text-sm mt-3"></p>
         <div class="mt-3" style="height:420px"><canvas id="graficoTemas" role="img" aria-label="Divisão por tema dos projetos criados e dos aprovados"></canvas></div>
-        <p class="text-[11px] text-slate-500 mt-1">Cada barra é a fatia do tema entre todos os temas atribuídos: em azul, os projetos que viraram lei; em cinza, todos os criados. Um projeto pode ter mais de um tema.</p>
+        <p class="text-[11px] text-slate-500 mt-1">Número de projetos por tema, na mesma escala (ao fim de cada barra: criados · aprovados): em vermelho, os que viraram lei; em cinza, todos os criados (os aprovados estão incluídos nos criados). Passe o mouse para ver a taxa de aprovação do tema. Um projeto pode ter mais de um tema.</p>
         <div class="mt-5 border-t border-slate-200 dark:border-slate-700 pt-4">
             <h3 class="font-bold">Divisão por autor</h3>
-            <p class="text-xs text-slate-500">Quem assina os projetos. Azul: viraram lei; cinza: todos os criados.</p>
+            <p class="text-xs text-slate-500">Quem assina os projetos. Vermelho: viraram lei; cinza: todos os criados (os aprovados estão incluídos nos criados). Ao fim de cada barra: criados · aprovados · taxa.</p>
             <div id="segAutor" class="mt-2 inline-flex flex-wrap gap-1 p-1 rounded-2xl bg-slate-200/70 dark:bg-slate-800" role="radiogroup" aria-label="Agrupar autores por">
                 <button type="button" role="radio" data-autor="deputados" class="px-3 py-1.5 rounded-xl text-sm font-semibold">Deputados(as)</button>
                 <button type="button" role="radio" data-autor="partidos" class="px-3 py-1.5 rounded-xl text-sm font-semibold">Partidos</button>
@@ -153,7 +199,7 @@
             <input id="buscaPolitico" type="search" autocomplete="off" maxlength="60" placeholder="Nome ou sigla do estado (ex.: SP)"
                    class="mt-2 w-full sm:w-80 block px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
             <div id="resPolitico" class="mt-2" aria-live="polite"></div>
-            <div id="projPolitico" class="mt-3"></div>
+            <div id="projPolitico" class="gaveta-projetos" role="dialog" aria-label="Projetos do(a) deputado(a)"></div>
         </div>
         <ul id="autoriaNotas" class="mt-4 text-[11px] text-slate-500 list-disc pl-5 space-y-1"></ul>
     </section>
@@ -649,7 +695,7 @@ function desenharAutores() {
     const a = P.autoria && P.autoria.autores;
     if (!a) return;
     const cor = corEixo();
-    const lin = AUTOR.modo === 'deputados' ? a.deputados.map((x) => ({ r: `${x.nome} (${x.partido}-${x.uf})`, c: x.criados, a: x.aprovados }))
+    const lin = AUTOR.modo === 'deputados' ? a.deputados.map((x) => ({ r: `${x.nome} (${x.partido}-${x.uf})`, c: x.criados, a: x.aprovados, id: x.id }))
         : AUTOR.modo === 'partidos' ? a.partidos.map((x) => ({ r: `${x.sigla} (${nf(x.deputados)} dep.)`, c: x.criados, a: x.aprovados }))
         : a.tipos.map((x) => ({ r: x.tipo, c: x.projetos, a: null }));
     document.querySelectorAll('#segAutor [data-autor]').forEach((b) => {
@@ -657,7 +703,7 @@ function desenharAutores() {
         b.setAttribute('aria-checked', String(on));
         b.className = 'px-3 py-1.5 rounded-xl text-sm font-semibold ' + (on ? 'bg-white dark:bg-slate-700 shadow text-brand-700 dark:text-brand-300' : 'text-slate-500');
     });
-    $('notaAutor').textContent = AUTOR.modo === 'deputados' ? 'Os 15 deputados(as) com mais projetos criados no período. Projetos com vários autores contam para cada um.'
+    $('notaAutor').textContent = AUTOR.modo === 'deputados' ? 'Os 15 deputados(as) com mais projetos criados no período, ordenados pelo número de projetos (quantidade não mede qualidade). Clique em uma barra para ver os projetos do(a) deputado(a). Quem assina como autor(a) recebe o projeto; apoiadores que só assinaram não contam. Projetos com vários autores contam para cada um.'
         : AUTOR.modo === 'partidos' ? 'Os 15 partidos com mais projetos assinados no período, pelo partido que a Câmara informa para o(a) autor(a). Quando há autores de partidos diferentes, o projeto conta em cada um.'
         : 'Quantos projetos têm cada tipo de autor. Um projeto com autores de tipos diferentes conta em cada tipo.';
     AUTOR.grafico?.destroy();
@@ -665,9 +711,30 @@ function desenharAutores() {
     if (lin[0] && lin[0].a !== null) datasets.unshift({ label: 'Aprovados (viraram lei)', data: lin.map((x) => x.a), backgroundColor: '#A92823' });
     AUTOR.grafico = new Chart($('graficoAutores'), {
         type: 'bar', data: { labels: lin.map((x) => x.r), datasets },
-        options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, animation: false,
+        options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, animation: false, layout: { padding: { right: 150 } },
+            // clicar na barra (ou no nome) de um(a) deputado(a) abre a lista dos projetos dele(a)
+            onClick: (ev, _el, ch) => {
+                if (AUTOR.modo !== 'deputados') return;
+                const i = ch.scales.y.getValueForPixel(ev.y);
+                if (lin[i] && lin[i].id) { abrirPolitico(lin[i].id); }
+            },
+            onHover: (ev, _el, ch) => {
+                const i = ch.scales.y.getValueForPixel(ev.y);
+                ev.native.target.style.cursor = AUTOR.modo === 'deputados' && lin[i] && lin[i].id ? 'pointer' : 'default';
+            },
             plugins: { legend: { labels: { color: cor } }, tooltip: { callbacks: { label: (x) => `${x.dataset.label}: ${nf(x.parsed.x)} projetos` } } },
-            scales: { x: { beginAtZero: true, ticks: { color: cor } }, y: { ticks: { color: cor, autoSkip: false } } } },
+            scales: { x: { beginAtZero: true, ticks: { color: cor, precision: 0 } }, y: { ticks: { color: cor, autoSkip: false } } } },
+        // as barras vermelhas são minúsculas perto das cinzas: os números ao fim de cada linha mostram o que o desenho não mostra
+        plugins: [{ id: 'contagens', afterDatasetsDraw(ch) {
+            const { ctx } = ch;
+            ctx.save(); ctx.fillStyle = cor; ctx.font = '11px Inter, sans-serif'; ctx.textBaseline = 'middle';
+            ch.getDatasetMeta(datasets.length - 1).data.forEach((barra, i) => {
+                const x = lin[i];
+                const taxa = x.a === null ? '' : ` · ${x.c ? (100 * x.a / x.c).toLocaleString('pt-BR', { maximumFractionDigits: 1 }) : 0}%`;
+                ctx.fillText(x.a === null ? nf(x.c) : `${nf(x.c)} · ${nf(x.a)} aprov.${taxa}`, barra.x + 6, barra.y);
+            });
+            ctx.restore();
+        } }],
     });
 }
 function desenharParadas() {
@@ -721,19 +788,32 @@ function desenharGraficoTemas(a) {
     const itens = resto.length
         ? topo.concat([{ nome: 'Outros temas', criados: resto.reduce((s, t) => s + t.criados, 0), aprovados: resto.reduce((s, t) => s + t.aprovados, 0) }])
         : topo;
-    const totC = a.temas.reduce((s, t) => s + t.criados, 0) || 1, totA = a.temas.reduce((s, t) => s + t.aprovados, 0) || 1;
     graficoTemas?.destroy();
+    // Contagem absoluta: criados e aprovados na MESMA escala (aprovados é sempre um subconjunto de criados).
     graficoTemas = new Chart($('graficoTemas'), {
         type: 'bar',
         data: { labels: itens.map((t) => t.nome), datasets: [
-            { label: 'Aprovados (viraram lei)', data: itens.map((t) => (100 * t.aprovados) / totA), backgroundColor: '#A92823', _n: itens.map((t) => t.aprovados) },
-            { label: 'Todos os criados', data: itens.map((t) => (100 * t.criados) / totC), backgroundColor: '#8F8F8B', _n: itens.map((t) => t.criados) },
+            { label: 'Aprovados (viraram lei)', data: itens.map((t) => t.aprovados), backgroundColor: '#A92823' },
+            { label: 'Todos os criados', data: itens.map((t) => t.criados), backgroundColor: '#8F8F8B' },
         ] },
-        options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, animation: false,
+        options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, animation: false, layout: { padding: { right: 120 } },
             plugins: { legend: { labels: { color: cor } },
-                tooltip: { callbacks: { label: (x) => `${x.dataset.label}: ${x.parsed.x.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}% (${nf(x.dataset._n[x.dataIndex])} projetos)` } } },
-            scales: { x: { beginAtZero: true, ticks: { color: cor, callback: (v) => v + '%' }, title: { display: true, text: '% do total de temas atribuídos', color: cor } },
+                tooltip: { callbacks: { label: (x) => {
+                    const t = itens[x.dataIndex];
+                    const taxa = t.criados ? ` · ${(100 * t.aprovados / t.criados).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}% dos criados no tema` : '';
+                    return x.datasetIndex === 0 ? `Aprovados: ${nf(t.aprovados)}${taxa}` : `Criados: ${nf(t.criados)}`;
+                } } } },
+            scales: { x: { beginAtZero: true, ticks: { color: cor, precision: 0 }, title: { display: true, text: 'Número de projetos', color: cor } },
                       y: { ticks: { color: cor, autoSkip: false } } } },
+        // escreve "criados · aprovados" ao fim de cada barra (em vez de empilhar no rótulo do eixo)
+        plugins: [{ id: 'contagens', afterDatasetsDraw(ch) {
+            const { ctx } = ch;
+            ctx.save(); ctx.fillStyle = cor; ctx.font = '11px Inter, sans-serif'; ctx.textBaseline = 'middle';
+            ch.getDatasetMeta(1).data.forEach((barra, i) => {
+                ctx.fillText(`${nf(itens[i].criados)} · ${nf(itens[i].aprovados)} aprov.`, barra.x + 6, barra.y);
+            });
+            ctx.restore();
+        } }],
     });
 }
 
@@ -797,7 +877,6 @@ async function abrirPolitico(id, tema = '') {
                 <p class="text-[11px] text-slate-500 mt-0.5"><b>Autoria:</b> ${esc(x.autores.join(', ') || 'não informada')}</p>
                 ${x.aprovado ? '' : `<p class="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5"><i class="fa-solid fa-location-dot mr-1 text-slate-400" aria-hidden="true"></i><b>Parou em:</b> ${esc(x.parada.onde)}${x.situacao ? ` · ${esc(x.situacao)}` : ''}${x.ultima_movimentacao ? ` · última movimentação em ${esc(fmtData(x.ultima_movimentacao))}` : ''}</p>`}
                 ${x.temas.length ? `<p class="text-[11px] text-slate-400 mt-0.5">${esc(x.temas.join(' · '))}</p>` : ''}</li>`).join('') : '<li class="py-3 text-sm text-slate-500">Nenhum projeto neste tema e período.</li>'}</ul></div>`;
-        $('projPolitico').scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     } catch (e) { $('projPolitico').innerHTML = mensagemErro(e); }
 }
 $('buscaPolitico').addEventListener('input', debounce(buscarPolitico, 250));
@@ -806,6 +885,7 @@ document.addEventListener('click', (ev) => {
     if (b) { abrirPolitico(Number(b.dataset.pol)); return; }
     if (ev.target.closest && ev.target.closest('[data-fechar-pol]')) { POL.id = null; $('projPolitico').innerHTML = ''; }
 });
+document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape' && POL.id) { POL.id = null; $('projPolitico').innerHTML = ''; } });
 document.addEventListener('change', (ev) => { if (ev.target.id === 'temaPolitico') abrirPolitico(POL.id, ev.target.value); });
 document.getElementById('btnTema')?.addEventListener('click', () => setTimeout(() => { if (P.autoria) { desenharGraficoTemas(P.autoria); desenharAutores(); desenharParadas(); } }, 50));
 

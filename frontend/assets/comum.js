@@ -97,11 +97,11 @@ function renderLayout(paginaAtual) {
     if (cab) {
         // Marca só tipográfica (sem imagem), no formato do cartaz: nome empilhado, régua e linha técnica.
         const marca = `<span class="marca-nome block min-w-0">
-                    <span class="marca-titulo block">Impacto<br>Cidadão</span>
+                    <span class="marca-titulo block"><span class="marca-im">Im</span><span class="marca-pacto">pacto</span><br>Cidadão</span>
                     <span class="marca-regua block" aria-hidden="true"></span>
                     <span class="marca-linha block">Civic tech // Transparência acessível <span class="marca-ano">✦ 2026</span></span>
                 </span>`;
-        const marcaMovel = `<span class="marca-movel">Impacto<span>Cidadão</span></span>`;
+        const marcaMovel = `<span class="marca-movel"><span class="marca-im">Im</span><span class="marca-pacto">pacto</span>Cidadão</span>`;
         const atual = (n) => n.paginas.includes(paginaAtual);
         const linkMenu = (n) => `<a href="${n.href}" ${atual(n) ? 'aria-current="page"' : ''}
                     class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium hover:bg-slate-100 dark:hover:bg-slate-800 ${atual(n) ? 'bg-slate-100 dark:bg-slate-800 text-brand-700 dark:text-brand-400' : 'text-slate-700 dark:text-slate-300'}">
