@@ -258,7 +258,10 @@ button[data-membros], button[data-limpar], button[data-pol], button[data-fechar-
 .marca-ano { color: var(--vermelho); white-space: nowrap; }
 .dark .marca-ano { color: #E5584F; }
 .marca-movel { font: 900 1.15rem/1 var(--fonte-texto); text-transform: uppercase; letter-spacing: -.03em; color: var(--fg); }
-.marca-movel span { color: var(--vermelho); }
+/* Marca em três tempos: IM (preto) · PACTO (vermelho) · CIDADÃO (preto) */
+.marca-im { color: var(--fg); }
+.marca-pacto { color: var(--vermelho); }
+.dark .marca-pacto { color: #E5584F; }
 .marca-bloco { text-decoration: none; }
 
 
