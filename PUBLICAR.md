@@ -67,6 +67,27 @@ tem disco permanente e não aguenta os coletores pesados). Quando recoletar no s
 (`python backend\coletor_orgaos.py`, `coletor_autoria.py`, `coletor_votacoes.py`), faça commit dos arquivos novos
 e o Render publica de novo sozinho.
 
+## 6. Atualização automática dos dados (GitHub Actions, gratuito)
+
+Dois robôs, em `.github/workflows/`, mantêm os dados em dia sem o seu PC ligado:
+
+| Robô | Quando | O que faz |
+|---|---|---|
+| **Coleta diária** | todo dia, 06:30 (Brasília) | leis e MPs (Câmara e Senado) e planos de governo (TSE), gravando no Supabase |
+| **Atualizar arquivos de dados** | segundas-feiras; autoria no dia 1º de cada mês | ministérios e verbas, votações e autoria; se algo mudou, faz commit na `main` e o Render publica de novo |
+
+Para ligar, crie os segredos no GitHub (**Settings → Secrets and variables → Actions → New repository secret**):
+
+* `DATABASE_URL`: a connection string do Supabase (obrigatório para a coleta diária);
+* `ANTHROPIC_API_KEY`: opcional; sem ela, as leis novas entram como "pendentes" e a tradução por IA não roda;
+* `CONTATO_EMAIL`: opcional.
+
+Para rodar na hora, abra a aba **Actions**, escolha o robô e clique em **Run workflow**. O histórico e os erros
+aparecem ali. Os nomes dos ministros (`dados/ministros.json`) continuam manuais.
+
+Cuidados: a autoria tem ~13 MB e o arquivo muda a cada coleta, então o repositório cresce cerca de 13 MB por mês.
+Se a Câmara ou o TSE recusarem os IPs do GitHub, a execução mostra o erro na aba Actions.
+
 ## O que esperar
 
 * Primeira visita depois de um tempo parado: ~1 minuto para acordar.
