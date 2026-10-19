@@ -295,13 +295,31 @@ def _ipca_acumulado(ano: int, mes_fim: int) -> float | None:
     return resultado
 
 
+# Códigos do resultado oficial no RREO Anexo 06 (varia entre União e estados/municípios; o primeiro que existir vale).
+# No RREO o resultado é receita − despesa (positivo = superávit); aqui, como no resto do módulo, positivo = déficit.
+COD_PRIMARIO_OFICIAL = ("RREO6ResultadoPrimarioEstadosMunicipios", "ResultadoPrimarioSemRPPSAcimaDaLinha", "ResultadoPrimarioComRPPSAcimaDaLinha")
+COD_NOMINAL_OFICIAL = ("ResultadoNominalAcimaDaLinha", "ResultadoNominalAcimaDaLinhaSemRPPS", "ResultadoNominalAcimaDaLinhaComRPPS")
+
+
+def _oficial(a6: list[dict], codigos: tuple[str, ...]) -> float | None:
+    for cod in codigos:
+        v = _valor(a6, cod, "VALOR")
+        if v is not None:
+            return round(-float(v), 2)
+    return None
+
+
 def _deficits(a1: list[dict], a6: list[dict], ano: int, bim: int) -> dict:
     """Déficit nominal, primário e operacional (positivo = déficit; negativo = superávit).
 
-    * nominal    = despesa total empenhada − receita total arrecadada (RREO Anexo 01);
-    * primário   = despesa primária empenhada − receita primária realizada (RREO Anexo 06, a
-                   classificação oficial de receitas e despesas financeiras). Sem o Anexo 06,
-                   aproxima pelo Anexo 01 excluindo crédito, juros, amortização e inversões financeiras;
+    * nominal e primário: usamos o RESULTADO OFICIAL que o próprio ente publica no RREO Anexo 06 ("acima da linha",
+                   calculado com a despesa PAGA, inclusive restos a pagar pagos) sempre que ele existir;
+    * aproximação (mostrada ao lado e usada quando não há resultado oficial):
+        - nominal  = despesa total empenhada − receita total arrecadada (RREO Anexo 01);
+        - primário = despesa primária empenhada − receita primária realizada (RREO Anexo 06). Sem o Anexo 06,
+                     aproxima pelo Anexo 01 excluindo crédito, juros, amortização e inversões financeiras.
+      Durante o ano a despesa EMPENHADA vem bem à frente da paga: na União, em ago/2026, a aproximação dava
+      R$ 594 bi de déficit primário contra R$ 95 bi do resultado oficial. Por isso o oficial tem prioridade;
     * operacional = primário + juros reais, com juros reais = juros nominais − correção monetária
                    (IPCA acumulado do ano × dívida consolidada no início do ano). Cálculo NOSSO, não
                    é série oficial; fica indisponível quando falta a dívida consolidada ou o IPCA.
@@ -331,6 +349,13 @@ def _deficits(a1: list[dict], a6: list[dict], ano: int, bim: int) -> dict:
         primario = round(gastos_nf - receitas_nf, 2)
         base_primario = "aproximação pelo RREO Anexo 01 (o Anexo 06 não está disponível)"
 
+    primario_aprox, nominal_aprox = primario, nominal
+    primario_of, nominal_of = _oficial(a6, COD_PRIMARIO_OFICIAL), _oficial(a6, COD_NOMINAL_OFICIAL)
+    if primario_of is not None:
+        primario, base_primario = primario_of, "resultado primário oficial do RREO Anexo 06 (acima da linha, com a despesa paga)"
+    if nominal_of is not None:
+        nominal = nominal_of
+
     # Juros nominais: preferimos os "incorridos, incluindo variações monetárias" (Anexo 06), que são
     # comparáveis à correção monetária; sem eles, usamos os juros empenhados (Anexo 01).
     incorridos = _valor(a6, "JurosEncargosEVariacoesMonetariasPassivosExcetoRPPS", "VALOR INCORRIDO")
@@ -359,9 +384,11 @@ def _deficits(a1: list[dict], a6: list[dict], ano: int, bim: int) -> dict:
         componentes.update({"correcao_monetaria": correcao, "juros_reais": juros_reais})
     return {
         "periodo": f"acumulado até o {bim}º bimestre de {ano}",
-        "nominal": {"valor": nominal, "gastos_totais": despesa, "receitas_totais": receita},
+        "nominal": {"valor": nominal, "gastos_totais": despesa, "receitas_totais": receita,
+                    "oficial": nominal_of is not None, "aproximado": nominal_aprox},
         "primario": {"valor": primario, "gastos_nao_financeiros": gastos_nf,
-                     "receitas_nao_financeiras": receitas_nf, "base": base_primario},
+                     "receitas_nao_financeiras": receitas_nf, "base": base_primario,
+                     "oficial": primario_of is not None, "aproximado": primario_aprox},
         "operacional": {"valor": operacional, "indisponivel_motivo": motivo, **componentes},
     }
 
