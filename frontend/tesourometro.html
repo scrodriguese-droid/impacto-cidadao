@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tesourômetro — ImpactoCidadão</title>
+    <meta name="description" content="Simulador de cortes: arraste a barra de cada área do orçamento e veja o que costuma acontecer, em quatro estágios, e por que montar a LOA é uma equação difícil.">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="assets/tailwind-config.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/brutalista.css">
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-full flex flex-col transition-colors duration-200">
+
+<a href="#conteudo" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-white focus:text-slate-900 focus:p-3">Ir para o conteúdo</a>
+<div id="cabecalho"></div>
+
+<main id="conteudo" class="max-w-5xl mx-auto px-4 sm:px-6 pt-6 pb-10 flex-grow w-full">
+    <h1 class="text-2xl font-extrabold tracking-tight">Tesourômetro</h1>
+    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Arraste a barra de cada área para a direita para cortar a verba e veja o que costuma acontecer. Governar é escolher onde a economia pesa, e cada corte tem um custo em outro lugar.</p>
+
+    <div id="barraContexto" class="mt-6"></div>
+    <div class="mt-3"><div id="segEsfera" class="inline-flex flex-wrap gap-1 p-1 rounded-2xl bg-slate-200/70 dark:bg-slate-800" role="radiogroup" aria-label="Esfera de governo"></div></div>
+
+    <p class="aviso-sim mt-4" role="note" id="aviso"></p>
+
+    <div id="estado" class="mt-6" aria-live="polite"></div>
+    <div id="corpo" class="hidden">
+        <!-- A balança: soma de todos os cortes, sempre visível -->
+        <div class="balanca" role="status" aria-live="polite">
+            <div><p class="balanca-rotulo">Corte total</p><p class="balanca-num" id="bTotal">R$ 0</p></div>
+            <div><p class="balanca-rotulo">Da despesa total</p><p class="balanca-num" id="bPct">0%</p></div>
+            <div class="balanca-meio"><p class="balanca-rotulo">Estágios atingidos</p><p id="bEstagios" class="balanca-txt">Nenhum corte ainda.</p></div>
+            <button type="button" id="btnZerar">Zerar cortes</button>
+        </div>
+
+        <section class="mt-8" aria-labelledby="tRegras">
+            <h2 id="tRegras">Regras do jogo</h2>
+            <div class="mt-3 ficha" id="regras"></div>
+        </section>
+
+        <section class="mt-10" aria-labelledby="tAreas">
+            <h2 id="tAreas">Corte área por área</h2>
+            <p id="periodoNota" class="text-sm text-slate-500 mt-2"></p>
+            <div class="areas-corte mt-4" id="areas"></div>
+        </section>
+
+        <section class="mt-10" aria-labelledby="tTrav" id="secTravadas">
+            <h2 id="tTrav">O que não se pode cortar</h2>
+            <div class="mt-3" id="travadas"></div>
+        </section>
+    </div>
+</main>
+
+<div id="rodape"></div>
+
+<script src="assets/comum.js"></script>
+<script>
+renderLayout('tesouro');
+
+const ESFERAS = [{ id: 'municipio', rotulo: 'Município' }, { id: 'estado', rotulo: 'Estado' }, { id: 'uniao', rotulo: 'União' }];
+const E = { esfera: ler('ic_esfera_economia', 'municipio'), cortes: {} };   // cortes: id da área -> %
+if (!ESFERAS.some((x) => x.id === E.esfera)) E.esfera = 'municipio';
+let contexto = null, CONTEUDO = null, DADOS = null, AREAS = [];
+
+const brlCurto = (n) => {
+    const v = Math.abs(Number(n || 0)), s = n < 0 ? '−' : '';
+    if (v >= 1e12) return `${s}R$ ${(v / 1e12).toLocaleString('pt-BR', { maximumFractionDigits: 2 })} tri`;
+    if (v >= 1e9) return `${s}R$ ${(v / 1e9).toLocaleString('pt-BR', { maximumFractionDigits: 2 })} bi`;
+    if (v >= 1e6) return `${s}R$ ${(v / 1e6).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} mi`;
+    if (v >= 1e3) return `${s}R$ ${(v / 1e3).toLocaleString('pt-BR', { maximumFractionDigits: 0 })} mil`;
+    return `${s}${brl(v)}`;
+};
+const pct = (v) => `${Number(v).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%`;
+const fichaLinha = (rotulo, corpo) => `<div class="ficha-linha"><p class="ficha-rotulo">${rotulo}</p><div class="ficha-corpo">${corpo}</div></div>`;
+const codigoEnte = () => {
+    if (E.esfera === 'uniao') return 1;
+    const m = contexto && contexto.municipio;
+    if (!m) return null;
+    return E.esfera === 'estado' ? Math.floor(m.codigo / 100000) : m.codigo;
+};
+const estagioDe = (p) => CONTEUDO.escala.find((e) => p >= e.de && p <= e.ate) || CONTEUDO.escala[0];
+const ORDEM = ['leve', 'medio', 'grave', 'extremo'];
+
+function desenharEsfera() {
+    $('segEsfera').innerHTML = ESFERAS.map((x) => `<button type="button" role="radio" aria-checked="${E.esfera === x.id}" data-esfera="${x.id}">${x.rotulo}</button>`).join('');
+}
+$('segEsfera').addEventListener('click', (ev) => {
+    const b = ev.target.closest('[data-esfera]');
+    if (!b || b.dataset.esfera === E.esfera) return;
+    E.esfera = b.dataset.esfera; guardar('ic_esfera_economia', E.esfera); carregar();
+});
+
+/* ---- cartão de uma área: barra, valor, estágio e efeitos acumulados ---- */
+function cartaoArea(a) {
+    return `<article class="corte" data-area="${esc(a.id)}">
+        <div class="corte-cab"><h3>${esc(a.titulo)}</h3><p class="corte-valor">${esc(brlCurto(a.valor))}<span> · ${esc(pct(a.pctDespesa))} da despesa</span></p></div>
+        <label class="sr-only" for="r-${esc(a.id)}">Corte em ${esc(a.titulo)}, em porcentagem</label>
+        <input type="range" id="r-${esc(a.id)}" min="0" max="100" step="1" value="${E.cortes[a.id] || 0}" data-id="${esc(a.id)}">
+        <div class="corte-marcas" aria-hidden="true"><span>0%</span><span>5%</span><span>15%</span><span>35%</span><span>100%</span></div>
+        <div class="corte-estado"><p class="corte-pct"></p><p class="corte-economia"></p></div>
+        <div class="corte-segs" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+        <p class="corte-rotulo"></p>
+        <div class="corte-efeitos" aria-live="polite"></div>
+        <p class="corte-legal"><b>Regra:</b> ${esc(a.legal)} <span>${esc(a.base)}</span></p>
+    </article>`;
+}
+
+function atualizarArea(id) {
+    const a = AREAS.find((x) => x.id === id), card = document.querySelector(`.corte[data-area="${id}"]`);
+    if (!a || !card) return;
+    const p = Number(E.cortes[id] || 0), est = estagioDe(p), idx = ORDEM.indexOf(est.id);
+    card.querySelector('.corte-pct').textContent = p ? `Corte de ${p}%` : 'Sem corte';
+    card.querySelector('.corte-economia').textContent = p ? `−${brlCurto(a.valor * p / 100)} · sobra ${brlCurto(a.valor * (1 - p / 100))}` : '';
+    card.querySelectorAll('.corte-segs span').forEach((s, i) => { s.className = i <= idx ? `on ${ORDEM[idx]}` : ''; });
+    card.className = `corte${idx >= 2 ? ' corte-grave' : ''}${a.obrigatoria && p ? ' corte-obrigatoria' : ''}`;
+    card.querySelector('.corte-rotulo').innerHTML = p ? `<b>${esc(est.rotulo)}</b> · ${esc(est.resumo)}` : esc(est.resumo);
+    const efeitos = ORDEM.slice(0, idx + 1).map((k, i) => {
+        const e = CONTEUDO.escala.find((x) => x.id === k);
+        return `<div class="efeito${i === idx ? ' efeito-atual' : ''}"><p class="efeito-rot">${esc(e.rotulo)} <span>${e.de}% a ${e.ate === 100 ? '100' : e.ate}%</span></p><p>${esc(a.estagios[k])}</p></div>`;
+    }).join('');
+    const cadeia = idx === 3 ? `<div class="efeito efeito-cadeia"><p class="efeito-rot">Cadeia de consequências</p><p>${esc(a.cadeia)}</p></div>` : '';
+    const alerta = a.obrigatoria && p ? `<div class="efeito efeito-alerta"><p class="efeito-rot">Atenção: despesa obrigatória</p><p>${esc(a.legal)}</p></div>` : '';
+    card.querySelector('.corte-efeitos').innerHTML = alerta + efeitos + cadeia;
+    card.dataset.area = id;
+}
+
+function atualizarBalanca() {
+    const cortes = AREAS.map((a) => ({ a, p: Number(E.cortes[a.id] || 0) })).filter((x) => x.p > 0);
+    const total = cortes.reduce((s, x) => s + x.a.valor * x.p / 100, 0);
+    $('bTotal').textContent = '−' + brlCurto(total).replace(/^−/, '');
+    $('bPct').textContent = DADOS.total ? pct(100 * total / DADOS.total) : '—';
+    const cont = {};
+    cortes.forEach((x) => { const e = estagioDe(x.p); cont[e.rotulo] = (cont[e.rotulo] || 0) + 1; });
+    $('bEstagios').textContent = cortes.length ? Object.entries(cont).map(([r, n]) => `${n} em ${r.toLowerCase()}`).join(' · ') : 'Nenhum corte ainda.';
+}
+
+function desenharPainel() {
+    const regras = CONTEUDO.regras.map((r) => fichaLinha(esc(r.titulo), `<p>${esc(r.texto)}</p><p class="ficha-nota">Base legal: ${esc(r.base)}</p>`)).join('');
+    $('regras').innerHTML = regras;
+    $('areas').innerHTML = AREAS.map(cartaoArea).join('');
+    AREAS.forEach((a) => atualizarArea(a.id));
+    atualizarBalanca();
+    $('travadas').innerHTML = DADOS.travadas.length ? DADOS.travadas.map((t) => `<div class="ficha"><div class="ficha-linha"><p class="ficha-rotulo">${esc(t.titulo)}</p><div class="ficha-corpo">
+        <p class="corte-valor" style="font-size:1.6rem">${esc(brlCurto(t.valor))}<span> · ${esc(pct(t.pctDespesa))} da despesa</span></p>
+        <p class="mt-2">${esc(t.motivo)}</p><p class="ficha-nota">Base legal: ${esc(t.base)}. Neste simulador a barra fica travada.</p></div></div></div>`).join('')
+        : '<p class="ficha-nota">Neste ente, nenhuma função de despesa obrigatória em destaque.</p>';
+    $('secTravadas').classList.toggle('hidden', !DADOS.travadas.length);
+}
+
+$('areas').addEventListener('input', (ev) => {
+    const r = ev.target.closest('input[type="range"]');
+    if (!r) return;
+    E.cortes[r.dataset.id] = Number(r.value);
+    atualizarArea(r.dataset.id); atualizarBalanca();
+});
+$('btnZerar').addEventListener('click', () => { E.cortes = {}; document.querySelectorAll('#areas input[type="range"]').forEach((r) => { r.value = 0; }); AREAS.forEach((a) => atualizarArea(a.id)); atualizarBalanca(); });
+
+async function carregar() {
+    desenharEsfera();
+    $('corpo').classList.add('hidden');
+    const ente = codigoEnte();
+    if (ente == null) { $('estado').innerHTML = '<p class="text-sm text-slate-500">Escolha uma cidade na barra acima para simular os cortes no orçamento dela, do estado ou da União.</p>'; return; }
+    $('estado').innerHTML = '<p class="text-sm text-slate-500"><i class="fa-solid fa-spinner fa-spin mr-1.5" aria-hidden="true"></i>Consultando o Tesouro Nacional…</p>';
+    try {
+        const d = await api('/api/economia/' + encodeURIComponent(ente));
+        const desp = d.nivel2.despesas, total = desp.total_liquidado;
+        const porNome = Object.fromEntries(desp.funcoes.map((f) => [f.nome, f]));
+        AREAS = CONTEUDO.areas.filter((a) => (!a.so_uniao || E.esfera === 'uniao') && porNome[a.funcao])
+            .map((a) => ({ ...a, valor: porNome[a.funcao].valor, pctDespesa: porNome[a.funcao].pct }));
+        const travadas = CONTEUDO.travadas.filter((t) => porNome[t.funcao]).map((t) => ({ ...t, valor: porNome[t.funcao].valor, pctDespesa: porNome[t.funcao].pct }));
+        DADOS = { total, travadas, ente: d.instituicao, periodo: d.periodo.rotulo };
+        $('estado').innerHTML = '';
+        $('periodoNota').textContent = `${d.instituicao || ''} · despesa liquidada no período (${d.periodo.rotulo}), total de ${brlCurto(total)}.`;
+        desenharPainel();
+        $('corpo').classList.remove('hidden');
+    } catch (e) { $('estado').innerHTML = mensagemErro(e); }
+}
+
+(async function iniciar() {
+    CONTEUDO = await (await fetch('assets/tesourometro.json')).json();
+    $('aviso').innerHTML = `<b>Cenário ilustrativo.</b> ${esc(CONTEUDO.aviso.replace(/^Cenário ilustrativo\.\s*/, ''))}`;
+    contexto = await montarBarraContexto('barraContexto', () => { contexto = contexto || {}; carregar(); });
+    carregar();
+})();
+</script>
+</body>
+</html>

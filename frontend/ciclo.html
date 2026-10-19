@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ciclo econômico — ImpactoCidadão</title>
+    <meta name="description" content="PIB, IBC-Br, emprego, indústria, comércio e inflação para entender em que ponto do ciclo a economia está e como isso se relaciona às contas públicas.">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="assets/tailwind-config.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <style>
+        body { font-family: 'Inter', system-ui, sans-serif; }
+        :focus-visible { outline: 2px solid #A92823; outline-offset: 2px; }
+        .grafico { position: relative; height: 320px; }
+        details > summary { cursor: pointer; }
+    </style>
+    <link rel="stylesheet" href="assets/brutalista.css">
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-full flex flex-col transition-colors duration-200">
+
+<a href="#conteudo" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-white focus:text-slate-900 focus:p-3">Ir para o conteúdo</a>
+<div id="cabecalho"></div>
+
+<main id="conteudo" class="max-w-6xl mx-auto px-4 sm:px-6 pt-6 pb-10 flex-grow w-full space-y-10">
+    <header>
+        <h1 class="text-2xl font-extrabold tracking-tight">Ciclo econômico e contas públicas</h1>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Em que ponto do ciclo a economia está e como isso se relaciona à arrecadação, às despesas e à dívida. Dados oficiais do IBGE, do Banco Central e do Tesouro Nacional.</p>
+        <p id="consulta" class="text-xs text-slate-500 mt-2" aria-live="polite"></p>
+    </header>
+
+    <div id="estado"></div>
+    <div id="modulo" class="hidden space-y-10"></div>
+</main>
+
+<div id="rodape"></div>
+
+<script src="assets/comum.js"></script>
+<script>
+renderLayout('ciclo');
+
+/* ---------- utilidades ---------- */
+const num = (v, d = 1) => (v == null ? '—' : Number(v).toLocaleString('pt-BR', { minimumFractionDigits: d, maximumFractionDigits: d }));
+const sgn = (v, d = 1) => (v == null ? '—' : `${v > 0 ? '+' : v < 0 ? '−' : ''}${num(Math.abs(v), d)}`);
+const reaisMi = (m) => {
+    if (m == null) return '—';
+    const v = Math.abs(m) * 1e6, s = m < 0 ? '−' : '';
+    if (v >= 1e12) return `${s}R$ ${(v / 1e12).toLocaleString('pt-BR', { maximumFractionDigits: 2 })} tri`;
+    if (v >= 1e9) return `${s}R$ ${(v / 1e9).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} bi`;
+    return `${s}R$ ${(v / 1e6).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} mi`;
+};
+const fmtMes = (iso) => { const [a, m] = iso.slice(0, 7).split('-'); return `${m}/${a}`; };
+const cartao = (inner, extra = '') => `<div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 ${extra}">${inner}</div>`;
+const secao = (id, n, titulo, sub, corpo) => `<section aria-labelledby="${id}"><p class="text-xs font-bold uppercase tracking-wider text-brand-700 dark:text-brand-400">${n}</p>
+    <h2 id="${id}" class="text-xl font-bold">${esc(titulo)}</h2><p class="text-sm text-slate-500 dark:text-slate-400 mb-3">${sub}</p>${corpo}</section>`;
+const ehEscuro = () => document.documentElement.classList.contains('dark');
+const corTexto = () => (ehEscuro() ? '#cbd5e1' : '#475569');
+const corGrade = () => (ehEscuro() ? 'rgba(148,163,184,.18)' : 'rgba(100,116,139,.18)');
+const CORES = ['#A92823', '#e11d48', '#059669', '#d97706', '#7c3aed', '#0891b2'];
+const graficos = {};
+function desenharGrafico(id, config) {
+    if (graficos[id]) graficos[id].destroy();
+    const c = config; c.options = c.options || {};
+    c.options.responsive = true; c.options.maintainAspectRatio = false;
+    c.options.plugins = { ...(c.options.plugins || {}), legend: { labels: { color: corTexto() } } };
+    for (const eixo of Object.values(c.options.scales || {})) {
+        eixo.ticks = { ...(eixo.ticks || {}), color: corTexto() };
+        eixo.grid = { ...(eixo.grid || {}), color: corGrade() };
+        if (eixo.title) eixo.title.color = corTexto();
+    }
+    graficos[id] = new Chart($(id), c);
+}
+let GLOSS = {};
+async function carregarGlossario() {
+    try {
+        const r = await fetch('assets/glossario.json');
+        if (r.ok) for (const t of Object.values(await r.json())) Object.assign(GLOSS, t);
+    } catch (_) { /* segue sem glossário */ }
+}
+const gl = (sigla) => {
+    const g = GLOSS[sigla]; if (!g) return '';
+    return ` <a href="glossario.html#${encodeURIComponent(sigla)}" title="${esc(g.nome_cidadao)}: ${esc(g.explicacao_simples)}" aria-label="${esc(g.nome_cidadao)}: ver no glossário"
+        class="inline-flex items-center justify-center w-4 h-4 rounded-full bg-slate-200 dark:bg-slate-700 text-[10px] font-bold text-slate-600 dark:text-slate-300 hover:bg-brand-500 hover:text-white align-middle">?</a>`;
+};
+
+let D = null;       // resposta da API
+const E = { ind: ['ibc_br_mm', 'producao_industrial_mm', 'vendas_varejo_mm'], ini: '' };
+
+/* ---------- 1. cartões ---------- */
+function blocoCartoes() {
+    const ROT = { pib_qoq: 'PIB, trimestre contra trimestre', pib_yoy: 'PIB, contra o mesmo trimestre do ano anterior', ibc_br_mm: 'IBC-Br, variação mensal',
+        desocupacao: 'Taxa de desocupação', producao_industrial_mm: 'Produção industrial, variação mensal', vendas_varejo_mm: 'Vendas do varejo, variação mensal', ipca_12m: 'IPCA, 12 meses' };
+    const GLS = { pib_qoq: 'PIB_TRIMESTRAL', ibc_br_mm: 'IBC_BR', desocupacao: 'DESOCUPACAO', ipca_12m: 'IPCA' };
+    return `<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">${D.cartoes.map((c) => {
+        const ref = c.referencia || fmtMes(c.data);
+        const sinal = c.id === 'desocupacao' || c.id === 'ipca_12m' ? num(c.valor, 2) : sgn(c.valor, 2);
+        return cartao(`<p class="text-xs font-semibold text-slate-500">${esc(ROT[c.id] || c.nome)}${GLS[c.id] ? gl(GLS[c.id]) : ''}</p>
+            <p class="text-3xl font-extrabold mt-1">${sinal}<span class="text-base font-semibold text-slate-500"> %</span></p>
+            <p class="text-[11px] text-slate-400 mt-2">Ref.: ${esc(ref)}${c.anterior != null ? ` · anterior ${num(c.anterior, 2)}` : ''}</p>
+            <p class="text-[11px] text-slate-400">${esc(c.frequencia)}</p>`);
+    }).join('')}</div>`;
+}
+
+/* ---------- 2. painel de contexto ---------- */
+function blocoContexto() {
+    const L = D.leitura;
+    const SIT = {
+        expansao: ['Expansão', 'fa-arrow-trend-up', 'emerald'],
+        desaceleracao: ['Desaceleração', 'fa-arrow-trend-down', 'amber'],
+        possivel_contracao: ['Possível contração', 'fa-triangle-exclamation', 'rose'],
+        indeterminado: ['Indeterminado', 'fa-circle-question', 'slate'],
+    };
+    const COR = { emerald: 'border-emerald-300 bg-emerald-50 dark:bg-emerald-950/30 dark:border-emerald-800', amber: 'border-amber-300 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-800',
+        rose: 'border-rose-300 bg-rose-50 dark:bg-rose-950/30 dark:border-rose-800', slate: 'border-slate-300 bg-slate-50 dark:bg-slate-800 dark:border-slate-700' };
+    const faixas = ['expansao', 'desaceleracao', 'possivel_contracao'].map((k) => {
+        const ativa = L.situacao === k, [rot, ic, cor] = SIT[k];
+        return `<div class="rounded-2xl border-2 p-4 ${ativa ? COR[cor] : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 opacity-70'}">
+            <p class="font-bold"><i class="fa-solid ${ic} mr-1.5" aria-hidden="true"></i>${rot}${ativa ? ' <span class="text-xs font-semibold">· leitura atual</span>' : ''}</p>
+            <p class="text-xs mt-1 text-slate-600 dark:text-slate-300">${esc(L.regras.descricao[k])}</p></div>`;
+    }).join('');
+    const CL = { avanco: ['Avanço', 'text-emerald-600 dark:text-emerald-400'], queda: ['Queda', 'text-rose-600 dark:text-rose-400'], estavel: ['Estável', 'text-slate-500'] };
+    const linhas = L.sinais.map((s) => `<tr class="border-t border-slate-100 dark:border-slate-700 align-top">
+        <th scope="row" class="p-2 text-left font-medium">${esc(s.nome)}<span class="block text-[11px] font-normal text-slate-400">${esc(s.referencia || '')}</span></th>
+        <td class="p-2 font-semibold ${CL[s.classe][1]}">${CL[s.classe][0]}</td>
+        <td class="p-2">${sgn(s.valor, 2)}<span class="block text-[11px] text-slate-400">${esc(s.unidade)}</span></td>
+        <td class="p-2">${s.duracao_quedas ? `${s.duracao_quedas} período(s) seguido(s)` : '—'}</td>
+        <td class="p-2">${s.intensidade == null ? '—' : sgn(s.intensidade, 2)}<span class="block text-[11px] text-slate-400">${esc(s.intensidade_rotulo || '')}</span></td></tr>`).join('');
+    return `<div class="grid md:grid-cols-3 gap-4">${faixas}</div>
+        <div class="mt-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 text-sm">
+            <p class="font-bold">Por que esta leitura? <span class="text-xs font-normal text-slate-500">· interpretação, não dado</span></p>
+            <ul class="mt-1 list-disc pl-5 text-slate-600 dark:text-slate-300 space-y-0.5">${L.criterios_atendidos.map((c) => `<li>${esc(c)}</li>`).join('')}</ul>
+            <p class="mt-2 text-xs text-slate-500">Sinais: ${L.contagem.avanco} em avanço · ${L.contagem.estavel} estáveis · ${L.contagem.queda} em queda (${L.contagem.queda_persistente} com queda persistente).</p>
+        </div>
+        <div class="mt-4 overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+            <table class="w-full text-sm"><caption class="sr-only">Sinais do ciclo econômico</caption>
+            <thead class="bg-slate-100 dark:bg-slate-700/60 text-left text-xs"><tr><th class="p-2">Indicador</th><th class="p-2">Sinal</th><th class="p-2">Valor (observado)</th><th class="p-2">Duração da queda</th><th class="p-2">Intensidade</th></tr></thead>
+            <tbody>${linhas}</tbody></table></div>
+        <p class="mt-2 text-xs text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 rounded-lg px-3 py-2">
+            <i class="fa-solid fa-circle-info mr-1" aria-hidden="true"></i>${esc(L.regras.aviso)}</p>`;
+}
+
+/* ---------- 3. gráficos históricos ---------- */
+const GRUPOS = [
+    ['Atividade', [['pib_qoq', 'PIB — contra o trimestre anterior'], ['pib_yoy', 'PIB — contra o mesmo trimestre do ano anterior'], ['pib_4t', 'PIB — acumulado em 4 trimestres'],
+                   ['ibc_br_mm', 'IBC-Br — variação mensal'], ['ibc_br', 'IBC-Br — índice dessazonalizado']]],
+    ['Indústria e comércio', [['producao_industrial_mm', 'Produção industrial — variação mensal'], ['producao_industrial', 'Produção industrial — índice'],
+                              ['vendas_varejo_mm', 'Vendas do varejo — variação mensal'], ['vendas_varejo', 'Vendas do varejo — índice']]],
+    ['Mercado de trabalho', [['desocupacao', 'Taxa de desocupação'], ['ocupados', 'Pessoas ocupadas'], ['rendimento', 'Rendimento médio real']]],
+    ['Inflação', [['ipca_12m', 'IPCA — 12 meses']]],
+];
+function blocoGraficos() {
+    return `<div class="grid lg:grid-cols-[18rem_1fr] gap-4">
+        <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 space-y-4 self-start">
+            <fieldset><legend class="text-xs font-semibold">Indicadores (até 2 unidades)</legend>
+                <div class="mt-2 space-y-3 max-h-80 overflow-auto pr-1">${GRUPOS.map(([g, itens]) => `<div><p class="text-[11px] uppercase tracking-wider text-slate-400 font-bold">${esc(g)}</p>
+                    ${itens.map(([k, n]) => `<label class="flex items-start gap-2 py-0.5 text-sm"><input type="checkbox" class="mt-1" data-ind="${k}" ${E.ind.includes(k) ? 'checked' : ''}><span>${esc(n)}</span></label>`).join('')}</div>`).join('')}</div></fieldset>
+            <div><p class="text-xs font-semibold">Período</p>
+                <div class="mt-1 grid grid-cols-4 gap-1">${[['2 anos', 2], ['5 anos', 5], ['10 anos', 10], ['Tudo', 0]].map(([r, a]) => `<button type="button" data-anos="${a}" class="px-1 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600">${r}</button>`).join('')}</div></div>
+        </div>
+        <div class="min-w-0 space-y-3">
+            <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
+                <p id="avisoGraf" class="hidden mb-2 text-xs text-amber-800 dark:text-amber-300"></p>
+                <div class="grafico"><canvas id="gHist" role="img" aria-label="Gráfico histórico dos indicadores selecionados"></canvas></div></div>
+            <div id="fichasInd" class="space-y-2"></div>
+        </div></div>`;
+}
+function atualizarHistorico() {
+    const ids = E.ind.filter((k) => D.indicadores[k]).slice(0, 6);
+    const un = [...new Set(ids.map((k) => D.indicadores[k].unidade))];
+    const aviso = $('avisoGraf'); aviso.classList.add('hidden');
+    let usar = ids;
+    if (un.length > 2) { usar = ids.filter((k) => un.slice(0, 2).includes(D.indicadores[k].unidade)); aviso.textContent = 'O gráfico aceita até 2 unidades; as demais foram omitidas.'; aviso.classList.remove('hidden'); }
+    const us = [...new Set(usar.map((k) => D.indicadores[k].unidade))];
+    const filtro = (p) => !E.ini || p.data >= E.ini;
+    const datas = [...new Set(usar.flatMap((k) => D.indicadores[k].pontos.filter(filtro).map((p) => p.data)))].sort();
+    const datasets = usar.map((k, i) => {
+        const m = new Map(D.indicadores[k].pontos.map((p) => [p.data, p.valor]));
+        const barra = /_mm$|_qoq$|_yoy$|_4t$/.test(k) && D.indicadores[k].frequencia === 'trimestral';
+        return { type: barra ? 'bar' : 'line', label: `${D.indicadores[k].nome} (${D.indicadores[k].unidade})`, data: datas.map((d) => (m.has(d) ? m.get(d) : null)),
+            borderColor: CORES[i % CORES.length], backgroundColor: CORES[i % CORES.length], borderWidth: 2, pointRadius: 0, spanGaps: true, yAxisID: us.indexOf(D.indicadores[k].unidade) === 0 ? 'y' : 'y1' };
+    });
+    const escalas = { x: { ticks: { maxTicksLimit: 8, callback(v) { const d = this.getLabelForValue(v); return d ? fmtMes(d) : ''; } } }, y: { title: { display: true, text: us[0] || '' } } };
+    if (us[1]) escalas.y1 = { position: 'right', grid: { drawOnChartArea: false }, title: { display: true, text: us[1] } };
+    desenharGrafico('gHist', { type: 'line', data: { labels: datas, datasets }, options: { interaction: { mode: 'index', intersect: false }, scales: escalas } });
+    $('fichasInd').innerHTML = usar.map((k) => {
+        const i = D.indicadores[k], ult = i.pontos[i.pontos.length - 1];
+        return `<details class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-3 text-sm"><summary class="font-semibold">${esc(i.nome)}</summary>
+            <p class="mt-1 text-slate-600 dark:text-slate-400">Unidade: ${esc(i.unidade)} · periodicidade: ${esc(i.frequencia)}${ult ? ` · última observação: ${esc(ult.referencia || fmtMes(ult.data))}` : ''}</p>
+            ${i.nota ? `<p class="text-xs text-slate-500">${esc(i.nota)}</p>` : ''}
+            <p class="text-xs mt-1">Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(i.url_fonte))}">${esc(i.fonte)}</a>${i.calculo_proprio ? ' · <b>cálculo nosso</b>' : ''}</p></details>`;
+    }).join('');
+}
+
+/* ---------- 4. relação com as contas públicas ---------- */
+function blocoFiscal() {
+    const cp = D.contas_publicas;
+    const tabela = cp.disponivel ? `<div class="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"><table class="w-full text-sm">
+        <thead class="bg-slate-100 dark:bg-slate-700/60 text-xs"><tr><th class="p-2 text-left">Governo Central, 12 meses até ${esc(fmtMes(cp.periodo))}</th><th class="p-2 text-right">Últimos 12 meses</th>
+        <th class="p-2 text-right">12 meses anteriores</th><th class="p-2 text-right">Variação nominal</th><th class="p-2 text-right">Variação real (aprox.)</th></tr></thead><tbody>
+        ${cp.itens.map((i) => `<tr class="border-t border-slate-100 dark:border-slate-700"><th scope="row" class="p-2 text-left font-medium">${esc(i.nome)}</th>
+            <td class="p-2 text-right">${reaisMi(i['ultimos_12m'])}</td><td class="p-2 text-right">${reaisMi(i['12m_anteriores'])}</td>
+            <td class="p-2 text-right">${i.variacao_nominal_pct == null ? '—' : sgn(i.variacao_nominal_pct) + '%'}</td><td class="p-2 text-right">${i.variacao_real_aprox_pct == null ? '—' : sgn(i.variacao_real_aprox_pct) + '%'}</td></tr>`).join('')}
+        </tbody></table></div>
+        <p class="text-[11px] text-slate-400 mt-1">${esc(cp.nota)} Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(cp.fonte.url))}">${esc(cp.fonte.nome)}</a>. Resultado primário negativo = déficit.</p>`
+        : `<p class="text-sm text-slate-500">${esc(cp.erro || 'Receitas e despesas do Governo Central indisponíveis.')}</p>`;
+    return `<div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 mb-4">
+            <h3 class="font-bold text-sm">Crescimento do PIB × resultado fiscal (% do PIB, 12 meses) — setor público consolidado</h3>
+            <div class="grafico"><canvas id="gFiscal" role="img" aria-label="PIB e resultado fiscal"></canvas></div>
+            <p class="text-[11px] text-slate-400">Barras: crescimento do PIB contra o mesmo trimestre do ano anterior, no último mês do trimestre. Linhas: resultado fiscal acumulado em 12 meses (Banco Central; positivo = déficit).
+            Os dados mostram a coincidência no tempo, não a causa.</p></div>
+        ${tabela}
+        <div class="mt-4 grid md:grid-cols-2 gap-4 text-sm">
+            ${cartao(`<p class="font-bold">Como a atividade se liga às contas${gl('ESTABILIZADOR_AUTOMATICO')}</p>
+                <ul class="mt-2 list-disc pl-5 space-y-1 text-slate-600 dark:text-slate-300">
+                    <li><b>Arrecadação:</b> tributos sobre renda, folha e consumo costumam variar com a atividade e o emprego.</li>
+                    <li><b>Despesas:</b> a maior parte é definida em lei e orçamento e muda pouco com o ciclo no curto prazo; algumas, como o seguro-desemprego, reagem ao emprego.</li>
+                    <li><b>Dívida / PIB:</b> a razão também depende do denominador: o PIB nominal maior reduz a razão mesmo com a dívida igual.</li></ul>`)}
+            ${cartao(`<p class="font-bold">Do resultado fiscal à dívida</p>
+                <p class="mt-2 text-slate-600 dark:text-slate-300">Resultado primário + juros = resultado nominal (necessidade de financiamento), que ajuda a explicar a variação do estoque da dívida.
+                Veja o detalhe de emissões, resgates e vencimentos em <a class="underline text-brand-700 dark:text-brand-400" href="financiamento.html">Dívida e títulos</a>.</p>
+                <p class="mt-2 text-xs text-slate-500">Os indicadores mostram relações e magnitudes; não indicam, por si só, qual política adotar.</p>`)}
+        </div>`;
+}
+function graficoFiscal() {
+    const s = D.relacao_fiscal.series;
+    const base = (s.primario12 || s.nominal12 || { pontos: [] }).pontos.map((p) => p.data);
+    if (!base.length) return;
+    const deslocar = (iso) => { const [a, m] = iso.split('-').map(Number); const t = a * 12 + (m - 1) + 2; return `${Math.floor(t / 12)}-${String(t % 12 + 1).padStart(2, '0')}-01`; };
+    const pibMap = new Map(D.indicadores.pib_yoy.pontos.map((p) => [deslocar(p.data), p.valor]));
+    const ds = [{ type: 'bar', label: 'PIB, contra o mesmo trimestre do ano anterior (%)', data: base.map((d) => (pibMap.has(d) ? pibMap.get(d) : null)), backgroundColor: 'rgba(2,132,199,.55)', yAxisID: 'y' }];
+    const linhas = [['primario12', CORES[1]], ['nominal12', CORES[3]]];
+    for (const [k, cor] of linhas) if (s[k]) {
+        const m = new Map(s[k].pontos.map((p) => [p.data, p.valor]));
+        ds.push({ type: 'line', label: s[k].nome, data: base.map((d) => (m.has(d) ? m.get(d) : null)), borderColor: cor, backgroundColor: cor, borderWidth: 2, pointRadius: 0, spanGaps: true, yAxisID: 'y' });
+    }
+    desenharGrafico('gFiscal', { data: { labels: base, datasets: ds }, options: { interaction: { mode: 'index', intersect: false },
+        scales: { x: { ticks: { maxTicksLimit: 10, callback(v) { const d = this.getLabelForValue(v); return d ? fmtMes(d) : ''; } } }, y: { title: { display: true, text: '%' } } } } });
+}
+
+/* ---------- 5. estabilizadores automáticos ---------- */
+function blocoEstabilizadores() {
+    const cp = D.contas_publicas;
+    const serie = cp.disponivel ? `<div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 mt-4">
+        <h3 class="font-bold text-sm">Exemplo observado: arrecadação da Receita Federal e abono/seguro-desemprego (R$ milhões por mês) × desocupação (%)</h3>
+        <div class="grafico"><canvas id="gEstab" role="img" aria-label="Arrecadação, seguro-desemprego e desocupação"></canvas></div>
+        <p class="text-[11px] text-slate-400">Valores correntes (não deflacionados). A série é só uma ilustração de itens que costumam acompanhar o ciclo; não isola o efeito do ciclo dos efeitos de regras e decisões.</p></div>` : '';
+    return `<div class="grid md:grid-cols-2 gap-4 text-sm">
+        ${cartao(`<p class="font-bold">O que são${gl('ESTABILIZADOR_AUTOMATICO')}</p>
+            <p class="mt-2 text-slate-600 dark:text-slate-300">São mecanismos pelos quais a arrecadação e certas despesas variam com a atividade econômica <b>mesmo sem nova decisão do governo</b>, porque estão ligados a regras já existentes.</p>`)}
+        ${cartao(`<p class="font-bold">Como funcionam</p>
+            <ul class="mt-2 list-disc pl-5 space-y-1 text-slate-600 dark:text-slate-300">
+                <li><b>Na expansão:</b> renda, emprego e consumo sobem, a arrecadação cresce e despesas como o seguro-desemprego tendem a cair.</li>
+                <li><b>Na desaceleração:</b> o movimento se inverte, e as contas públicas amortecem parte da queda da renda das famílias.</li></ul>`)}
+        ${cartao(`<p class="font-bold">Efeito sobre o resultado fiscal</p>
+            <p class="mt-2 text-slate-600 dark:text-slate-300">Parte do déficit (ou do superávit) de um período é <b>cíclica</b> — resulta do estágio do ciclo — e parte é <b>estrutural</b>. Separar as duas exige estimar o PIB potencial, que não é observado diretamente; por isso esta página não calcula esse resultado.</p>`)}
+        ${cartao(`<p class="font-bold">O que isso não diz</p>
+            <p class="mt-2 text-slate-600 dark:text-slate-300">Déficit não implica automaticamente corte de gastos, e queda da atividade não implica aumento automático de despesas. A resposta depende de objetivos, custos, prazos e da composição das medidas — decisões que ficam fora de um painel de indicadores.</p>`)}
+    </div>${serie}`;
+}
+function graficoEstab() {
+    const cp = D.contas_publicas; if (!cp.disponivel) return;
+    const sm = cp.serie_mensal.slice(-60);
+    const des = new Map(D.indicadores.desocupacao.pontos.map((p) => [p.data.slice(0, 7), p.valor]));
+    desenharGrafico('gEstab', { data: { labels: sm.map((x) => x.mes), datasets: [
+        { type: 'bar', label: 'Abono e seguro-desemprego (R$ milhões)', data: sm.map((x) => x.abono_seguro), backgroundColor: 'rgba(217,119,6,.65)', yAxisID: 'y' },
+        { type: 'line', label: 'Receita administrada pela RFB (R$ milhões)', data: sm.map((x) => x.receita_rfb), borderColor: CORES[0], pointRadius: 0, borderWidth: 2, yAxisID: 'y' },
+        { type: 'line', label: 'Taxa de desocupação (%)', data: sm.map((x) => (des.has(x.mes) ? des.get(x.mes) : null)), borderColor: CORES[1], pointRadius: 0, borderWidth: 2, yAxisID: 'y1', spanGaps: true }] },
+        options: { interaction: { mode: 'index', intersect: false }, scales: { x: { ticks: { maxTicksLimit: 10, callback(v) { return fmtMes(this.getLabelForValue(v)); } } },
+            y: { title: { display: true, text: 'R$ milhões' } }, y1: { position: 'right', grid: { drawOnChartArea: false }, title: { display: true, text: '% desocupação' } } } } });
+}
+
+/* ---------- composição da página ---------- */
+function desenhar() {
+    $('consulta').textContent = `Consultado em ${fmtDataHora(D.consultado_em)}. Cada indicador traz seu próprio período de referência.`;
+    $('modulo').innerHTML = [
+        blocoCartoes(),
+        secao('h-contexto', '1', 'Painel de contexto: expansão, desaceleração ou possível contração',
+            'Organiza os sinais por três critérios — disseminação, duração e intensidade — sem usar um único indicador nem uma regra automática de recessão.' + gl('CICLO_ECONOMICO'), blocoContexto()),
+        secao('h-hist', '2', 'Séries históricas e variações', 'Selecione indicadores e compare. Dados dessazonalizados quando indicado.' + gl('AJUSTE_SAZONAL'), blocoGraficos()),
+        secao('h-fiscal', '3', 'Relação com as contas públicas', 'Atividade, arrecadação, despesas, resultado primário e nominal, necessidade de financiamento e dívida.', blocoFiscal()),
+        secao('h-estab', '4', 'Estabilizadores automáticos', 'Por que as contas públicas se movem com o ciclo mesmo sem novas decisões.', blocoEstabilizadores()),
+        `<section class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 text-sm"><h2 class="text-lg font-bold">Periodicidade, revisões e limites</h2>
+            <ul class="mt-2 list-disc pl-5 space-y-1 text-slate-600 dark:text-slate-400">
+                <li>${esc(D.revisoes)}</li>
+                <li>O IBC-Br é uma aproximação mensal do PIB feita pelo Banco Central; difere do PIB oficial do IBGE.</li>
+                <li>Variações mensais do IBC-Br são cálculo nosso sobre a série dessazonalizada do Banco Central.</li>
+                <li>Contas públicas: Governo Central (Tesouro) na tabela; setor público consolidado (Banco Central) no gráfico. São universos diferentes.</li>
+                <li>A leitura do ciclo é interpretativa e usa limiares convencionados por nós; a datação oficial de recessões no Brasil é do CODACE/FGV IBRE.</li>
+            </ul></section>`,
+    ].join('');
+    $('modulo').classList.remove('hidden');
+    atualizarHistorico(); graficoFiscal(); graficoEstab();
+}
+
+$('modulo').addEventListener('change', (ev) => {
+    const k = ev.target.dataset?.ind; if (!k) return;
+    E.ind = ev.target.checked ? [...E.ind, k] : E.ind.filter((x) => x !== k);
+    atualizarHistorico();
+});
+$('modulo').addEventListener('click', (ev) => {
+    const b = ev.target.closest('[data-anos]'); if (!b) return;
+    const a = Number(b.dataset.anos);
+    if (!a) E.ini = ''; else { const d = new Date(); d.setFullYear(d.getFullYear() - a); E.ini = d.toISOString().slice(0, 10); }
+    atualizarHistorico();
+});
+
+(async function iniciar() {
+    $('estado').innerHTML = '<p class="text-sm text-slate-500" aria-live="polite"><i class="fa-solid fa-spinner fa-spin mr-1.5" aria-hidden="true"></i>Consultando IBGE, Banco Central e Tesouro Nacional (a primeira consulta pode levar cerca de um minuto)…</p>';
+    await carregarGlossario();
+    try {
+        D = await api('/api/macro/ciclo');
+        $('estado').innerHTML = '';
+        const d = new Date(); d.setFullYear(d.getFullYear() - 5); E.ini = d.toISOString().slice(0, 10);
+        desenhar();
+        document.getElementById('btnTema')?.addEventListener('click', () => setTimeout(() => { atualizarHistorico(); graficoFiscal(); graficoEstab(); }, 50));
+    } catch (e) { $('estado').innerHTML = mensagemErro(e); }
+})();
+</script>
+</body>
+</html>

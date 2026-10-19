@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eleições: planos de governo — ImpactoCidadão</title>
+    <meta name="description" content="Planos de governo dos candidatos à Presidência, comparados tema a tema, com o trecho original de cada proposta.">
+
+    <!-- Tailwind via CDN: ótimo para desenvolvimento. Em produção, compile o CSS (tailwindcss CLI). -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="assets/tailwind-config.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Inter', system-ui, sans-serif; }
+        details > summary { list-style: none; cursor: pointer; }
+        details > summary::-webkit-details-marker { display: none; }
+        details[open] > summary .chev { transform: rotate(180deg); }
+        .chev { transition: transform .15s ease; }
+        .scroll-x { scrollbar-width: thin; }
+        :focus-visible { outline: 2px solid #A92823; outline-offset: 2px; }
+    </style>
+    <link rel="stylesheet" href="assets/brutalista.css">
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-full flex flex-col transition-colors duration-200">
+
+<a href="#conteudo" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-white focus:text-slate-900 focus:p-3">Ir para o conteúdo</a>
+
+<div id="cabecalho"></div>
+
+<main id="conteudo" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-10 flex-grow w-full space-y-6">
+    <h1 class="text-2xl font-extrabold tracking-tight">Eleições: planos de governo</h1>
+    <div id="barraContexto"></div>
+
+    <!-- ========================= PLANOS DE GOVERNO ========================= -->
+    <section id="candidatos" class="scroll-mt-20" aria-labelledby="tCandidatos">
+        <div class="mb-5">
+            <h2 id="tCandidatos" class="text-2xl font-bold text-slate-900 dark:text-white flex items-center">
+                <i class="fa-solid fa-flag text-brand-600 mr-2.5" aria-hidden="true"></i>Planos de governo para a Presidência
+            </h2>
+            <p class="text-sm text-slate-600 dark:text-slate-400 mt-1">Mesma pergunta, para todos, no mesmo formato e em ordem alfabética. Cada proposta traz o trecho original e a página do documento registrado no TSE.</p>
+        </div>
+
+        <div class="rounded-xl border border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 text-xs p-3.5 flex items-start space-x-2.5 mb-5" role="note">
+            <i class="fa-solid fa-triangle-exclamation mt-0.5" aria-hidden="true"></i>
+            <p><b>Isto é informação, não recomendação de voto.</b> Quando existe resumo, ele é gerado por inteligência artificial a partir do plano oficial e conferido automaticamente contra o PDF, mas pode conter imprecisões. A busca por palavra mostra apenas trechos literais, sem interpretação. Confira sempre o trecho original. O que um plano promete não é garantia de execução: depende do Congresso, do orçamento e, muitas vezes, de estados e prefeituras.</p>
+        </div>
+
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 mb-5">
+            <div id="temaChips" class="flex gap-2 overflow-x-auto scroll-x pb-1" role="radiogroup" aria-label="Tema"></div>
+            <label class="inline-flex items-center space-x-2 text-sm shrink-0 cursor-pointer">
+                <input id="chkTurno2" type="checkbox" class="rounded border-slate-300 text-brand-600 focus:ring-brand-500">
+                <span>Somente candidatos no <b>2º turno</b></span>
+            </label>
+        </div>
+
+        <form id="formBuscaPlano" class="flex gap-2 mb-5" role="search">
+            <div class="relative flex-grow">
+                <label for="buscaPlano" class="sr-only">Buscar nos planos de governo</label>
+                <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-slate-400 text-xs" aria-hidden="true"></i>
+                <input id="buscaPlano" type="search" maxlength="100" autocomplete="off"
+                       placeholder="Buscar nos planos por palavra: creche, aposentadoria, SUS…"
+                       class="w-full pl-9 pr-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+            </div>
+            <button type="submit" class="px-4 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold">Buscar</button>
+        </form>
+
+        <div id="candidatosGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5" aria-live="polite"></div>
+    </section>
+
+</main>
+
+<div id="rodape"></div>
+
+<script src="assets/comum.js"></script>
+<script>
+renderLayout('planos');
+let contexto = null;   // barra de contexto compartilhada (perfil e cidade)
+
+/* ---------- estado ---------- */
+const prefs = ler('ic_prefs', {});
+const S = {
+    perfil: prefs.perfil || '', municipio: prefs.municipio || null, tema: prefs.tema || 'saude',
+    turno2: prefs.turno2 !== undefined ? prefs.turno2 : true,
+    buscaPlano: '', categoria: 'all', status: 'all', q: '', ordem: 'recentes', pagina: 1, total: 0, itens: [],
+    perfis: [], categorias: [], statusLista: [], candidatosResumo: {},
+};
+const salvarPrefs = () => salvarPrefsParciais({ tema: S.tema, turno2: S.turno2 });
+
+const CANAIS = {
+    beneficio_direto: ['Pago direto à pessoa', 'fa-hand-holding-dollar'],
+    programa_via_municipio: ['Executado pela prefeitura', 'fa-city'],
+    repasse_a_municipios: ['Repasse aos municípios', 'fa-money-bill-transfer'],
+    regulacao_nacional: ['Regra nacional', 'fa-scale-balanced'],
+    investimento_federal_direto: ['Obra ou serviço federal', 'fa-building-columns'],
+    nao_especificado: ['Execução não detalhada', 'fa-circle-question'],
+};
+const STATUS_PLANO = {
+    aguardando_pdf: 'O arquivo do plano ainda não pôde ser obtido; a análise está pendente.',
+    sem_texto: 'O PDF do plano é uma imagem sem texto selecionável; a análise automática está pendente.',
+    texto_longo: 'O plano é muito extenso e a análise automática está pendente.',
+    pendente: 'A análise deste plano ainda não foi executada.',
+    falha: 'A análise automática deste plano falhou e será refeita.',
+    sem_plano: 'Nenhum plano de governo foi encontrado no registro da candidatura.',
+};
+const RELEVANCIA = { alta: ['Impacto alto no bolso', 'bg-rose-100 text-rose-800 dark:bg-rose-950/70 dark:text-rose-300'],
+                     media: ['Impacto médio', 'bg-amber-100 text-amber-800 dark:bg-amber-950/70 dark:text-amber-300'],
+                     baixa: ['Impacto baixo', 'bg-sky-100 text-sky-800 dark:bg-sky-950/70 dark:text-sky-300'],
+                     nenhuma: ['Sem efeito direto', 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300'] };
+
+
+
+/* ====================================================================== *
+ *  Planos de governo
+ * ====================================================================== */
+function renderTemaChips() {
+    $('temaChips').innerHTML = S.categorias.map((c) => {
+        const ativo = c.id === S.tema;
+        return `<button type="button" role="radio" aria-checked="${ativo}" data-tema="${esc(c.id)}"
+            class="shrink-0 inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-full text-xs font-semibold border transition ${ativo
+            ? 'bg-brand-600 border-brand-600 text-white'
+            : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-brand-400'}">
+            <i class="fa-solid ${esc(c.icone)}" aria-hidden="true"></i><span>${esc(c.nome)}</span></button>`;
+    }).join('');
+}
+$('temaChips').addEventListener('click', (ev) => {
+    const b = ev.target.closest('[data-tema]');
+    if (!b) return;
+    S.tema = b.dataset.tema; salvarPrefs(); renderTemaChips(); carregarCandidatos();
+});
+$('chkTurno2').addEventListener('change', (ev) => { S.turno2 = ev.target.checked; salvarPrefs(); carregarCandidatos(); });
+
+const chip = (ok, texto) => `<span class="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full text-[11px] font-medium ${ok
+    ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
+    : 'bg-slate-100 text-slate-500 dark:bg-slate-700/60 dark:text-slate-400'}"><i class="fa-solid ${ok ? 'fa-check' : 'fa-minus'} text-[9px]" aria-hidden="true"></i><span>${texto}</span></span>`;
+
+function cartaoProposta(p) {
+    const [rotuloCanal, iconeCanal] = CANAIS[p.canal] || CANAIS.nao_especificado;
+    return `<li class="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-900/50 p-3.5">
+        <p class="text-sm font-medium leading-snug">${esc(p.descricao)}</p>
+        <div class="flex flex-wrap gap-1.5 mt-2.5">
+            ${chip(p.especifica.meta_numerica, 'meta numérica')}${chip(p.especifica.prazo, 'prazo')}${chip(p.especifica.fonte_de_recurso, 'fonte de recursos')}
+            <span class="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-sky-100 text-sky-800 dark:bg-sky-950/60 dark:text-sky-300">
+                <i class="fa-solid ${iconeCanal} text-[9px]" aria-hidden="true"></i><span>${esc(rotuloCanal)}</span></span>
+        </div>
+        ${p.como_chega_na_cidade ? `<p class="mt-2.5 text-xs leading-relaxed text-teal-900 dark:text-teal-200 bg-teal-50 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-900 rounded-lg p-2.5">
+            <i class="fa-solid fa-location-dot mr-1" aria-hidden="true"></i><b>Na sua cidade:</b> ${esc(p.como_chega_na_cidade)}</p>` : ''}
+        <details class="mt-2.5 text-xs">
+            <summary class="text-brand-700 dark:text-brand-400 font-semibold inline-flex items-center space-x-1">
+                <span>Ver trecho original${p.pagina ? ` (p. ${esc(p.pagina)})` : ''}</span><i class="fa-solid fa-chevron-down text-[9px] chev" aria-hidden="true"></i></summary>
+            <blockquote class="mt-2 pl-3 border-l-2 border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-400 italic">“${esc(p.trecho_literal)}”</blockquote>
+        </details>
+    </li>`;
+}
+
+/* Trechos literais (busca por palavra-chave, sem IA). Os ⟦marcadores⟧ vêm do servidor; o texto é escapado antes. */
+function marcar(txt) {
+    const limpo = esc(String(txt).replace(/\s+/g, ' ').trim());
+    return limpo.replace(/⟦/g, '<mark class="bg-amber-200 dark:bg-amber-500/40 text-inherit rounded px-0.5">').replace(/⟧/g, '</mark>');
+}
+function trechosHtml(b, pdf) {
+    if (!b) return '';
+    if (!b.texto_disponivel) return '<p class="text-xs text-slate-500">O texto deste plano ainda não foi carregado.</p>';
+    if (!b.trechos.length) return '<p class="text-sm text-slate-600 dark:text-slate-400">Nenhum trecho encontrado para esta busca neste plano.</p>';
+    return `<ul class="space-y-3">${b.trechos.map((t) => `<li class="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-900/50 p-3.5">
+            <p class="text-sm leading-relaxed text-slate-700 dark:text-slate-300">“… ${marcar(t.trecho)} …”</p>
+            <p class="mt-1.5 text-[11px] text-slate-500">página ${esc(t.pagina)}${pdf ? ` · <a class="text-brand-700 dark:text-brand-400 hover:underline" target="_blank" rel="noopener" href="${esc(urlSegura(pdf))}#page=${esc(t.pagina)}">abrir no PDF</a>` : ''}</p></li>`).join('')}</ul>`;
+}
+
+function cartaoCandidato(c, b, modo) {
+    const seg = (c.totalizacao || '').toLowerCase().startsWith('2');
+    const r = S.candidatosResumo[c.sq_candidato];
+    const plano = r ? r.plano : null;
+    const pdf = c.url_pdf || (plano && plano.url_pdf);
+    let corpo;
+    if (modo === 'palavra') {
+        corpo = trechosHtml(b, pdf) || '<p class="text-xs text-slate-500">Busca indisponível.</p>';
+    } else if (c.plano_status !== 'ok') {
+        const aviso = b && b.texto_disponivel
+            ? `<p class="text-[11px] text-slate-500 mb-3"><i class="fa-solid fa-info-circle mr-1" aria-hidden="true"></i>${esc(STATUS_PLANO[c.plano_status] || 'Análise indisponível.')} Abaixo, os trechos do plano que mencionam este tema (busca por palavras-chave, sem interpretação).</p>`
+            : `<p class="text-sm text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-900/60 rounded-xl p-3.5"><i class="fa-solid fa-hourglass-half mr-1.5" aria-hidden="true"></i>${esc(STATUS_PLANO[c.plano_status] || 'Análise indisponível.')} Use a caixa de busca para procurar uma palavra no plano.</p>`;
+        corpo = aviso + (b && b.texto_disponivel ? trechosHtml(b, pdf) : '');
+    } else if (!c.mencionado) {
+        corpo = `<p class="text-sm text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-900/60 rounded-xl p-3.5">
+            <i class="fa-solid fa-circle-minus mr-1.5" aria-hidden="true"></i>Nenhuma proposta sobre este tema foi identificada na análise automática. Confira o documento original.</p>`;
+    } else {
+        corpo = `${c.resumo ? `<p class="text-sm text-slate-700 dark:text-slate-300 leading-relaxed mb-3">${esc(c.resumo)}</p>` : ''}
+            ${c.propostas.length ? `<ul class="space-y-3">${c.propostas.map(cartaoProposta).join('')}</ul>` : ''}
+            ${c.propostas_ocultas_pelo_perfil ? `<p class="mt-3 text-xs text-slate-500"><i class="fa-solid fa-eye-slash mr-1" aria-hidden="true"></i>${c.propostas_ocultas_pelo_perfil} proposta(s) deste tema não são específicas para o perfil escolhido. <button type="button" class="underline" data-acao="todos-perfis">Ver todas</button></p>` : ''}`;
+    }
+    const estat = plano && plano.status === 'ok'
+        ? `<p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">${plano.propostas} propostas identificadas no plano · ${plano.com_meta_numerica} com meta numérica · ${plano.com_prazo} com prazo · ${plano.com_fonte_de_recurso} com fonte de recursos</p>` : '';
+    return `<article class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-sm p-5 flex flex-col">
+        <header class="pb-3 mb-3 border-b border-slate-100 dark:border-slate-700/60">
+            <div class="flex items-start justify-between gap-2">
+                <div>
+                    <h3 class="text-lg font-bold leading-tight">${esc(c.nome)}</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">${esc(c.partido || '')} · nº ${esc(c.numero ?? '—')}${c.vice ? ` · vice: ${esc(c.vice)}` : ''}</p>
+                </div>
+                ${seg ? '<span class="shrink-0 text-[10px] font-bold uppercase tracking-wide px-2 py-1 rounded-full bg-brand-100 text-brand-800 dark:bg-brand-950 dark:text-brand-300">2º turno</span>' : ''}
+            </div>
+            ${estat}
+        </header>
+        <div class="flex-grow">${corpo}</div>
+        ${pdf ? `<footer class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-700/60 text-xs">
+            <a href="${esc(urlSegura(pdf))}" target="_blank" rel="noopener" class="text-brand-700 dark:text-brand-400 font-semibold hover:underline">
+                <i class="fa-solid fa-file-pdf mr-1" aria-hidden="true"></i>Ler o plano completo (TSE)<i class="fa-solid fa-arrow-up-right-from-square text-[9px] ml-1" aria-hidden="true"></i></a></footer>` : ''}
+    </article>`;
+}
+
+let reqCandidatos = 0;
+async function carregarCandidatos() {
+    const grade = $('candidatosGrid');
+    const minha = ++reqCandidatos;
+    grade.innerHTML = '<p class="text-sm text-slate-500 col-span-full"><i class="fa-solid fa-spinner fa-spin mr-2" aria-hidden="true"></i>Carregando planos…</p>';
+    const modo = S.buscaPlano ? 'palavra' : 'tema';
+    const params = new URLSearchParams({ categoria: S.tema, turno2: S.turno2 });
+    if (S.perfil) params.set('perfil', S.perfil);
+    if (S.municipio) params.set('municipio', S.municipio.codigo);
+    const pBusca = new URLSearchParams({ turno2: S.turno2 });
+    if (modo === 'palavra') pBusca.set('q', S.buscaPlano); else pBusca.set('categoria', S.tema);
+    try {
+        const [cmp, resumo, busca] = await Promise.all([
+            modo === 'tema' ? api('/api/candidatos/comparar?' + params) : Promise.resolve(null),
+            api('/api/candidatos?turno2=' + S.turno2),
+            // "Outros temas" não tem termos padrão de busca: só a busca por palavra se aplica.
+            (modo === 'tema' && S.tema === 'outros') ? Promise.resolve(null)
+                : api('/api/candidatos/buscar?' + pBusca).catch((e) => (modo === 'palavra' ? { erro: e } : null)),
+        ]);
+        if (minha !== reqCandidatos) return; // resposta antiga
+        S.candidatosResumo = Object.fromEntries(resumo.itens.map((i) => [i.sq_candidato, i]));
+        if (busca && busca.erro) throw busca.erro;
+        const buscaPorSq = Object.fromEntries(((busca && busca.candidatos) || []).map((x) => [x.sq_candidato, x]));
+        const lista = modo === 'tema' ? cmp.candidatos : ((busca && busca.candidatos) || []).map((x) => ({
+            sq_candidato: x.sq_candidato, nome: x.nome, numero: x.numero, partido: x.partido, totalizacao: x.totalizacao,
+            vice: x.vice, plano_status: x.plano_status, url_pdf: x.url_pdf }));
+        if (!lista.length) {
+            grade.innerHTML = '<p class="text-sm text-slate-500 col-span-full">Nenhum candidato encontrado. Rode o coletor de candidatos (veja o README).</p>';
+            return;
+        }
+        const dicaCidade = (S.municipio || modo === 'palavra') ? '' : `<p class="col-span-full text-xs text-slate-500 dark:text-slate-400"><i class="fa-solid fa-location-dot mr-1" aria-hidden="true"></i>Escolha sua cidade no topo para ver como cada proposta chegaria até você (disponível nos planos já analisados).</p>`;
+        const cabecalhoBusca = modo === 'palavra'
+            ? `<div class="col-span-full text-xs text-slate-600 dark:text-slate-400"><p><b>Resultados para “${esc(S.buscaPlano)}”.</b> ${esc((busca && busca.aviso) || '')}</p>
+               <button type="button" class="mt-1 underline text-brand-700 dark:text-brand-400" data-acao="limpar-busca">Limpar busca</button></div>` : '';
+        grade.innerHTML = cabecalhoBusca + dicaCidade + lista.map((c) => cartaoCandidato(c, buscaPorSq[c.sq_candidato], modo)).join('');
+        if (resumo.atualizado_em) {
+            grade.insertAdjacentHTML('beforeend', `<p class="col-span-full text-[11px] text-slate-400 dark:text-slate-500"><i class="fa-solid fa-rotate mr-1" aria-hidden="true"></i>Planos lidos do TSE em ${esc(fmtDataHora(resumo.atualizado_em))}.</p>`);
+        }
+        if (cmp && cmp.municipio && cmp.municipio.populacao) {
+            const pop = cmp.municipio.populacao;
+            grade.insertAdjacentHTML('afterbegin', `<p class="col-span-full text-xs text-slate-500 dark:text-slate-400"><i class="fa-solid fa-city mr-1" aria-hidden="true"></i>${esc(cmp.municipio.nome)}/${esc(cmp.municipio.uf)} — ${esc(cmp.municipio.regiao)} · ${pop.valor.toLocaleString('pt-BR')} habitantes (estimativa IBGE ${esc(pop.ano)}).</p>`);
+        }
+    } catch (e) { if (minha === reqCandidatos) grade.innerHTML = `<div class="col-span-full">${mensagemErro(e)}</div>`; }
+}
+$('candidatosGrid').addEventListener('click', (ev) => {
+    if (ev.target.closest('[data-acao="todos-perfis"]') && contexto) contexto.definirPerfil('');
+    if (ev.target.closest('[data-acao="limpar-busca"]')) { S.buscaPlano = ''; $('buscaPlano').value = ''; carregarCandidatos(); }
+});
+$('formBuscaPlano').addEventListener('submit', (ev) => {
+    ev.preventDefault();
+    S.buscaPlano = $('buscaPlano').value.trim();
+    carregarCandidatos();
+});
+$('buscaPlano').addEventListener('search', () => { // clicar no "x" do campo
+    if (!$('buscaPlano').value.trim() && S.buscaPlano) { S.buscaPlano = ''; carregarCandidatos(); }
+});
+
+
+/* ====================================================================== *
+ *  Inicialização
+ * ====================================================================== */
+async function iniciar() {
+    $('chkTurno2').checked = S.turno2;
+    try {
+        const [categorias, statusLista] = await Promise.all([api('/api/categorias'), api('/api/status')]);
+        S.categorias = categorias; S.statusLista = statusLista;
+        if (!categorias.some((c) => c.id === S.tema)) S.tema = categorias[0].id;
+    } catch (e) {
+        $('candidatosGrid').innerHTML = `<div class="col-span-full">${mensagemErro(e)}</div>`;
+        return;
+    }
+    contexto = await montarBarraContexto('barraContexto', (c) => { S.perfil = c.perfil; S.municipio = c.municipio; carregarCandidatos(); });
+    if (contexto) { S.perfil = contexto.perfil; S.municipio = contexto.municipio; }
+    renderTemaChips();
+    carregarCandidatos();
+}
+iniciar();
+</script>
+</body>
+</html>

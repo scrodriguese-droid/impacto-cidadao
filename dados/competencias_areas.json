@@ -1,0 +1,217 @@
+[
+  {
+    "id": "saude",
+    "titulo": "Saúde e medicamentos",
+    "resumo": "Postos, UPAs, hospitais, remédios e vacinas.",
+    "mapa": "saude",
+    "entes": {
+      "Municipal": [
+        "Postos de saúde (UBS) e Saúde da Família",
+        "UPA 24h (cofinanciada pelas três esferas)",
+        "Vacinação e combate à dengue",
+        "Remédios básicos da lista municipal",
+        "CAPS e saúde mental na rede local"
+      ],
+      "Estadual": [
+        "Hospitais regionais e de referência",
+        "Ambulatórios de especialidade e exames de média e alta complexidade",
+        "Remédios de alto custo (componente especializado, com apoio da União)",
+        "Vigilância sanitária e epidemiológica estadual"
+      ],
+      "Federal": [
+        "Financiamento e regras nacionais do SUS (Ministério da Saúde)",
+        "Farmácia Popular",
+        "Compra e distribuição das vacinas do calendário nacional",
+        "Registro e fiscalização de medicamentos (Anvisa)",
+        "Coordenação do Sistema Nacional de Transplantes"
+      ]
+    },
+    "poderes": {
+      "Executivo": "Prefeitura, Governo do Estado e Ministério da Saúde gerem postos, hospitais e programas. Municípios devem aplicar em saúde no mínimo 15% da receita de impostos e transferências; Estados, 12%.",
+      "Legislativo": "Câmara Municipal, Assembleia Legislativa e Congresso votam o orçamento da saúde e fiscalizam. Vereadores podem cobrar falta de remédio e fila de espera.",
+      "Judiciário": "A Justiça pode obrigar o poder público a fornecer remédio, exame ou leito quando há omissão. Ministério Público e Defensoria Pública atuam em nome do cidadão."
+    },
+    "base": "Constituição Federal, arts. 196 a 198; Lei Complementar 141/2012; Lei 8.080/1990.",
+    "itens": [
+      "saude_basica",
+      "saude_especializada",
+      "medicamentos",
+      "saude_mental"
+    ]
+  },
+  {
+    "id": "educacao",
+    "titulo": "Educação e creches",
+    "resumo": "Creches, ensino fundamental e médio, escola técnica e universidade.",
+    "mapa": "educacao",
+    "entes": {
+      "Municipal": [
+        "Creches (0 a 3 anos) e pré-escola (4 e 5 anos)",
+        "Ensino fundamental, prioritariamente",
+        "Merenda e transporte escolar da rede municipal"
+      ],
+      "Estadual": [
+        "Ensino médio",
+        "Ensino fundamental, em parte das redes",
+        "Escolas técnicas e universidades estaduais"
+      ],
+      "Federal": [
+        "Universidades e institutos federais",
+        "Complementação do Fundeb e programas de merenda, livro e transporte escolar",
+        "Regras nacionais: LDB, Base Nacional Comum Curricular e Enem"
+      ]
+    },
+    "poderes": {
+      "Executivo": "Secretarias de Educação e Ministério da Educação administram as redes. Municípios e Estados devem aplicar no mínimo 25% da receita de impostos em educação.",
+      "Legislativo": "Câmaras, Assembleias e Congresso aprovam os planos de educação e o orçamento da área e fiscalizam a aplicação do mínimo constitucional.",
+      "Judiciário": "O STF decidiu que o poder público deve garantir vaga em creche e pré-escola, e a família pode exigi-la na Justiça (Tema 548)."
+    },
+    "base": "Constituição Federal, arts. 205 a 214; Lei 9.394/1996 (LDB); STF, RE 1.008.166 (Tema 548).",
+    "itens": [
+      "educacao_infantil",
+      "educacao_fundamental",
+      "educacao_medio",
+      "educacao_tecnica_superior"
+    ]
+  },
+  {
+    "id": "seguranca",
+    "titulo": "Segurança e justiça",
+    "resumo": "Guarda, polícias, delegacias, documentos, Defensoria e tribunais.",
+    "mapa": "seguranca",
+    "entes": {
+      "Municipal": [
+        "Guarda Municipal: proteção de praças, escolas e prédios públicos",
+        "Iluminação pública e ordenamento urbano que previnem crimes"
+      ],
+      "Estadual": [
+        "Polícia Militar: policiamento ostensivo e telefone 190",
+        "Polícia Civil: investigação, delegacias e emissão de RG",
+        "Corpo de Bombeiros (193)",
+        "Sistema prisional estadual"
+      ],
+      "Federal": [
+        "Polícia Federal: crimes federais, fronteiras e passaporte",
+        "Polícia Rodoviária Federal: rodovias federais",
+        "Sistema prisional federal",
+        "Leis penais e processuais: só a União legisla sobre elas"
+      ]
+    },
+    "poderes": {
+      "Executivo": "Governos estaduais comandam as polícias e o sistema prisional; prefeituras mantêm a Guarda Municipal; a União cuida da Polícia Federal e da Rodoviária Federal.",
+      "Legislativo": "O Congresso faz as leis penais. Assembleias e Câmaras votam o orçamento da segurança e fiscalizam a atuação dos órgãos.",
+      "Judiciário": "Os tribunais julgam os crimes e os processos. O Ministério Público faz o controle externo da atividade policial, e a Defensoria Pública assiste quem não pode pagar advogado."
+    },
+    "base": "Constituição Federal, arts. 22, I; 129, VII; 134; 144.",
+    "itens": [
+      "seguranca_estadual",
+      "guarda_municipal",
+      "justica_acesso",
+      "documentos"
+    ]
+  },
+  {
+    "id": "cidade",
+    "titulo": "Cidade, asfalto e transporte",
+    "resumo": "Buracos, iluminação, lixo, ônibus, água, esgoto e rodovias.",
+    "mapa": "outros",
+    "entes": {
+      "Municipal": [
+        "Tapa-buraco, asfalto e calçadas",
+        "Iluminação pública",
+        "Limpeza urbana e coleta de lixo",
+        "Ônibus urbano e trânsito do município",
+        "Água, esgoto e drenagem (serviço municipal, muitas vezes concedido)"
+      ],
+      "Estadual": [
+        "Rodovias estaduais e seus pedágios",
+        "Transporte intermunicipal (conforme o estado: ônibus, metrô e trens regionais)",
+        "Companhias estaduais de saneamento, em parte dos municípios"
+      ],
+      "Federal": [
+        "Rodovias federais, ferrovias, portos e aeroportos",
+        "Marco legal do saneamento e agências reguladoras (ANTT, ANTAQ, ANAC)",
+        "Repasses para obras (como o PAC)"
+      ]
+    },
+    "poderes": {
+      "Executivo": "A Prefeitura executa quase tudo o que se vê na rua; o Governo do Estado cuida das rodovias estaduais e a União, das federais.",
+      "Legislativo": "A Câmara Municipal aprova o plano diretor (obrigatório em cidades com mais de 20 mil habitantes) e o orçamento. Os Tribunais de Contas auxiliam o Legislativo na fiscalização dos contratos.",
+      "Judiciário": "Uma ação civil pública, proposta por exemplo pelo Ministério Público, pode obrigar o poder público a consertar ou a prestar um serviço essencial."
+    },
+    "base": "Constituição Federal, arts. 21, 30, V, 182; Lei 14.026/2020 (marco do saneamento).",
+    "itens": [
+      "infraestrutura_urbana",
+      "transporte_rodovias",
+      "saneamento"
+    ]
+  },
+  {
+    "id": "renda",
+    "titulo": "Emprego, renda e benefícios",
+    "resumo": "Bolsa Família, INSS, aposentadoria, seguro-desemprego e impostos.",
+    "mapa": "assistencia",
+    "entes": {
+      "Municipal": [
+        "CRAS e CREAS: porta de entrada da assistência social",
+        "Cadastro Único e atualização do Bolsa Família",
+        "Cestas básicas e benefícios eventuais"
+      ],
+      "Estadual": [
+        "Programas estaduais de renda e qualificação",
+        "Intermediação de mão de obra (Sine), em convênio com a União"
+      ],
+      "Federal": [
+        "INSS: aposentadoria, pensão, auxílio por incapacidade e BPC/LOAS",
+        "Bolsa Família: regras e pagamento",
+        "FGTS, seguro-desemprego e abono salarial",
+        "Salário mínimo, fixado em lei federal"
+      ]
+    },
+    "poderes": {
+      "Executivo": "Ministérios do Desenvolvimento Social, da Previdência e do Trabalho executam os benefícios; prefeituras fazem o atendimento e o cadastro das famílias.",
+      "Legislativo": "O Congresso aprova as leis trabalhistas e previdenciárias e o valor do salário mínimo, e vota o orçamento dos benefícios.",
+      "Judiciário": "Causas contra o INSS correm na Justiça Federal (Juizados Especiais Federais); conflitos entre empregado e empregador, na Justiça do Trabalho."
+    },
+    "base": "Constituição Federal, arts. 6º, 7º, 201 e 203 a 204.",
+    "itens": [
+      "assistencia_social",
+      "previdencia_trabalho",
+      "tributos"
+    ]
+  },
+  {
+    "id": "moradia",
+    "titulo": "Moradia e meio ambiente",
+    "resumo": "Casa própria, regularização do lote, poda de árvore, enchente e Defesa Civil.",
+    "mapa": "outros",
+    "entes": {
+      "Municipal": [
+        "Plano diretor, uso do solo e licença de obras",
+        "Regularização fundiária e aluguel social",
+        "Poda de árvores, praças e áreas verdes",
+        "Drenagem, enchentes e Defesa Civil municipal"
+      ],
+      "Estadual": [
+        "Programas habitacionais estaduais (companhias de habitação)",
+        "Licenciamento e fiscalização ambiental do Estado",
+        "Defesa Civil estadual e Corpo de Bombeiros"
+      ],
+      "Federal": [
+        "Minha Casa, Minha Vida: regras e financiamento (via Caixa)",
+        "Ibama, ICMBio e a legislação ambiental nacional",
+        "Defesa Civil nacional e recursos para desastres"
+      ]
+    },
+    "poderes": {
+      "Executivo": "A Prefeitura cadastra famílias, regulariza lotes e cuida do verde; Estado e União financiam programas e apoiam em desastres.",
+      "Legislativo": "A Câmara Municipal aprova o plano diretor e a lei de zoneamento, que decidem o que pode ser construído e onde.",
+      "Judiciário": "O Ministério Público e a Justiça atuam em ações civis públicas ambientais e urbanísticas, e podem exigir a reparação de danos."
+    },
+    "base": "Constituição Federal, arts. 23, VI e IX; 182; 225; Lei Complementar 140/2011; Lei 12.608/2012.",
+    "itens": [
+      "moradia_programas",
+      "meio_ambiente_urbano"
+    ]
+  }
+]

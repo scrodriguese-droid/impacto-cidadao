@@ -1,0 +1,1550 @@
+{
+  "servicos": [
+    {
+      "slug": "ubs-saude-da-familia",
+      "area": "saude",
+      "nome": "Posto de saúde (UBS) e Saúde da Família",
+      "resumo": "Porta de entrada do SUS: consulta com médico de família, enfermagem e dentista, vacina, curativo, pré-natal e acompanhamento de doenças crônicas, perto de casa.",
+      "entes": {
+        "Municipal": "Constrói, equipa e administra as UBS, contrata as equipes e organiza o território de cada equipe de Saúde da Família.",
+        "Estadual": "Apoia com recursos, capacitação e coordenação regional. Não administra a UBS.",
+        "Federal": "Define as regras nacionais da Atenção Primária e repassa recursos ao município pelo Fundo Nacional de Saúde."
+      },
+      "financiamento": "O maior peso vem do próprio município, que deve aplicar no mínimo 15% da sua receita de impostos e transferências em saúde, somado aos repasses do Fundo Nacional de Saúde.",
+      "como_acessar": [
+        "Vá à UBS do seu bairro com documento com foto, Cartão Nacional de Saúde (cartão SUS) e comprovante de endereço.",
+        "Sem consulta marcada, o acolhimento avalia a urgência do caso.",
+        "Consulte agendamentos e histórico no aplicativo Meu SUS Digital ou no site da prefeitura.",
+        "Reclamações e elogios: Ouvidoria do SUS, telefone 136."
+      ],
+      "base": "Constituição Federal, arts. 196 a 200; Lei 8.080/1990; Lei Complementar 141/2012; Portaria de Consolidação GM/MS nº 2/2017 (Política Nacional de Atenção Básica).",
+      "competencia_id": "saude_basica",
+      "links": {
+        "federal": [
+          {
+            "nome": "Meu SUS Digital",
+            "url": "https://www.gov.br/saude/pt-br/composicao/seidigi/meususdigital"
+          },
+          {
+            "nome": "Ministério da Saúde",
+            "url": "https://www.gov.br/saude/pt-br"
+          }
+        ],
+        "estadual_sp": [
+          {
+            "nome": "Secretaria de Estado da Saúde",
+            "url": "https://www.saude.sp.gov.br/"
+          }
+        ],
+        "municipal_limeira": [
+          {
+            "nome": "Secretaria Municipal de Saúde",
+            "url": "https://www.limeira.sp.gov.br/secretarias/saude"
+          },
+          {
+            "nome": "Carta de Serviços ao Cidadão de Limeira",
+            "url": "https://www.limeira.sp.gov.br/apresentacao-carta-de-servicos"
+          }
+        ]
+      },
+      "palavras_chave": [
+        "posto de saude",
+        "ubs",
+        "consulta medica",
+        "dentista",
+        "marcar consulta"
+      ]
+    },
+    {
+      "slug": "upa-samu",
+      "area": "saude",
+      "nome": "Urgência e emergência: UPA 24h e SAMU 192",
+      "resumo": "Atendimento de casos graves ou que não podem esperar: UPA 24h, pronto-socorro e ambulância do SAMU.",
+      "entes": {
+        "Municipal": "Administra UPAs e pronto-socorros municipais e participa do SAMU.",
+        "Estadual": "Cofinancia e coordena a rede regional de urgência e os hospitais de referência para onde os casos graves são encaminhados.",
+        "Federal": "Define a Rede de Atenção às Urgências e cofinancia UPA e SAMU 192."
+      },
+      "financiamento": "UPA e SAMU são cofinanciados pelas três esferas.",
+      "como_acessar": [
+        "Emergência com risco de vida: ligue 192 (SAMU).",
+        "Caso urgente, mas sem risco imediato: vá à UPA 24h mais próxima; não precisa de encaminhamento.",
+        "O atendimento segue classificação de risco por cores, não a ordem de chegada.",
+        "Reclamações: Ouvidoria do SUS, telefone 136."
+      ],
+      "base": "Lei 8.080/1990; Portaria GM/MS 1.600/2011 (Rede de Atenção às Urgências).",
+      "competencia_id": "saude_basica",
+      "links": {
+        "federal": [
+          {
+            "nome": "SAMU 192",
+            "url": "https://www.gov.br/saude/pt-br/composicao/saes/samu-192"
+          },
+          {
+            "nome": "Ministério da Saúde",
+            "url": "https://www.gov.br/saude/pt-br"
+          }
+        ],
+        "estadual_sp": [
+          {
+            "nome": "Secretaria de Estado da Saúde",
+            "url": "https://www.saude.sp.gov.br/"
+          }
+        ],
+        "municipal_limeira": [
+          {
+            "nome": "Secretaria Municipal de Saúde",
+            "url": "https://www.limeira.sp.gov.br/secretarias/saude"
+          }
+        ]
+      },
+      "palavras_chave": [
+        "upa",
+        "pronto atendimento",
+        "pronto socorro",
+        "ambulancia",
+        "samu",
+        "emergencia medica"
+      ]
+    },
+    {
+      "slug": "hospitais-especialidades",
+      "area": "saude",
+      "nome": "Cirurgias, exames e especialistas",
+      "resumo": "Consultas com especialistas, exames de imagem, cirurgias e internações (média e alta complexidade). Quase sempre exige encaminhamento da UBS e passa por uma fila organizada pela regulação.",
+      "entes": {
+        "Municipal": "Faz o encaminhamento pela UBS, gerencia a fila municipal de consultas e exames e administra hospitais municipais, quando existem.",
+        "Estadual": "Administra hospitais regionais e de referência, ambulatórios de especialidade e a central de regulação regional.",
+        "Federal": "Financia a média e a alta complexidade pelo teto financeiro do SUS, mantém hospitais federais e universitários e coordena o Sistema Nacional de Transplantes."
+      },
+      "financiamento": "Repasses do Fundo Nacional de Saúde (teto de média e alta complexidade), recursos do Estado e do município.",
+      "como_acessar": [
+        "Peça o encaminhamento ao médico da UBS.",
+        "O pedido entra na regulação, que organiza a fila. Consulte a posição no Meu SUS Digital ou no site da prefeitura.",
+        "Se a espera passar do razoável, procure a Ouvidoria do SUS (136), a Defensoria Pública ou o Ministério Público."
+      ],
+      "base": "Constituição Federal, arts. 196 a 198; Lei 8.080/1990.",
+      "competencia_id": "saude_especializada",
+      "links": {
+        "federal": [
+          {
+            "nome": "Meu SUS Digital",
+            "url": "https://www.gov.br/saude/pt-br/composicao/seidigi/meususdigital"
+          },
+          {
+            "nome": "Ministério da Saúde",
+            "url": "https://www.gov.br/saude/pt-br"
+          }
+        ],
+        "estadual_sp": [
+          {
+            "nome": "Secretaria de Estado da Saúde",
+            "url": "https://www.saude.sp.gov.br/"
+          }
+        ],
+        "municipal_limeira": [
+          {
+            "nome": "Secretaria Municipal de Saúde",
+            "url": "https://www.limeira.sp.gov.br/secretarias/saude"
+          }
+        ]
+      },
+      "palavras_chave": [
+        "cirurgia",
+        "exame",
+        "especialista",
+        "fila",
+        "uti",
+        "internacao",
+        "hospital",
+        "transplante"
+      ]
+    },
+    {
+      "slug": "medicamentos",
+      "area": "saude",
+      "nome": "Remédios: básicos, de alto custo e Farmácia Popular",
+      "resumo": "Três caminhos para o remédio gratuito ou barato: a lista municipal da atenção básica, o componente especializado (alto custo) e o Farmácia Popular.",
+      "entes": {
+        "Municipal": "Distribui nas farmácias das UBS os remédios da atenção básica (lista municipal, a Remume).",
+        "Estadual": "Distribui, junto com a União, os medicamentos do componente especializado (alto custo), mediante pedido com laudo médico.",
+        "Federal": "Define a lista nacional de medicamentos (Rename), compra parte deles e mantém o Farmácia Popular. A Anvisa registra e fiscaliza os remédios."
+      },
+      "financiamento": "Remédios básicos: município, Estado e União dividem o custo. Alto custo: União e Estado. Farmácia Popular: União.",
+      "como_acessar": [
+        "Remédio básico: leve a receita do SUS à farmácia da UBS ou da Secretaria de Saúde.",
+        "Alto custo: o médico preenche o laudo e o paciente protocola o pedido na farmácia de alto custo do Estado.",
+        "Farmácia Popular: receita e documento com foto em farmácia credenciada.",
+        "Falta de remédio: Ouvidoria do SUS (136) e Conselho Municipal de Saúde."
+      ],
+      "base": "Lei 8.080/1990; Decreto 5.090/2004 (Farmácia Popular); Portaria de Consolidação GM/MS nº 6/2017.",
+      "competencia_id": "medicamentos",
+      "links": {
+        "federal": [
+          {
+            "nome": "Farmácia Popular",
+            "url": "https://www.gov.br/saude/pt-br/composicao/sectics/farmacia-popular"
+          },
+          {
+            "nome": "Anvisa",
+            "url": "https://www.gov.br/anvisa/pt-br"
+          },
+          {
+            "nome": "Ministério da Saúde",
+            "url": "https://www.gov.br/saude/pt-br"
+          }
+        ],
+        "estadual_sp": [
+          {
+            "nome": "Secretaria de Estado da Saúde",
+            "url": "https://www.saude.sp.gov.br/"
+          }
+        ],
+        "municipal_limeira": [
+          {
+            "nome": "Secretaria Municipal de Saúde",
+            "url": "https://www.limeira.sp.gov.br/secretarias/saude"
+          }
+        ]
+      },
+      "palavras_chave": [
+        "remedio",
+        "medicamento",
+        "farmacia",
+        "alto custo",
+        "receita",
+        "falta de remedio"
+      ]
+    },
+    {
+      "slug": "vacinacao",
+      "area": "saude",
+      "nome": "Vacinação",
+      "resumo": "Vacinas do calendário nacional para crianças, adolescentes, adultos e idosos, e campanhas, oferecidas de graça nas UBS.",
+      "entes": {
+        "Municipal": "Aplica as vacinas nas UBS e nas escolas e faz busca ativa de quem está com a vacina atrasada.",
+        "Estadual": "Distribui as vacinas aos municípios, coordena campanhas e acompanha a cobertura vacinal.",
+        "Federal": "Define o calendário, compra as vacinas e as envia aos Estados pelo Programa Nacional de Imunizações."
+      },
+      "financiamento": "A União compra as vacinas; Estado e município cuidam da distribuição e da aplicação.",
+      "como_acessar": [
+        "Leve a caderneta de vacinação e um documento com foto à UBS.",
+        "Veja o calendário e a caderneta digital no Meu SUS Digital.",
+        "Dúvidas: Disque Saúde, telefone 136."
+      ],
+      "base": "Lei 6.259/1975 (Programa Nacional de Imunizações); Lei 8.080/1990.",
+      "competencia_id": "saude_basica",
+      "links": {
+        "federal": [
+          {
+            "nome": "Vacinação (Ministério da Saúde)",
+            "url": "https://www.gov.br/saude/pt-br/vacinacao"
+          },
+          {
+            "nome": "Meu SUS Digital",
+            "url": "https://www.gov.br/saude/pt-br/composicao/seidigi/meususdigital"
+          }
+        ],
+        "estadual_sp": [
+          {
+            "nome": "Secretaria de Estado da Saúde",
+            "url": "https://www.saude.sp.gov.br/"
+          }
+        ],
+        "municipal_limeira": [
+          {
+            "nome": "Secretaria Municipal de Saúde",
+            "url": "https://www.limeira.sp.gov.br/secretarias/saude"
+          }
+        ]
+      },
+      "palavras_chave": [
+        "vacina",
+        "vacinacao",
+        "caderneta",
+        "campanha de vacinacao",
+        "gripe",
+        "covid"
+      ]
+    },
+    {
+      "slug": "caps",
+      "area": "saude",
+      "nome": "Saúde mental e dependência (CAPS)",
+      "resumo": "Cuidado em saúde mental, crises e dependência de álcool e outras drogas, em serviço aberto, sem internação obrigatória.",
+      "entes": {
+        "Municipal": "Mantém os CAPS (inclusive o CAPS AD, para álcool e drogas) e a equipe de saúde mental da UBS.",
+        "Estadual": "Garante leitos de saúde mental em hospital geral e serviços de referência, e apoia a rede regional.",
+        "Federal": "Define a Rede de Atenção Psicossocial (RAPS), habilita e cofinancia os CAPS."
+      },
+      "financiamento": "Rede financiada pelas três esferas, com repasse fundo a fundo da União.",
+      "como_acessar": [
+        "Vá ao CAPS da sua região: o acesso é livre, sem encaminhamento. Também é possível começar pela UBS.",
+        "Em crise ou com risco de vida: ligue 192 (SAMU) ou vá à UPA.",
+        "Apoio emocional gratuito, 24 horas: Centro de Valorização da Vida, telefone 188."
+      ],
+      "base": "Lei 10.216/2001; Portaria GM/MS 3.088/2011 (Rede de Atenção Psicossocial).",
+      "competencia_id": "saude_mental",
+      "links": {
+        "federal": [
+          {
+            "nome": "Rede de Atenção Psicossocial (RAPS)",
+            "url": "https://www.gov.br/saude/pt-br/composicao/saes/desmad/raps"
+          },
+          {
+            "nome": "Ministério da Saúde",
+            "url": "https://www.gov.br/saude/pt-br"
+          }
+        ],
+        "estadual_sp": [
+          {
+            "nome": "Secretaria de Estado da Saúde",
+            "url": "https://www.saude.sp.gov.br/"
+          }
+        ],
+        "municipal_limeira": [
+          {
+            "nome": "Secretaria Municipal de Saúde",
+            "url": "https://www.limeira.sp.gov.br/secretarias/saude"
+          }
+        ]
+      },
+      "palavras_chave": [
+        "caps",
+        "saude mental",
+        "dependente quimico",
+        "drogas",
+        "alcool",
+        "depressao",
+        "ansiedade",
+        "crack",
+        "vicio",
+        "psicologo"
+      ]
+    },
+    {
+      "slug": "creche-pre-escola",
+      "area": "educacao",
+      "nome": "Creche e pré-escola",
+      "resumo": "Vaga em creche (0 a 3 anos) e pré-escola (4 e 5 anos). A pré-escola é obrigatória a partir dos 4 anos.",
+      "entes": {
+        "Municipal": "Oferece as vagas, administra a fila e faz a matrícula na rede municipal.",
+        "Estadual": "Papel de apoio: não administra creches nem pré-escolas.",
+        "Federal": "Define as regras nacionais (LDB) e repassa recursos pelo Fundeb e por programas de apoio, como o Proinfância, que financia a construção de unidades."
+      },
+      "financiamento": "Municípios aplicam no mínimo 25% da receita de impostos em educação e recebem o Fundeb.",
+      "como_acessar": [
+        "Inscreva a criança na lista de espera da Secretaria Municipal de Educação. Prazos e locais variam por município.",
+        "Leve certidão de nascimento, comprovante de endereço e documentos do responsável.",
+        "Sem vaga: registre o pedido por escrito. A Justiça garante a vaga (STF, Tema 548) e a Defensoria Pública ajuda gratuitamente."
+      ],
+      "base": "Constituição Federal, arts. 208, IV, 211, § 2º e 212; Lei 9.394/1996 (LDB); STF, RE 1.008.166 (Tema 548).",
+      "competencia_id": "educacao_infantil",
+      "links": {
+        "federal": [
+          {
+            "nome": "FNDE (Fundeb, merenda e transporte escolar)",
+            "url": "https://www.gov.br/fnde/pt-br"
+          },
+          {
+            "nome": "Ministério da Educação",
+            "url": "https://www.gov.br/mec/pt-br"
+          }
+        ],
+        "estadual_sp": [
+          {
+            "nome": "Defensoria Pública do Estado de São Paulo",
+            "url": "https://www.defensoria.sp.def.br/"
+          }
+        ],
+        "municipal_limeira": [
+          {
+            "nome": "Secretaria Municipal de Educação",
+            "url": "https://www.limeira.sp.gov.br/secretarias/educacao"
+          },
+          {
+            "nome": "Carta de Serviços ao Cidadão de Limeira",
+            "url": "https://www.limeira.sp.gov.br/apresentacao-carta-de-servicos"
+          }
+        ]
+      },
+      "palavras_chave": [
+        "creche",
+        "vaga na creche",
+        "pre escola",
+        "matricula",
+        "fila da creche",
+        "educacao infantil"
+      ]
+    },
+    {
+      "slug": "ensino-fundamental",
+      "area": "educacao",
+      "nome": "Ensino fundamental (1º ao 9º ano)",
+      "resumo": "Escola pública do 1º ao 9º ano, com merenda, livro didático e, quando for o caso, transporte escolar.",
+      "entes": {
+        "Municipal": "Atende prioritariamente o fundamental, sobretudo os anos iniciais, e administra a rede municipal.",
+        "Estadual": "Atende parte dos anos finais, conforme o acordo de cada município com o Estado.",
+        "Federal": "Define as regras nacionais e complementa o financiamento (Fundeb, livro didático, merenda e transporte escolar)."
+      },
+      "financiamento": "Fundeb, com complementação da União, mais o mínimo de 25% da receita de impostos de cada rede.",
+      "como_acessar": [
+        "Matrícula na Secretaria de Educação da rede (municipal ou estadual) no período de matrícula.",
+        "Problemas na escola: direção, Conselho Escolar e Ouvidoria da Secretaria.",
+        "Faltas de professores, merenda ou estrutura: Ministério Público e Conselho Tutelar, conforme o caso."
+      ],
+      "base": "Constituição Federal, arts. 208, I, 211 e 212; Lei 9.394/1996 (LDB).",
+      "competencia_id": "educacao_fundamental",
+      "links": {
+        "federal": [
+          {
+            "nome": "FNDE (Fundeb, merenda e transporte escolar)",
+            "url": "https://www.gov.br/fnde/pt-br"
+          },
+          {
+            "nome": "Ministério da Educação",
+            "url": "https://www.gov.br/mec/pt-br"
+          }
+        ],
+        "estadual_sp": [
+          {
+            "nome": "Secretaria de Estado da Educação",
+            "url": "https://www.educacao.sp.gov.br/educacao"
+          }
+        ],
+        "municipal_limeira": [
+          {
+            "nome": "Secretaria Municipal de Educação",
+            "url": "https://www.limeira.sp.gov.br/secretarias/educacao"
+          }
+        ]
+      },
+      "palavras_chave": [
+        "escola",
+        "ensino fundamental",
+        "professor",
+        "matricula escolar",
+        "falta de professor"
+      ]
+    },
+    {
+      "slug": "ensino-medio",
+      "area": "educacao",
+      "nome": "Ensino médio e Pé-de-Meia",
+      "resumo": "Escola pública do ensino médio e o incentivo financeiro Pé-de-Meia para estudantes de famílias de baixa renda.",
+      "entes": {
+        "Municipal": "Não é a prioridade do município, que concentra esforços na educação infantil e no fundamental.",
+        "Estadual": "É a responsável principal: administra as escolas de ensino médio e define como a rede funciona.",
+        "Federal": "Define as diretrizes nacionais e paga o Pé-de-Meia, que depende de frequência e aprovação do estudante."
+      },
+      "financiamento": "Rede estadual financiada por Fundeb e pelo mínimo de 25% da receita de impostos estaduais; Pé-de-Meia pago pela União.",
+      "como_acessar": [
+        "Matrícula pelo site e pelas escolas da Secretaria de Estado da Educação.",
+        "Pé-de-Meia: o estudante precisa estar no Cadastro Único e frequentar as aulas. Confira as regras no portal do Ministério da Educação."
+      ],
+      "base": "Constituição Federal, arts. 208, II e 211, § 3º; Lei 9.394/1996 (LDB); Lei 14.818/2024 (Pé-de-Meia).",
+      "competencia_id": "educacao_medio",
+      "links": {
+        "federal": [
+          {
+            "nome": "Pé-de-Meia",
+            "url": "https://www.gov.br/mec/pt-br/pe-de-meia"
+          },
+          {
+            "nome": "Ministério da Educação",
+            "url": "https://www.gov.br/mec/pt-br"
+          }
+        ],
+        "estadual_sp": [
+          {
+            "nome": "Secretaria de Estado da Educação",
+            "url": "https://www.educacao.sp.gov.br/educacao"
+          }
+        ],
+        "municipal_limeira": [
+          {
+            "nome": "Secretaria Municipal de Educação",
+            "url": "https://www.limeira.sp.gov.br/secretarias/educacao"
+          }
+        ]
+      },
+      "palavras_chave": [
+        "ensino medio",
+        "pe de meia",
+        "escola estadual",
+        "bolsa estudante"
+      ]
+    },
+    {
+      "slug": "ensino-tecnico-superior",
+      "area": "educacao",
+      "nome": "Ensino técnico e universidade pública",
+      "resumo": "Escolas técnicas, institutos e universidades públicas, e as formas de entrar: Enem, Sisu, Prouni e Fies.",
+      "entes": {
+        "Municipal": "Alguns municípios mantêm escola técnica ou faculdade própria, mas não é regra.",
+        "Estadual": "Mantém escolas técnicas e universidades estaduais, conforme o Estado.",
+        "Federal": "Mantém universidades e institutos federais e coordena o Enem, o Sisu, o Prouni e o Fies."
+      },
+      "financiamento": "Universidades federais: orçamento da União. Estaduais: orçamento do Estado.",
+      "como_acessar": [
+        "Enem: inscrição no portal do Inep, geralmente no primeiro semestre.",
+        "Sisu, Prouni e Fies usam a nota do Enem e têm inscrição no Acesso Único do Ministério da Educação.",
+        "Escola técnica estadual ou federal tem processo seletivo próprio."
+      ],
+      "base": "Constituição Federal, arts. 207 e 211, § 1º; Lei 9.394/1996 (LDB).",
+      "competencia_id": "educacao_tecnica_superior",
+      "links": {
+        "federal": [
+          {
+            "nome": "Enem (Inep)",
+            "url": "https://www.gov.br/inep/pt-br/areas-de-atuacao/avaliacao-e-exames-educacionais/enem"
+          },
+          {
+            "nome": "Sisu",
+            "url": "https://sisu.mec.gov.br/"
+          },
+          {
+            "nome": "Acesso Único (Prouni, Fies e outros)",
+            "url": "https://acessounico.mec.gov.br/"
+          }
+        ],
+        "estadual_sp": [
+          {
+            "nome": "Secretaria de Estado da Educação",
+            "url": "https://www.educacao.sp.gov.br/educacao"
+          }
+        ],
+        "municipal_limeira": [
+          {
+            "nome": "Secretaria Municipal de Educação",
+            "url": "https://www.limeira.sp.gov.br/secretarias/educacao"
+          }
+        ]
+      },
+      "palavras_chave": [
+        "faculdade",
+        "universidade",
+        "enem",
+        "sisu",
+        "prouni",
+        "fies",
+        "escola tecnica",
+        "etec",
+        "vestibular"
+      ]
+    },
+    {
+      "slug": "merenda-transporte-escolar",
+      "area": "educacao",
+      "nome": "Merenda e transporte escolar",
+      "resumo": "Alimentação e transporte dos alunos da rede pública, especialmente na zona rural.",
+      "entes": {
+        "Municipal": "Paga e organiza a merenda e o transporte dos alunos da rede municipal.",
+        "Estadual": "Paga e organiza a merenda e o transporte dos alunos da rede estadual.",
+        "Federal": "Complementa o gasto com repasses por aluno, pelo PNAE (merenda) e pelo PNATE (transporte escolar)."
+      },
+      "financiamento": "Recursos da própria rede mais repasses por aluno do FNDE. Parte da verba da merenda deve ser usada em compras da agricultura familiar.",
+      "como_acessar": [
+        "A merenda é um direito de todo aluno da rede pública. Reclame à direção e ao Conselho de Alimentação Escolar (CAE).",
+        "Transporte escolar: solicite à Secretaria de Educação da sua rede."
+      ],
+      "base": "Constituição Federal, art. 208, VII; Lei 11.947/2009.",
+      "competencia_id": "educacao_fundamental",
+      "links": {
+        "federal": [
+          {
+            "nome": "Programa Nacional de Alimentação Escolar (PNAE)",
+            "url": "https://www.gov.br/fnde/pt-br/acesso-a-informacao/acoes-e-programas/programas/pnae"
+          },
+          {
+            "nome": "FNDE (Fundeb, merenda e transporte escolar)",
+            "url": "https://www.gov.br/fnde/pt-br"
+          }
+        ],
+        "estadual_sp": [
+          {
+            "nome": "Secretaria de Estado da Educação",
+            "url": "https://www.educacao.sp.gov.br/educacao"
+          }
+        ],
+        "municipal_limeira": [
+          {
+            "nome": "Secretaria Municipal de Educação",
+            "url": "https://www.limeira.sp.gov.br/secretarias/educacao"
+          }
+        ]
+      },
+      "palavras_chave": [
+        "merenda",
+        "alimentacao escolar",
+        "transporte escolar",
+        "onibus escolar"
+      ]
+    },
+    {
+      "slug": "policia-militar-civil",
+      "area": "seguranca",
+      "nome": "Polícia: PM (190) e Polícia Civil",
+      "resumo": "Policiamento nas ruas, atendimento de ocorrências, investigação de crimes e registro de boletim de ocorrência.",
+      "entes": {
+        "Municipal": "Não tem polícia investigativa nem policiamento ostensivo geral. Pode apoiar com Guarda Municipal, câmeras e iluminação.",
+        "Estadual": "Comanda a Polícia Militar (policiamento ostensivo, 190), a Polícia Civil (investigação, delegacias e boletim de ocorrência) e a polícia científica.",
+        "Federal": "Faz as leis penais, coordena o Sistema Único de Segurança Pública e financia a área. A Polícia Federal e a Polícia Rodoviária Federal atuam em crimes e rodovias federais."
+      },
+      "financiamento": "O gasto principal é do Estado. A União cofinancia pelo Fundo Nacional de Segurança Pública.",
+      "como_acessar": [
+        "Emergência: ligue 190.",
+        "Boletim de ocorrência: na delegacia ou, em muitos Estados, pela delegacia eletrônica (em São Paulo, pelo portal da Polícia Civil).",
+        "Violência contra a mulher: Ligue 180. Violação de direitos humanos: Disque 100.",
+        "Reclamação sobre atuação policial: Corregedoria e Ouvidoria da polícia e Ministério Público."
+      ],
+      "base": "Constituição Federal, arts. 22, I, 129, VII e 144; Lei 13.675/2018 (Sistema Único de Segurança Pública).",
+      "competencia_id": "seguranca_estadual",
+      "links": {
+        "federal": [
+          {
+            "nome": "Polícia Rodoviária Federal",
+            "url": "https://www.gov.br/prf/pt-br"
+          },
+          {
+            "nome": "Serviços do Governo Federal (gov.br)",
+            "url": "https://www.gov.br/pt-br/servicos"
+          }
+        ],
+        "estadual_sp": [
+          {
+            "nome": "Secretaria da Segurança Pública",
+            "url": "https://www.ssp.sp.gov.br/"
+          },
+          {
+            "nome": "Delegacia Eletrônica (boletim de ocorrência)",
+            "url": "https://www.delegaciaeletronica.policiacivil.sp.gov.br/"
+          }
+        ],
+        "municipal_limeira": [
+          {
+            "nome": "Segurança Pública e Defesa Civil",
+            "url": "https://www.limeira.sp.gov.br/secretarias/seguranca-publica-e-defesa-civil"
+          }
+        ]
+      },
+      "palavras_chave": [
+        "policia",
+        "pm",
+        "190",
+        "delegacia",
+        "boletim de ocorrencia",
+        "assalto",
+        "roubo",
+        "furto",
+        "seguranca publica",
+        "policiamento"
+      ]
+    },
+    {
+      "slug": "guarda-municipal",
+      "area": "seguranca",
+      "nome": "Guarda Municipal",
+      "resumo": "Proteção de praças, escolas e prédios públicos do município e prevenção de ocorrências.",
+      "entes": {
+        "Municipal": "Cria, mantém e comanda a Guarda Municipal, que protege bens, serviços e instalações do município. A investigação criminal continua com a Polícia Civil.",
+        "Estadual": "Não comanda a Guarda Municipal. A Polícia Militar e a Polícia Civil atuam em conjunto com ela.",
+        "Federal": "A lei geral que define as atribuições das guardas é federal."
+      },
+      "financiamento": "Orçamento do município.",
+      "como_acessar": [
+        "Acione a Guarda pelo telefone do seu município. Em muitas cidades o número é 153.",
+        "Para crimes e investigação, registre também a ocorrência na delegacia."
+      ],
+      "base": "Constituição Federal, art. 144, § 8º; Lei 13.022/2014 (Estatuto Geral das Guardas Municipais).",
+      "competencia_id": "guarda_municipal",
+      "links": {
+        "federal": [
+          {
+            "nome": "Serviços do Governo Federal (gov.br)",
+            "url": "https://www.gov.br/pt-br/servicos"
+          }
+        ],
+        "estadual_sp": [
+          {
+            "nome": "Secretaria da Segurança Pública",
+            "url": "https://www.ssp.sp.gov.br/"
+          }
+        ],
+        "municipal_limeira": [
+          {
+            "nome": "Segurança Pública e Defesa Civil",
+            "url": "https://www.limeira.sp.gov.br/secretarias/seguranca-publica-e-defesa-civil"
+          }
+        ]
+      },
+      "palavras_chave": [
+        "guarda municipal",
+        "gcm",
+        "guarda da praca",
+        "ronda",
+        "seguranca da escola"
+      ]
+    },
+    {
+      "slug": "justica-defensoria",
+      "area": "seguranca",
+      "nome": "Justiça gratuita, Defensoria Pública e Ministério Público",
+      "resumo": "Como entrar com uma ação sem pagar advogado, onde correm os processos e quem fiscaliza o serviço público.",
+      "entes": {
+        "Municipal": "Não tem Justiça própria. A prefeitura pode manter balcão de orientação jurídica em parceria com outras instituições.",
+        "Estadual": "Mantém o Tribunal de Justiça, a Defensoria Pública e o Ministério Público do Estado, que cuidam da maior parte dos processos.",
+        "Federal": "Mantém a Justiça Federal, onde correm as causas contra a União e o INSS, e a Defensoria Pública da União."
+      },
+      "financiamento": "Judiciário, Defensoria e Ministério Público têm orçamento próprio, aprovado pelo Legislativo.",
+      "como_acessar": [
+        "A Defensoria Pública atende quem não pode pagar advogado, dentro dos critérios de renda de cada instituição.",
+        "Nos Juizados Especiais, causas de até 20 salários mínimos podem ser propostas sem advogado.",
+        "Para fiscalizar um serviço público que não funciona, procure o Ministério Público."
+      ],
+      "base": "Constituição Federal, arts. 5º, LXXIV, 98, 109 e 127 a 134; Lei 9.099/1995; Lei Complementar 80/1994.",
+      "competencia_id": "justica_acesso",
+      "links": {
+        "federal": [
+          {
+            "nome": "Defensoria Pública da União",
+            "url": "https://www.dpu.def.br/"
+          }
+        ],
+        "estadual_sp": [
+          {
+            "nome": "Defensoria Pública do Estado de São Paulo",
+            "url": "https://www.defensoria.sp.def.br/"
+          }
+        ],
+        "municipal_limeira": [
+          {
+            "nome": "Ouvidoria Geral",
+            "url": "https://www.limeira.sp.gov.br/ouvidoria-geral"
+          }
+        ]
+      },
+      "palavras_chave": [
+        "defensoria",
+        "advogado gratuito",
+        "justica gratuita",
+        "juizado",
+        "processo",
+        "forum",
+        "ministerio publico",
+        "promotor"
+      ]
+    },
+    {
+      "slug": "documentos-rg-cnh-passaporte",
+      "area": "seguranca",
+      "nome": "Documentos: RG, CNH, CPF e passaporte",
+      "resumo": "Quem emite cada documento de identificação e como pedir.",
+      "entes": {
+        "Municipal": "Não emite esses documentos. Certidões de nascimento, casamento e óbito saem dos cartórios, que são serviços delegados e fiscalizados pelo Judiciário.",
+        "Estadual": "Emite a carteira de identidade (RG) pelo órgão de identificação do Estado e a CNH pelo Detran.",
+        "Federal": "Emite o passaporte (Polícia Federal) e o CPF (Receita Federal), e define o padrão da Carteira de Identidade Nacional. O título de eleitor é da Justiça Eleitoral."
+      },
+      "financiamento": "RG e CNH têm taxas estaduais. Passaporte tem taxa federal. CPF é gratuito.",
+      "como_acessar": [
+        "RG e CNH: agende no órgão estadual (em São Paulo, no Poupatempo e no Detran).",
+        "Passaporte: agende na Polícia Federal pelo portal gov.br.",
+        "CPF: gratuito, pelo site da Receita Federal."
+      ],
+      "base": "Constituição Federal, arts. 21, XV e XXII, e 236; Lei 7.116/1983; Lei 9.503/1997 (Código de Trânsito).",
+      "competencia_id": "documentos",
+      "links": {
+        "federal": [
+          {
+            "nome": "Polícia Federal: passaporte",
+            "url": "https://www.gov.br/pf/pt-br/assuntos/passaporte"
+          },
+          {
+            "nome": "Receita Federal (CPF e impostos federais)",
+            "url": "https://www.gov.br/receitafederal/pt-br"
+          },
+          {
+            "nome": "Serviços do Governo Federal (gov.br)",
+            "url": "https://www.gov.br/pt-br/servicos"
+          }
+        ],
+        "estadual_sp": [
+          {
+            "nome": "Poupatempo (RG, CNH e outros serviços)",
+            "url": "https://www.poupatempo.sp.gov.br/servicos/"
+          },
+          {
+            "nome": "Detran-SP (CNH e veículos)",
+            "url": "https://www.detran.sp.gov.br/detransp"
+          }
+        ],
+        "municipal_limeira": [
+          {
+            "nome": "Carta de Serviços ao Cidadão de Limeira",
+            "url": "https://www.limeira.sp.gov.br/apresentacao-carta-de-servicos"
+          }
+        ]
+      },
+      "palavras_chave": [
+        "rg",
+        "cnh",
+        "cpf",
+        "passaporte",
+        "carteira de identidade",
+        "titulo de eleitor",
+        "certidao",
+        "poupatempo",
+        "detran"
+      ]
+    },
+    {
+      "slug": "zeladoria-iluminacao",
+      "area": "cidade",
+      "nome": "Buraco, calçada, iluminação e limpeza",
+      "resumo": "Tapa-buraco, asfalto, calçadas, iluminação das ruas e conservação dos espaços públicos.",
+      "entes": {
+        "Municipal": "Cuida das ruas, calçadas, praças e da iluminação pública, e cobra a Contribuição de Iluminação Pública (COSIP) na conta de luz.",
+        "Estadual": "Cuida das rodovias estaduais, não das ruas da cidade.",
+        "Federal": "Repassa recursos para obras (emendas e programas como o PAC) e fixa regras nacionais. A Aneel regula as distribuidoras de energia."
+      },
+      "financiamento": "Orçamento do município, a COSIP (para iluminação) e repasses de Estado e União.",
+      "como_acessar": [
+        "Registre o pedido no canal de zeladoria da prefeitura (site, aplicativo ou telefone) e guarde o número do protocolo.",
+        "Sem resposta no prazo: Ouvidoria da prefeitura e vereadores.",
+        "Poste apagado: a prefeitura é responsável pela iluminação pública; a distribuidora cuida da rede de energia."
+      ],
+      "base": "Constituição Federal, arts. 30, I e V, e 149-A (COSIP).",
+      "competencia_id": "infraestrutura_urbana",
+      "links": {
+        "federal": [
+          {
+            "nome": "Aneel (energia e iluminação)",
+            "url": "https://www.gov.br/aneel/pt-br"
+          }
+        ],
+        "estadual_sp": [],
+        "municipal_limeira": [
+          {
+            "nome": "Serviços de zeladoria urbana",
+            "url": "https://www.limeira.sp.gov.br/servicos-de-zeladoria-urbana"
+          },
+          {
+            "nome": "Obras e Serviços Públicos",
+            "url": "https://www.limeira.sp.gov.br/secretarias/obras-e-servicos-publicos"
+          },
+          {
+            "nome": "Ouvidoria Geral",
+            "url": "https://www.limeira.sp.gov.br/ouvidoria-geral"
+          }
+        ]
+      },
+      "palavras_chave": [
+        "buraco",
+        "tapa buraco",
+        "asfalto",
+        "calcada",
+        "iluminacao",
+        "poste apagado",
+        "rua",
+        "zeladoria"
+      ]
+    },
+    {
+      "slug": "lixo-limpeza-urbana",
+      "area": "cidade",
+      "nome": "Coleta de lixo, entulho e reciclagem",
+      "resumo": "Coleta, varrição, descarte de entulho e móveis e coleta seletiva.",
+      "entes": {
+        "Municipal": "Presta o serviço de coleta e limpeza urbana, direto ou por empresa contratada, e dá destino aos resíduos.",
+        "Estadual": "Licencia e fiscaliza aterros e atividades que poluem, por meio do órgão ambiental estadual.",
+        "Federal": "Fixa a Política Nacional de Resíduos Sólidos, que obriga municípios a planejar a gestão do lixo."
+      },
+      "financiamento": "Taxas ou tarifas municipais e orçamento do município.",
+      "como_acessar": [
+        "Confira dias e horários da coleta no site da prefeitura.",
+        "Entulho, móveis e podas: peça a retirada pelo canal da prefeitura ou leve ao ponto de descarte indicado.",
+        "Reciclagem: veja se o seu bairro tem coleta seletiva e cooperativas de catadores."
+      ],
+      "base": "Constituição Federal, art. 30, V; Lei 12.305/2010 (Política Nacional de Resíduos Sólidos).",
+      "competencia_id": "infraestrutura_urbana",
+      "links": {
+        "federal": [
+          {
+            "nome": "Ibama",
+            "url": "https://www.gov.br/ibama/pt-br"
+          }
+        ],
+        "estadual_sp": [
+          {
+            "nome": "CETESB (licenciamento e fiscalização ambiental)",
+            "url": "https://www.cetesb.sp.gov.br/cetesb"
+          }
+        ],
+        "municipal_limeira": [
+          {
+            "nome": "Onde descartar",
+            "url": "https://www.limeira.sp.gov.br/ondedescartar"
+          },
+          {
+            "nome": "Serviços de zeladoria urbana",
+            "url": "https://www.limeira.sp.gov.br/servicos-de-zeladoria-urbana"
+          }
+        ]
+      },
+      "palavras_chave": [
+        "lixo",
+        "coleta de lixo",
+        "entulho",
+        "reciclagem",
+        "coleta seletiva",
+        "limpeza urbana",
+        "descarte"
+      ]
+    },
+    {
+      "slug": "transporte-rodovias",
+      "area": "cidade",
+      "nome": "Ônibus, trânsito e rodovias",
+      "resumo": "Ônibus urbano, trânsito, sinalização e estradas: quem responde depende de quem é a via.",
+      "entes": {
+        "Municipal": "Organiza o ônibus urbano, o trânsito municipal e as vias da cidade.",
+        "Estadual": "Cuida do transporte intermunicipal e das rodovias estaduais e de seus pedágios.",
+        "Federal": "Cuida das rodovias federais (BR), ferrovias, portos e aeroportos. A ANTT regula o transporte terrestre de passageiros entre Estados."
+      },
+      "financiamento": "Tarifas e subsídios no ônibus urbano; pedágios e orçamento nas rodovias.",
+      "como_acessar": [
+        "Ônibus urbano: reclame à empresa e à secretaria municipal de transportes.",
+        "Rodovia: identifique se é federal (BR), estadual (em São Paulo, SP) ou municipal e acione o órgão certo.",
+        "Rodovias federais: Polícia Rodoviária Federal e DNIT. Rodovias estaduais paulistas: DER-SP."
+      ],
+      "base": "Constituição Federal, arts. 21, XII, 25 e 30, V.",
+      "competencia_id": "transporte_rodovias",
+      "links": {
+        "federal": [
+          {
+            "nome": "DNIT (rodovias e ferrovias federais)",
+            "url": "https://www.gov.br/dnit/pt-br"
+          },
+          {
+            "nome": "ANTT (transporte terrestre)",
+            "url": "https://www.gov.br/antt/pt-br"
+          },
+          {
+            "nome": "Polícia Rodoviária Federal",
+            "url": "https://www.gov.br/prf/pt-br"
+          }
+        ],
+        "estadual_sp": [
+          {
+            "nome": "DER-SP (rodovias estaduais)",
+            "url": "https://www.der.sp.gov.br/"
+          }
+        ],
+        "municipal_limeira": [
+          {
+            "nome": "Transportes e Mobilidade Urbana",
+            "url": "https://www.limeira.sp.gov.br/secretarias/transportes-e-mobilidade-urbana"
+          }
+        ]
+      },
+      "palavras_chave": [
+        "onibus",
+        "transporte publico",
+        "transito",
+        "rodovia",
+        "estrada",
+        "pedagio",
+        "semaforo",
+        "ponto de onibus"
+      ]
+    },
+    {
+      "slug": "agua-esgoto-drenagem",
+      "area": "cidade",
+      "nome": "Água, esgoto e drenagem",
+      "resumo": "Abastecimento de água, coleta e tratamento de esgoto e escoamento da chuva.",
+      "entes": {
+        "Municipal": "É o titular do serviço. Pode prestá-lo por autarquia própria, por companhia estadual ou por concessão a empresa privada, e cuida da drenagem urbana.",
+        "Estadual": "Companhias estaduais de saneamento atendem parte dos municípios por contrato.",
+        "Federal": "Fixa o marco legal do saneamento. A ANA define normas de referência para as agências reguladoras."
+      },
+      "financiamento": "Tarifas pagas pelos usuários e investimentos de município, Estado e União.",
+      "como_acessar": [
+        "Falta de água ou vazamento: ligue para a operadora (autarquia municipal, companhia estadual ou empresa concessionária).",
+        "Sem solução: agência reguladora do serviço e Ouvidoria da prefeitura."
+      ],
+      "base": "Lei 11.445/2007; Lei 14.026/2020 (marco legal do saneamento).",
+      "competencia_id": "saneamento",
+      "links": {
+        "federal": [
+          {
+            "nome": "ANA (água e saneamento)",
+            "url": "https://www.gov.br/ana/pt-br"
+          }
+        ],
+        "estadual_sp": [
+          {
+            "nome": "Portal do Governo de São Paulo",
+            "url": "https://www.sp.gov.br/sp"
+          }
+        ],
+        "municipal_limeira": [
+          {
+            "nome": "Meio Ambiente e Saneamento",
+            "url": "https://www.limeira.sp.gov.br/secretarias/meio-ambiente-e-saneamento"
+          }
+        ]
+      },
+      "palavras_chave": [
+        "agua",
+        "esgoto",
+        "falta de agua",
+        "vazamento",
+        "saneamento",
+        "drenagem",
+        "bueiro"
+      ]
+    },
+    {
+      "slug": "cras-assistencia-social",
+      "area": "renda",
+      "nome": "CRAS e assistência social",
+      "resumo": "Porta de entrada da assistência social: orientação, Cadastro Único, benefícios e apoio a famílias em situação de vulnerabilidade.",
+      "entes": {
+        "Municipal": "Mantém os CRAS (proteção social básica), atende as famílias e faz o Cadastro Único.",
+        "Estadual": "Apoia tecnicamente, cofinancia e oferece serviços regionais de maior complexidade.",
+        "Federal": "Define as regras do SUAS, cofinancia os serviços e paga os benefícios, como o BPC e o Bolsa Família."
+      },
+      "financiamento": "Fundos de Assistência Social das três esferas, com repasse fundo a fundo da União.",
+      "como_acessar": [
+        "Procure o CRAS do seu bairro. A prefeitura informa qual atende o seu endereço.",
+        "Leve documento com foto e CPF de todos da família e comprovante de residência.",
+        "O CRAS faz o Cadastro Único e orienta sobre os benefícios a que a família tem direito."
+      ],
+      "base": "Constituição Federal, arts. 203 e 204; Lei 8.742/1993 (LOAS); Lei 12.435/2011 (SUAS).",
+      "competencia_id": "assistencia_social",
+      "links": {
+        "federal": [
+          {
+            "nome": "Sistema Único de Assistência Social (SUAS)",
+            "url": "https://www.gov.br/mds/pt-br/acoes-e-programas/SUAS"
+          },
+          {
+            "nome": "Ministério do Desenvolvimento e Assistência Social",
+            "url": "https://www.gov.br/mds/pt-br"
+          }
+        ],
+        "estadual_sp": [],
+        "municipal_limeira": [
+          {
+            "nome": "Carta de Serviços ao Cidadão de Limeira",
+            "url": "https://www.limeira.sp.gov.br/apresentacao-carta-de-servicos"
+          }
+        ]
+      },
+      "palavras_chave": [
+        "cras",
+        "assistencia social",
+        "cesta basica",
+        "familia vulneravel",
+        "cadastro unico",
+        "beneficio eventual"
+      ]
+    },
+    {
+      "slug": "creas-violacao-direitos",
+      "area": "renda",
+      "nome": "CREAS: violência, abuso e violação de direitos",
+      "resumo": "Atendimento a famílias e pessoas que sofreram violência, abuso, negligência, trabalho infantil ou estão em situação de rua.",
+      "entes": {
+        "Municipal": "Mantém o CREAS (proteção social especial de média complexidade) e acompanha as famílias.",
+        "Estadual": "Cofinancia e oferece serviços regionais, como acolhimento para vários municípios.",
+        "Federal": "Define a tipificação nacional dos serviços e cofinancia a rede."
+      },
+      "financiamento": "Fundos de Assistência Social das três esferas.",
+      "como_acessar": [
+        "Procure o CREAS do município ou o CRAS, que encaminha o caso.",
+        "Violação de direitos humanos: Disque 100. Violência contra a mulher: Ligue 180.",
+        "Crianças e adolescentes: Conselho Tutelar, eleito pela própria cidade."
+      ],
+      "base": "Lei 8.742/1993 (LOAS); Resolução CNAS 109/2009 (Tipificação Nacional dos Serviços Socioassistenciais).",
+      "competencia_id": "assistencia_social",
+      "links": {
+        "federal": [
+          {
+            "nome": "Sistema Único de Assistência Social (SUAS)",
+            "url": "https://www.gov.br/mds/pt-br/acoes-e-programas/SUAS"
+          },
+          {
+            "nome": "Ministério do Desenvolvimento e Assistência Social",
+            "url": "https://www.gov.br/mds/pt-br"
+          }
+        ],
+        "estadual_sp": [],
+        "municipal_limeira": [
+          {
+            "nome": "Carta de Serviços ao Cidadão de Limeira",
+            "url": "https://www.limeira.sp.gov.br/apresentacao-carta-de-servicos"
+          }
+        ]
+      },
+      "palavras_chave": [
+        "creas",
+        "violencia",
+        "abuso",
+        "violacao de direitos",
+        "trabalho infantil",
+        "situacao de rua",
+        "negligencia",
+        "conselho tutelar"
+      ]
+    },
+    {
+      "slug": "bolsa-familia-cadunico",
+      "area": "renda",
+      "nome": "Bolsa Família e Cadastro Único",
+      "resumo": "Transferência de renda para famílias de baixa renda e o cadastro que dá acesso a vários programas sociais.",
+      "entes": {
+        "Municipal": "Cadastra e atualiza as famílias no Cadastro Único e acompanha as condicionalidades.",
+        "Estadual": "Pode ter programa de renda complementar próprio, conforme o Estado.",
+        "Federal": "Define as regras do Bolsa Família e do Cadastro Único e paga o benefício, por meio da Caixa."
+      },
+      "financiamento": "Benefício pago com recursos da União.",
+      "como_acessar": [
+        "Faça ou atualize o Cadastro Único no CRAS ou no posto de atendimento da prefeitura.",
+        "Consulte o benefício no aplicativo Bolsa Família ou na Caixa.",
+        "Dúvidas: Central do Ministério do Desenvolvimento e Assistência Social, telefone 121."
+      ],
+      "base": "Lei 14.601/2023 (Bolsa Família); Decreto 11.016/2022 (Cadastro Único).",
+      "competencia_id": "assistencia_social",
+      "links": {
+        "federal": [
+          {
+            "nome": "Bolsa Família",
+            "url": "https://www.gov.br/mds/pt-br/acoes-e-programas/bolsa-familia"
+          },
+          {
+            "nome": "Cadastro Único",
+            "url": "https://www.gov.br/mds/pt-br/acoes-e-programas/cadastro-unico"
+          }
+        ],
+        "estadual_sp": [],
+        "municipal_limeira": [
+          {
+            "nome": "Carta de Serviços ao Cidadão de Limeira",
+            "url": "https://www.limeira.sp.gov.br/apresentacao-carta-de-servicos"
+          }
+        ]
+      },
+      "palavras_chave": [
+        "bolsa familia",
+        "cadastro unico",
+        "cadunico",
+        "auxilio",
+        "transferencia de renda",
+        "nis"
+      ]
+    },
+    {
+      "slug": "inss-aposentadoria-bpc",
+      "area": "renda",
+      "nome": "INSS: aposentadoria, pensão, auxílio e BPC",
+      "resumo": "Benefícios previdenciários e assistenciais pagos pelo INSS aos trabalhadores e a quem não pode trabalhar.",
+      "entes": {
+        "Municipal": "Não concede benefício. Os servidores municipais têm regime próprio quando o município o criou.",
+        "Estadual": "Servidores estaduais têm regime próprio, administrado pelo Estado.",
+        "Federal": "O INSS concede aposentadoria, pensão, auxílio por incapacidade e o BPC/LOAS."
+      },
+      "financiamento": "Contribuições dos trabalhadores e empregadores e recursos da União.",
+      "como_acessar": [
+        "Peça pelo Meu INSS (site ou aplicativo) ou pelo telefone 135.",
+        "Reúna documentos pessoais, carteira de trabalho e comprovantes de contribuição.",
+        "Negativa: recurso administrativo e, se necessário, Juizado Especial Federal ou Defensoria Pública da União."
+      ],
+      "base": "Constituição Federal, arts. 201 e 203, V; Lei 8.213/1991; Emenda Constitucional 103/2019.",
+      "competencia_id": "previdencia_trabalho",
+      "links": {
+        "federal": [
+          {
+            "nome": "Meu INSS",
+            "url": "https://meu.inss.gov.br/"
+          },
+          {
+            "nome": "Defensoria Pública da União",
+            "url": "https://www.dpu.def.br/"
+          }
+        ],
+        "estadual_sp": [],
+        "municipal_limeira": [
+          {
+            "nome": "Carta de Serviços ao Cidadão de Limeira",
+            "url": "https://www.limeira.sp.gov.br/apresentacao-carta-de-servicos"
+          }
+        ]
+      },
+      "palavras_chave": [
+        "inss",
+        "aposentadoria",
+        "pensao",
+        "bpc",
+        "loas",
+        "auxilio doenca",
+        "auxilio por incapacidade",
+        "previdencia"
+      ]
+    },
+    {
+      "slug": "seguro-desemprego-fgts",
+      "area": "renda",
+      "nome": "Seguro-desemprego, FGTS e emprego",
+      "resumo": "Benefícios do trabalhador demitido sem justa causa e as vias para procurar emprego.",
+      "entes": {
+        "Municipal": "Alguns municípios mantêm posto de atendimento ao trabalhador, em parceria com o Estado ou a União.",
+        "Estadual": "Pode manter o Sine (intermediação de vagas e qualificação), em convênio com a União.",
+        "Federal": "Paga o seguro-desemprego e o abono salarial e administra o FGTS, por meio da Caixa."
+      },
+      "financiamento": "Seguro-desemprego e abono: Fundo de Amparo ao Trabalhador. FGTS: depósitos do empregador.",
+      "como_acessar": [
+        "Seguro-desemprego: solicite pelo aplicativo Carteira de Trabalho Digital ou pelo portal gov.br, nos prazos da lei.",
+        "FGTS: consulte o saldo no aplicativo FGTS da Caixa.",
+        "Vagas e qualificação: procure o Sine ou o posto de atendimento ao trabalhador."
+      ],
+      "base": "Constituição Federal, art. 7º, II e III; Lei 7.998/1990; Lei 8.036/1990.",
+      "competencia_id": "previdencia_trabalho",
+      "links": {
+        "federal": [
+          {
+            "nome": "Seguro-desemprego",
+            "url": "https://www.gov.br/trabalho-e-emprego/pt-br/servicos/trabalhador/seguro-desemprego"
+          },
+          {
+            "nome": "Ministério do Trabalho e Emprego",
+            "url": "https://www.gov.br/trabalho-e-emprego/pt-br"
+          }
+        ],
+        "estadual_sp": [
+          {
+            "nome": "Portal do Governo de São Paulo",
+            "url": "https://www.sp.gov.br/sp"
+          }
+        ],
+        "municipal_limeira": [
+          {
+            "nome": "Preparação para o Trabalho",
+            "url": "https://www.limeira.sp.gov.br/secretarias/preparacao-para-o-trabalho"
+          }
+        ]
+      },
+      "palavras_chave": [
+        "seguro desemprego",
+        "fgts",
+        "emprego",
+        "demissao",
+        "vaga de emprego",
+        "sine",
+        "abono salarial",
+        "carteira de trabalho"
+      ]
+    },
+    {
+      "slug": "impostos-quem-cobra",
+      "area": "renda",
+      "nome": "Impostos: quem cobra cada um",
+      "resumo": "Cada esfera cobra impostos diferentes. Saber de quem é o imposto mostra a quem cobrar a aplicação do dinheiro.",
+      "entes": {
+        "Municipal": "Cobra o IPTU (imóveis urbanos), o ISS (serviços) e o ITBI (compra de imóveis).",
+        "Estadual": "Cobra o ICMS (circulação de mercadorias), o IPVA (veículos) e o ITCMD (herança e doação).",
+        "Federal": "Cobra o Imposto de Renda, o IPI, o IOF e as contribuições sociais, e reparte parte da arrecadação com Estados e municípios."
+      },
+      "financiamento": "Parte do que a União e os Estados arrecadam volta aos municípios pelo FPM, FPE e cota do ICMS.",
+      "como_acessar": [
+        "Veja o inventário completo de tributos e quanto cada um arrecada na página Inventário de tributos.",
+        "IPTU e taxas: site da prefeitura. IPVA e ICMS: secretaria da Fazenda do Estado. Imposto de Renda: Receita Federal."
+      ],
+      "base": "Constituição Federal, arts. 145 a 156.",
+      "competencia_id": "tributos",
+      "links": {
+        "federal": [
+          {
+            "nome": "Receita Federal (CPF e impostos federais)",
+            "url": "https://www.gov.br/receitafederal/pt-br"
+          }
+        ],
+        "estadual_sp": [
+          {
+            "nome": "Portal do Governo de São Paulo",
+            "url": "https://www.sp.gov.br/sp"
+          }
+        ],
+        "municipal_limeira": [
+          {
+            "nome": "IPTU",
+            "url": "https://www.limeira.sp.gov.br/iptu2026"
+          },
+          {
+            "nome": "Portal da Transparência",
+            "url": "https://transparencia.limeira.sp.gov.br"
+          }
+        ]
+      },
+      "palavras_chave": [
+        "imposto",
+        "iptu",
+        "icms",
+        "ipva",
+        "imposto de renda",
+        "tributo",
+        "taxa",
+        "quem cobra"
+      ]
+    },
+    {
+      "slug": "minha-casa-minha-vida",
+      "area": "moradia",
+      "nome": "Minha Casa, Minha Vida e moradia popular",
+      "resumo": "Programa de moradia para famílias de baixa e média renda, com financiamento subsidiado.",
+      "entes": {
+        "Municipal": "Faz o cadastro e a seleção das famílias, indica terrenos e pode oferecer aluguel social.",
+        "Estadual": "Pode ter programas habitacionais próprios por meio de companhias estaduais de habitação.",
+        "Federal": "Define as regras e o financiamento do Minha Casa, Minha Vida, operado pela Caixa."
+      },
+      "financiamento": "Recursos da União e de fundos federais, com contrapartidas de Estados e municípios.",
+      "como_acessar": [
+        "Faça o cadastro habitacional na prefeitura. Em muitas cidades ele é feito pelo site da Secretaria de Habitação.",
+        "Mantenha o Cadastro Único atualizado, exigido em muitas faixas do programa.",
+        "Após a seleção, o financiamento é feito na Caixa Econômica Federal."
+      ],
+      "base": "Constituição Federal, art. 23, IX; Lei 14.620/2023 (Minha Casa, Minha Vida).",
+      "competencia_id": "moradia_programas",
+      "links": {
+        "federal": [
+          {
+            "nome": "Ministério das Cidades (Minha Casa, Minha Vida)",
+            "url": "https://www.gov.br/cidades/pt-br"
+          }
+        ],
+        "estadual_sp": [
+          {
+            "nome": "Portal do Governo de São Paulo",
+            "url": "https://www.sp.gov.br/sp"
+          }
+        ],
+        "municipal_limeira": [
+          {
+            "nome": "Cadastro habitacional",
+            "url": "https://www.limeira.sp.gov.br/cadastrohabitacional"
+          },
+          {
+            "nome": "Secretaria de Habitação",
+            "url": "https://www.limeira.sp.gov.br/secretarias/habitacao"
+          }
+        ]
+      },
+      "palavras_chave": [
+        "minha casa minha vida",
+        "mcmv",
+        "casa propria",
+        "moradia",
+        "cadastro habitacional",
+        "aluguel social",
+        "habitacao"
+      ]
+    },
+    {
+      "slug": "regularizacao-fundiaria",
+      "area": "moradia",
+      "nome": "Regularização do lote e escritura",
+      "resumo": "Transformar a posse em propriedade registrada, em núcleos urbanos informais.",
+      "entes": {
+        "Municipal": "Conduz a regularização fundiária (Reurb), aprova o projeto e emite a certidão necessária.",
+        "Estadual": "Pode apoiar com programas próprios e regras para áreas do Estado.",
+        "Federal": "Fixa a lei geral da regularização e cuida das áreas da União."
+      },
+      "financiamento": "Custos da regularização variam: o município pode arcar com parte para famílias de baixa renda.",
+      "como_acessar": [
+        "Procure a secretaria de habitação ou de planejamento da prefeitura para abrir o processo.",
+        "Depois da regularização, o registro da matrícula é feito no cartório de imóveis."
+      ],
+      "base": "Lei 13.465/2017 (Reurb); Constituição Federal, art. 182.",
+      "competencia_id": "moradia_programas",
+      "links": {
+        "federal": [
+          {
+            "nome": "Ministério das Cidades (Minha Casa, Minha Vida)",
+            "url": "https://www.gov.br/cidades/pt-br"
+          }
+        ],
+        "estadual_sp": [
+          {
+            "nome": "Portal do Governo de São Paulo",
+            "url": "https://www.sp.gov.br/sp"
+          }
+        ],
+        "municipal_limeira": [
+          {
+            "nome": "Secretaria de Habitação",
+            "url": "https://www.limeira.sp.gov.br/secretarias/habitacao"
+          },
+          {
+            "nome": "Planejamento e Urbanismo",
+            "url": "https://www.limeira.sp.gov.br/secretarias/planejamento-e-urbanismo"
+          }
+        ]
+      },
+      "palavras_chave": [
+        "regularizacao",
+        "regularizacao fundiaria",
+        "escritura",
+        "reurb",
+        "titulo de propriedade",
+        "lote",
+        "usucapiao"
+      ]
+    },
+    {
+      "slug": "defesa-civil",
+      "area": "moradia",
+      "nome": "Defesa Civil, enchentes e deslizamentos",
+      "resumo": "Prevenção, alerta e socorro em chuvas fortes, enchentes, deslizamentos e outros desastres.",
+      "entes": {
+        "Municipal": "Mapeia áreas de risco, vistoria imóveis, emite alertas e organiza abrigos. É a primeira a agir.",
+        "Estadual": "Coordena as ações regionais e apoia os municípios, junto com o Corpo de Bombeiros.",
+        "Federal": "Reconhece situação de emergência e calamidade e repassa recursos para resposta e reconstrução."
+      },
+      "financiamento": "Orçamento dos três níveis e transferências federais em desastres.",
+      "como_acessar": [
+        "Emergência: ligue 199 (Defesa Civil) ou 193 (Bombeiros).",
+        "Receba alertas no celular enviando o seu CEP por SMS para 40199.",
+        "Casa em área de risco: peça vistoria à Defesa Civil do município."
+      ],
+      "base": "Lei 12.608/2012 (Política Nacional de Proteção e Defesa Civil); Constituição Federal, art. 21, XVIII.",
+      "competencia_id": "meio_ambiente_urbano",
+      "links": {
+        "federal": [
+          {
+            "nome": "Proteção e Defesa Civil (Ministério da Integração)",
+            "url": "https://www.gov.br/mdr/pt-br/assuntos/protecao-e-defesa-civil"
+          }
+        ],
+        "estadual_sp": [
+          {
+            "nome": "Portal do Governo de São Paulo",
+            "url": "https://www.sp.gov.br/sp"
+          }
+        ],
+        "municipal_limeira": [
+          {
+            "nome": "Segurança Pública e Defesa Civil",
+            "url": "https://www.limeira.sp.gov.br/secretarias/seguranca-publica-e-defesa-civil"
+          }
+        ]
+      },
+      "palavras_chave": [
+        "defesa civil",
+        "enchente",
+        "alagamento",
+        "deslizamento",
+        "desastre",
+        "area de risco",
+        "chuva forte"
+      ]
+    },
+    {
+      "slug": "poda-areas-verdes",
+      "area": "moradia",
+      "nome": "Poda de árvores e áreas verdes",
+      "resumo": "Poda, corte de árvores, praças e áreas verdes, e denúncia de dano ambiental.",
+      "entes": {
+        "Municipal": "Cuida das árvores das calçadas e praças e autoriza podas e cortes, conforme a lei local.",
+        "Estadual": "Licencia e fiscaliza atividades e áreas protegidas de interesse estadual.",
+        "Federal": "Fixa o Código Florestal e atua em áreas protegidas federais, por meio do Ibama e do ICMBio."
+      },
+      "financiamento": "Orçamento do município e das esferas responsáveis pelo licenciamento.",
+      "como_acessar": [
+        "Poda ou corte de árvore da calçada ou da praça: peça à prefeitura. Podar por conta própria pode gerar multa.",
+        "Árvore sobre fio de energia: acione a distribuidora de energia.",
+        "Maus-tratos ao meio ambiente ou desmatamento: denuncie à Secretaria de Meio Ambiente, à polícia ambiental e ao Ibama (0800 061 8080)."
+      ],
+      "base": "Lei Complementar 140/2011; Lei 12.651/2012 (Código Florestal); Constituição Federal, art. 225.",
+      "competencia_id": "meio_ambiente_urbano",
+      "links": {
+        "federal": [
+          {
+            "nome": "Ibama",
+            "url": "https://www.gov.br/ibama/pt-br"
+          }
+        ],
+        "estadual_sp": [
+          {
+            "nome": "CETESB (licenciamento e fiscalização ambiental)",
+            "url": "https://www.cetesb.sp.gov.br/cetesb"
+          }
+        ],
+        "municipal_limeira": [
+          {
+            "nome": "Meio Ambiente e Saneamento",
+            "url": "https://www.limeira.sp.gov.br/secretarias/meio-ambiente-e-saneamento"
+          },
+          {
+            "nome": "Serviços de zeladoria urbana",
+            "url": "https://www.limeira.sp.gov.br/servicos-de-zeladoria-urbana"
+          }
+        ]
+      },
+      "palavras_chave": [
+        "poda",
+        "arvore",
+        "arvore caida",
+        "praca",
+        "area verde",
+        "desmatamento",
+        "queimada",
+        "meio ambiente"
+      ]
+    }
+  ],
+  "referencias": {
+    "federal": [
+      {
+        "nome": "Serviços do Governo Federal (gov.br)",
+        "url": "https://www.gov.br/pt-br/servicos"
+      },
+      {
+        "nome": "Constituição Federal",
+        "url": "https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm"
+      },
+      {
+        "nome": "Ministério da Saúde (SUS)",
+        "url": "https://www.gov.br/saude/pt-br"
+      },
+      {
+        "nome": "Ministério do Desenvolvimento e Assistência Social (SUAS)",
+        "url": "https://www.gov.br/mds/pt-br"
+      }
+    ],
+    "estadual_sp": [
+      {
+        "nome": "Portal do Governo de São Paulo",
+        "url": "https://www.sp.gov.br/sp"
+      },
+      {
+        "nome": "Poupatempo São Paulo",
+        "url": "https://www.poupatempo.sp.gov.br/servicos/"
+      }
+    ],
+    "municipal_limeira": [
+      {
+        "nome": "Carta de Serviços ao Cidadão de Limeira",
+        "url": "https://www.limeira.sp.gov.br/apresentacao-carta-de-servicos"
+      },
+      {
+        "nome": "Portal da Transparência de Limeira",
+        "url": "https://transparencia.limeira.sp.gov.br"
+      }
+    ],
+    "lei_carta_servicos": {
+      "nome": "Lei 13.460/2017 (Carta de Serviços ao Usuário)",
+      "url": "https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2017/lei/l13460.htm"
+    }
+  }
+}

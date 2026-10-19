@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dívida e títulos públicos — ImpactoCidadão</title>
+    <meta name="description" content="Resultado fiscal, necessidade de financiamento, emissões e resgates de títulos, estoque e vencimentos da dívida pública federal.">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="assets/tailwind-config.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <style>
+        body { font-family: 'Inter', system-ui, sans-serif; }
+        :focus-visible { outline: 2px solid #A92823; outline-offset: 2px; }
+        .grafico { position: relative; height: 320px; }
+        dialog::backdrop { background: rgba(0, 0, 0, .55); }
+    </style>
+    <link rel="stylesheet" href="assets/brutalista.css">
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-full flex flex-col transition-colors duration-200">
+
+<a href="#conteudo" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-white focus:text-slate-900 focus:p-3">Ir para o conteúdo</a>
+<div id="cabecalho"></div>
+
+<main id="conteudo" class="max-w-6xl mx-auto px-4 sm:px-6 pt-6 pb-10 flex-grow w-full space-y-10">
+    <header>
+        <h1 class="text-2xl font-extrabold tracking-tight">Necessidade de financiamento e dívida pública federal</h1>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Como o resultado das contas se liga à emissão de títulos, aos resgates e ao tamanho da dívida. Fontes: Banco Central (SGS) e Tesouro Nacional.</p>
+        <div class="mt-3 flex flex-wrap items-center gap-3">
+            <button id="btnModal" type="button" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold">
+                <i class="fa-solid fa-lightbulb" aria-hidden="true"></i>Entenda a relação entre déficit e dívida</button>
+            <p id="referencias" class="text-xs text-slate-500" aria-live="polite"></p>
+        </div>
+    </header>
+
+    <div id="estado"></div>
+    <div id="conteudoModulo" class="hidden space-y-10"></div>
+</main>
+
+<dialog id="modal" class="w-[94vw] max-w-2xl rounded-2xl p-0 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100">
+    <div class="p-5 sm:p-6 max-h-[85vh] overflow-auto">
+        <div class="flex items-start justify-between gap-3">
+            <h2 class="text-lg font-bold">Por que déficit não é igual à emissão de títulos?</h2>
+            <button id="btnFechar" type="button" class="p-1.5 -m-1.5 text-slate-500 hover:text-slate-800 dark:hover:text-white" aria-label="Fechar"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+        </div>
+        <ol class="mt-4 space-y-4 text-sm leading-relaxed">
+            <li><b>1. O déficit é o resultado do período.</b> Se o governo gastou mais do que arrecadou (contando os juros), há um <b>déficit nominal</b>. Ele cria uma <i>necessidade de financiamento</i>: é preciso arranjar o dinheiro de algum modo.</li>
+            <li><b>2. A emissão bruta de títulos não serve só para pagar déficit novo.</b>
+                <ul class="mt-1 list-disc pl-5 space-y-1 text-slate-600 dark:text-slate-300">
+                    <li><b>Rolagem (refinanciamento):</b> grande parte das emissões paga títulos antigos que venceram no mês (os <i>resgates</i>).</li>
+                    <li><b>Colchão de liquidez:</b> o Tesouro pode emitir além do necessário para guardar caixa para vencimentos futuros.</li>
+                    <li><b>Operações de mercado:</b> o Banco Central usa títulos para gerir a liquidez da economia.</li>
+                </ul></li>
+            <li><b>3. A dívida cresce mesmo sem emissão nova.</b> Mesmo com emissão líquida zero, o estoque aumenta porque os <b>juros</b> são apropriados sobre o saldo existente e porque a parte atrelada ao <b>câmbio</b> muda com o dólar.</li>
+        </ol>
+        <div class="mt-5 rounded-xl bg-slate-100 dark:bg-slate-900/60 p-4 text-sm">
+            <p class="font-bold">A equação da dívida (simplificada)</p>
+            <p class="mt-1 font-mono text-[13px]">Estoque novo = estoque anterior + emissão líquida + juros apropriados + variação cambial + outros ajustes</p>
+            <p class="mt-2 text-xs text-slate-500">Emissão líquida = emissões brutas − resgates. Nesta página, a “diferença” mostrada entre a variação do estoque e a emissão líquida agrupa juros, câmbio e ajustes; ela é um cálculo nosso, não uma série oficial.</p>
+        </div>
+        <p class="mt-4 text-xs text-slate-500">Por isso as medidas são distintas: <b>déficit</b> (resultado do período), <b>emissão bruta</b>, <b>resgates</b>, <b>emissão líquida</b> e <b>variação do estoque</b>.</p>
+    </div>
+</dialog>
+
+<div id="rodape"></div>
+
+<script src="assets/comum.js"></script>
+<script>
+renderLayout('financiamento');
+
+/* ---------- utilidades ---------- */
+const mi = (n) => (n == null ? null : Number(n) * 1e6);   // R$ milhões → R$
+const reais = (n) => {
+    if (n == null) return '—';
+    const v = Math.abs(Number(n)), s = n < 0 ? '−' : '';
+    if (v >= 1e12) return `${s}R$ ${(v / 1e12).toLocaleString('pt-BR', { maximumFractionDigits: 2 })} tri`;
+    if (v >= 1e9) return `${s}R$ ${(v / 1e9).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} bi`;
+    if (v >= 1e6) return `${s}R$ ${(v / 1e6).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} mi`;
+    return `${s}${brl(v)}`;
+};
+const reaisMi = (m) => reais(mi(m));
+const pct = (v, d = 1) => (v == null ? '—' : `${Number(v).toLocaleString('pt-BR', { maximumFractionDigits: d })}%`);
+const fmtMes = (aaaaMm) => (aaaaMm ? aaaaMm.split('-').reverse().join('/') : '—');
+const sinalFiscal = (v) => (v == null ? '' : v > 0
+    ? '<span class="text-rose-600 dark:text-rose-400">Déficit</span>' : '<span class="text-emerald-600 dark:text-emerald-400">Superávit</span>');
+const cartao = (inner, extra = '') => `<div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 ${extra}">${inner}</div>`;
+const secao = (n, titulo, sub, corpo) => `<section aria-labelledby="b${n}"><p class="text-xs font-bold uppercase tracking-wider text-brand-700 dark:text-brand-400">${n}</p>
+    <h2 id="b${n}" class="text-xl font-bold">${esc(titulo)}</h2><p class="text-sm text-slate-500 dark:text-slate-400 mb-3">${sub}</p>${corpo}</section>`;
+const ehEscuro = () => document.documentElement.classList.contains('dark');
+const corTexto = () => (ehEscuro() ? '#cbd5e1' : '#475569');
+const corGrade = () => (ehEscuro() ? 'rgba(148,163,184,.18)' : 'rgba(100,116,139,.18)');
+const CORES = { fiscal: '#e11d48', liquida: '#A92823', estoque: '#7c3aed', emissao: '#059669', resgate: '#d97706' };
+const graficos = {};
+function desenharGrafico(id, config) {
+    if (graficos[id]) graficos[id].destroy();
+    const c = config; c.options = c.options || {};
+    c.options.responsive = true; c.options.maintainAspectRatio = false;
+    c.options.plugins = { ...(c.options.plugins || {}), legend: { labels: { color: corTexto() } } };
+    for (const eixo of Object.values(c.options.scales || {})) {
+        eixo.ticks = { ...(eixo.ticks || {}), color: corTexto() };
+        eixo.grid = { ...(eixo.grid || {}), color: corGrade() };
+        if (eixo.title) eixo.title.color = corTexto();
+    }
+    graficos[id] = new Chart($(id), c);
+}
+
+/* ---------- glossário ---------- */
+let GLOSS = {};
+async function carregarGlossario() {
+    try {
+        const r = await fetch('assets/glossario.json');
+        if (r.ok) for (const t of Object.values(await r.json())) Object.assign(GLOSS, t);
+    } catch (_) { /* a página funciona sem o glossário */ }
+}
+const gl = (sigla) => {
+    const g = GLOSS[sigla]; if (!g) return '';
+    return ` <a href="glossario.html#${encodeURIComponent(sigla)}" title="${esc(g.nome_cidadao)}: ${esc(g.explicacao_simples)}" aria-label="${esc(g.nome_cidadao)}: ver no glossário"
+        class="inline-flex items-center justify-center w-4 h-4 rounded-full bg-slate-200 dark:bg-slate-700 text-[10px] font-bold text-slate-600 dark:text-slate-300 hover:bg-brand-500 hover:text-white align-middle">?</a>`;
+};
+
+/* ---------- blocos ---------- */
+const metrica = (rotulo, c, tipo) => {
+    if (!c) return cartao(`<p class="text-xs font-semibold text-slate-500">${rotulo}</p><p class="text-sm text-slate-500 mt-2">Série indisponível.</p>`);
+    const fisc = tipo === 'fiscal';
+    const delta = c.valor != null && c.mes_anterior != null ? c.valor - c.mes_anterior : null;
+    return cartao(`<p class="text-xs font-semibold text-slate-500">${rotulo}</p>
+        <p class="text-2xl font-extrabold mt-1">${reaisMi(c.valor)} ${fisc ? sinalFiscal(c.valor) : ''}</p>
+        <p class="text-xs text-slate-500">Mês: ${esc(fmtMes(c.mes))}</p>
+        <ul class="mt-2 text-xs text-slate-600 dark:text-slate-400 space-y-0.5">
+            <li>Mês anterior: <b>${reaisMi(c.mes_anterior)}</b>${delta != null ? ` (${delta >= 0 ? '+' : '−'}${reaisMi(Math.abs(delta)).replace('R$ ', '')})` : ''}</li>
+            <li>Mesmo mês, ano anterior: <b>${reaisMi(c.mesmo_mes_ano_anterior)}</b></li>
+            ${c.acumulado_12m != null ? `<li>12 meses: <b>${reaisMi(c.acumulado_12m)}</b> · 12 meses anteriores: <b>${reaisMi(c.acumulado_12m_anterior)}</b></li>` : ''}
+        </ul>`);
+};
+
+function blocoComparativo(d) {
+    const nomes = [['primario', 'Resultado primário', true], ['nominal', 'Resultado nominal (NFSP)', true], ['juros', 'Juros nominais', true],
+        ['emissoes', 'Emissões brutas', true], ['resgates', 'Resgates', true], ['emissao_liquida', 'Emissão líquida', true],
+        ['variacao_estoque', 'Variação do estoque da DPF', true], ['estoque', 'Estoque da DPF', false]];
+    const lin = nomes.map(([k, n]) => {
+        const c = d.comparativos[k]; if (!c) return '';
+        const dif = c.valor != null && c.mes_anterior != null ? c.valor - c.mes_anterior : null;
+        return `<tr class="border-t border-slate-100 dark:border-slate-700"><th scope="row" class="p-2 text-left font-medium">${esc(n)}<span class="block text-[11px] font-normal text-slate-400">${esc(fmtMes(c.mes))}</span></th>
+            <td class="p-2 text-right">${reaisMi(c.valor)}</td><td class="p-2 text-right">${reaisMi(c.mes_anterior)}</td>
+            <td class="p-2 text-right">${dif == null ? '—' : (dif >= 0 ? '+' : '−') + reaisMi(Math.abs(dif)).replace('R$ ', '')}</td>
+            <td class="p-2 text-right">${reaisMi(c.mesmo_mes_ano_anterior)}</td>
+            <td class="p-2 text-right">${c.acumulado_12m != null ? reaisMi(c.acumulado_12m) : '—'}</td><td class="p-2 text-right">${c.acumulado_12m_anterior != null ? reaisMi(c.acumulado_12m_anterior) : '—'}</td></tr>`;
+    }).join('');
+    return `<div class="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"><table class="w-full text-sm">
+        <thead class="bg-slate-100 dark:bg-slate-700/60 text-xs"><tr><th class="p-2 text-left">Indicador</th><th class="p-2 text-right">Mês atual</th><th class="p-2 text-right">Mês anterior</th>
+        <th class="p-2 text-right">Variação</th><th class="p-2 text-right">Mesmo mês, ano anterior</th><th class="p-2 text-right">12 meses</th><th class="p-2 text-right">12 meses anteriores</th></tr></thead>
+        <tbody>${lin}</tbody></table></div>
+        <p class="text-[11px] text-slate-400 mt-2">Cada linha usa o último mês disponível da sua própria fonte (por isso os meses podem diferir). Fluxos: R$; positivo no resultado fiscal = déficit.</p>`;
+}
+
+function desenhar(d) {
+    const c = d.comparativos;
+    const e = d.estoque, v = d.vencimentos, comp = d.composicao;
+    const refs = [];
+    if (c.nominal) refs.push(`Resultado fiscal até ${fmtMes(c.nominal.mes)}`);
+    if (c.emissoes) refs.push(`emissões e resgates até ${fmtMes(c.emissoes.mes)}`);
+    if (c.estoque) refs.push(`estoque até ${fmtMes(c.estoque.mes)}`);
+    $('referencias').textContent = refs.join(' · ') + ` · consultado em ${fmtDataHora(d.consultado_em)}`;
+
+    const b1 = secao('1', 'Resultado fiscal do período', 'Fluxo mensal do setor público consolidado (Banco Central). Positivo = déficit.' + gl('FLUXO'),
+        `<div class="grid sm:grid-cols-2 gap-4">${metrica('Resultado primário (sem juros)', c.primario, 'fiscal')}${metrica('Resultado nominal (com juros)', c.nominal, 'fiscal')}</div>
+         <div class="mt-4">${metrica('Juros nominais do período', c.juros, 'fiscal')}</div>`);
+
+    const n = d.nfsp;
+    const b2 = secao('2', 'Necessidade de Financiamento do Setor Público (NFSP)', 'O resultado nominal é, na prática, a NFSP: o quanto o setor público precisou se financiar.' + gl('NFSP'),
+        cartao(`<dl class="grid sm:grid-cols-2 gap-x-6 gap-y-3 text-sm">
+            <div><dt class="text-xs font-semibold text-slate-500">Indicador</dt><dd>${esc(n.indicador)}</dd></div>
+            <div><dt class="text-xs font-semibold text-slate-500">Metodologia</dt><dd>${esc(n.metodologia)}</dd></div>
+            <div><dt class="text-xs font-semibold text-slate-500">Abrangência</dt><dd>${esc(n.abrangencia)}</dd></div>
+            <div><dt class="text-xs font-semibold text-slate-500">Sinal</dt><dd>${esc(n.sinal)}</dd></div></dl>
+            <p class="text-[11px] text-slate-400 mt-3">Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(n.url))}">Banco Central — SGS ${esc(n.serie_bcb)} (metadados)</a>. Periodicidade mensal; unidade R$ milhões.</p>`));
+
+    const b3 = secao('3', 'Emissões brutas de títulos', 'Quanto o Tesouro vendeu de títulos no mês (DPMFi interna + DPFe externa).' + gl('EMISSAO_BRUTA'),
+        metrica('Emissões brutas', c.emissoes));
+    const b4 = secao('4', 'Resgates de títulos', 'Vencimentos, recompras e outros resgates: dívida que saiu do estoque.' + gl('RESGATE'),
+        metrica('Resgates', c.resgates));
+    const b5 = secao('5', 'Emissão líquida', 'Emissões brutas − resgates. Positiva = o Tesouro vendeu mais do que resgatou; negativa = resgatou mais.' + gl('EMISSAO_LIQUIDA'),
+        metrica('Emissão líquida (emissões − resgates)', c.emissao_liquida));
+
+    const b6 = e ? secao('6', 'Estoque da Dívida Pública Federal', 'Saldo (estoque) da dívida do governo federal em títulos e contratos. Não é a dívida líquida do setor público.' + gl('DPF'),
+        `<div class="grid sm:grid-cols-3 gap-4">
+            ${cartao(`<p class="text-xs font-semibold text-slate-500">DPF total · ${esc(fmtMes(e.referencia))}</p><p class="text-2xl font-extrabold mt-1">${reais(e.total)}</p>
+                <p class="text-xs text-slate-500">Variação no mês: <b>${c.variacao_estoque && c.variacao_estoque.valor != null ? (c.variacao_estoque.valor >= 0 ? '+' : '−') + reaisMi(Math.abs(c.variacao_estoque.valor)).replace('R$ ', '') : '—'}</b></p>`)}
+            ${cartao(`<p class="text-xs font-semibold text-slate-500">Interna (DPMFi) × externa (DPFe)${gl('DPMFI_DPFE')}</p><p class="text-lg font-bold mt-1">${pct(e.pct_dpmfi)} × ${pct(e.pct_dpfe)}</p>
+                <p class="text-xs text-slate-500">${reais(e.dpmfi)} · ${reais(e.dpfe)}</p>`)}
+            ${cartao(`<p class="text-xs font-semibold text-slate-500">Em mercado × carteira do Banco Central</p><p class="text-lg font-bold mt-1">${reais(e.mercado)} · ${reais(e.banco_central)}</p>
+                <p class="text-xs text-slate-500">O Banco Central usa títulos para gerir a liquidez.</p>`)}
+        </div>`) : '';
+
+    const b7 = v ? secao('7', 'Cronograma de vencimentos futuros', `Quanto do estoque vence em cada prazo (referência ${esc(fmtMes(v.referencia))}). Mostra a necessidade de refinanciamento.` + gl('ROLAGEM'),
+        `<div class="grid sm:grid-cols-3 gap-4">
+            ${[['Curto prazo (até 12 meses)', v.curto, 'bg-emerald-500'], ['Médio prazo (1 a 3 anos)', v.medio, 'bg-amber-500'], ['Longo prazo (mais de 3 anos)', v.longo, 'bg-sky-500']]
+              .map(([t, x, cor]) => cartao(`<p class="text-xs font-semibold text-slate-500"><span class="inline-block w-2.5 h-2.5 rounded-full ${cor} mr-1.5"></span>${t}</p>
+                <p class="text-2xl font-extrabold mt-1">${reais(x.valor)}</p><p class="text-xs text-slate-500">${pct(x.pct)} do estoque</p>`)).join('')}
+        </div>
+        <div class="mt-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4"><h3 class="font-bold text-sm">Vencimentos mês a mês nos próximos 12 meses (R$ bilhões)</h3><div class="grafico"><canvas id="gVenc"></canvas></div></div>
+        <p class="mt-3 text-sm text-slate-600 dark:text-slate-400"><b>O que isso diz ao cidadão:</b> nos próximos 12 meses o Tesouro precisará emitir novos títulos ou usar o caixa para pagar ${pct(v.curto.pct)} do estoque. Quanto menor a parcela de curto prazo, menor o risco de refinanciamento.</p>
+        <p class="text-[11px] text-slate-400 mt-1">${esc(v.nota)}</p>`) : '';
+
+    const b8 = comp ? secao('8', 'Custo e composição da dívida', 'Indexadores e prazo da dívida; o custo médio oficial vem do Relatório Mensal da Dívida.' + gl('INDEXADOR'),
+        `<div class="grid lg:grid-cols-2 gap-4">
+            <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4"><h3 class="font-bold text-sm">Indexadores (% do estoque, ${esc(fmtMes(comp.referencia))})</h3><div class="grafico"><canvas id="gIdx"></canvas></div></div>
+            <div class="space-y-4">
+                ${cartao(`<p class="text-xs font-semibold text-slate-500">Prazo médio do estoque (aprox.)</p>
+                    <p class="text-2xl font-extrabold mt-1">${comp.prazo_medio_anos != null ? comp.prazo_medio_anos.toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + ' anos' : '—'}</p>
+                    <p class="text-xs text-slate-500">Um ano antes: ${comp.prazo_medio_anos_ano_anterior != null ? comp.prazo_medio_anos_ano_anterior.toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + ' anos' : '—'}</p>`)}
+                ${cartao(`<p class="text-xs font-semibold text-slate-500">Custo médio da dívida</p>
+                    <p class="text-sm mt-1">${esc(d.custo_medio.motivo)}</p>
+                    <a class="inline-block mt-2 text-xs underline" target="_blank" rel="noopener" href="${esc(urlSegura(d.custo_medio.url))}">Relatório Mensal da Dívida (Tesouro)</a>`)}
+                <p class="text-[11px] text-slate-400">${esc(comp.nota)}</p>
+            </div>
+        </div>`) : '';
+
+    const b9 = secao('9', 'Comparativo histórico', 'Mês atual × mês anterior × mesmo mês do ano anterior, e acumulado de 12 meses × 12 meses anteriores.', blocoComparativo(d));
+    const b10 = secao('10', 'Gráficos', 'Resultado fiscal, emissão líquida e variação do estoque no mesmo período; e emissões × resgates.',
+        `<div class="grid lg:grid-cols-2 gap-4">
+            <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4"><h3 class="font-bold text-sm">Resultado nominal × emissão líquida × variação do estoque (R$ bilhões)</h3><div class="grafico"><canvas id="gComp"></canvas></div></div>
+            <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4"><h3 class="font-bold text-sm">Emissões × resgates (barras) e estoque da DPF (linha, R$ trilhões)</h3><div class="grafico"><canvas id="gEmi"></canvas></div></div>
+        </div>
+        <p class="text-[11px] text-slate-400 mt-2">O resultado nominal é do setor público consolidado (Banco Central); emissões, resgates e estoque são da dívida federal (Tesouro). A diferença entre a variação do estoque e a emissão líquida agrupa juros apropriados, câmbio e ajustes: cálculo nosso.</p>`);
+
+    $('conteudoModulo').innerHTML = [b1, b2, b3, b4, b5, b6, b7, b8, b9, b10].join('');
+    $('conteudoModulo').classList.remove('hidden');
+    graficos_(d);
+}
+
+function graficos_(d) {
+    const serie = d.serie.slice(-24);
+    const rot = serie.map((l) => fmtMes(l.mes));
+    const bi = (x) => (x == null ? null : Number(x) / 1e3);   // R$ milhões → R$ bilhões
+    desenharGrafico('gComp', { type: 'bar', data: { labels: rot, datasets: [
+        { label: 'Resultado nominal (déficit +)', data: serie.map((l) => bi(l.nominal)), backgroundColor: CORES.fiscal },
+        { label: 'Emissão líquida', data: serie.map((l) => bi(l.emissao_liquida)), backgroundColor: CORES.liquida },
+        { label: 'Variação do estoque da DPF', data: serie.map((l) => bi(l.variacao_estoque)), backgroundColor: CORES.estoque }] },
+        options: { scales: { x: { ticks: { maxTicksLimit: 12 } }, y: { title: { display: true, text: 'R$ bilhões' } } } } });
+    desenharGrafico('gEmi', { data: { labels: rot, datasets: [
+        { type: 'bar', label: 'Emissões brutas', data: serie.map((l) => bi(l.emissoes)), backgroundColor: CORES.emissao, yAxisID: 'y' },
+        { type: 'bar', label: 'Resgates', data: serie.map((l) => bi(l.resgates)), backgroundColor: CORES.resgate, yAxisID: 'y' },
+        { type: 'line', label: 'Estoque da DPF (tri)', data: serie.map((l) => (l.estoque == null ? null : l.estoque / 1e6)), borderColor: CORES.estoque, backgroundColor: CORES.estoque, yAxisID: 'y1', pointRadius: 2, spanGaps: true }] },
+        options: { scales: { x: { ticks: { maxTicksLimit: 12 } }, y: { title: { display: true, text: 'R$ bilhões' } },
+            y1: { position: 'right', grid: { drawOnChartArea: false }, title: { display: true, text: 'R$ trilhões' } } } } });
+    if (d.vencimentos) {
+        const cal = d.vencimentos.proximos_12_meses;
+        desenharGrafico('gVenc', { type: 'bar', data: { labels: cal.map((x) => fmtMes(x.mes)), datasets: [{ label: 'Vencendo no mês (R$ bilhões)', data: cal.map((x) => x.valor / 1e9), backgroundColor: '#A92823' }] },
+            options: { scales: { y: { title: { display: true, text: 'R$ bilhões' } } } } });
+    }
+    if (d.composicao) {
+        const ix = d.composicao.indexadores;
+        desenharGrafico('gIdx', { type: 'doughnut', data: { labels: ix.map((i) => `${i.nome} (${pct(i.pct)})`), datasets: [{ data: ix.map((i) => i.valor / 1e9),
+            backgroundColor: ['#A92823', '#059669', '#d97706', '#7c3aed', '#64748b'] }] },
+            options: { plugins: { tooltip: { callbacks: { label: (c) => `${c.label.split(' (')[0]}: R$ ${Number(c.parsed).toLocaleString('pt-BR', { maximumFractionDigits: 0 })} bi` } } } } });
+    }
+}
+
+/* ---------- modal ---------- */
+$('btnModal').addEventListener('click', () => $('modal').showModal());
+$('btnFechar').addEventListener('click', () => $('modal').close());
+$('modal').addEventListener('click', (ev) => { if (ev.target === $('modal')) $('modal').close(); });
+
+/* ---------- início ---------- */
+(async function iniciar() {
+    $('estado').innerHTML = '<p class="text-sm text-slate-500" aria-live="polite"><i class="fa-solid fa-spinner fa-spin mr-1.5" aria-hidden="true"></i>Consultando Banco Central e Tesouro Nacional (a primeira consulta pode levar cerca de um minuto)…</p>';
+    await carregarGlossario();
+    try {
+        const d = await api('/api/macro/financiamento');
+        $('estado').innerHTML = d.erros.length ? `<div class="text-xs text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 rounded-lg px-3 py-2">${d.erros.map(esc).join(' ')}</div>` : '';
+        desenhar(d);
+        document.getElementById('btnTema')?.addEventListener('click', () => setTimeout(() => graficos_(d), 50));
+    } catch (e) { $('estado').innerHTML = mensagemErro(e); }
+})();
+</script>
+</body>
+</html>

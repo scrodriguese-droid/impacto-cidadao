@@ -1,0 +1,152 @@
+{
+  "aviso": "Cenário ilustrativo. Mostra efeitos que costumam ser relatados quando uma verba é bloqueada ou cortada. Não é previsão para a sua cidade nem estimativa do governo: os valores em reais vêm do orçamento declarado ao Tesouro Nacional, e o resto é uma régua didática.",
+  "escala": [
+    { "id": "nenhum", "de": 0, "ate": 0, "rotulo": "Sem corte", "resumo": "O orçamento da área segue como planejado." },
+    { "id": "leve", "de": 1, "ate": 5, "rotulo": "Corte leve", "resumo": "Instabilidade, atrasos e falhas pontuais." },
+    { "id": "medio", "de": 6, "ate": 15, "rotulo": "Corte médio", "resumo": "Racionamento, filas e queda na qualidade." },
+    { "id": "grave", "de": 16, "ate": 35, "rotulo": "Corte grave", "resumo": "Fechamento de unidades e paralisação de projetos." },
+    { "id": "extremo", "de": 36, "ate": 100, "rotulo": "Corte extremo", "resumo": "Colapso do serviço e fim do programa." }
+  ],
+  "regras": [
+    { "titulo": "Despesa obrigatória não se corta no bloqueio", "texto": "Aposentadorias e pensões, salários previstos em lei e juros e amortização da dívida são obrigações. A Lei de Responsabilidade Fiscal impede que sejam contingenciados. Só mudam se a lei mudar.", "base": "LRF, art. 9º, § 2º" },
+    { "titulo": "Saúde e educação têm piso constitucional", "texto": "Estados e municípios devem aplicar no mínimo 12% e 15% da receita de impostos em saúde e 25% em educação. A União também tem pisos. Cortar abaixo deles é ilegal.", "base": "CF, arts. 198 e 212; LC 141/2012" },
+    { "titulo": "O corte recai sobre o que sobra", "texto": "Como as obrigações não se cortam, o bloqueio costuma atingir investimentos e custeio, como obras, manutenção e material. É por isso que montar a LOA é uma equação difícil: toda economia em um lugar tira de outro.", "base": "LRF, art. 9º; Constituição Federal, art. 165" }
+  ],
+  "areas": [
+    {
+      "id": "saude", "funcao": "Saúde", "titulo": "Saúde",
+      "estagios": {
+        "leve": "Faltas pontuais de remédios de uso contínuo nas unidades por uma ou duas semanas. Dias de vacinação em postos móveis cancelados.",
+        "medio": "Cotas menores de remédios na Farmácia Popular. Atraso nas rondas contra o Aedes aegypti. Filas mais longas nas UPAs.",
+        "grave": "Demissão de equipes de Saúde da Família e de psicólogos dos CAPS. Cirurgias eletivas canceladas. Atraso no início de tratamentos, como os oncológicos.",
+        "extremo": "Fechamento de CAPS e de postos de bairro."
+      },
+      "cadeia": "Sem atenção básica, casos que se resolveriam na UBS chegam às emergências, que ficam sobrecarregadas. Quem pode recorre ao atendimento privado e paga por conta própria.",
+      "legal": "A Constituição fixa piso para a saúde: 15% da receita de impostos nos municípios e 12% nos estados. Cortar abaixo disso é ilegal.",
+      "base": "CF, art. 198; LC 141/2012"
+    },
+    {
+      "id": "educacao", "funcao": "Educação", "titulo": "Educação",
+      "estagios": {
+        "leve": "Pequenos reparos e reformas em escolas adiados. Menos verba para eventos culturais e material complementar.",
+        "medio": "Cardápio da merenda mais restrito. Rotas de transporte escolar rural cortadas. Novas bolsas de pesquisa congeladas.",
+        "grave": "Turmas de educação de jovens e adultos e creches em tempo integral fechadas. Terceirizados de limpeza e segurança dispensados em escolas e universidades.",
+        "extremo": "Desativação de creches públicas e encerramento de campus de universidade ou de instituto federal."
+      },
+      "cadeia": "Sem creche, quem cuida da criança muitas vezes deixa de trabalhar ou passa a pagar a rede privada.",
+      "legal": "Piso constitucional: 25% da receita de impostos nos estados e municípios e 18% na União.",
+      "base": "CF, art. 212"
+    },
+    {
+      "id": "defesa", "funcao": "Defesa", "titulo": "Defesa Nacional", "so_uniao": true,
+      "estagios": {
+        "leve": "Menos exercícios de simulação e treinamentos.",
+        "medio": "Menos horas de voo de patrulha e dias de navegação. Combustível racionado.",
+        "grave": "Postos avançados de fiscalização em fronteiras desativados. Projetos de tecnologia de defesa, como Prosub e Gripen, paralisados.",
+        "extremo": "Suspensão do alistamento obrigatório e menor capacidade de resposta a ameaças externas e de apoio em calamidades."
+      },
+      "cadeia": "Fronteiras menos vigiadas dificultam o controle da entrada de armas e drogas.",
+      "legal": "Grande parte do gasto é com pessoal e reformas, que são despesas obrigatórias e não podem ser contingenciadas.",
+      "base": "LRF, art. 9º, § 2º"
+    },
+    {
+      "id": "seguranca", "funcao": "Segurança pública", "titulo": "Segurança pública",
+      "estagios": {
+        "leve": "Manutenção de viaturas antigas e compra de coletes e fardamento atrasadas.",
+        "medio": "Combustível racionado para viaturas da PM e da PRF. Menos patrulhamento noturno em bairros e rodovias.",
+        "grave": "Operações especiais da Polícia Civil e da Polícia Federal contra o crime organizado suspensas. Filas maiores para passaporte. Delegacias fechadas à noite.",
+        "extremo": "Impossibilidade de pagar horas extras e paralisação de serviços de inteligência."
+      },
+      "cadeia": "Cresce o risco de crimes contra o patrimônio, e cidadãos e comerciantes passam a gastar mais com segurança privada.",
+      "legal": "Salários de policiais são despesa obrigatória. Os cortes recaem sobre custeio e investimento: viaturas, combustível e operações.",
+      "base": "LRF, art. 9º"
+    },
+    {
+      "id": "justica", "funcao": "Judiciário", "titulo": "Justiça",
+      "estagios": {
+        "leve": "Digitalização de processos e compra de equipamentos de informática atrasadas.",
+        "medio": "Menos estagiários e terceirizados. Juizados itinerantes suspensos. Processos andam mais devagar.",
+        "grave": "Quadros da Defensoria Pública reduzidos. Pessoas de baixa renda ficam sem assistência jurídica gratuita em causas de família, pensão e trabalho.",
+        "extremo": "Comarcas do interior fechadas e audiências de custódia suspensas."
+      },
+      "cadeia": "Quem precisa da Justiça passa a depender de advogado particular.",
+      "legal": "O Judiciário e a Defensoria Pública têm autonomia orçamentária e propõem os próprios orçamentos.",
+      "base": "CF, arts. 99 e 134"
+    },
+    {
+      "id": "infraestrutura", "funcao": "Urbanismo", "titulo": "Infraestrutura e urbanismo",
+      "estagios": {
+        "leve": "Estudos e projetos de novas obras atrasados.",
+        "medio": "Obras de maior porte em ritmo lento. Menos repasses para pavimentação.",
+        "grave": "Canteiros paralisados e deterioração do que já foi construído por falta de manutenção.",
+        "extremo": "Interrupção total dos investimentos em infraestrutura."
+      },
+      "cadeia": "O custo de transportar e entregar mercadorias aumenta e pode chegar às prateleiras.",
+      "legal": "Investimento é despesa discricionária, que pode ser contingenciada.",
+      "base": "LRF, art. 9º"
+    },
+    {
+      "id": "transporte", "funcao": "Transporte", "titulo": "Transporte",
+      "estagios": {
+        "leve": "Manutenção preventiva de rodovias reduzida. Pequenos buracos começam a se acumular.",
+        "medio": "Falta de pintura de faixas, roçada de acostamentos e manutenção de radares e placas.",
+        "grave": "Trechos de rodovia ficam em condição ruim e a frota de ônibus subsidiada diminui.",
+        "extremo": "Pontes e trechos de estrada interditados por risco estrutural, sem verba para reforma."
+      },
+      "cadeia": "Veículos quebram mais e as viagens demoram mais. O gasto do cidadão com manutenção e combustível aumenta.",
+      "legal": "Em geral é despesa discricionária, que pode ser contingenciada.",
+      "base": "LRF, art. 9º"
+    },
+    {
+      "id": "habitacao", "funcao": "Habitação", "titulo": "Habitação",
+      "estagios": {
+        "leve": "Cadastramento de famílias e regularização fundiária mais lentos.",
+        "medio": "Novos conjuntos habitacionais deixam de ser contratados.",
+        "grave": "Obras de conjuntos já iniciados são paralisadas por falta de pagamento às construtoras.",
+        "extremo": "Fim dos subsídios habitacionais e da regularização fundiária."
+      },
+      "cadeia": "Aumenta a pressão por ocupações em áreas de risco e o número de pessoas em situação de rua.",
+      "legal": "Programas como o Minha Casa, Minha Vida dependem de dotação anual no orçamento.",
+      "base": "Lei 14.620/2023"
+    },
+    {
+      "id": "previdencia", "funcao": "Previdência", "titulo": "Previdência Social", "obrigatoria": true,
+      "estagios": {
+        "leve": "O Meu INSS apresenta instabilidades. Agendamento de perícias médicas demora mais.",
+        "medio": "Filas de pedidos se acumulam. Auxílio por incapacidade e salário-maternidade demoram a ser liberados.",
+        "grave": "Agências do interior fechadas e atendimento terceirizado reduzido.",
+        "extremo": "Risco de atraso no pagamento de aposentadorias e pensões."
+      },
+      "cadeia": "Famílias passam a sustentar idosos, o que reduz o consumo e a renda do comércio local.",
+      "legal": "Benefícios previdenciários são despesa obrigatória, definida em lei, e não podem ser contingenciados. Cortá-los exigiria mudar a lei, não bloquear verba.",
+      "base": "LRF, art. 9º, § 2º; CF, art. 201"
+    },
+    {
+      "id": "saneamento", "funcao": "Saneamento", "titulo": "Saneamento básico",
+      "estagios": {
+        "leve": "Obras de expansão da rede de esgoto para novos bairros atrasam.",
+        "medio": "Mais vazamentos na rede e reparos que demoram dias em vez de horas.",
+        "grave": "Obras de estações de tratamento de água e esgoto abandonadas.",
+        "extremo": "Falta de insumos para tratar a água e racionamento constante."
+      },
+      "cadeia": "Água de pior qualidade aumenta os casos de doenças intestinais e sobrecarrega os postos de saúde.",
+      "legal": "O marco legal do saneamento fixa metas de universalização do abastecimento de água e do tratamento de esgoto até 2033.",
+      "base": "Lei 14.026/2020"
+    },
+    {
+      "id": "ambiente", "funcao": "Meio ambiente", "titulo": "Meio ambiente",
+      "estagios": {
+        "leve": "Campanhas educativas de reciclagem e de prevenção a incêndios canceladas.",
+        "medio": "Menos brigadistas temporários contratados para a temporada de seca.",
+        "grave": "Menos operações de campo do Ibama e do ICMBio, por falta de combustível e de helicópteros.",
+        "extremo": "Perda da capacidade de combater garimpo ilegal, invasões de áreas protegidas e poluição industrial."
+      },
+      "cadeia": "Queimadas sem controle pioram a qualidade do ar e aumentam os casos de doenças respiratórias.",
+      "legal": "Proteger o meio ambiente é dever do poder público previsto na Constituição.",
+      "base": "CF, art. 225"
+    }
+  ],
+  "travadas": [
+    { "funcao": "Encargos especiais", "titulo": "Dívida e outros encargos", "motivo": "Juros e amortização da dívida são obrigações que o governo não pode deixar de pagar nem bloquear. É por isso que, na União, uma parcela enorme do orçamento já está comprometida antes de qualquer debate sobre cortes.", "base": "LRF, art. 9º, § 2º" }
+  ]
+}

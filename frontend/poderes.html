@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Os três poderes — ImpactoCidadão</title>
+    <meta name="description" content="Como se organizam o Executivo, o Legislativo e o Judiciário, e quem fiscaliza e defende o cidadão: Ministério Público, Defensoria e Tribunais de Contas.">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="assets/tailwind-config.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Inter', system-ui, sans-serif; }
+        :focus-visible { outline: 2px solid #A92823; outline-offset: 2px; }
+    </style>
+    <link rel="stylesheet" href="assets/brutalista.css">
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-full flex flex-col transition-colors duration-200">
+
+<a href="#conteudo" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-white focus:text-slate-900 focus:p-3">Ir para o conteúdo</a>
+<div id="cabecalho"></div>
+
+<main id="conteudo" class="max-w-6xl mx-auto px-4 sm:px-6 pt-6 pb-10 flex-grow w-full space-y-10">
+    <header>
+        <h1 id="titulo" class="text-2xl font-extrabold tracking-tight"></h1>
+        <p id="subtitulo" class="text-sm text-slate-500 dark:text-slate-400 mt-1"></p>
+    </header>
+    <div id="corpo" class="space-y-10"></div>
+</main>
+
+<div id="rodape"></div>
+<script src="assets/comum.js"></script>
+<script>
+const PARAM = new URLSearchParams(location.search).get('aba');
+const ABA = PARAM === 'judiciario' ? 'judiciario' : PARAM === 'controle' ? 'controle' : 'executivo';
+renderLayout(ABA);
+
+const L = (href, txt) => `<a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(href))}">${esc(txt)}</a>`;
+const bloco = (kicker, titulo, texto, extra = '') => `<div class="poder-bloco"><p class="poder-kicker">${esc(kicker)}</p><h3>${esc(titulo)}</h3><p>${esc(texto)}</p>${extra}</div>`;
+const grade = (blocos) => `<div class="poder-grade">${blocos.join('')}</div>`;
+const secao = (num, titulo, intro, corpo) => `<section><h2>${esc(titulo)}</h2>${intro ? `<p class="text-sm mt-1" style="max-width:70ch">${esc(intro)}</p>` : ''}${corpo}</section>`;
+const lk = (...a) => `<p class="poder-link">${a.join(' · ')}</p>`;
+
+const ABAS = {
+    executivo: {
+        titulo: 'Poder Executivo',
+        sub: 'Quem administra e executa: transforma as leis e o orçamento em escola, posto de saúde, estrada e benefício.',
+        html: () => '<div id="esferas" class="seg-esfera" role="radiogroup" aria-label="Esfera de governo"></div><div id="execCorpo" class="space-y-10 mt-6"></div>',
+    },
+    judiciario: {
+        titulo: 'Poder Judiciário',
+        sub: 'Onde se busca a justiça: interpreta as leis e decide os conflitos, inclusive os que envolvem o próprio governo.',
+        html: () =>
+            secao('01', 'A cúpula e os tribunais', 'Os casos começam, em regra, com um juiz e podem subir a tribunais maiores por recurso.',
+                grade([
+                    bloco('Cúpula', 'STF: Supremo Tribunal Federal', 'Guarda da Constituição. Julga se uma lei respeita a Constituição.', lk(L('https://www.stf.jus.br/', 'stf.jus.br'))),
+                    bloco('Cúpula', 'STJ: Superior Tribunal de Justiça', 'Uniformiza a interpretação das leis federais em todo o país.', lk(L('https://www.stj.jus.br/', 'stj.jus.br'))),
+                    bloco('Estado', 'Tribunais de Justiça e juízes de direito', 'Cuidam dos casos do dia a dia: família, contratos, vizinhança, crimes comuns.', lk(L('https://www.tjsp.jus.br/', 'TJSP'))),
+                ])) +
+            secao('02', 'Justiça especializada', 'Cada ramo cuida de um tipo de assunto.',
+                grade([
+                    bloco('Trabalho', 'Justiça do Trabalho', 'Conflitos entre trabalhadores e empregadores, com base na CLT.', lk(L('https://www.tst.jus.br/', 'tst.jus.br'))),
+                    bloco('Eleitoral', 'TSE e TREs', 'Organizam as eleições e julgam questões eleitorais.', lk(L('https://www.tse.jus.br/', 'tse.jus.br'))),
+                    bloco('Federal', 'Justiça Federal', 'Casos em que a União, o INSS ou outro órgão federal é parte.', lk(L('https://www.cjf.jus.br/', 'cjf.jus.br'))),
+                ])),
+    },
+    controle: {
+        titulo: 'Fiscalização e defesa',
+        sub: 'Para onde ir quando é preciso fiscalizar o governo ou defender um direito sem pagar advogado.',
+        html: () =>
+            secao('01', 'Quem fiscaliza e quem defende', 'Esses órgãos têm autonomia para atuar, inclusive contra governos.',
+                grade([
+                    bloco('Fiscal da lei', 'Ministério Público (MPF e MPSP)', 'Entra com ação civil pública contra governos e empresas. Defende o patrimônio público, o meio ambiente e a saúde, inclusive o SUS.', lk(L('https://www.mpf.mp.br/', 'mpf.mp.br'), L('https://www.mpsp.mp.br/', 'mpsp.mp.br'))),
+                    bloco('Defesa gratuita', 'Defensoria Pública (DPU e DPESP)', 'Advogados gratuitos para quem não pode pagar: guarda de filhos, remédios pela via judicial, despejo e defesa criminal.', lk(L('https://www.dpu.def.br/', 'dpu.def.br'), L('https://www.defensoria.sp.def.br/', 'defensoria.sp.def.br'))),
+                    bloco('Auditoria das contas', 'Tribunais de Contas (TCU e TCESP)', 'Auditam as contas e as licitações de governos e prefeituras. O TCESP fiscaliza os municípios paulistas.', lk(L('https://portal.tcu.gov.br/', 'tcu.gov.br'), L('https://www.tce.sp.gov.br/', 'tce.sp.gov.br'))),
+                ])),
+    },
+};
+/* ---------- Executivo por esfera ---------- */
+const ESFERAS = [{ id: 'federal', rotulo: 'Federal' }, { id: 'estadual', rotulo: 'Estadual' }, { id: 'municipal', rotulo: 'Municipal' }];
+let ESFERA = ler('ic_esfera_poderes', 'federal');
+if (!ESFERAS.some((x) => x.id === ESFERA)) ESFERA = 'federal';
+let MUNICIPIO = lerPrefs().municipio || null;
+let DADOS_ORGAOS = null;
+
+const seletorCidade = () => `<div class="relative mt-3 inline-block">
+    <button id="btnCidade" type="button" class="cidade-btn" aria-expanded="false" aria-controls="popCidade"><i class="fa-solid fa-city" aria-hidden="true"></i> <span>${MUNICIPIO ? esc(MUNICIPIO.nome + ' – ' + MUNICIPIO.uf) : 'Escolher cidade'}</span></button>
+    <div id="popCidade" class="hidden absolute left-0 top-full mt-2 w-72 z-40 p-2 cidade-pop">
+        <label for="cidadeBusca" class="sr-only">Buscar município</label>
+        <input id="cidadeBusca" type="text" autocomplete="off" placeholder="Digite o nome da cidade…" class="w-full px-3 py-2 text-sm">
+        <ul id="cidadeLista" class="mt-1 max-h-60 overflow-auto text-sm" role="listbox"></ul></div></div>`;
+function ligarCidade() {
+    const pop = $('popCidade'), btn = $('btnCidade');
+    if (!pop) return;
+    const alternar = (abrir) => { const m = abrir ?? pop.classList.contains('hidden'); pop.classList.toggle('hidden', !m); btn.setAttribute('aria-expanded', String(m)); if (m) { $('cidadeBusca').value = ''; $('cidadeLista').innerHTML = ''; setTimeout(() => $('cidadeBusca').focus(), 30); } };
+    btn.addEventListener('click', () => alternar());
+    $('cidadeBusca').addEventListener('input', debounce(async () => {
+        const q = $('cidadeBusca').value.trim();
+        if (q.length < 2) { $('cidadeLista').innerHTML = ''; return; }
+        try {
+            const r = await api('/api/municipios?q=' + encodeURIComponent(q));
+            $('cidadeLista').innerHTML = r.length ? r.map((m) => `<li><button type="button" role="option" data-cod="${esc(m.codigo)}" data-nome="${esc(m.nome)}" data-uf="${esc(m.uf)}" class="w-full text-left px-3 py-2">${esc(m.nome)} – ${esc(m.uf)}</button></li>`).join('') : '<li class="px-3 py-2">Nenhum município encontrado.</li>';
+        } catch (e) { $('cidadeLista').innerHTML = `<li class="px-3 py-2 text-xs">${esc(e.message)}</li>`; }
+    }, 250));
+    $('cidadeLista').addEventListener('click', (ev) => {
+        const b = ev.target.closest('[data-cod]');
+        if (!b) return;
+        MUNICIPIO = { codigo: Number(b.dataset.cod), nome: b.dataset.nome, uf: b.dataset.uf };
+        salvarPrefsParciais({ municipio: MUNICIPIO });
+        desenharExecutivo();
+    });
+}
+
+const chefeFederal = () => secao('01', 'Quem chefia', 'Eleito a cada quatro anos, junto com o vice.',
+    grade([bloco('União', 'Presidente da República', 'Chefia o Governo Federal, com o Vice-Presidente. Escolhe os ministros, que comandam os ministérios.')]));
+const reaisCurto = (n) => {
+    const v = Math.abs(n);
+    if (v >= 1e12) return `R$ ${(v / 1e12).toLocaleString('pt-BR', { maximumFractionDigits: 2 })} tri`;
+    if (v >= 1e9) return `R$ ${(v / 1e9).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} bi`;
+    if (v >= 1e6) return `R$ ${(v / 1e6).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} mi`;
+    return brl(n);
+};
+const limparNome = (n) => n.replace(/ - Unidades com vínculo direto$/, ' (administração direta)');
+
+function painelMinisterio(o, total) {
+    const t = o.totais, est = o.estrutura;
+    const metrica = (rot, v) => `<div><dt>${rot}</dt><dd>${esc(reaisCurto(v))}</dd></div>`;
+    const nota = o.codigo === '25000' ? '<p class="min-nota">Inclui a renovação da dívida pública (títulos que vencem e são trocados por novos), que não é gasto com serviços. Veja em <a class="underline" href="financiamento.html">Dívida e títulos</a>.</p>' : '';
+    const ehSec = (u) => /^Secretaria/i.test(u.nome);
+    const unidades = est ? [...est.unidades].sort((a, b) => ehSec(b) - ehSec(a)) : [];
+    const sigla = (u) => (u.sigla ? ` <span class="min-sigla">${esc(u.sigla)}</span>` : '');
+    const secretarias = est ? `<div><p class="min-tit">Secretarias e unidades <span>${esc(est.n_unidades)}</span></p>
+        <ul class="min-sec">${unidades.map((u) => (u.n_sub
+            ? `<li><details><summary>${esc(u.nome)}${sigla(u)} <span class="min-n">${esc(u.n_sub)} áreas</span></summary>
+                <ul class="min-sub">${u.subunidades.map((x) => `<li>${esc(x)}</li>`).join('')}${u.n_sub > u.subunidades.length ? `<li class="min-mais">e mais ${esc(u.n_sub - u.subunidades.length)}</li>` : ''}</ul></details></li>`
+            : `<li class="min-folha">${esc(u.nome)}${sigla(u)}</li>`)).join('')}</ul>
+        ${est.n_unidades > unidades.length ? `<p class="ficha-nota">e mais ${esc(est.n_unidades - unidades.length)} unidades</p>` : ''}
+        ${est.n_colegiados ? `<p class="ficha-nota">Além disso, ${esc(est.n_colegiados)} conselhos e comitês.</p>` : ''}</div>` : '';
+    const entidades = est && est.entidades.length ? `<div><p class="min-tit">Entidades vinculadas <span>${esc(est.entidades.length)}</span></p>
+        <p class="min-chips">${est.entidades.map((e) => `<span title="${esc(e.nome)}">${esc(e.sigla || e.nome)}</span>`).join('')}</p></div>` : '';
+    return `<details class="min"><summary><span class="min-nome">${esc(o.nome)}${o.ministro ? `<span class="min-quem">${esc(o.ministro.nome)}</span>` : ''}</span>
+        <span class="min-barra" aria-hidden="true"><span style="width:${Math.max(1, Math.round((t.atualizado / total) * 100))}%"></span></span>
+        <span class="min-valor">${esc(reaisCurto(t.atualizado))}</span></summary>
+        <div class="min-corpo">${nota}
+        <p class="min-ministro"><span>${o.ministro && /^Ministra/.test(o.ministro.cargo) ? 'Ministra' : 'Ministro'}</span> ${o.ministro ? `<b>${esc(o.ministro.nome)}</b> <small>Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(o.ministro.fonte))}">${esc(o.ministro.fonte_nome)}</a>, conferido em ${esc(new Date(o.ministro.conferido_em + 'T12:00:00').toLocaleDateString('pt-BR'))}</small>` : '<small>Titular ainda não conferido. Consulte o site oficial do ministério.</small>'}</p>
+        <dl class="min-metricas">${metrica('Autorizado na lei', t.inicial)}${metrica('Valor atual', t.atualizado)}${metrica('Já reservado (empenhado)', t.empenhado)}${metrica('Já pago', t.realizado)}</dl>
+        <div class="min-cols">
+            ${secretarias}
+            <div><p class="min-tit">Onde o dinheiro vai, por órgão</p><ul class="min-lista-v">${o.vinculados.slice(0, 10).map((v) => `<li><span>${esc(limparNome(v.nome))}</span><b>${esc(reaisCurto(v.atualizado))}</b></li>`).join('')}</ul>
+                ${o.vinculados.length > 10 ? `<p class="ficha-nota">e mais ${o.vinculados.length - 10} órgãos menores</p>` : ''}
+                <p class="min-tit" style="margin-top:1.2rem">Áreas em que gasta</p><ul class="min-lista-v">${o.funcoes.map((f) => `<li><span>${esc(f.nome)}</span><b>${esc(reaisCurto(f.atualizado))}</b></li>`).join('')}</ul></div>
+            ${entidades}
+        </div>
+        ${o.site ? `<p class="min-site"><a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(o.site))}">Site oficial do ministério</a></p>` : ''}</div></details>`;
+}
+
+async function blocoFederal() {
+    const corpo = $('execCorpo');
+    corpo.innerHTML = chefeFederal() + secao('02', 'Ministérios: secretarias e verbas', 'Cada ministério com o que pode gastar em ' + new Date().getFullYear() + ', quanto já pagou e como se divide por dentro. Clique para abrir.',
+        '<div id="ministerios" class="mt-3" role="status"><p class="text-sm">Carregando os ministérios…</p></div>') + secao('03', 'Administração indireta', 'Entidades criadas pelo governo para executar funções específicas, ligadas ao ministério da área.', '<div id="indiretaFed" class="mt-3" role="status"><p class="text-sm">Carregando…</p></div>');
+    try {
+        DADOS_ORGAOS = DADOS_ORGAOS || await api('/api/executivo/orgaos');
+        const d = DADOS_ORGAOS;
+        const total = d.orgaos.reduce((t, o) => t + o.totais.atualizado, 0);
+        $('indiretaFed').innerHTML = indiretaFederal(d);
+        $('ministerios').innerHTML = `<div class="min-lista">${d.orgaos.map((o) => painelMinisterio(o, total)).join('')}</div>
+            <p class="ficha-nota mt-3">Verbas: <a class="underline" target="_blank" rel="noopener" href="https://portaldatransparencia.gov.br/orcamento">Portal da Transparência (CGU), Orçamento da Despesa de ${esc(d.ano)}</a>. Estrutura: SIORG, o cadastro oficial do Executivo federal. Coletado em ${esc(new Date(d.coletado_em).toLocaleDateString('pt-BR'))}. O orçamento não divide a verba por secretaria: o valor é de cada ministério e dos órgãos que têm orçamento próprio.</p>`;
+    } catch (e) { $('ministerios').innerHTML = mensagemErro(e); $('indiretaFed').innerHTML = ''; }
+}
+
+const ENTIDADES = [
+    { nome: 'Autarquias', carac: 'Prestam serviços públicos com autonomia técnica e administrativa, sem fins lucrativos.' },
+    { nome: 'Empresas públicas', carac: 'Capital 100% público. Atuam no mercado, como uma empresa, mas pertencem ao governo.' },
+    { nome: 'Sociedades de economia mista', carac: 'Capital público e privado, com o governo no controle. Organizadas como sociedade anônima.' },
+    { nome: 'Fundações públicas', carac: 'Patrimônio público destinado a fins sociais, culturais, científicos ou de pesquisa.' },
+];
+const EXEMPLOS = {
+    sp: [
+        [['Detran-SP', 'https://www.detran.sp.gov.br/'], ['USP', 'https://www.usp.br/'], ['Unicamp', 'https://www.unicamp.br/'], ['Unesp', 'https://www.unesp.br/'], ['DAEE', 'https://www.daee.sp.gov.br/']],
+        [],
+        [['Metrô-SP', 'https://www.metro.sp.gov.br/']],
+        [['Fundação Procon-SP', 'https://www.procon.sp.gov.br/'], ['Fundação Casa', 'https://www.fundacaocasa.sp.gov.br/']],
+    ],
+    estadual: [
+        [['Detran'], ['Universidades estaduais'], ['Órgão de recursos hídricos']],
+        [], [['Companhias estaduais de transporte ou de energia']], [['Fundações estaduais de cultura, saúde e pesquisa']],
+    ],
+    municipal: [
+        [['Serviço de água e esgoto (SAAE, DAE e similares)'], ['Instituto de previdência municipal (IPREM)']],
+        [['Empresas municipais de transporte ou de processamento de dados']], [['Companhias municipais de saneamento ou transporte']], [['Fundações municipais de cultura, esporte e saúde']],
+    ],
+};
+const NAT = ['Autarquia', 'Empresa Pública', 'Sociedade de Economia Mista', 'Fundação Pública'];
+const indiretaFederal = (d) => {
+    const lista = d.indireta || {};
+    const linhas = ENTIDADES.map((e, k) => {
+        const itens = lista[NAT[k]] || [];
+        const chips = itens.slice(0, 8).map((x) => `<span class="min-chip-i" title="${esc(x.nome + (x.orgao ? ' · ' + x.orgao : ''))}">${esc(x.sigla || x.nome)}</span>`).join('');
+        const todos = itens.length > 8 ? `<details class="ind-todos"><summary>Ver as ${esc(itens.length)} entidades</summary><ul>${itens.map((x) => `<li><b>${esc(x.sigla || '')}</b> ${esc(x.nome)}${x.orgao ? ` <small>· ${esc(x.orgao)}</small>` : ''}</li>`).join('')}</ul></details>` : '';
+        return `<div class="ind-linha" role="row"><b>${esc(e.nome)} <small>${esc(itens.length)}</small></b><span>${esc(e.carac)}</span><span><span class="min-chips-i">${chips}</span>${todos}</span></div>`;
+    }).join('');
+    return `<div class="ind-tabela" role="table" aria-label="Entidades da administração indireta federal">
+        <div class="ind-cab" role="row"><span>Entidade</span><span>Característica</span><span>Entidades federais</span></div>${linhas}</div>
+        <p class="ficha-nota mt-3">Fonte: SIORG, o cadastro oficial da estrutura do Executivo federal, coletado em ${esc(new Date(d.coletado_em).toLocaleDateString('pt-BR'))}. A classificação (autarquia, fundação, empresa pública ou economia mista) é a do cadastro. Empresas estatais fora do cadastro não aparecem.</p>`;
+};
+const administracaoIndireta = (esfera) => {
+    const sp = esfera === 'estadual' && MUNICIPIO && MUNICIPIO.uf === 'SP';
+    const ex = EXEMPLOS[sp ? 'sp' : esfera];
+    const rot = { federal: 'Federal', estadual: sp ? 'São Paulo' : 'Estadual', municipal: 'Municipal' }[esfera];
+    const item = ([nome, url]) => (url ? L(url, nome) : esc(nome));
+    const intro = esfera === 'federal'
+        ? 'Entidades criadas pelo governo para executar funções específicas, ligadas ao ministério da área.'
+        : 'Entidades criadas pelo governo para executar funções específicas. Os exemplos mostram o que costuma existir: cada ' + (esfera === 'estadual' ? 'estado' : 'cidade') + ' tem a sua organização, confira no portal oficial.';
+    return secao('03', 'Administração indireta', intro + ' São exemplos ilustrativos, escritos pela equipe: não vêm de uma base oficial.',
+        `<div class="ind-tabela" role="table" aria-label="Entidades da administração indireta">
+            <div class="ind-cab" role="row"><span>Entidade</span><span>Característica</span><span>Exemplos (${esc(rot)})</span></div>
+            ${ENTIDADES.map((e, k) => `<div class="ind-linha" role="row"><b>${esc(e.nome)}</b><span>${esc(e.carac)}</span>
+                <span>${ex[k].length ? ex[k].map(item).join(' · ') : '<em>Varia de estado para estado.</em>'}</span></div>`).join('')}</div>`);
+};
+
+async function blocoLocal(esfera) {
+    const estadual = esfera === 'estadual';
+    const chefe = estadual
+        ? grade([bloco('Estado', 'Governador', 'Chefia o governo do estado, com o Vice-Governador. Escolhe os secretários estaduais, que comandam as secretarias.')])
+        : grade([bloco('Município', 'Prefeito', 'Chefia a prefeitura, com o Vice-Prefeito. Escolhe os secretários municipais, que comandam as secretarias.')]);
+    const intro = `${seletorCidade()}${!MUNICIPIO ? '<p class="text-sm mt-3">Escolha uma cidade' + (estadual ? ' para identificar o seu estado' : '') + ' e veja as verbas por área.</p>' : ''}`;
+    $('execCorpo').innerHTML = secao('01', 'Quem chefia', 'Eleito a cada quatro anos, junto com o vice.', chefe)
+        + secao('02', estadual ? 'Secretarias de Estado e verbas' : 'Secretarias municipais e verbas',
+            'Cada área do orçamento costuma corresponder a uma secretaria (Saúde, Educação, Obras, Assistência Social). O valor é o autorizado na lei orçamentária do ano.',
+            `${intro}<div id="verbasLocal" class="mt-4" role="status"></div>`)
+        + administracaoIndireta(esfera)
+        + '<p class="ficha-nota">Para saber o que cada esfera faz e onde pedir cada serviço, veja o <a class="underline" href="servicos.html">Guia de serviços</a>.</p>';
+    ligarCidade();
+    if (!MUNICIPIO) return;
+    const ente = estadual ? Math.floor(MUNICIPIO.codigo / 100000) : MUNICIPIO.codigo;
+    $('verbasLocal').innerHTML = '<p class="text-sm">Consultando o Tesouro Nacional…</p>';
+    try {
+        const r = await api('/api/orcamento/ciclo/' + encodeURIComponent(ente));
+        const o = r.orcamento_local;
+        if (!o) { $('verbasLocal').innerHTML = '<p class="text-sm">Este ente ainda não informou o orçamento deste ano ao Tesouro Nacional.</p>'; return; }
+        const maior = Math.max(...o.funcoes.map((f) => f.valor), 1);
+        $('verbasLocal').innerHTML = `<p class="font-bold">${esc(o.instituicao || '')}: lei orçamentária de ${esc(o.ano)}</p>
+            <dl class="min-metricas mt-2"><div><dt>Previsão de arrecadação</dt><dd>${esc(reaisCurto(o.receita_prevista))}</dd></div><div><dt>Despesa autorizada</dt><dd>${esc(reaisCurto(o.despesa_autorizada))}</dd></div></dl>
+            <div class="min-lista mt-4">${o.funcoes.map((f) => `<div class="min"><div class="min-linha"><span class="min-nome">${esc(f.nome)}</span>
+                <span class="min-barra" aria-hidden="true"><span style="width:${Math.max(1, Math.round((f.valor / maior) * 100))}%"></span></span>
+                <span class="min-valor">${esc(reaisCurto(f.valor))}</span></div></div>`).join('')}</div>
+            <p class="ficha-nota mt-3">Fonte: Tesouro Nacional (SICONFI), ${esc(o.periodo)}. A lista de secretarias de cada prefeitura ou governo está no portal oficial do próprio ente.</p>`;
+    } catch (e) { $('verbasLocal').innerHTML = mensagemErro(e); }
+}
+
+function desenharExecutivo() {
+    $('esferas').innerHTML = ESFERAS.map((x) => `<button type="button" role="radio" aria-checked="${ESFERA === x.id}" data-esfera="${x.id}">${x.rotulo}</button>`).join('');
+    if (ESFERA === 'federal') blocoFederal(); else blocoLocal(ESFERA);
+}
+function iniciarExecutivo() {
+    if (!$('esferas')) return;
+    $('esferas').addEventListener('click', (ev) => {
+        const b = ev.target.closest('[data-esfera]');
+        if (!b || b.dataset.esfera === ESFERA) return;
+        ESFERA = b.dataset.esfera; guardar('ic_esfera_poderes', ESFERA); desenharExecutivo();
+    });
+    desenharExecutivo();
+}
+
+const a = ABAS[ABA];
+document.title = a.titulo + ' — ImpactoCidadão';
+$('titulo').textContent = a.titulo;
+$('subtitulo').textContent = a.sub;
+$('corpo').innerHTML = a.html() + `<p class="ficha-nota">Os parlamentares e as bancadas estão na aba <a class="underline" href="bancadas.html">Legislativo</a>. Quem ocupa cada cargo muda a cada eleição ou nomeação: consulte o site oficial de cada órgão.</p>`;
+iniciarExecutivo();
+</script>
+</body>
+</html>

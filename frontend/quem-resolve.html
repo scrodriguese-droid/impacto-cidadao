@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quem resolve o quê? — ImpactoCidadão</title>
+    <meta name="description" content="Conte o seu problema e descubra quem é o responsável, a quem cobrar e quanto dinheiro foi previsto; veja no mapa os serviços públicos da sua cidade.">
+
+    <!-- Tailwind via CDN: ótimo para desenvolvimento. Em produção, compile o CSS (tailwindcss CLI). -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="assets/tailwind-config.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+    <style>
+        body { font-family: 'Inter', system-ui, sans-serif; }
+        #mapa { height: 460px; z-index: 0; border-radius: 1rem; }
+        :focus-visible { outline: 2px solid #A92823; outline-offset: 2px; }
+    </style>
+    <link rel="stylesheet" href="assets/brutalista.css">
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-full flex flex-col transition-colors duration-200">
+
+<a href="#conteudo" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-white focus:text-slate-900 focus:p-3">Ir para o conteúdo</a>
+<div id="cabecalho"></div>
+
+<main id="conteudo" class="max-w-5xl mx-auto px-4 sm:px-6 pt-6 pb-10 flex-grow w-full space-y-6">
+    <header>
+        <h1 class="text-2xl font-extrabold tracking-tight">Quem resolve o quê?</h1>
+        <p id="subtitulo" class="text-sm text-slate-500 dark:text-slate-400 mt-1">Descreva o problema e veja o responsável, ou veja no mapa os equipamentos públicos da cidade. Para ver tudo o que cada esfera faz, por tema, abra o <a class="underline" href="servicos.html">Guia de serviços</a>.</p>
+    </header>
+
+    <div id="barraContexto"></div>
+
+    <!-- Quem resolve o quê? -->
+    <section id="buscador" class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 scroll-mt-4" aria-labelledby="tQuem">
+        <h2 id="tQuem" class="font-bold text-lg flex items-center gap-2"><i class="fa-solid fa-magnifying-glass-location text-brand-600" aria-hidden="true"></i>Descreva o problema com as suas palavras</h2>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Escreva o problema (ex.: dependente químico, poda de árvore, aluguel social) e veja o responsável, a quem cobrar e quanto foi previsto no orçamento. Para explorar por tema, use o <a class="underline" href="servicos.html">Guia de serviços</a>.</p>
+        <form id="formQuem" class="mt-3 flex gap-2" role="search">
+            <label for="qQuem" class="sr-only">Descreva o seu problema</label>
+            <input id="qQuem" type="search" maxlength="120" autocomplete="off" placeholder="Ex.: preciso de vaga na creche, buraco na rua, demora para cirurgia…"
+                   class="flex-grow px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+            <button type="submit" class="px-4 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold">Buscar</button>
+        </form>
+        <div id="sugestoesQuem" class="mt-2 flex flex-wrap gap-2"></div>
+        <div id="respQuem" class="mt-4 space-y-4" aria-live="polite"></div>
+    </section>
+
+    <!-- Mapa dos equipamentos públicos -->
+    <section id="mapaSec" class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 scroll-mt-4" aria-labelledby="tMapa">
+        <h2 id="tMapa" class="font-bold text-lg flex items-center gap-2"><i class="fa-solid fa-map-location-dot text-teal-600" aria-hidden="true"></i>Mapa dos equipamentos públicos</h2>
+        <p id="mapaSub" class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Postos de saúde, UPAs, hospitais, escolas, delegacias e outros serviços perto de você, com a esfera responsável.</p>
+        <div id="filtrosMapa" class="mt-3 flex flex-wrap gap-2" role="group" aria-label="Tipos de equipamento"></div>
+        <div id="legendaMapa" class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs"></div>
+        <div id="mapaEstado" class="mt-3"></div>
+        <div class="mt-3 grid lg:grid-cols-[1fr_20rem] gap-4">
+            <div id="mapa" role="application" aria-label="Mapa interativo dos equipamentos públicos"></div>
+            <aside id="fichaLocal" class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/40 p-4 text-sm" aria-live="polite">
+                <p class="text-slate-500">Clique em um ponto do mapa para ver a ficha do local.</p></aside>
+        </div>
+        <p id="mapaFontes" class="text-[11px] text-slate-400 mt-3"></p>
+    </section>
+
+</main>
+
+<div id="rodape"></div>
+
+<script src="assets/comum.js"></script>
+<script>
+renderLayout('quem');
+
+let contexto = null;
+const num = (v, d = 2) => (v == null ? '—' : Number(v).toLocaleString('pt-BR', { minimumFractionDigits: d, maximumFractionDigits: d }));
+const curto = (t, n) => { const x = String(t || '').replace(/\s+/g, ' ').trim(); return x.length > n ? x.slice(0, n - 1).trimEnd() + '…' : x; };
+const reais = (n) => {
+    const v = Math.abs(Number(n)), s = n < 0 ? '−' : '';
+    if (v >= 1e12) return `${s}R$ ${(v / 1e12).toLocaleString('pt-BR', { maximumFractionDigits: 2 })} tri`;
+    if (v >= 1e9) return `${s}R$ ${(v / 1e9).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} bi`;
+    if (v >= 1e6) return `${s}R$ ${(v / 1e6).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} mi`;
+    return `${s}${brl(v)}`;
+};
+const vazio = (txt) => `<p class="text-sm text-slate-500">${esc(txt)}</p>`;
+const NIVEL = { federal: 'Federal', estadual: 'Estadual', municipal: 'Municipal' };
+
+/* ---------- Quem resolve o quê? ---------- */
+const COR_ESFERA = { Municipal: '#16a34a', Estadual: '#2563eb', Federal: '#eab308', 'Conveniado ao SUS': '#9333ea', 'Pública (esfera não informada)': '#0891b2', 'Não informada': '#8F8F8B', Pública: '#0891b2' };
+const CHIP_ESFERA = { Municipal: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300', Estadual: 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300',
+    Federal: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-950 dark:text-yellow-300' };
+const nomeEnte = (esfera) => {
+    const m = contexto && contexto.municipio;
+    return esfera === 'Municipal' ? (m ? `Prefeitura de ${m.nome}` : 'Prefeitura') : esfera === 'Estadual' ? (m ? `Governo do Estado (${m.uf})` : 'Governo do Estado') : 'Governo Federal';
+};
+const reaisCurto = (n) => {
+    if (n == null) return '—';
+    const v = Math.abs(n);
+    if (v >= 1e12) return `R$ ${(v / 1e12).toLocaleString('pt-BR', { maximumFractionDigits: 2 })} tri`;
+    if (v >= 1e9) return `R$ ${(v / 1e9).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} bi`;
+    if (v >= 1e6) return `R$ ${(v / 1e6).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} mi`;
+    return brl(n);
+};
+function linhaVerba(v) {
+    const sub = v.subfuncao && v.valor_subfuncao != null ? `, dos quais <b>${esc(reaisCurto(v.valor_subfuncao))}</b> em ${esc(v.subfuncao)}` : '';
+    return `<li><b>${esc(v.instituicao)}</b> autorizou na LOA ${esc(v.ano)}: <b>${esc(reaisCurto(v.valor_funcao))}</b> para ${esc(v.funcao)}${sub}.</li>`;
+}
+// Ficha técnica: cada informação em uma linha com rótulo, como numa folha de especificação.
+const fichaLinha = (rotulo, corpo) => `<div class="ficha-linha"><p class="ficha-rotulo">${rotulo}</p><div class="ficha-corpo">${corpo}</div></div>`;
+function cartaoResposta(r) {
+    const esferas = r.esferas.map((e) => `<span class="ficha-selo">${esc(e)}</span>`).join(' ');
+    const responsaveis = r.esferas.map(nomeEnte).join(' · ');
+    const verba = r.verba.length
+        ? `<ul>${r.verba.map(linhaVerba).join('')}</ul><p class="ficha-nota">Dotação inicial da LOA declarada ao Tesouro Nacional (RREO). É o valor da área, não de um serviço específico.</p>`
+        : (r.funcao_orcamento && !(contexto && contexto.municipio) ? '<p class="ficha-nota">Escolha a sua cidade para ver quanto cada esfera autorizou para esta área.</p>' : '');
+    return `<article class="ficha">
+        ${fichaLinha('Responsável', `<p class="ficha-destaque">${esc(responsaveis)} ${esferas}</p>`)}
+        ${fichaLinha('Serviço', `<p><b>${esc(r.servico)}</b></p><p class="ficha-nota">${esc(r.equipamento_tipico)}</p>`)}
+        ${fichaLinha('Quem cobrar', `<ul>${r.quem_cobrar.map((x) => `<li>${esc(x)}</li>`).join('')}</ul><p class="ficha-nota">Órgão: ${esc(r.orgao_responsavel)}</p>`)}
+        ${verba ? fichaLinha('Orçamento previsto', verba) : ''}
+        ${r.observacao ? fichaLinha('Nota', `<p>${esc(r.observacao)}</p>`) : ''}
+        ${r.area ? fichaLinha('Guia de serviços', `<p><a class="underline" href="servicos.html#/${esc(r.area)}">Ver tudo desta área: município, estado e União →</a></p>`) : ''}
+        ${r.base ? fichaLinha('Base legal', `<p class="ficha-nota">${esc(r.base)}</p>`) : ''}
+        <p class="ficha-acao"><button type="button" data-mapa="${esc(r.mapa)}">Ver no mapa →</button></p></article>`;
+}
+async function buscarQuem(texto) {
+    const q = (texto || '').trim();
+    if (q.length < 2) { $('respQuem').innerHTML = ''; return; }
+    $('respQuem').innerHTML = '<p class="text-sm text-slate-500"><i class="fa-solid fa-spinner fa-spin mr-1.5" aria-hidden="true"></i>Procurando o responsável…</p>';
+    try {
+        const par = new URLSearchParams({ q }); if (contexto && contexto.municipio) par.set('municipio', contexto.municipio.codigo);
+        const r = await api('/api/competencias/buscar?' + par);
+        $('respQuem').innerHTML = r.resultados.length ? r.resultados.map(cartaoResposta).join('')
+            : `<div class="ficha"><div class="ficha-linha"><p class="ficha-rotulo">Sem resultado</p><div class="ficha-corpo">
+                <p>Não encontramos um responsável direto para “${esc(q)}”. Escolha o tema mais próximo:</p>
+                <p class="mt-2">${(r.areas || []).map((a) => `<a class="chip-link" href="servicos.html#/${esc(a.id)}">${esc(a.titulo)}</a>`).join(' ')}</p>
+                <p class="ficha-nota">Ou tente: ${r.sugestoes.map((x) => `<button type="button" data-q="${esc(x)}">${esc(x)}</button>`).join(', ')}.</p></div></div></div>`;
+    } catch (e) { $('respQuem').innerHTML = mensagemErro(e); }
+}
+$('formQuem').addEventListener('submit', (ev) => { ev.preventDefault(); buscarQuem($('qQuem').value); });
+['respQuem', 'sugestoesQuem'].forEach((id) => $(id).addEventListener('click', (ev) => {
+    const q = ev.target.closest('[data-q]');
+    if (q) { $('qQuem').value = q.dataset.q; buscarQuem(q.dataset.q); return; }
+    const m = ev.target.closest('[data-mapa]');
+    if (m) { M.categoria = m.dataset.mapa; desenharFiltros(); desenharPontos(); $('mapaSec').scrollIntoView({ behavior: 'smooth' }); }
+}));
+$('sugestoesQuem').innerHTML = ['vaga na creche', 'buraco na rua', 'demora para cirurgia', 'remédio no posto', 'assalto', 'aposentadoria no INSS']
+    .map((x) => `<button type="button" data-q="${esc(x)}" class="px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600">${esc(x)}</button>`).join('');
+
+
+/* ---------- Mapa dos equipamentos públicos ---------- */
+const M = { mapa: null, camada: null, dados: null, categoria: 'todos', esferas: new Set(['Municipal', 'Estadual', 'Federal', 'Conveniado ao SUS']), tentativas: 0, timer: null, selecionado: null };
+const CATEGORIAS = [['todos', 'Todos', 'fa-layer-group'], ['saude', 'Saúde', 'fa-heart-pulse'], ['educacao', 'Educação', 'fa-graduation-cap'],
+    ['seguranca', 'Segurança', 'fa-shield-halved'], ['assistencia', 'Assistência social', 'fa-hand-holding-heart'], ['outros', 'Outros', 'fa-building-columns']];
+function desenharFiltros() {
+    $('filtrosMapa').innerHTML = CATEGORIAS.map(([id, rot, ic]) => `<button type="button" data-cat="${id}" aria-pressed="${M.categoria === id}"
+        class="px-3 py-1.5 rounded-full text-xs font-semibold border ${M.categoria === id ? 'bg-brand-600 border-brand-600 text-white' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700'}">
+        <i class="fa-solid ${ic} mr-1" aria-hidden="true"></i>${rot}</button>`).join('');
+    const cont = (M.dados && M.dados.contagem_por_esfera) || {};
+    const ordem = ['Municipal', 'Estadual', 'Federal', 'Conveniado ao SUS', 'Pública (esfera não informada)', 'Não informada'];
+    $('legendaMapa').innerHTML = ordem.filter((e) => cont[e]).map((e) => `<label class="inline-flex items-center gap-1.5 cursor-pointer">
+        <input type="checkbox" data-esf="${esc(e)}" ${M.esferas.has(e) ? 'checked' : ''}><span class="w-3 h-3 rounded-full" style="background:${COR_ESFERA[e] || '#8F8F8B'}"></span>${esc(e)} <span class="text-slate-400">(${cont[e]})</span></label>`).join('');
+}
+$('filtrosMapa').addEventListener('click', (ev) => { const b = ev.target.closest('[data-cat]'); if (b) { M.categoria = b.dataset.cat; desenharFiltros(); desenharPontos(); } });
+$('legendaMapa').addEventListener('change', (ev) => { const e = ev.target.dataset.esf; if (!e) return; ev.target.checked ? M.esferas.add(e) : M.esferas.delete(e); desenharPontos(); });
+
+function iniciarMapa(centro) {
+    if (M.mapa) return;
+    M.mapa = L.map('mapa', { scrollWheelZoom: false }).setView([centro.lat, centro.lon], 12);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>' }).addTo(M.mapa);
+    M.camada = L.layerGroup().addTo(M.mapa);
+    M.mapa.on('click', () => M.mapa.scrollWheelZoom.enable());
+}
+function desenharPontos() {
+    if (!M.mapa || !M.dados) return;
+    M.camada.clearLayers();
+    const itens = M.dados.itens.filter((i) => (M.categoria === 'todos' || i.categoria === M.categoria) && M.esferas.has(i.esfera));
+    const pts = [];
+    for (const i of itens) {
+        const cor = COR_ESFERA[i.esfera] || '#8F8F8B';
+        const mk = L.circleMarker([i.lat, i.lon], { radius: 7, color: '#fff', weight: 1.5, fillColor: cor, fillOpacity: 0.95 });
+        mk.bindTooltip(i.nome, { direction: 'top' });
+        mk.on('click', () => abrirFicha(i));
+        mk.addTo(M.camada); pts.push([i.lat, i.lon]);
+    }
+    if (pts.length) M.mapa.fitBounds(pts, { padding: [30, 30], maxZoom: 15 });
+    $('mapaEstado').innerHTML = itens.length ? '' : '<p class="text-sm text-slate-500">Nenhum equipamento com este filtro.</p>';
+}
+async function abrirFicha(i) {
+    const m = contexto.municipio;
+    const botao = (rot, url) => `<a class="underline text-brand-700 dark:text-brand-400" target="_blank" rel="noopener" href="${esc(urlSegura(url))}">${esc(rot)}</a>`;
+    const cab = `<h3 class="ficha-titulo">${esc(i.nome)}</h3>
+        <p class="ficha-nota">${esc(i.tipo)}</p>
+        <p class="mt-2"><span class="ficha-selo" style="border-color:${COR_ESFERA[i.esfera] || '#8F8F8B'};color:var(--fg)"><span class="ficha-cor" style="background:${COR_ESFERA[i.esfera] || '#8F8F8B'}"></span>${esc(i.esfera)}</span>
+           <span class="block ficha-nota mt-1">Esfera: ${esc(i.esfera_origem)}</span></p>
+        <div class="mt-3">
+            ${i.endereco ? fichaLinha('Endereço', `<p>${esc(i.endereco)}</p>`) : ''}
+            ${i.telefone ? fichaLinha('Telefone', `<p>${esc(i.telefone)}</p>`) : ''}
+            ${i.funcionamento ? fichaLinha('Funcionamento', `<p>${esc(i.funcionamento)}</p>`) : ''}</div>`;
+    const rodape = `<p class="text-[11px] text-slate-400 mt-3">Fonte: ${botao(i.fonte, i.url_fonte)}${i.atualizado_em ? ` · atualizado em ${esc(fmtData(i.atualizado_em))}` : ''}</p>`;
+    $('fichaLocal').innerHTML = cab + '<p class="mt-3 text-xs text-slate-500"><i class="fa-solid fa-spinner fa-spin mr-1" aria-hidden="true"></i>Buscando responsável e orçamento…</p>' + rodape;
+    if (!['Municipal', 'Estadual', 'Federal'].includes(i.esfera)) {
+        const extra = i.conveniado_sus
+            ? '<p class="mt-3 text-xs"><b>Transparência:</b> entidade sem fins lucrativos que atende pelo SUS. O atendimento é financiado por repasses do SUS (Município, Estado e União). Para reclamar do atendimento, use a Ouvidoria do SUS: <b>Disque Saúde 136</b>.</p>'
+            : '<p class="mt-3 text-xs text-slate-500">A esfera deste local não está informada na fonte; por isso não mostramos o orçamento. Consulte o órgão responsável.</p>';
+        $('fichaLocal').innerHTML = cab + extra + rodape; return;
+    }
+    try {
+        const r = await api(`/api/equipamentos/${m.codigo}/verba?categoria=${encodeURIComponent(i.categoria)}&esfera=${encodeURIComponent(i.esfera)}`);
+        const v = r.verba;
+        $('fichaLocal').innerHTML = cab + `<div class="mt-2">
+            ${fichaLinha('Responsável', `<p>${esc(r.orgao)}</p>`)}
+            ${fichaLinha('Quem cobrar', `<p>${r.quem_cobrar.map(esc).join(' e ')}</p>`)}
+            ${fichaLinha('Orçamento', v && v.valor_funcao != null
+                ? `<p>${esc(v.instituicao)} autorizou na LOA ${esc(v.ano)} <b>${esc(reaisCurto(v.valor_funcao))}</b> para ${esc(v.funcao)} (${(100 * v.valor_funcao / v.despesa_total).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}% da despesa autorizada). <a class="underline" href="orcamento.html">Ver o orçamento</a>.</p><p class="ficha-nota">É o valor da área na esfera, não o custo desta unidade.</p>`
+                : '<p class="ficha-nota">Sem valor de orçamento para esta área.</p>')}
+            ${i.categoria === 'saude' ? fichaLinha('Reclamações', '<p>Ouvidoria do SUS: <b>Disque Saúde 136</b>.</p>') : ''}</div>` + rodape;
+    } catch (e) { $('fichaLocal').innerHTML = cab + `<p class="mt-3 text-xs text-slate-500">${esc(e.message)}</p>` + rodape; }
+}
+async function carregarMapa() {
+    const m = contexto && contexto.municipio;
+    clearTimeout(M.timer);
+    if (!m) {
+        $('mapaEstado').innerHTML = '<p class="text-sm text-slate-500">Escolha a sua cidade na barra acima para ver os equipamentos públicos no mapa.</p>';
+        $('filtrosMapa').innerHTML = ''; $('legendaMapa').innerHTML = ''; $('mapaFontes').textContent = '';
+        $('mapa').classList.add('hidden'); $('fichaLocal').classList.add('hidden'); return;
+    }
+    $('mapa').classList.remove('hidden'); $('fichaLocal').classList.remove('hidden');
+    $('mapaSub').textContent = `Equipamentos públicos de ${m.nome} – ${m.uf}, com a esfera responsável por cada um.`;
+    if (!M.dados || M.dados.municipio !== m.codigo) $('mapaEstado').innerHTML = '<p class="text-sm text-slate-500"><i class="fa-solid fa-spinner fa-spin mr-1.5" aria-hidden="true"></i>Consultando o cadastro de unidades de saúde (CNES)…</p>';
+    try {
+        const d = await api('/api/equipamentos/' + encodeURIComponent(m.codigo));
+        const trocou = !M.dados || M.dados.municipio !== d.municipio;
+        M.dados = d;
+        if (!d.centro) { $('mapaEstado').innerHTML = '<p class="text-sm text-slate-500">Nenhum equipamento com localização foi encontrado para esta cidade.</p>'; return; }
+        iniciarMapa(d.centro);
+        if (trocou) M.mapa.setView([d.centro.lat, d.centro.lon], 12);
+        M.mapa.invalidateSize();
+        desenharFiltros(); desenharPontos();
+        const osm = d.fontes.osm;
+        $('mapaFontes').innerHTML = `Fontes: ${esc(d.fontes.cnes.nome)} (${d.fontes.cnes.itens} unidades) · ${esc(osm.nome)} (${osm.itens} locais${osm.estado === 'indisponivel' ? ', indisponível agora' : ''}). ${d.avisos.map(esc).join(' ')}`;
+        if (osm.estado === 'carregando' && M.tentativas < 8) {
+            $('mapaEstado').innerHTML = '<p class="text-xs text-slate-500"><i class="fa-solid fa-spinner fa-spin mr-1.5" aria-hidden="true"></i>Carregando escolas, delegacias e outros serviços do OpenStreetMap (na primeira vez pode levar um minuto)…</p>';
+            M.tentativas += 1; M.timer = setTimeout(carregarMapa, 15000);
+        } else { M.tentativas = 0; }
+    } catch (e) { $('mapaEstado').innerHTML = mensagemErro(e); }
+}
+
+function recarregar() { M.tentativas = 0; carregarMapa(); if ($('qQuem').value.trim()) buscarQuem($('qQuem').value); }
+
+(async function iniciar() {
+    contexto = await montarBarraContexto('barraContexto', recarregar);
+    recarregar();
+})();
+</script>
+</body>
+</html>
