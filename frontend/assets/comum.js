@@ -89,19 +89,32 @@ function renderLayout(paginaAtual) {
         document.body.append(sc);
     }
     if (!document.querySelector('link[rel="icon"]')) {
-        const ic = document.createElement('link');
-        ic.rel = 'icon'; ic.type = 'image/png'; ic.href = 'assets/favicon.png';
-        document.head.appendChild(ic);
+        // Logo = ícone "user-group" do Lucide. SVG (nítido em qualquer tamanho) + PNG de reserva;
+        // apple-touch-icon para quem salva o site na tela inicial do celular. Arquivos: scripts/gerar_icones.py
+        for (const [rel, tipo, tamanhos, href] of [
+            ['icon', 'image/png', '64x64', 'assets/favicon.png'],
+            ['icon', 'image/svg+xml', 'any', 'assets/logo-icone.svg'],
+            ['apple-touch-icon', '', '256x256', 'assets/logo-icone.png'],
+        ]) {
+            const ic = document.createElement('link');
+            ic.rel = rel; if (tipo) ic.type = tipo; ic.sizes = tamanhos; ic.href = href;
+            document.head.appendChild(ic);
+        }
     }
     const cab = $('cabecalho');
     if (cab) {
-        // Marca só tipográfica (sem imagem), no formato do cartaz: nome empilhado, régua e linha técnica.
+        // Logo: ícone "user-group" do Lucide (ISC, https://lucide.dev/icons/user-group) em quadrado vermelho,
+        // ao lado do nome (IM preto · PACTO vermelho · CIDADÃO preto), régua e linha técnica.
+        const ICONE_MARCA = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M17 21v-1a2 2 0 00-2-2H9a2 2 0 00-2 2v1"/><path d="M19 10h1a2 2 0 012 2v1"/><path d="M5 10H4a2 2 0 00-2 2v1"/><circle cx="12" cy="11" r="3"/><circle cx="18" cy="4" r="2"/><circle cx="6" cy="4" r="2"/></svg>`;
         const marca = `<span class="marca-nome block min-w-0">
-                    <span class="marca-titulo block"><span class="marca-im">Im</span><span class="marca-pacto">pacto</span><br>Cidadão</span>
+                    <span class="marca-topo">
+                        <span class="marca-icone" aria-hidden="true">${ICONE_MARCA}</span>
+                        <span class="marca-titulo block"><span class="marca-im">Im</span><span class="marca-pacto">pacto</span><br>Cidadão</span>
+                    </span>
                     <span class="marca-regua block" aria-hidden="true"></span>
                     <span class="marca-linha block">Civic tech // Transparência acessível <span class="marca-ano">✦ 2026</span></span>
                 </span>`;
-        const marcaMovel = `<span class="marca-movel"><span class="marca-im">Im</span><span class="marca-pacto">pacto</span>Cidadão</span>`;
+        const marcaMovel = `<span class="marca-movel"><span class="marca-icone marca-icone--pequeno" aria-hidden="true">${ICONE_MARCA}</span><span><span class="marca-im">Im</span><span class="marca-pacto">pacto</span>Cidadão</span></span>`;
         const atual = (n) => n.paginas.includes(paginaAtual);
         const linkMenu = (n) => `<a href="${n.href}" ${atual(n) ? 'aria-current="page"' : ''}
                     class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium hover:bg-slate-100 dark:hover:bg-slate-800 ${atual(n) ? 'bg-slate-100 dark:bg-slate-800 text-brand-700 dark:text-brand-400' : 'text-slate-700 dark:text-slate-300'}">

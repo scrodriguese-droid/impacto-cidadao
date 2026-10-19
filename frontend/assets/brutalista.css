@@ -257,7 +257,13 @@ button[data-membros], button[data-limpar], button[data-pol], button[data-fechar-
 .marca-linha { font: 700 .56rem/1.45 var(--fonte-texto); letter-spacing: .12em; text-transform: uppercase; color: var(--fg); }
 .marca-ano { color: var(--vermelho); white-space: nowrap; }
 .dark .marca-ano { color: #E5584F; }
-.marca-movel { font: 900 1.15rem/1 var(--fonte-texto); text-transform: uppercase; letter-spacing: -.03em; color: var(--fg); }
+.marca-movel { display: inline-flex; align-items: center; gap: .55rem; font: 900 1.15rem/1 var(--fonte-texto); text-transform: uppercase; letter-spacing: -.03em; color: var(--fg); }
+/* Logo: ícone user-group (Lucide) em quadrado vermelho — o símbolo da marca */
+.marca-topo { display: flex; align-items: center; gap: .65rem; }
+.marca-topo .marca-titulo { font-size: 1.8rem; }
+.marca-icone { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 2.9rem; height: 2.9rem; background: var(--vermelho); color: #F4F2EE; }
+.marca-icone svg { width: 64%; height: 64%; }
+.marca-icone--pequeno { width: 1.85rem; height: 1.85rem; }
 /* Marca em três tempos: IM (preto) · PACTO (vermelho) · CIDADÃO (preto) */
 .marca-im { color: var(--fg); }
 .marca-pacto { color: var(--vermelho); }

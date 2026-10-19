@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="ImpactoCidadão">
+  <!-- Ícone user-group do Lucide (ISC) — https://lucide.dev/icons/user-group -->
+  <rect width="64" height="64" fill="#A92823"/>
+  <g transform="translate(10.000 10.000) scale(1.8333)" fill="none" stroke="#F4F2EE" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M17 21v-1a2 2 0 00-2-2H9a2 2 0 00-2 2v1"/>
+    <path d="M19 10h1a2 2 0 012 2v1"/>
+    <path d="M5 10H4a2 2 0 00-2 2v1"/>
+    <circle cx="12" cy="11" r="3"/>
+    <circle cx="18" cy="4" r="2"/>
+    <circle cx="6" cy="4" r="2"/>
+  </g>
+</svg>
