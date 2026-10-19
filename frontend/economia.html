@@ -348,27 +348,62 @@ const NIVEL_LRF = {
 const cartaz = (rotulo, grande, sub, nota, alerta) => `<div class="cartaz${alerta ? ' cartaz-alerta' : ''}"><p class="cartaz-rotulo">${rotulo}</p><p class="cartaz-num">${grande}</p>
     <p class="cartaz-sub">${sub}</p>${nota ? `<p class="cartaz-nota">${nota}</p>` : ''}</div>`;
 
-/* Radar de saúde econômica: medidor em 4 estágios + tradução para o dia a dia (só para a União) */
-function radarEconomico(dg) {
-    if (!dg) return '';
-    const grave = dg.indice >= 2;
-    const medidor = dg.estagios.map((e, i) => `<li class="radar-estagio${i === dg.indice ? ' atual' + (grave ? ' grave' : '') : i < dg.indice ? ' passado' : ''}"${i === dg.indice ? ' aria-current="step"' : ''}>
+/* Radar econômico: dois diagnósticos separados (economia e vida da população × situação fiscal) + tradução para o dia a dia */
+const SETA = { piora: '↓ piorou', melhora: '↑ melhorou', estavel: '→ estável' };
+function medidorRadar(p) {
+    const celulas = p.estagios.map((e, i) => `<li class="radar-estagio${i === p.indice ? ' atual' + (p.grave ? ' grave' : '') : ''}"${i === p.indice ? ' aria-current="step"' : ''}>
         <p class="radar-estagio-n">${i + 1}</p><b>${esc(e.rotulo)}</b><span>${esc(e.resumo)}</span></li>`).join('');
-    const un = (s) => (s.unidade === 'p.p.' ? ' p.p.' : s.unidade.startsWith('% do PIB') ? '% do PIB' : '%');
-    const sinais = dg.sinais.map((s) => `<li class="${s.disparado ? 'on' : 'off'}">${esc(s.nome)}: ${pc(s.valor, 1)}${esc(un(s))}
-        <span class="text-slate-500">(${s.disparado ? 'sinal ligado' : 'sinal desligado'} · ${esc(s.regra)})</span></li>`).join('');
+    return `<ol class="radar-medidor radar-medidor--3" aria-label="${esc(p.nome)}: ${esc(p.rotulo)}, ${p.indice + 1} de ${p.estagios.length}">${celulas}</ol>`;
+}
+function painelFiscal(f) {
+    // “maior é pior” em todos os sinais fiscais: a seta já vem do backend (piorou/melhorou/estável contra 12 meses antes)
+    const un = (s) => (s.unidade === 'p.p.' ? ' p.p.' : '%' + (s.unidade.includes('PIB') ? ' do PIB' : ''));
+    const itens = f.sinais.map((s) => `<li><span class="radar-item-nome">${esc(s.nome)}</span>
+        <span class="radar-item-valor">${pc(s.valor, 1)}${esc(un(s))}</span>
+        <span class="radar-item-nota">${s.disparado ? '● sinal ligado' : '○ sinal desligado'} · ${esc(s.regra)}${s.tendencia && s.valor_antes != null
+            ? ` · <b class="radar-seta radar-seta--${s.tendencia}">${SETA[s.tendencia]}</b> (há 12 meses: ${pc(s.valor_antes, 1)}${esc(un(s))})` : ''}</span></li>`).join('');
+    return { ...f, nome: 'Situação fiscal', grave: f.indice > 0, lista: itens,
+        legenda: 'Dívida pública, resultado fiscal e juros: se as contas públicas são sustentáveis.' };
+}
+function painelSocial(sc) {
+    const itens = sc.itens.map((i) => {
+        const comp = i.id === 'pib'
+            ? `${i.trimestre_pct != null ? `último trimestre: ${i.trimestre_pct >= 0 ? '+' : '−'}${pc(Math.abs(i.trimestre_pct), 1)}% sobre o anterior · ` : ''}acumulado em 4 trimestres até o ${esc(i.referencia)}`
+            : i.id === 'inflacao'
+                ? `meta ${pc(i.meta.centro, 1)}% (banda de ${pc(i.meta.piso, 1)}% a ${pc(i.meta.teto, 1)}%)${i.valor_antes != null ? ` · há 12 meses: ${pc(i.valor_antes, 1)}%` : ''}`
+                : `${esc(i.referencia || '')}${i.valor_antes != null ? ` · há 12 meses: ${pc(i.valor_antes, 1)}%` : ''}`;
+        // ↑ = melhorou, ↓ = piorou (vermelho), → = estável. Indica melhora ou piora, não se o número subiu ou caiu.
+        const marca = { melhora: '↑', piora: '↓', estavel: '→' }[i.status];
+        return `<li><span class="radar-item-nome">${esc(i.nome)}</span>
+            <span class="radar-item-valor">${pc(i.valor, 1)}%${i.id === 'pib' ? ' <small>de crescimento</small>' : ''}</span>
+            <span class="radar-item-nota"><b class="radar-seta radar-seta--${i.status}">${marca} ${esc(i.rotulo)}</b> · ${comp}</span></li>`;
+    }).join('');
+    return { ...sc, nome: 'Economia e vida da população', grave: sc.indice === sc.estagios.length - 1, lista: itens,
+        legenda: 'Emprego, preços e crescimento: se a economia entrega mais ou menos que há um ano.' };
+}
+function radarEconomico(dg) {
+    if (!dg || !dg.fiscal) return '';
+    const paineis = [dg.social ? painelSocial(dg.social) : null, painelFiscal(dg.fiscal)].filter(Boolean).map((p) => `<div class="radar-painel">
+        <p class="radar-pergunta">${esc(p.nome)}</p>
+        <p class="radar-veredito">${esc(p.rotulo)}</p>
+        <p class="radar-legenda">${esc(p.legenda)}</p>
+        ${medidorRadar(p)}
+        <ul class="radar-itens">${p.lista}</ul>
+        <p class="ficha-nota">Dados de ${esc(p.referencia.slice(5, 7))}/${esc(p.referencia.slice(0, 4))}. Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(p.fonte.url))}">${esc(p.fonte.nome)}</a>.</p></div>`).join('');
     const itens = dg.cotidiano.itens.map((i) => `<div class="radar-destaque-item"><h4>${esc(i.tema)}</h4><p>${esc(i.texto)}</p></div>`).join('');
+    const criterios = [dg.social ? ['Economia e vida da população', dg.social.criterio] : null, ['Situação fiscal', dg.fiscal.criterio]].filter(Boolean)
+        .map(([t, c]) => `<p class="ficha-nota mt-2"><b>${t}.</b> ${esc(c)}</p>`).join('');
     return `<div class="radar" id="radar">
-        <p class="radar-pergunta">Radar de saúde econômica · Brasil</p>
-        <p class="radar-veredito">${esc(dg.rotulo)}</p>
-        <ol class="radar-medidor" aria-label="Estágio da saúde econômica do país: ${esc(dg.rotulo)}, ${dg.indice + 1} de 4">${medidor}</ol>
-        <ul class="radar-sinais" aria-label="Sinais que levaram a esta classificação">${sinais}</ul>
+        <p class="radar-pergunta">${esc(dg.titulo)}</p>
+        <p class="radar-sub">${esc(dg.subtitulo)}</p>
+        <div class="radar-paineis">${paineis}</div>
+        <p class="ficha-nota mt-2">↑ melhorou · → estável · ↓ piorou, sempre em comparação com 12 meses antes. A seta indica se o quadro melhorou ou piorou, não se o número subiu ou caiu.</p>
         <div class="radar-destaque">
             <div class="radar-destaque-cab"><p>O que isso significa para a sua vida</p><h3>${esc(dg.cotidiano.titulo)}</h3></div>
             <div class="radar-destaque-corpo">${itens}</div></div>
         <details class="sanfona mt-4"><summary>Como classificamos</summary>
-            <p class="ficha-nota mt-2">${esc(dg.criterio)} Dados de ${esc(dg.referencia.slice(5, 7))}/${esc(dg.referencia.slice(0, 4))}.
-                Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(dg.fonte.url))}">${esc(dg.fonte.nome)}</a>.</p></details>
+            ${criterios}
+            <p class="ficha-nota mt-2">Um painel não anula o outro: o país pode avançar em emprego e renda e, ao mesmo tempo, ter problemas de dívida e juros. Os limites são escolhas do projeto, não verdades universais, e a tendência compara cada indicador com 12 meses antes.</p></details>
     </div>`;
 }
 

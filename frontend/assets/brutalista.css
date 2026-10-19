@@ -198,7 +198,7 @@ html, body { overflow-x: clip; }
 /* ---------- correções de diagramação ---------- */
 /* Anton só existe em peso 400: sem isso o navegador "engrossa" o traço e a letra borra */
 h1, h2, h2 *, p[class*="text-3xl"], p[class*="text-2xl"], span[class*="text-3xl"], span[class*="text-2xl"], div[class*="text-3xl"], footer h4,
-.radar-estagio b, .radar-veredito, .radar-destaque-cab h3 {
+.radar-estagio b, .radar-veredito, .radar-sub, .radar-item-valor, .radar-destaque-cab h3 {
     font-synthesis: none; font-weight: 400 !important;
 }
 /* a régua do quadro e a régua do título não se empilham: dentro de um quadro, a régua é a do quadro */
@@ -428,7 +428,7 @@ a.chip-link:hover { background: var(--ativo); color: var(--ativo-fg); }
 .radar-estagio.passado { background: repeating-linear-gradient(135deg, transparent 0 8px, rgba(128,128,128,.12) 8px 9px); }
 .radar-estagio.atual { background: var(--ativo); color: var(--ativo-fg); }
 .radar-estagio.atual.grave { background: var(--vermelho); color: #fff; }
-.radar-estagio.atual::before { content: "▼ O país está aqui"; position: absolute; left: -3px; right: -3px; top: -1.65rem; font: 800 .66rem/1 var(--fonte-texto); letter-spacing: .12em; text-transform: uppercase; color: var(--ativo); white-space: nowrap; }
+.radar-estagio.atual::before { content: "▼ Hoje"; position: absolute; left: 0; right: 0; top: -1.65rem; font: 800 .66rem/1 var(--fonte-texto); letter-spacing: .12em; text-transform: uppercase; color: var(--ativo); white-space: nowrap; }
 .radar-estagio.atual.grave::before { color: var(--vermelho); }
 @media (max-width: 640px) { .radar-medidor { grid-template-columns: 1fr 1fr; } .radar-estagio:nth-child(2) { border-right: 0; } .radar-estagio:nth-child(-n+2) { border-bottom: 1px solid var(--line); } .radar-estagio.atual::before { font-size: .58rem; letter-spacing: .06em; } }
 .radar-sinais { display: grid; gap: .45rem; margin-top: 1rem; font-size: .86rem; line-height: 1.4; font-weight: 400; }
@@ -437,6 +437,28 @@ a.chip-link:hover { background: var(--ativo); color: var(--ativo-fg); }
 .radar-sinais li span { font-weight: 400; }
 .radar-sinais .on::before { content: "● "; color: var(--vermelho); }
 .radar-sinais .off::before { content: "○ "; }
+.radar-sub { font-family: var(--fonte-titulo); font-size: clamp(1.3rem, 2.6vw, 2rem); line-height: 1.1; text-transform: uppercase; margin: .3rem 0 1.2rem; }
+.radar-paineis { display: grid; gap: 2.4rem 2rem; }
+@media (min-width: 980px) { .radar-paineis { grid-template-columns: 1fr 1fr; } }
+.radar-painel .radar-veredito { font-size: clamp(1.7rem, 3vw, 2.5rem); }
+.radar-legenda { font-size: .86rem; line-height: 1.45; max-width: 52ch; }
+.radar-medidor--3 { grid-template-columns: repeat(3, 1fr); }
+.radar-medidor--3 .radar-estagio span { font-size: .74rem; }
+@media (max-width: 640px) {
+    .radar-medidor--3 { grid-template-columns: 1fr; margin-top: 1rem; }
+    .radar-medidor--3 .radar-estagio { border-right: 0; border-bottom: 1px solid var(--line); min-height: 0; }
+    .radar-medidor--3 .radar-estagio:last-child { border-bottom: 0; }
+    .radar-medidor--3 .radar-estagio.atual::before { top: .8rem; left: auto; right: .7rem; }
+}
+.radar-itens { margin-top: 1rem; display: grid; }
+.radar-itens li { list-style: none; padding: .7rem 0; border-top: 1px solid var(--line); display: grid; grid-template-columns: 1fr auto; gap: .15rem 1rem; }
+.radar-itens li:first-child { border-top: 2px solid var(--line); }
+.radar-item-nome { font-weight: 600; font-size: .9rem; }
+.radar-item-valor { font-family: var(--fonte-titulo); font-size: 1.5rem; line-height: 1; text-align: right; }
+.radar-item-valor small { font: 500 .7rem/1 var(--fonte-texto); }
+.radar-item-nota { grid-column: 1 / -1; font-size: .8rem; line-height: 1.45; color: var(--muted); }
+.radar-seta { font-weight: 700; }
+.radar-seta--piora { color: var(--vermelho); }
 .radar-destaque { border: 3px solid var(--line); margin-top: 1.4rem; }
 .radar-destaque-cab { background: var(--ativo); color: var(--ativo-fg); padding: 1rem 1.3rem; }
 .radar-destaque-cab p { font: 800 .64rem/1.2 var(--fonte-texto); letter-spacing: .14em; text-transform: uppercase; opacity: .8; }
