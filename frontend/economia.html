@@ -206,9 +206,15 @@ function deficits(d) {
         <h3 class="font-bold">Déficits em detalhe <span class="text-xs font-normal text-slate-500">· ${esc(d.instituicao || '')} · ${esc(x.periodo)}</span></h3>
         <div class="grid sm:grid-cols-3 gap-4 mt-2">
             ${caixa('Déficit nominal', n.valor, 'Gastos totais − receitas totais. Inclui juros, amortizações e empréstimos.',
-                linha('Gastos totais (empenhados)', n.gastos_totais) + linha('Receitas totais (arrecadadas)', n.receitas_totais) + linha('Gastos − receitas', n.valor))}
+                n.oficial
+                    ? linha('Resultado nominal oficial (RREO, acima da linha)', n.valor) + linha('Nossa aproximação: gastos empenhados − receitas arrecadadas', n.aproximado)
+                      + '<li class="text-[11px] text-slate-400">O oficial usa a despesa paga; a aproximação conta também o que já foi empenhado e ainda não foi pago.</li>'
+                    : linha('Gastos totais (empenhados)', n.gastos_totais) + linha('Receitas totais (arrecadadas)', n.receitas_totais) + linha('Gastos − receitas', n.valor))}
             ${caixa('Déficit primário', p.valor, 'Gastos − receitas não financeiros. Exclui juros e amortização da dívida, entre outros itens financeiros.',
-                linha('Gastos não financeiros', p.gastos_nao_financeiros) + linha('Receitas não financeiras', p.receitas_nao_financeiras) + linha('Gastos − receitas', p.valor)
+                (p.oficial
+                    ? linha('Resultado primário oficial (RREO, acima da linha)', p.valor) + linha('Nossa aproximação: gastos empenhados − receitas', p.aproximado)
+                      + '<li class="text-[11px] text-slate-400">O oficial usa a despesa paga; a aproximação conta também o que já foi empenhado e ainda não foi pago, e por isso costuma ser maior durante o ano.</li>'
+                    : linha('Gastos não financeiros', p.gastos_nao_financeiros) + linha('Receitas não financeiras', p.receitas_nao_financeiras) + linha('Gastos − receitas', p.valor))
                 + `<li class="text-[11px] text-slate-400">Base: ${esc(p.base)}.</li>`)}
             ${caixa('Déficit operacional', o.valor, 'Primário + juros reais: tira dos juros nominais o efeito da inflação.', detOper)}
         </div>
@@ -604,7 +610,7 @@ function nivel1(d) {
         <details class="sanfona mt-6"><summary>Ver todos os números da situação fiscal</summary>
             <div class="mt-4">${situacaoFiscal(d)}
                 <ul class="text-sm space-y-1 mb-4">${fatia(n.saude, 'Saúde')}${fatia(n.educacao, 'Educação')}</ul>
-                ${deficits(d)}${d.esfera === 'uniao' ? `<p class="ficha-nota mt-2" style="max-width:75ch">Atenção: no Governo Federal, os déficits acima vêm do RREO (SICONFI): despesas <b>empenhadas</b> menos receitas arrecadadas, acumulado no ano. É um método diferente do resultado primário do Banco Central (setor público consolidado, 12 meses), que é o usado no confronto e no cartaz “Resultado primário”; por isso os valores não são comparáveis.</p>` : ''}${d.esfera === 'uniao' ? reservasEsqueleto() : ''}
+                ${deficits(d)}${d.esfera === 'uniao' ? `<p class="ficha-nota mt-2" style="max-width:75ch">Os déficits acima são os do Governo Federal no RREO, acumulados no ano. O confronto e o cartaz “Resultado primário” usam o resultado do Banco Central (setor público consolidado, 12 meses), que tem outra abrangência e outro período.</p>` : ''}${d.esfera === 'uniao' ? reservasEsqueleto() : ''}
                 <p class="ficha-nota mt-3">Saúde e Educação: fatia da despesa liquidada por função. Os mínimos constitucionais (15% e 25% da receita de impostos) são apurados em demonstrativos próprios: confira no portal oficial do ente.</p></div></details></section>`;
 }
 
