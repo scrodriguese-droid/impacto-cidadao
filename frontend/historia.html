@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>História política do Brasil — ImpactoCidadão</title>
+    <meta name="description" content="Quem governou o Brasil desde a Proclamação da República e qual era a orientação do Executivo e da maioria do Congresso em cada período.">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="assets/tailwind-config.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Inter', system-ui, sans-serif; }
+        :focus-visible { outline: 2px solid #A92823; outline-offset: 2px; }
+        .faixa { display: flex; height: 2.25rem; border-radius: .5rem; overflow: hidden; background: #e2e8f0; }
+        .faixa > span { display: block; border-right: 1px solid rgba(255,255,255,.7); min-width: 1px; cursor: pointer; }
+        .faixa > span:last-child { border-right: 0; }
+        .faixa > span:hover, .faixa > span:focus-visible { filter: brightness(.9); outline-offset: -2px; }
+        details.linha > summary { list-style: none; cursor: pointer; }
+        details.linha > summary::-webkit-details-marker { display: none; }
+        details.linha[open] .seta { transform: rotate(90deg); }
+        /* escala sequencial esquerda → direita, sem as cores dos partidos */
+        .eixo-E { background: #6d28d9; color: #fff; } .eixo-CE { background: #c4b5fd; color: #1e1b4b; }
+        .eixo-C { background: #cbd5e1; color: #1e293b; } .eixo-CD { background: #99f6e4; color: #134e4a; }
+        .eixo-D { background: #0f766e; color: #fff; }
+        .eixo-FORA { background: repeating-linear-gradient(45deg, #f1f5f9, #f1f5f9 5px, #e2e8f0 5px, #e2e8f0 10px); color: #334155; }
+        .eixo-SEM { background: #f8fafc; color: #64748b; box-shadow: inset 0 0 0 1px #cbd5e1; }
+        .dark .eixo-FORA { background: repeating-linear-gradient(45deg, #334155, #334155 5px, #1e293b 5px, #1e293b 10px); color: #e2e8f0; }
+        .dark .eixo-SEM { background: #0f172a; color: #94a3b8; box-shadow: inset 0 0 0 1px #475569; }
+    </style>
+    <link rel="stylesheet" href="assets/brutalista.css">
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-full flex flex-col transition-colors duration-200">
+
+<a href="#conteudo" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-white focus:text-slate-900 focus:p-3">Ir para o conteúdo</a>
+<div id="cabecalho"></div>
+
+<main id="conteudo" class="max-w-5xl mx-auto px-4 sm:px-6 pt-6 pb-10 flex-grow w-full">
+    <h1 class="text-2xl font-extrabold tracking-tight">História política do Brasil</h1>
+    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Quem governou o país desde a Proclamação da República (1889) e qual era a orientação política do Executivo e da maioria do Congresso em cada período.</p>
+
+    <details class="mt-4 rounded-2xl border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/40 p-4 text-sm">
+        <summary class="cursor-pointer font-semibold"><i class="fa-solid fa-circle-info mr-2" aria-hidden="true"></i>Como ler: o que é dado e o que é classificação</summary>
+        <ul class="mt-3 list-disc pl-5 space-y-1.5 text-slate-700 dark:text-slate-300">
+            <li><b>Quem governou, datas, partido e como chegou ao cargo</b> são fatos registrados.</li>
+            <li><b>A orientação (esquerda, centro, direita) é uma classificação</b> feita pelo ImpactoCidadão a partir da literatura de história e ciência política. Não é um dado oficial e historiadores discordam em vários casos. Os casos mais discutidos levam a marca <span class="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-[11px] font-bold">debatido</span>.</li>
+            <li><b>Antes de 1945 a escala esquerda–direita quase não se aplica</b>: a política girava em torno de oligarquias estaduais, de militares e de Vargas. Por isso esses períodos aparecem como “fora do eixo”, em vez de receber um rótulo forçado.</li>
+            <li><b>“Maioria do Congresso”</b> descreve o campo que sustentava ou limitava o governo, não o resultado de uma votação. Na ditadura militar o Congresso funcionava sob cassações e fechamentos.</li>
+            <li><b>O rótulo é do governo ou da base no período, não de cada pessoa.</b> Não mede se foi um bom ou mau governo.</li>
+            <li>Ainda não há aqui a contagem de cadeiras por partido em cada legislatura. Fica como próximo passo, com dados do TSE e da Câmara.</li>
+        </ul>
+    </details>
+
+    <section class="mt-5" aria-labelledby="tFaixa">
+        <h2 id="tFaixa" class="text-lg font-bold"><i class="fa-solid fa-timeline mr-2 text-brand-600" aria-hidden="true"></i>Linha do tempo</h2>
+        <p class="text-xs text-slate-500 mt-1">Cada bloco é um período, com largura proporcional à duração. Clique em um bloco para ver os detalhes.</p>
+        <div class="mt-3 text-xs font-semibold text-slate-500">Executivo</div>
+        <div id="faixaExec" class="faixa mt-1"></div>
+        <div class="mt-3 text-xs font-semibold text-slate-500">Maioria do Congresso</div>
+        <div id="faixaParl" class="faixa mt-1"></div>
+        <div id="escalaAnos" class="relative h-5 mt-1 text-[10px] text-slate-500" aria-hidden="true"></div>
+        <div id="legenda" class="mt-3 flex flex-wrap gap-x-3 gap-y-1.5 text-[11px]"></div>
+        <p id="detalheFaixa" class="mt-3 text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-3 hidden" aria-live="polite"></p>
+    </section>
+
+    <section class="mt-8" aria-labelledby="tLista">
+        <h2 id="tLista" class="text-lg font-bold"><i class="fa-solid fa-landmark-flag mr-2 text-brand-600" aria-hidden="true"></i>Quem governou</h2>
+        <div id="chipsFase" class="mt-2 flex flex-wrap gap-1.5" role="group" aria-label="Filtrar por período histórico"></div>
+        <p id="regimeFase" class="text-xs text-slate-500 mt-2"></p>
+        <div id="lista" class="mt-3 space-y-2"></div>
+    </section>
+
+    <section class="mt-8" aria-labelledby="tParl">
+        <h2 id="tParl" class="text-lg font-bold"><i class="fa-solid fa-building-columns mr-2 text-brand-600" aria-hidden="true"></i>O Congresso em cada período</h2>
+        <div id="listaParl" class="mt-3 space-y-2"></div>
+    </section>
+
+    <section class="mt-8 text-xs text-slate-500" aria-labelledby="tFontes">
+        <h2 id="tFontes" class="text-sm font-bold text-slate-700 dark:text-slate-300">Fontes</h2>
+        <ul id="fontes" class="mt-1 list-disc pl-5 space-y-1"></ul>
+    </section>
+</main>
+
+<div id="rodape"></div>
+
+<script src="assets/comum.js"></script>
+<script>
+renderLayout('historia');
+
+const H = { dados: null, fase: '' };
+const ORDEM = ['E', 'CE', 'C', 'CD', 'D', 'FORA', 'SEM'];
+const dt = (s) => new Date(s + 'T00:00:00Z').getTime();
+const fim = (x) => (x.fim ? dt(x.fim) : Date.now());
+const fmt = (s) => { if (!s) return 'hoje'; const [a, m, d] = s.split('-'); return `${d}/${m}/${a}`; };
+const anos = (x) => `${x.ini.slice(0, 4)}–${x.fim ? x.fim.slice(0, 4) : 'hoje'}`;
+const chip = (eixo, texto) => `<span class="eixo-${esc(eixo)} inline-block px-2 py-0.5 rounded-md text-[11px] font-bold">${esc(texto)}</span>`;
+const debatido = (x) => (x.debatido ? ' <span class="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-[10px] font-bold align-middle">debatido</span>' : '');
+
+function faixa(el, itens, rotuloDe, detalheDe) {
+    const t0 = dt(H.dados.presidentes[0].ini), t1 = Date.now(), total = t1 - t0;
+    el.innerHTML = itens.map((x) => {
+        const w = (Math.min(fim(x), t1) - Math.max(dt(x.ini), t0)) / total * 100;
+        return `<span role="button" tabindex="0" class="eixo-${esc(x.eixo)}" style="width:${w}%" data-id="${esc(x.id)}" title="${esc(rotuloDe(x))}" aria-label="${esc(rotuloDe(x))}"></span>`;
+    }).join('');
+    const abrir = (ev) => {
+        if (ev.type === 'keydown' && ev.key !== 'Enter' && ev.key !== ' ') return;
+        const b = ev.target.closest('[data-id]');
+        if (!b) return;
+        ev.preventDefault();
+        const x = itens.find((i) => i.id === b.dataset.id);
+        const d = $('detalheFaixa');
+        d.classList.remove('hidden');
+        d.innerHTML = detalheDe(x);
+    };
+    el.onclick = abrir; el.onkeydown = abrir;
+}
+
+function desenharFaixas() {
+    const D = H.dados;
+    faixa($('faixaExec'), D.presidentes, (x) => `${x.nome} (${anos(x)}): ${D.eixos[x.eixo]}`,
+        (x) => `<b>${esc(x.nome)}</b> · ${esc(anos(x))} · ${chip(x.eixo, D.eixos[x.eixo])}${debatido(x)}<br><span class="text-slate-600 dark:text-slate-300">${esc(x.rotulo)}. ${esc(x.porque)}</span>`);
+    faixa($('faixaParl'), D.parlamento, (x) => `${x.nome} (${anos(x)}): ${D.eixos[x.eixo]}`,
+        (x) => `<b>${esc(x.nome)}</b> · ${esc(anos(x))} · ${chip(x.eixo, D.eixos[x.eixo])}${debatido(x)}<br><span class="text-slate-600 dark:text-slate-300"><b>Maioria:</b> ${esc(x.maioria)} ${esc(x.porque)}</span>`);
+    const t0 = dt(D.presidentes[0].ini), total = Date.now() - t0;
+    $('escalaAnos').innerHTML = [1889, 1900, 1930, 1946, 1964, 1985, 2000, 2026].map((a) => {
+        const p = Math.max(0, (Date.UTC(a, 0, 1) - t0) / total * 100);
+        return `<span class="absolute" style="left:${p}%;transform:translateX(${a === 2026 ? '-100%' : a === 1889 ? '0' : '-50%'})">${a}</span>`;
+    }).join('');
+    $('legenda').innerHTML = ORDEM.map((k) => `<span class="inline-flex items-center gap-1.5"><span class="eixo-${k} inline-block w-4 h-4 rounded"></span>${esc(D.eixos[k])}</span>`).join('');
+}
+
+function parlamentoDe(p) {
+    const a = dt(p.ini), b = fim(p);
+    return H.dados.parlamento.filter((x) => dt(x.ini) < b && fim(x) > a);
+}
+
+function desenharLista() {
+    const D = H.dados;
+    const itens = D.presidentes.filter((p) => !H.fase || p.fase === H.fase);
+    const f = D.fases.find((x) => x.id === H.fase);
+    $('regimeFase').textContent = f ? `${f.nome} (${f.anos}). ${f.regime}` : 'Todos os períodos, do mais antigo ao mais recente. Clique em uma linha para ver o motivo da classificação.';
+    $('lista').innerHTML = itens.map((p) => {
+        const parl = parlamentoDe(p);
+        return `<details class="linha rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+            <summary class="p-3 sm:p-4 grid gap-2 sm:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1.2fr)] sm:items-center">
+                <div class="min-w-0"><i class="fa-solid fa-chevron-right seta text-[10px] text-slate-400 mr-1.5 transition-transform" aria-hidden="true"></i><b>${esc(p.nome)}</b>
+                    <div class="text-xs text-slate-500">${esc(fmt(p.ini))} a ${esc(fmt(p.fim))} · ${esc(p.partido)}</div></div>
+                <div><div class="text-[10px] font-semibold text-slate-500 mb-0.5">Executivo</div>${chip(p.eixo, D.eixos[p.eixo])}${debatido(p)}
+                    <div class="text-xs mt-0.5">${esc(p.rotulo)}</div></div>
+                <div><div class="text-[10px] font-semibold text-slate-500 mb-0.5">Maioria do Congresso</div>
+                    <div class="flex flex-wrap gap-1">${parl.map((x) => chip(x.eixo, D.eixos[x.eixo])).join('')}</div></div>
+            </summary>
+            <div class="px-4 pb-4 text-sm border-t border-slate-100 dark:border-slate-700 pt-3 space-y-2">
+                <p><b>Como chegou ao cargo:</b> ${esc(p.chegada)}</p>
+                <p><b>Por que esta classificação:</b> ${esc(p.porque)}</p>
+                ${parl.map((x) => `<p><b>Congresso (${esc(anos(x))}):</b> ${esc(x.maioria)} <span class="text-slate-600 dark:text-slate-400">${esc(x.porque)}</span>${debatido(x)}</p>`).join('')}
+            </div></details>`;
+    }).join('') || '<p class="text-sm text-slate-500">Nenhum governo neste período.</p>';
+}
+
+function desenharParlamento() {
+    const D = H.dados;
+    $('listaParl').innerHTML = D.parlamento.map((x) => `<div class="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-3 sm:p-4 text-sm">
+        <div class="flex flex-wrap items-center gap-2"><b>${esc(x.nome)}</b><span class="text-xs text-slate-500">${esc(anos(x))}</span>${chip(x.eixo, D.eixos[x.eixo])}${debatido(x)}</div>
+        <p class="mt-1.5"><b>Maioria:</b> ${esc(x.maioria)}</p>
+        <p class="mt-1 text-slate-600 dark:text-slate-400">${esc(x.porque)}</p></div>`).join('');
+}
+
+function desenharChips() {
+    const D = H.dados;
+    const opts = [{ id: '', nome: 'Todos', anos: '' }].concat(D.fases);
+    $('chipsFase').innerHTML = opts.map((f) => {
+        const on = f.id === H.fase;
+        return `<button type="button" data-fase="${esc(f.id)}" aria-pressed="${on}" class="px-3 py-1.5 rounded-full text-xs font-semibold border ${on ? 'bg-brand-600 text-white border-brand-600' : 'border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700'}">${esc(f.nome)}${f.anos ? ` <span class="opacity-75">${esc(f.anos)}</span>` : ''}</button>`;
+    }).join('');
+}
+
+document.addEventListener('click', (ev) => {
+    const b = ev.target.closest && ev.target.closest('[data-fase]');
+    if (b) { H.fase = b.dataset.fase; desenharChips(); desenharLista(); }
+});
+
+(async () => {
+    try {
+        const r = await fetch('assets/historia.json');
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        H.dados = await r.json();
+        desenharFaixas(); desenharChips(); desenharLista(); desenharParlamento();
+        $('fontes').innerHTML = H.dados.fontes.map((f) => `<li><a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(f.url))}">${esc(f.nome)}</a></li>`).join('');
+    } catch (e) {
+        $('lista').innerHTML = '<p class="text-sm text-rose-700">Não foi possível carregar os dados históricos agora.</p>';
+    }
+})();
+</script>
+</body>
+</html>
