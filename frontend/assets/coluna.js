@@ -17,8 +17,9 @@
 
     const css = document.createElement('style');
     css.textContent = `
-    .col-aba { position: fixed; right: 0; top: 42%; z-index: 55; writing-mode: vertical-rl; transform: rotate(180deg); padding: 1rem .55rem;
+    body button.col-aba, body button.col-aba:hover { position: fixed; right: 0; top: 42%; z-index: 55; writing-mode: vertical-rl; transform: rotate(180deg); padding: 1rem .55rem;
         background: var(--fg) !important; color: var(--papel) !important; border: 0 !important; font: 800 .7rem/1 var(--fonte-texto); letter-spacing: .14em; text-transform: uppercase; cursor: pointer; }
+    body button.col-aba * { color: inherit !important; }
     .col-aba span { background: var(--vermelho, #A92823); color: #fff; padding: .1rem .3rem; margin-bottom: .4rem; display: inline-block; transform: rotate(90deg); }
     .col-painel { position: fixed; top: 0; right: 0; bottom: 0; z-index: 66; width: min(100vw, 24rem); overflow-y: auto; padding: 1rem;
         background: var(--papel) !important; color: var(--fg) !important; border-left: 2px solid var(--fg); box-shadow: -6px 0 24px rgba(0,0,0,.25); }
