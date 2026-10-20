@@ -588,6 +588,16 @@ def autoria_resumo(desde: Annotated[date | None, Query(description="AAAA-MM-DD")
     return _autoria(autoria.resumo, desde, ate)
 
 
+@router.get("/autoria/painel", tags=["autoria"])
+def autoria_painel(visao: Annotated[str, Query(pattern="^(tema|deputado|partido|tipo|efeito|parada)$")] = "tema",
+                   desde: Annotated[date | None, Query(description="AAAA-MM-DD")] = None,
+                   ate: Annotated[date | None, Query(description="AAAA-MM-DD")] = None,
+                   tema: Annotated[int | None, Query(ge=1, le=999)] = None,
+                   partido: Annotated[str | None, Query(max_length=30)] = None,
+                   efeito: Annotated[str | None, Query(pattern="^(restringe|amplia|procedimental|indefinido)$")] = None) -> dict:
+    return _autoria(autoria.painel, visao, desde, ate, tema, partido, efeito)
+
+
 @router.get("/autoria/projetos", tags=["autoria"])
 def autoria_projetos(q: Annotated[str | None, Query(max_length=80)] = None,
                      tipo: Annotated[str | None, Query(pattern="^(PEC|PLP|PL)$")] = None,

@@ -171,6 +171,103 @@ def resumo(desde=None, ate=None) -> dict:
             **_aviso(d)}
 
 
+VISOES = ("tema", "deputado", "partido", "tipo", "efeito", "parada")
+LINHAS_MAX = 15
+
+
+def painel(visao: str, desde=None, ate=None, tema: int | None = None, partido: str | None = None,
+           efeito: str | None = None) -> dict:
+    """Gráfico único de autoria: agrupa os projetos por `visao` depois de aplicar os filtros (tema, partido, efeito).
+
+    Permite responder, por exemplo, "quais partidos mais propuseram projetos de Direitos Humanos" (visao=partido,
+    tema=…) ou "quais partidos têm mais projetos que ampliam direitos" (visao=partido, efeito=amplia). O efeito é o
+    mesmo da busca por tema: classificação automática da ementa, sem posição política.
+    """
+    if visao not in VISOES:
+        raise ValueError("Visão desconhecida.")
+    d = _dados()
+    desde, ate = _periodo(d, desde, ate)
+    no_periodo = [p for p in d["projetos"] if desde <= p["data"] <= ate]
+    for p in no_periodo:  # classificação por palavras: uma vez por projeto, guardada em memória
+        if "_ef" not in p:
+            p["_ef"] = efeito_da_ementa(p["ementa"])
+
+    def sigla(a: int) -> str:
+        return d["politicos"][a]["partido"] or "Sem partido"
+
+    def passa(p: dict, ignorar: str = "") -> bool:
+        return ((ignorar == "tema" or tema is None or tema in p["temas"])
+                and (ignorar == "partido" or not partido or partido in {sigla(a) for a in p["autores"]})
+                and (ignorar == "efeito" or not efeito or p["_ef"] == efeito))
+
+    proj = [p for p in no_periodo if passa(p)]
+    linhas: dict[Any, list] = {}  # chave → [criados, aprovados, rótulo, extra]
+
+    def somar(chave, rotulo, p, extra=None):  # noqa: ANN001
+        c = linhas.setdefault(chave, [0, 0, rotulo, extra])
+        c[0] += 1
+        c[1] += p["aprovado"]
+
+    pessoas: dict[str, set[int]] = {}
+    for p in proj:
+        if visao == "tema":
+            for t in p["temas"]:
+                if tema is None or t == tema:
+                    somar(t, d["temas"].get(t, str(t)), p)
+        elif visao == "deputado":
+            for a in set(p["autores"]):
+                pol = d["politicos"][a]
+                somar(a, f"{pol['nome']} ({pol['partido']}-{pol['uf']})", p, a)
+        elif visao == "partido":
+            for sg in {sigla(a) for a in p["autores"]}:
+                somar(sg, sg, p)
+            for a in set(p["autores"]):
+                pessoas.setdefault(sigla(a), set()).add(a)
+        elif visao == "efeito":
+            somar(p["_ef"], ROTULOS_EFEITO[p["_ef"]], p)
+        elif visao == "parada":  # só os que não viraram lei: onde estão agora
+            if not p["aprovado"]:
+                x = _parada(d, p)
+                somar((x["etapa"], x["sigla"], x["onde"]), x["sigla"] or x["onde"], p, (x["etapa"], x["onde"]))
+        else:
+            tipos = {(o["tipo"] or "Outros") for o in p.get("outros") or []}
+            if p["autores"]:
+                tipos.add("Deputados(as)")
+            for tp in tipos or {"Autor não informado"}:
+                somar(tp, tp, p)
+    ordem = sorted(linhas.items(), key=lambda kv: (-kv[1][0], str(kv[1][2]).casefold()))
+    itens = [{"rotulo": c[2], "criados": c[0], "aprovados": c[1], "id": c[3] if visao == "deputado" else None,
+              "chave": k if visao in ("tema", "partido", "efeito") else None,
+              "deputados": len(pessoas.get(k, ())) if visao == "partido" else None,
+              "etapa": c[3][0] if visao == "parada" else None, "onde": c[3][1] if visao == "parada" else None}
+             for k, c in ordem[:LINHAS_MAX]]
+    resto = ordem[LINHAS_MAX:]
+    if resto and visao == "tema":  # temas de um mesmo projeto se repetem: o total de "outros" é soma de contagens por tema
+        itens.append({"rotulo": "Outros temas", "criados": sum(c[0] for _, c in resto), "aprovados": sum(c[1] for _, c in resto),
+                      "id": None, "chave": None, "deputados": None, "etapa": None, "onde": None})
+    # opções dos filtros: cada um conta os projetos que passam pelos OUTROS filtros, para o usuário ver o efeito de escolher
+    opc_tema = Counter(t for p in no_periodo if passa(p, "tema") for t in p["temas"])
+    opc_partido = Counter(sg for p in no_periodo if passa(p, "partido") for sg in {sigla(a) for a in p["autores"]})
+    opc_efeito = Counter(p["_ef"] for p in no_periodo if passa(p, "efeito"))
+    return {
+        "visao": visao, "periodo": {"desde": desde, "ate": ate},
+        "filtros": {"tema": tema, "partido": partido, "efeito": efeito},
+        "total": {"criados": len(proj), "aprovados": sum(1 for p in proj if p["aprovado"])},
+        "itens": itens,
+        "opcoes": {
+            "temas": [{"cod": t, "nome": d["temas"].get(t, str(t)), "criados": n}
+                      for t, n in sorted(opc_tema.items(), key=lambda kv: (-kv[1], d["temas"].get(kv[0], "")))],
+            "partidos": [{"sigla": sg, "criados": n} for sg, n in sorted(opc_partido.items(), key=lambda kv: (-kv[1], kv[0]))],
+            "efeitos": [{"cod": c, "nome": ROTULOS_EFEITO[c], "criados": opc_efeito.get(c, 0)} for c in ROTULOS_EFEITO],
+        },
+        "notas": [
+            "O efeito é uma classificação automática por palavras da ementa (o que o texto diz que faz), sem posição política: “restringe ou pune mais” e “amplia permissões ou direitos” não são julgamento de bom ou ruim. Pode errar, e muitos projetos ficam sem classificação.",
+            "Só projetos assinados por deputados(as) entram nos filtros de partido; projetos do Executivo, do Senado e de comissões aparecem só sem filtro de partido.",
+        ],
+        **_aviso(d),
+    }
+
+
 def buscar_politicos(q: str, desde=None, ate=None) -> dict:
     import unicodedata
 
