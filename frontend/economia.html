@@ -180,7 +180,7 @@ $('cidadeLista').addEventListener('click', (ev) => {
 });
 
 /* ---------- déficits (nominal, primário, operacional) ---------- */
-function deficits(d) {
+function caixasDeficits(d) {
     const x = d.deficits;
     if (!x) return '';
     const linha = (rot, v) => `<li class="flex justify-between gap-3"><span>${rot}</span><span class="font-semibold whitespace-nowrap">${v == null ? '—' : brlCurto(v)}</span></li>`;
@@ -202,9 +202,7 @@ function deficits(d) {
           + linha('= Juros reais', o.juros_reais) + linha('Primário + juros reais', o.valor)
           + '<li class="text-[11px] text-slate-400">Cálculo nosso, aproximado — não é série oficial. A correção usa o IPCA e o estoque da dívida no início do ano.</li>'
         : `<li>${esc(o.indisponivel_motivo || 'Dados insuficientes.')}</li>`;
-    return `<div class="mt-6">
-        <h3 class="font-bold">Déficits em detalhe <span class="text-xs font-normal text-slate-500">· ${esc(d.instituicao || '')} · ${esc(x.periodo)}</span></h3>
-        <div class="grid sm:grid-cols-3 gap-4 mt-2">
+    return `<div class="grid sm:grid-cols-3 gap-4">
             ${caixa('Déficit nominal', n.valor, 'Gastos totais − receitas totais. Inclui juros, amortizações e empréstimos.',
                 n.oficial
                     ? linha('Resultado nominal oficial (RREO, acima da linha)', n.valor) + linha('Nossa aproximação: gastos empenhados − receitas arrecadadas', n.aproximado)
@@ -217,9 +215,7 @@ function deficits(d) {
                     : linha('Gastos não financeiros', p.gastos_nao_financeiros) + linha('Receitas não financeiras', p.receitas_nao_financeiras) + linha('Gastos − receitas', p.valor))
                 + `<li class="text-[11px] text-slate-400">Base: ${esc(p.base)}.</li>`)}
             ${caixa('Déficit operacional', o.valor, 'Primário + juros reais: tira dos juros nominais o efeito da inflação.', detOper)}
-        </div>
-        <p class="text-[11px] text-slate-400 mt-2">Positivo = déficit; negativo = superávit. Valores do exercício até o período, conforme declarados pelo ente (RREO/SICONFI).</p>
-    </div>`;
+        </div>`;
 }
 
 /* ---------- reservas internacionais e posição no FMI (só União) ---------- */
@@ -229,9 +225,6 @@ const usd = (milhoes) => {
     if (v >= 1e9) return `${s}US$ ${(v / 1e9).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} bi`;
     return `${s}US$ ${(v / 1e6).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} mi`;
 };
-function reservasEsqueleto() {
-    return `<div id="reservasBox" class="mt-6"><p class="text-sm text-slate-500"><i class="fa-solid fa-spinner fa-spin mr-1.5" aria-hidden="true"></i>Consultando o Banco Central…</p></div>`;
-}
 function linhaSpark(pontos) {
     if (pontos.length < 2) return '';
     const v = pontos.map((p) => p.valor), min = Math.min(...v), max = Math.max(...v), W = 300, H = 56;
@@ -239,31 +232,35 @@ function linhaSpark(pontos) {
     return `<svg viewBox="0 0 ${W} ${H}" class="w-full h-14" role="img" aria-label="Evolução mensal das reservas nos últimos ${v.length} meses"><polyline points="${xy}" fill="none" stroke="#A92823" stroke-width="2"/></svg>`;
 }
 async function carregarReservas() {
-    const box = $('reservasBox');
-    if (!box) return;
-    try {
-        const r = await api('/api/macro/reservas');
-        const c = r.caixa, dif = c.anterior != null ? c.valor - c.anterior : null;
-        box.innerHTML = `<h3 class="font-bold">Patrimônio e reservas internacionais da União</h3>
-            <p class="text-xs text-slate-500">Ativos em moeda estrangeira administrados pelo Banco Central. Não fazem parte da LOA nem do resultado primário acima.</p>
-            <div class="grid sm:grid-cols-2 gap-4 mt-2">
-                ${cartao(`<p class="text-xs font-semibold text-slate-500"><i class="fa-solid fa-vault mr-1" aria-hidden="true"></i>Reservas internacionais (conceito caixa)${gl('RESERVAS_INTERNACIONAIS')}</p>
-                    <p class="text-3xl font-extrabold mt-1">${usd(c.valor)}</p>
-                    <p class="text-xs text-slate-500">Saldo no fim de ${esc(fmtMes(c.data.slice(0, 7)))}${dif != null ? ` · ${dif >= 0 ? '+' : '−'}${usd(Math.abs(dif))} no mês` : ''}</p>
-                    <div class="mt-2">${linhaSpark(c.serie)}</div>
-                    <p class="text-[11px] text-slate-400">Últimos ${c.serie.length} meses. Série 3546 do Banco Central.</p>`)}
-                ${cartao(`<p class="text-xs font-semibold text-slate-500"><i class="fa-solid fa-scale-balanced mr-1" aria-hidden="true"></i>Dentro das reservas: ouro, DES e posição no FMI</p>
-                    <ul class="mt-2 space-y-1.5 text-sm">${r.fluxos.map((f) => `<li class="flex justify-between gap-3"><span>${esc(f.nome.replace(' — transações do mês', ''))}${gl(SIGLA_RESERVA[f.id])}</span>
-                        <span class="font-semibold whitespace-nowrap">${f.valor >= 0 ? '+' : '−'}${usd(Math.abs(f.valor))}</span></li>`).join('')}</ul>
-                    <p class="text-[11px] text-slate-400 mt-2">Transações em ${esc(fmtMes((r.fluxos[0] || {}).data ? r.fluxos[0].data.slice(0, 7) : c.data.slice(0, 7)))}: a <b>variação</b> do mês, não o saldo.</p>`)}
-            </div>
-            <div class="mt-3 text-xs text-slate-600 dark:text-slate-400 space-y-1.5">
-                <p><b>O que é a posição no FMI:</b> o Brasil é sócio do Fundo e parte do que depositou (cota) conta como ativo de reserva: a <i>posição de reserva</i> e os <i>Direitos Especiais de Saque (DES)</i>, ativo criado pelo FMI e trocável por moedas.</p>
-                <p><b>Saldo exato no FMI:</b> o Banco Central não publica o saldo dessas rubricas em série aberta. Consulte a posição oficial do Brasil no <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(r.links.fmi))}">FMI (Financial Position in the Fund)</a> e a <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(r.links.bcb))}">composição das reservas no Banco Central</a>.</p>
-                ${r.liquidez ? `<p><b>Atenção ao conceito:</b> pelo conceito <i>liquidez</i>${gl('CONCEITO_LIQUIDEZ')} (o mais citado), as reservas estavam em ${usd(r.liquidez.valor)} em ${esc(fmtData(r.liquidez.data))}; é maior que o conceito caixa e não deve ser comparado diretamente.</p>` : ''}
-                <p class="text-[11px] text-slate-400">Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(c.url_fonte))}">${esc(c.fonte)}</a> · consultado em ${esc(fmtDataHora(r.consultado_em))}.</p>
-            </div>`;
-    } catch (e) { box.innerHTML = mensagemErro(e); }
+    if (E.reservas) { pintarReservas(); return; }
+    try { E.reservas = await api('/api/macro/reservas'); } catch (e) { E.reservas = { erro: e }; }
+    pintarReservas();
+}
+function pintarReservas() {
+    const box = $('reservasBox'), r = E.reservas;
+    if (!box || !r) return;
+    const resumo = $('resumoReservas'), notas = $('notasReservas');
+    if (r.erro) {
+        box.innerHTML = mensagemErro(r.erro);
+        if (resumo) resumo.textContent = 'indisponível';
+        if (notas) notas.textContent = 'O Banco Central não respondeu agora.';
+        return;
+    }
+    const c = r.caixa, dif = c.anterior != null ? c.valor - c.anterior : null;
+    if (resumo) resumo.textContent = usd(c.valor);
+    box.innerHTML = `<div class="grid sm:grid-cols-2 gap-4">
+            ${cartao(`<p class="text-xs font-semibold text-slate-500"><i class="fa-solid fa-vault mr-1" aria-hidden="true"></i>Reservas internacionais (conceito caixa)</p>
+                <p class="text-3xl font-extrabold mt-1">${usd(c.valor)}</p>
+                <p class="text-xs text-slate-500">Saldo no fim de ${esc(fmtMes(c.data.slice(0, 7)))}${dif != null ? ` · ${dif >= 0 ? '+' : '−'}${usd(Math.abs(dif))} no mês` : ''}</p>
+                <div class="mt-2">${linhaSpark(c.serie)}</div>
+                <p class="text-[11px] text-slate-400">Últimos ${c.serie.length} meses.</p>`)}
+            ${cartao(`<p class="text-xs font-semibold text-slate-500"><i class="fa-solid fa-scale-balanced mr-1" aria-hidden="true"></i>Dentro das reservas: ouro, DES e posição no FMI</p>
+                <ul class="mt-2 space-y-1.5 text-sm">${r.fluxos.map((f) => `<li class="flex justify-between gap-3"><span>${esc(f.nome.replace(' — transações do mês', ''))}${gl(SIGLA_RESERVA[f.id])}</span>
+                    <span class="font-semibold whitespace-nowrap">${f.valor >= 0 ? '+' : '−'}${usd(Math.abs(f.valor))}</span></li>`).join('')}</ul>
+                <p class="text-[11px] text-slate-400 mt-2">Transações em ${esc(fmtMes((r.fluxos[0] || {}).data ? r.fluxos[0].data.slice(0, 7) : c.data.slice(0, 7)))}: a <b>variação</b> do mês, não o saldo.</p>`)}
+        </div>
+        ${r.liquidez ? `<p class="sf-gaveta-sig"><b>Atenção ao conceito:</b> pelo conceito <i>liquidez</i>${gl('CONCEITO_LIQUIDEZ')} (o mais citado), as reservas estavam em ${usd(r.liquidez.valor)} em ${esc(fmtData(r.liquidez.data))}; é maior que o conceito caixa e não deve ser comparado diretamente.</p>` : ''}`;
+    if (notas) notas.innerHTML = `Saldo em conceito caixa: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(c.url_fonte))}">${esc(c.fonte)}</a>, série 3546, consultado em ${esc(fmtDataHora(r.consultado_em))}. Os ativos são do Banco Central e não fazem parte da LOA nem do resultado primário. O Brasil é sócio do FMI e parte do que depositou (cota) conta como ativo de reserva: a <i>posição de reserva</i> e os <i>Direitos Especiais de Saque (DES)</i>, ativo criado pelo FMI e trocável por moedas. O Banco Central não publica o saldo dessas rubricas em série aberta: consulte a posição oficial do Brasil no <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(r.links.fmi))}">FMI (Financial Position in the Fund)</a> e a <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(r.links.bcb))}">composição das reservas no Banco Central</a>.`;
 }
 
 /* ---------- glossário: "?" ao lado do termo, com a explicação e o link do verbete ---------- */
@@ -286,65 +283,156 @@ const SIGLA_RESERVA = { fmi_posicao_fluxo: 'POSICAO_RESERVA_FMI', des_fluxo: 'DE
 
 /* ---------- situação fiscal: fluxo, estoque, custo e capacidade ---------- */
 const pc = (v, dec = 1) => (v == null ? '—' : `${Number(v).toLocaleString('pt-BR', { maximumFractionDigits: dec })}`);
-function cartaoFiscal(n, titulo, corpo, significa) {
-    return `<div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5">
-        <p class="text-xs font-bold text-brand-700 dark:text-brand-400">${n}</p>
-        <h4 class="font-bold">${titulo}</h4>
-        <div class="mt-3 space-y-2.5">${corpo}</div>
-        <p class="mt-4 text-xs text-slate-600 dark:text-slate-400 leading-relaxed"><b>O que significa:</b> ${significa}</p></div>`;
-}
-const linhaFiscal = (nome, grande, pequeno, cor = '') => `<div><p class="text-xs text-slate-500">${nome}</p>
-    <p class="text-xl font-extrabold ${cor}">${grande}</p>${pequeno ? `<p class="text-xs text-slate-500">${pequeno}</p>` : ''}</div>`;
+/* ---------- situação fiscal em detalhe: UM escopo por vez, em três gavetas ----------
+   "Governo Federal (União)" = Tesouro Nacional (RREO), acumulado no ano. "Setor Público Consolidado" = Banco Central, 12 meses.
+   Cada escopo tem a sua fonte e as suas notas: os dois nunca aparecem misturados na mesma lista. */
+E.escopo = ler('ic_escopo_fiscal', 'uniao');
+if (!['uniao', 'consolidado'].includes(E.escopo)) E.escopo = 'uniao';
+E.gavetas = { fluxo: true, estoque: false, reservas: false };
+E.reservas = null;
+const itemDet = (nome, valor, nota) => `<li><span class="radar-item-nome">${nome}</span><span class="radar-item-valor">${valor}</span>${nota ? `<span class="radar-item-nota">${nota}</span>` : ''}</li>`;
+const listaDet = (itens) => (itens.length ? `<ul class="radar-itens">${itens.join('')}</ul>` : '');
+const significa = (t) => (t ? `<p class="sf-gaveta-sig"><b>O que significa:</b> ${t}</p>` : '');
+const vazioDet = (t) => `<p class="text-sm text-slate-500">${t}</p>`;
+const SIG_ESTOQUE = 'É a “fatura acumulada” ao longo do tempo e indica a sustentabilidade financeira de longo prazo. Um superávit em um ano não zera a dívida: ela só cresce mais devagar.';
+const fluxoXEstoque = `<details class="mt-3"><summary class="text-sm">Entenda a diferença: fluxo × estoque</summary>
+    <div class="mt-2 text-sm space-y-2" style="max-width:75ch">
+        <p><b>Fluxo: o que entra e sai no mês ou no ano.</b> É o seu “salário menos as contas do mês”. Se sobrou dinheiro na conta corrente neste mês, houve superávit.</p>
+        <p><b>Estoque: o tamanho acumulado da dívida.</b> É o “saldo devedor do financiamento da sua casa”. Mesmo que tenha sobrado dinheiro no mês, o financiamento continua existindo e rendendo juros.</p>
+        <p>O déficit aumenta o estoque da dívida, mas o estoque também cresce sozinho por causa dos juros e, na parcela atrelada ao câmbio, da variação do dólar.</p></div></details>`;
 
-function situacaoFiscal(d) {
-    const x = d.situacao_fiscal;
-    if (!x) return '';
-    const sinal = (sit) => (sit === 'deficit'
-        ? '<span class="text-rose-600 dark:text-rose-400">Déficit</span>' : '<span class="text-emerald-600 dark:text-emerald-400">Superávit</span>');
-    // 1. FLUXO
-    const flx = x.fluxo.itens.map((i) => linhaFiscal(i.nome,
-        `${brlCurto(Math.abs(i.valor_rs))} ${sinal(i.situacao)}`,
-        i.pct_pib != null ? `${pc(Math.abs(i.pct_pib), 2)}% do PIB` : '')).join('') || '<p class="text-sm text-slate-500">Sem dados do período.</p>';
-    // 2. ESTOQUE
+function gaveta(id, num, titulo, resumo, corpo) {
+    return `<details class="sf-gaveta" data-gaveta="${id}" ${E.gavetas[id] ? 'open' : ''}>
+        <summary><span class="sf-gaveta-num">${num}</span><span class="sf-gaveta-tit">${titulo}</span><span class="sf-gaveta-res">${resumo}</span></summary>
+        <div class="sf-gaveta-corpo">${corpo}</div></details>`;
+}
+const sinalDef = (v) => (v >= 0 ? 'déficit' : 'superávit');
+
+/* ----- Governo Federal (Tesouro Nacional, RREO) ----- */
+function fluxoFederal(d) {
+    const x = d.deficits, ff = d.fluxo_federal, sf = d.situacao_fiscal;
+    if (!x) return vazioDet('Sem dados do período.');
+    const nom = x.nominal.valor, pri = x.primario.valor;
+    const linhas = [];
+    if (ff) {
+        linhas.push(itemDet('Receita primária (realizada)', brlCurto(ff.receita_primaria), 'o que o governo arrecadou, sem contar empréstimos e outras operações financeiras'));
+        linhas.push(itemDet('Despesa primária (paga)', brlCurto(ff.despesa_primaria_paga), 'inclui os restos a pagar de anos anteriores pagos agora; sem juros nem amortização da dívida'));
+    }
+    if (nom != null && pri != null) linhas.push(itemDet('Juros líquidos da dívida', brlCurto(nom - pri), 'déficit nominal menos déficit primário: quanto a conta de juros acrescentou ao buraco'));
+    const cap = sf && sf.capacidade && sf.capacidade.itens && sf.capacidade.itens.length ? sf.capacidade : null;
+    const peso = cap ? listaDet(cap.itens.map((i) => itemDet(esc(i.nome), `${pc(i.pct, 1)}% <small>do PIB</small>`, `${brlCurto(i.valor_rs)} · ${esc(cap.periodo || '')}`))) : '';
+    const fatia = (f, rot) => (f ? itemDet(rot, `${pct(f.pct)} <small>da despesa</small>`, `${brlCurto(f.valor)} · despesa liquidada por função`) : '');
+    const areas = listaDet([fatia(d.nivel1.saude, 'Saúde'), fatia(d.nivel1.educacao, 'Educação')].filter(Boolean));
+    return `${listaDet(linhas)}
+        <div class="mt-5">${caixasDeficits(d)}</div>
+        ${peso ? `<h4 class="sf-gaveta-sub">Peso na economia · último exercício fechado</h4>${peso}` : ''}
+        ${areas ? `<h4 class="sf-gaveta-sub">Para onde vai a despesa</h4>${areas}` : ''}
+        ${significa('Mesmo sem contar os juros, o governo pode gastar mais do que arrecada (déficit primário); com os juros da dívida, o buraco costuma aumentar (déficit nominal).')}`;
+}
+function estoqueFederal(d) {
+    const e = d.estoque_federal;
+    if (!e) return vazioDet('O Tesouro Nacional não trouxe o saldo da dívida neste período.');
+    return `${listaDet(e.itens.map((i) => itemDet(esc(i.nome), brlCurto(i.valor_rs), esc(i.nota || ''))))}
+        <p class="radar-legenda">${esc(e.periodo.charAt(0).toUpperCase() + e.periodo.slice(1))}.</p>${significa(SIG_ESTOQUE)}
+        <p class="ficha-nota mt-2"><a class="underline" href="financiamento.html">Ver a Dívida Pública Federal em detalhe: títulos, vencimentos e custo →</a></p>${fluxoXEstoque}`;
+}
+
+/* ----- séries do Banco Central (consolidado) e do próprio ente (estados e municípios): a mesma forma {fluxo, estoque, custo} ----- */
+function fluxoDeSerie(x, d) {
+    if (!x.fluxo.itens.length && !x.custo.itens.length) return vazioDet(esc(x.fluxo.leitura || 'Sem dados do período.'));
+    const fl = x.fluxo.itens.map((i) => itemDet(esc(i.nome), `${brlCurto(Math.abs(i.valor_rs))} <small>${i.situacao === 'deficit' ? 'Déficit' : 'Superávit'}</small>`,
+        i.pct_pib != null ? `${pc(Math.abs(i.pct_pib), 2)}% do PIB` : ''));
+    const cu = x.custo.itens.map((i) => itemDet(esc(i.nome), i.valor_rs != null ? brlCurto(i.valor_rs) : `${pc(i.pct, 1)}%`,
+        [i.valor_rs != null && i.pct != null ? `${pc(i.pct, 1)}${esc(i.rotulo_pct || '')}` : (i.valor_rs == null ? esc((i.rotulo_pct || '').replace(/^%\s*/, '')) : ''), i.nota ? esc(i.nota) : ''].filter(Boolean).join(' · ')));
+    const extra = d ? `<div class="mt-5">${caixasDeficits(d)}</div>` : '';
+    const fatia = (f, rot) => (d && f ? itemDet(rot, `${pct(f.pct)} <small>da despesa</small>`, `${brlCurto(f.valor)} · despesa liquidada por função`) : '');
+    const areas = d ? listaDet([fatia(d.nivel1.saude, 'Saúde'), fatia(d.nivel1.educacao, 'Educação')].filter(Boolean)) : '';
+    return `${listaDet(fl)}${cu.length ? `<h4 class="sf-gaveta-sub">A carga dos juros</h4>${listaDet(cu)}` : ''}${extra}
+        ${areas ? `<h4 class="sf-gaveta-sub">Para onde vai a despesa</h4>${areas}` : ''}
+        ${significa(esc(x.fluxo.leitura || 'Compara o que entrou e o que saiu no período.'))}${significa(esc(x.custo.leitura || ''))}`;
+}
+function estoqueDeSerie(x) {
+    if (!x.estoque.itens.length) return vazioDet('Sem saldo da dívida neste período.');
     const seta = { alta: '↗️ Em crescimento', queda: '↘️ Em queda', estavel: '→ Estável' }[x.estoque.tendencia] || '';
-    const est = x.estoque.itens.map((i) => linhaFiscal(i.nome,
-        `${i.pct != null ? pc(i.pct, 1) + '%' : brlCurto(i.valor_rs)} <span class="text-sm font-semibold text-slate-500">${esc((i.rotulo_pct || '').replace(/^%\s*/, ''))}</span>`,
+    const it = x.estoque.itens.map((i) => itemDet(esc(i.nome),
+        `${i.pct != null ? pc(i.pct, 1) + '%' : brlCurto(i.valor_rs)} <small>${esc((i.rotulo_pct || '').replace(/^%\s*/, ''))}</small>`,
         [i.valor_rs != null && i.pct != null ? brlCurto(i.valor_rs) : '',
          i.variacao_pp != null ? `${i.variacao_pp >= 0 ? '+' : '−'}${pc(Math.abs(i.variacao_pp), 1)} p.p. em 12 meses` : '',
-         i.variacao_pct != null ? `${i.variacao_pct >= 0 ? '+' : '−'}${pc(Math.abs(i.variacao_pct), 1)}% desde 31/12` : ''].filter(Boolean).join(' · '))).join('')
-        + (seta ? `<p class="text-sm font-semibold">${seta}</p>` : '');
-    // 3. CUSTO
-    const cus = x.custo.itens.map((i) => linhaFiscal(i.nome,
-        i.valor_rs != null ? brlCurto(i.valor_rs) : `${pc(i.pct, 1)}%`,
-        [i.valor_rs != null && i.pct != null ? `${pc(i.pct, 1)} ${esc(i.rotulo_pct || '')}` : (i.valor_rs == null ? esc(i.rotulo_pct || '') : ''), i.nota ? esc(i.nota) : ''].filter(Boolean).join(' · '))).join('');
-    // 4. CAPACIDADE
-    const cap = x.capacidade.itens.length
-        ? x.capacidade.itens.map((i) => linhaFiscal(i.nome, `${pc(i.pct, 1)}% <span class="text-sm font-semibold text-slate-500">${esc((i.rotulo_pct || '').replace(/^%\s*/, ''))}</span>`, brlCurto(i.valor_rs))).join('')
-          + `<p class="text-[11px] text-slate-400">${esc(x.capacidade.periodo || '')}. ${esc(x.capacidade.nota || '')}</p>`
-        : `<p class="text-sm text-slate-500">${esc(x.capacidade.indisponivel || 'Sem dados.')}</p>`;
+         i.variacao_pct != null ? `${i.variacao_pct >= 0 ? '+' : '−'}${pc(Math.abs(i.variacao_pct), 1)}% desde 31/12` : ''].filter(Boolean).join(' · ')));
+    return `${listaDet(it)}${seta ? `<p class="text-sm font-semibold mt-3">${seta}</p>` : ''}${significa(SIG_ESTOQUE)}${fluxoXEstoque}`;
+}
 
-    const significaEstoque = 'É a “fatura acumulada” ao longo do tempo e indica a sustentabilidade financeira de longo prazo. Um superávit em um ano não zera a dívida: ela só cresce mais devagar.';
-    return `<div class="mb-6">
-        <h3 class="font-bold text-lg">Situação fiscal <span class="text-xs font-normal text-slate-500">· ${esc(x.universo)}</span></h3>
-        <p class="text-xs text-slate-500">${esc(x.fluxo.periodo || '')}</p>
-        <div class="grid sm:grid-cols-2 gap-4 mt-3">
-            ${cartaoFiscal('1 · FLUXO' + gl('FLUXO'), 'Resultado fiscal do período', flx, esc(x.fluxo.leitura || 'Compara o que entrou e o que saiu no período.'))}
-            ${cartaoFiscal('2 · ESTOQUE' + gl('ESTOQUE'), 'Trajetória da dívida pública', est, significaEstoque + (x.estoque.nota ? ' ' + esc(x.estoque.nota) : ''))}
-            ${cartaoFiscal('3 · CUSTO DA DÍVIDA' + gl('CUSTO_DIVIDA'), 'A carga dos juros', cus, esc(x.custo.leitura || ''))}
-            ${cartaoFiscal('4 · CAPACIDADE FISCAL', 'Peso na economia', cap, 'O tamanho da receita e da despesa do Estado em relação a tudo o que o país produz em um ano.')}
-        </div>
-        <details open class="mt-4 rounded-2xl border border-amber-200 dark:border-amber-900 bg-amber-50 dark:bg-amber-950/30 p-4 text-sm">
-            <summary class="font-bold cursor-pointer">Entenda a diferença: fluxo × estoque</summary>
-            <div class="mt-2 grid sm:grid-cols-2 gap-4 text-slate-700 dark:text-slate-300">
-                <div><p class="font-semibold">Fluxo — o que entra e sai no mês ou no ano</p>
-                    <p class="mt-1">É o seu “salário menos as contas do mês”. Se sobrou dinheiro na conta corrente neste mês, houve superávit.</p></div>
-                <div><p class="font-semibold">Estoque — o tamanho acumulado da dívida</p>
-                    <p class="mt-1">É o “saldo devedor do financiamento da sua casa”. Mesmo que tenha sobrado dinheiro no mês, o financiamento continua existindo e rendendo juros.</p></div>
-            </div>
-            <p class="mt-3 text-slate-700 dark:text-slate-300">O déficit aumenta o estoque da dívida, mas o estoque também cresce sozinho por causa dos juros e, na parcela atrelada ao câmbio, da variação do dólar.</p>
-        </details>
-        <p class="text-[11px] text-slate-400 mt-2">Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(x.fonte.url))}">${esc(x.fonte.nome)}</a>.</p>
-    </div>`;
+/* ----- reservas internacionais (Banco Central): ficam nas duas visões, com a fonte própria nas notas técnicas ----- */
+function gavetaReservas() {
+    const escudo = `<div class="escudo"><p class="escudo-rot">Para que servem as reservas</p>
+        <p><b>São o “escudo de proteção externa” do país.</b> Os dólares guardados pelo Banco Central ajudam a conter oscilações bruscas do câmbio e dão segurança para pagar compromissos em moeda estrangeira quando há crise lá fora. Não é dinheiro livre do orçamento: ficam no Banco Central e não entram na LOA nem no resultado primário.</p></div>`;
+    return gaveta('reservas', 3, 'Ativos e reservas internacionais', '<span id="resumoReservas">carregando…</span>',
+        `${escudo}<div id="reservasBox">${carregando('Consultando o Banco Central…')}</div>`);
+}
+
+/* ----- a seção inteira ----- */
+function resumoDeficits(d) {
+    const x = d.deficits;
+    if (!x || x.nominal.valor == null) return '';
+    return `${x.nominal.valor >= 0 ? 'Déficit' : 'Superávit'} nominal ${brlCurto(Math.abs(x.nominal.valor))}${x.primario.valor != null ? ` · primário ${brlCurto(Math.abs(x.primario.valor))}` : ''}`;
+}
+function notasTecnicas(d, escopo) {
+    const sf = d.situacao_fiscal, ent = d.instituicao || 'o ente';
+    const link = (u, t) => `<a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(u))}">${esc(t)}</a>`;
+    const n = [];
+    if (escopo === 'uniao') {
+        n.push(`<b>Fonte.</b> ${link('https://siconfi.tesouro.gov.br/', 'SICONFI / Tesouro Nacional')} (RREO e RGF), declarados pelo próprio governo federal. Os valores podem ser retificados.`);
+        n.push('<b>Déficits.</b> Positivo = déficit; negativo = superávit. O nominal e o primário são o resultado oficial do RREO (Anexo 06, “acima da linha”, com a despesa paga). Receita menos despesa primária, mais o ajuste metodológico, dá o resultado primário. O operacional é cálculo nosso, aproximado, e não é série oficial.');
+        n.push('<b>Por que os números diferem do Banco Central.</b> O confronto e o cartão “Resultado primário”, no alto da página, usam o resultado do Banco Central (setor público consolidado, 12 meses), que tem outra abrangência e outro período. Troque o escopo acima para ver essa versão.');
+        n.push('<b>Dívida consolidada.</b> Saldo declarado no RREO (Anexo 06). A líquida desconta o dinheiro em caixa e os haveres financeiros do governo.');
+        if (sf && sf.capacidade && sf.capacidade.nota) n.push(`<b>Peso na economia.</b> ${esc(sf.capacidade.nota)}`);
+        n.push('<b>Saúde e Educação.</b> Fatia da despesa liquidada por função. Os mínimos constitucionais (15% e 25% da receita de impostos) são apurados em demonstrativos próprios: confira no portal oficial do ente.');
+    } else if (escopo === 'consolidado') {
+        if (sf && sf.fonte) n.push(`<b>Fonte.</b> ${link(sf.fonte.url, sf.fonte.nome)}.`);
+        n.push(`<b>Abrangência.</b> ${esc(sf && sf.universo ? sf.universo : 'Setor público consolidado')}, em séries mensais do Banco Central (últimos 12 meses).`);
+        n.push('<b>Cálculos nossos.</b> O custo implícito da dívida líquida é aproximado: juros dos últimos 12 meses ÷ dívida líquida. O PIB de 12 meses é derivado de séries do Banco Central.');
+        n.push('<b>Por que os números diferem do Tesouro.</b> O governo federal, no RREO, tem outra abrangência e acumula só o ano corrente. Troque o escopo acima para ver essa versão.');
+    } else {
+        n.push(`<b>Fonte.</b> ${link('https://siconfi.tesouro.gov.br/', 'SICONFI / Tesouro Nacional')} (RREO e RGF) declarados por ${esc(ent)}. Os valores podem ser retificados.`);
+        n.push('<b>Déficits.</b> Positivo = déficit; negativo = superávit. Valores do exercício até o período, conforme declarados pelo ente.');
+        if (sf && sf.estoque && sf.estoque.nota) n.push(`<b>Dívida.</b> ${esc(sf.estoque.nota)}`);
+        n.push('<b>Saúde e Educação.</b> Fatia da despesa liquidada por função. Os mínimos constitucionais (15% e 25% da receita de impostos) são apurados em demonstrativos próprios: confira no portal oficial do ente.');
+    }
+    if (d.esfera === 'uniao') n.push('<b>Reservas internacionais.</b> <span id="notasReservas">Carregando as notas…</span>');
+    n.push('<b>Termos.</b> Os conceitos em negrito têm a explicação simples ao passar o cursor; a lista completa está no <a class="underline" href="glossario.html">Glossário</a>.');
+    return `<details class="notas-tec"><summary><i class="fa-solid fa-circle-info mr-1.5" aria-hidden="true"></i>Notas técnicas e fontes oficiais</summary><ul>${n.map((t) => `<li>${t}</li>`).join('')}</ul></details>`;
+}
+function situacaoDetalhe(d) {
+    const uniao = d.esfera === 'uniao', sf = d.situacao_fiscal;
+    const escopo = uniao ? E.escopo : 'ente';
+    const seletor = uniao ? `<div class="escopo-seg" role="radiogroup" aria-label="Escopo dos números">${[['uniao', 'Governo Federal (União)'], ['consolidado', 'Setor Público Consolidado']]
+        .map(([id, r]) => `<button type="button" role="radio" aria-checked="${E.escopo === id}" data-escopo="${id}">${r}</button>`).join('')}</div>` : '';
+    let nota, g1, g2;
+    if (escopo === 'consolidado') {
+        const x = sf, ok = x && x.fluxo && (x.fluxo.itens.length || x.estoque.itens.length);
+        nota = ok ? `${esc(x.universo)}${x.fluxo.periodo ? ` · ${esc(x.fluxo.periodo)}` : ''}. Fonte: Banco Central.` : 'As séries do Banco Central não responderam agora. Tente de novo em alguns minutos ou veja o Governo Federal.';
+        const n = x && x.fluxo.itens.find((i) => i.id === 'nominal'), p = x && x.fluxo.itens.find((i) => i.id === 'primario');
+        const ds = x && x.estoque.itens.filter((i) => i.pct != null).slice(0, 2);
+        g1 = gaveta('fluxo', 1, 'Fluxo do ano · resultado e juros', n ? `${n.situacao === 'deficit' ? 'Déficit' : 'Superávit'} nominal ${brlCurto(Math.abs(n.valor_rs))}${p ? ` · primário ${brlCurto(Math.abs(p.valor_rs))}` : ''}` : '', x ? fluxoDeSerie(x) : vazioDet('Sem dados do Banco Central agora.'));
+        g2 = gaveta('estoque', 2, 'Estoque da dívida · bruta e líquida', ds && ds.length ? ds.map((i) => `${i.nome.includes('líquida') ? 'líquida' : 'bruta'} ${pc(i.pct, 1)}% do PIB`).join(' · ') : '', x ? estoqueDeSerie(x) : vazioDet('Sem dados do Banco Central agora.'));
+    } else if (escopo === 'uniao') {
+        nota = `Governo Federal${d.deficits ? ` · ${esc(d.deficits.periodo)}` : ''}. Fonte: Tesouro Nacional (SICONFI).`;
+        const ef = d.estoque_federal, b = ef && ef.itens.find((i) => i.id === 'bruta'), l = ef && ef.itens.find((i) => i.id === 'liquida');
+        g1 = gaveta('fluxo', 1, 'Fluxo do ano · receita, despesa, juros e déficits', resumoDeficits(d), fluxoFederal(d));
+        g2 = gaveta('estoque', 2, 'Estoque da dívida · bruta e líquida', [b && `bruta ${brlCurto(b.valor_rs)}`, l && `líquida ${brlCurto(l.valor_rs)}`].filter(Boolean).join(' · '), estoqueFederal(d));
+    } else {
+        nota = `${esc(d.instituicao || 'O ente')}${d.deficits ? ` · ${esc(d.deficits.periodo)}` : ''}. Fonte: Tesouro Nacional (SICONFI).`;
+        const e0 = sf && sf.estoque.itens[0];
+        g1 = gaveta('fluxo', 1, 'Fluxo do ano · resultado e juros', resumoDeficits(d), sf ? fluxoDeSerie(sf, d) : (d.deficits ? `<div>${caixasDeficits(d)}</div>` : vazioDet('Sem dados do período.')));
+        g2 = gaveta('estoque', 2, 'Estoque da dívida', e0 ? `${e0.pct != null ? `${pc(e0.pct, 1)}% ${esc((e0.rotulo_pct || '').replace(/^%\s*/, ''))}` : brlCurto(e0.valor_rs)}` : '', sf ? estoqueDeSerie(sf) : vazioDet('Sem saldo da dívida neste período.'));
+    }
+    return `<div id="sitDet">${seletor}<p class="escopo-nota">${nota}</p>${g1}${g2}${uniao ? gavetaReservas() : ''}${notasTecnicas(d, escopo)}</div>`;
+}
+function repintarSituacao() {
+    const alvo = $('sitDet');
+    if (!alvo || !E.dados) return;
+    alvo.outerHTML = situacaoDetalhe(E.dados);
+    if (E.dados.esfera === 'uniao') pintarReservas();
 }
 
 /* ---------- níveis ---------- */
@@ -614,16 +702,12 @@ function nivel1(d) {
         ? cartaz('PIB, 12 meses', brlCurto(sf.pib.valor_rs), `até ${esc(sf.pib.data.slice(5, 7))}/${esc(sf.pib.data.slice(0, 4))}`,
             'Soma de tudo o que o país produz em um ano (bens e serviços). É a régua das contas públicas: dívida, déficit e juros em % do PIB mostram o tamanho do problema em relação à riqueza do país. Valor derivado de séries do Banco Central.')
         : '';
-    const fatia = (f, rot) => f ? `<li class="flex justify-between gap-3"><span>${rot}</span><span class="font-bold">${pct(f.pct)} da despesa · ${brlCurto(f.valor)}</span></li>` : '';
     return `<section aria-labelledby="n1"><h2 id="n1">As contas estão em dia?</h2>
         ${d.esfera === 'uniao' ? radarEconomico(sf && sf.diagnostico) : ''}
         <p class="text-sm text-slate-500 mt-2" style="max-width:70ch">Estes números respondem à pergunta. Abaixo deles, o detalhe de cada um.</p>
         <div class="cartazes mt-4">${cDivida}${cLrf}${cPrim}${cPib}</div>
         <details class="sanfona mt-6"><summary>Ver todos os números da situação fiscal</summary>
-            <div class="mt-4">${situacaoFiscal(d)}
-                <ul class="text-sm space-y-1 mb-4">${fatia(n.saude, 'Saúde')}${fatia(n.educacao, 'Educação')}</ul>
-                ${deficits(d)}${d.esfera === 'uniao' ? `<p class="ficha-nota mt-2" style="max-width:75ch">Os déficits acima são os do Governo Federal no RREO, acumulados no ano. O confronto e o cartaz “Resultado primário” usam o resultado do Banco Central (setor público consolidado, 12 meses), que tem outra abrangência e outro período.</p>` : ''}${d.esfera === 'uniao' ? reservasEsqueleto() : ''}
-                <p class="ficha-nota mt-3">Saúde e Educação: fatia da despesa liquidada por função. Os mínimos constitucionais (15% e 25% da receita de impostos) são apurados em demonstrativos próprios: confira no portal oficial do ente.</p></div></details></section>`;
+            <div class="mt-4">${situacaoDetalhe(d)}</div></details></section>`;
 }
 
 function listaGrupo(itens, total) {
@@ -698,15 +782,21 @@ function desenhar() {
     painel.classList.toggle('hidden', !d);
     if (!d) return;
     $('secCalc').classList.toggle('hidden', ABA_FISCAL);
-    painel.innerHTML = (ABA_FISCAL ? nivel1(d) : nivel2(d) + nivel3(d) + nivel4(d)) +
-        `<p class="text-[11px] text-slate-400">Fonte: ${esc(d.fonte)}. Os valores são declarados pelos próprios entes e podem ser retificados.</p>`;
+    painel.innerHTML = ABA_FISCAL ? nivel1(d)
+        : nivel2(d) + nivel3(d) + nivel4(d) + `<p class="text-[11px] text-slate-400">Fonte: ${esc(d.fonte)}. Os valores são declarados pelos próprios entes e podem ser retificados.</p>`;
     if (d.esfera === 'uniao') carregarReservas();
 }
 
 $('painel').addEventListener('click', (ev) => {
     const b = ev.target.closest('[data-aba]');
-    if (b) { E.aba = b.dataset.aba; desenhar(); }
+    if (b) { E.aba = b.dataset.aba; desenhar(); return; }
+    const s = ev.target.closest('[data-escopo]');
+    if (s && s.dataset.escopo !== E.escopo) { E.escopo = s.dataset.escopo; guardar('ic_escopo_fiscal', E.escopo); repintarSituacao(); }
 });
+$('painel').addEventListener('toggle', (ev) => {   // "toggle" não borbulha: escuta na captura
+    const g = ev.target.closest && ev.target.closest('details.sf-gaveta');
+    if (g) E.gavetas[g.dataset.gaveta] = g.open;
+}, true);
 
 async function carregar() {
     const m = E.municipio;
