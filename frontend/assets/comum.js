@@ -88,6 +88,12 @@ function renderLayout(paginaAtual) {
         sc.dataset.postit = '1';
         document.body.append(sc);
     }
+    // coluna de opinião (aba lateral com comentários, do mais recente ao mais antigo): assets/coluna.js
+    if (!document.querySelector('script[data-coluna]')) {
+        const sc = Object.assign(document.createElement('script'), { src: 'assets/coluna.js' });
+        sc.dataset.coluna = '1';
+        document.body.append(sc);
+    }
     if (!document.querySelector('link[rel="icon"]')) {
         // Logo = ícone "user-group" do Lucide. SVG (nítido em qualquer tamanho) + PNG de reserva;
         // apple-touch-icon para quem salva o site na tela inicial do celular. Arquivos: scripts/gerar_icones.py
