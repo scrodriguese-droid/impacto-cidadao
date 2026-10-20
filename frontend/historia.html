@@ -15,14 +15,15 @@
     <style>
         body { font-family: 'Inter', system-ui, sans-serif; }
         :focus-visible { outline: 2px solid #A92823; outline-offset: 2px; }
-        .trilho { position: relative; border-left: 2px solid #cbd5e1; margin-left: .45rem; padding-left: 1.25rem; }
-        .dark .trilho { border-left-color: #475569; }
-        .trilho > article::before { content: ''; position: absolute; left: -1.7rem; width: .7rem; height: .7rem; border-radius: 9999px; background: #A92823; margin-top: 1.15rem; box-shadow: 0 0 0 3px #f8fafc; }
-        .dark .trilho > article::before { box-shadow: 0 0 0 3px #0f172a; }
         #conteudo a.sem-sublinhado { text-decoration: none !important; }
         details.linha > summary { list-style: none; cursor: pointer; }
         details.linha > summary::-webkit-details-marker { display: none; }
         details.linha[open] .seta { transform: rotate(90deg); }
+        details.linha[open] { background: rgba(148,163,184,.12); }
+        .pil { display: inline-block; padding: .125rem .55rem; border-radius: 9999px; font-size: 11px; line-height: 1.3; font-weight: 700; text-transform: none; letter-spacing: normal; }
+        details.linha > summary { text-transform: none; letter-spacing: normal; font-size: inherit; font-weight: 400; }
+        details.linha > summary::before, details.linha[open] > summary::before { content: none; }
+        .faixa-fixa { position: sticky; top: 0; z-index: 20; }
         /* escala sequencial esquerda → direita, sem as cores dos partidos */
         .eixo-E { background: #6d28d9; color: #fff; } .eixo-CE { background: #c4b5fd; color: #1e1b4b; }
         .eixo-C { background: #cbd5e1; color: #1e293b; } .eixo-CD { background: #99f6e4; color: #134e4a; }
@@ -67,9 +68,12 @@
 
     <section class="mt-8" aria-labelledby="tLista">
         <h2 id="tLista" class="text-lg font-bold"><i class="fa-solid fa-timeline mr-2 text-brand-600" aria-hidden="true"></i>Quem governou e a maioria do Congresso</h2>
-        <div id="chipsFase" class="mt-3 flex flex-wrap gap-1.5" role="group" aria-label="Filtrar por período histórico"></div>
+        <div class="faixa-fixa -mx-4 sm:-mx-6 px-4 sm:px-6 py-2 mt-3 bg-slate-50/95 dark:bg-slate-900/95 backdrop-blur border-b border-slate-200 dark:border-slate-700">
+            <div id="chipsFase" class="flex gap-1.5 overflow-x-auto md:flex-wrap pb-1" role="group" aria-label="Filtrar por período histórico"></div>
+            <div id="cabColunas" class="hidden md:grid mt-2 px-3 text-[10px] font-bold uppercase tracking-wide text-slate-500" aria-hidden="true"></div>
+        </div>
         <div id="legenda" class="mt-3 flex flex-wrap gap-x-3 gap-y-1.5 text-[11px]"></div>
-        <div id="lista" class="mt-5 space-y-8"></div>
+        <div id="lista" class="mt-3 space-y-5"></div>
     </section>
 
     <section class="mt-8 text-xs text-slate-500" aria-labelledby="tFontes">
@@ -111,52 +115,49 @@ function parlamentoDe(p) {
     return H.dados.parlamento.filter((x) => sobreposicao(p, x) > 0).sort((a, b) => sobreposicao(p, b) - sobreposicao(p, a));
 }
 
-function cartao(p) {
+const GRADE = 'md:grid md:grid-cols-[5.5rem_minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.1fr)_1rem] md:items-center md:gap-x-3';
+const CURTO = { FORA: 'Fora do eixo', SEM: 'Sem Congresso' };
+const pilula = (eixo, texto, deb) => `<span class="pil eixo-${esc(eixo)}" title="${esc(texto)}${deb ? ' (classificação debatida entre historiadores)' : ''}">${esc(CURTO[eixo] || texto)}${deb ? ' *' : ''}</span>`;
+
+function linha(p) {
     const D = H.dados, parl = parlamentoDe(p), dom = parl[0], outros = parl.slice(1);
     const al = dom ? alinhamento(p.eixo, dom.eixo) : 'na';
     const [alNome, alCls] = ALINHA[al];
     const frase = dom && al !== 'na'
         ? `Executivo de ${D.eixos[p.eixo].toLowerCase()} e maioria do Congresso de ${D.eixos[dom.eixo].toLowerCase()}.`
         : 'A comparação não se aplica: pelo menos um dos lados não cabe na escala esquerda–direita ou o Congresso não funcionava.';
-    return `<article class="relative" id="gov-${esc(p.id)}">
-        <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 sm:p-5 text-left">
-            <div class="flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
-                <span class="text-xs font-bold text-brand-700 dark:text-brand-400">${esc(fmt(p.ini))} a ${esc(fmt(p.fim))}</span>
-                <h3 class="font-extrabold text-base">${esc(p.nome)}</h3>
-                <span class="text-xs text-slate-500">${esc(p.partido)}</span></div>
-            <p class="text-xs text-slate-500 mt-0.5">${esc(p.chegada)}</p>
-            <div class="mt-3 grid gap-3 md:grid-cols-2">
-                <div class="rounded-xl bg-slate-50 dark:bg-slate-900/60 p-3">
-                    <div class="text-[10px] font-bold uppercase tracking-wide text-slate-500">Executivo</div>
-                    <div class="mt-1">${chip(p.eixo, D.eixos[p.eixo])}${debatido(p)}</div>
-                    <p class="text-sm font-semibold mt-1.5">${esc(p.rotulo)}</p></div>
-                <div class="rounded-xl bg-slate-50 dark:bg-slate-900/60 p-3">
-                    <div class="text-[10px] font-bold uppercase tracking-wide text-slate-500">Maioria do Congresso</div>
-                    ${dom ? `<div class="mt-1">${chip(dom.eixo, D.eixos[dom.eixo])}${debatido(dom)}</div>
-                    <p class="text-sm mt-1.5">${esc(dom.maioria)}</p>` : '<p class="text-sm mt-1.5 text-slate-500">Sem dados.</p>'}
-                    ${outros.length ? `<p class="text-[11px] text-slate-500 mt-1.5">Também durante o mandato: ${outros.map((x) => `${esc(x.nome)} (${esc(anos(x))}, ${esc(D.eixos[x.eixo].toLowerCase())})`).join('; ')}.</p>` : ''}</div>
-            </div>
-            <div class="mt-3 flex flex-wrap items-center gap-2 text-sm">
-                <span class="text-[10px] font-bold uppercase tracking-wide text-slate-500">Relação entre os dois</span>
-                <span class="px-2 py-0.5 rounded-md text-[11px] font-bold ${alCls}">${esc(alNome)}</span>
-                <span class="text-xs text-slate-600 dark:text-slate-400">${esc(frase)}</span></div>
-            <details class="mt-3 text-sm">
-                <summary class="cursor-pointer text-xs font-semibold text-slate-600 dark:text-slate-300">Por que esta classificação</summary>
-                <p class="mt-2"><b>Executivo:</b> ${esc(p.porque)}</p>
-                ${parl.map((x) => `<p class="mt-1.5"><b>Congresso (${esc(x.nome)}, ${esc(anos(x))}):</b> ${esc(x.porque)}</p>`).join('')}
-            </details>
-        </div></article>`;
+    return `<details class="linha border-b border-slate-200 dark:border-slate-700" id="gov-${esc(p.id)}">
+        <summary class="px-3 py-2.5 flex flex-wrap items-center gap-x-3 gap-y-1.5 ${GRADE} hover:bg-slate-100 dark:hover:bg-slate-800/60" aria-label="${esc(p.nome)}, ${esc(anos(p))}: abrir detalhes">
+            <span class="text-xs font-bold text-brand-700 dark:text-brand-400 tabular-nums">${esc(anos(p))}</span>
+            <span class="min-w-0 basis-full md:basis-auto text-sm"><b class="font-extrabold">${esc(p.nome)}</b> <span class="text-xs text-slate-500">${esc(p.partido)}</span></span>
+            <span>${pilula(p.eixo, D.eixos[p.eixo], p.debatido)}</span>
+            <span>${dom ? pilula(dom.eixo, D.eixos[dom.eixo], dom.debatido) : '<span class="text-xs text-slate-500">Sem dados</span>'}</span>
+            <span><span class="pil ${alCls}">${esc(alNome)}</span></span>
+            <i class="seta fa-solid fa-chevron-right text-[10px] text-slate-400 ml-auto transition-transform" aria-hidden="true"></i></summary>
+        <div class="px-3 pb-4 pt-1 text-sm grid gap-3 md:grid-cols-2">
+            <div>
+                <p class="text-xs text-slate-500">${esc(fmt(p.ini))} a ${esc(fmt(p.fim))} · ${esc(p.chegada)}</p>
+                <p class="mt-2"><b>Executivo:</b> ${esc(p.rotulo)}</p>
+                <p class="mt-1.5"><b>Maioria do Congresso:</b> ${dom ? esc(dom.maioria) : 'Sem dados.'}</p>
+                ${outros.length ? `<p class="text-[11px] text-slate-500 mt-1.5">Também durante o mandato: ${outros.map((x) => `${esc(x.nome)} (${esc(anos(x))}, ${esc(D.eixos[x.eixo].toLowerCase())})`).join('; ')}.</p>` : ''}
+                <p class="text-xs text-slate-600 dark:text-slate-400 mt-2"><b>Relação entre os dois:</b> ${esc(alNome)}. ${esc(frase)}</p></div>
+            <div>
+                <p class="text-[10px] font-bold uppercase tracking-wide text-slate-500">Por que esta classificação</p>
+                <p class="mt-1"><b>Executivo:</b> ${esc(p.porque)}</p>
+                ${parl.map((x) => `<p class="mt-1.5"><b>Congresso (${esc(x.nome)}, ${esc(anos(x))}):</b> ${esc(x.porque)}</p>`).join('')}</div>
+        </div></details>`;
 }
 
 function desenharLista() {
     const D = H.dados;
     const fases = D.fases.filter((f) => !H.fase || f.id === H.fase);
+    $('cabColunas').className = 'hidden md:grid mt-2 px-3 text-[10px] font-bold uppercase tracking-wide text-slate-500 ' + GRADE.replace('md:grid ', '');
+    $('cabColunas').innerHTML = ['Anos', 'Presidente (partido)', 'Executivo', 'Maioria do Congresso', 'Alinhamento', ''].map((t) => `<span>${esc(t)}</span>`).join('');
     $('lista').innerHTML = fases.map((f) => {
         const itens = D.presidentes.filter((p) => p.fase === f.id);
         return `<section aria-labelledby="fase-${esc(f.id)}">
-            <h3 id="fase-${esc(f.id)}" class="text-base font-extrabold">${esc(f.nome)} <span class="text-sm font-semibold text-slate-500">${esc(f.anos)}</span></h3>
-            <p class="text-xs text-slate-500 mt-0.5 mb-3">${esc(f.regime)}</p>
-            <div class="trilho space-y-3">${itens.map(cartao).join('')}</div></section>`;
+            <h3 id="fase-${esc(f.id)}" class="text-sm font-extrabold px-3">${esc(f.nome)} <span class="font-semibold text-slate-500">${esc(f.anos)}</span> <span class="text-xs font-normal text-slate-500">· ${esc(f.regime)}</span></h3>
+            <div class="mt-1 border-t border-slate-200 dark:border-slate-700">${itens.map(linha).join('')}</div></section>`;
     }).join('');
 }
 
@@ -223,7 +224,7 @@ function desenharGrafico() {
         const p = D.presidentes.find((x) => x.id === r.dataset.gov);
         H.fase = p.fase; desenharChips(); desenharLista();
         const a = $('gov-' + p.id);
-        if (a) { a.scrollIntoView({ behavior: 'smooth', block: 'center' }); a.firstElementChild.style.boxShadow = '0 0 0 3px #A92823'; setTimeout(() => { a.firstElementChild.style.boxShadow = ''; }, 1800); }
+        if (a) { a.open = true; a.scrollIntoView({ behavior: 'smooth', block: 'center' }); a.style.boxShadow = '0 0 0 3px #A92823'; setTimeout(() => { a.style.boxShadow = ''; }, 1800); }
     };
     resumoAlinhamento();
 }
