@@ -216,3 +216,99 @@ def projetos_do_politico(pid: int, desde=None, ate=None, tema: int | None = None
                       "temas": [d["temas"].get(t, str(t)) for t in p["temas"]]} for p in base[:LIMITE_PROJETOS]],
         **_aviso(d),
     }
+
+
+# --------------------------------------------------------------------------- #
+# Busca de projetos por tema, com tipo de norma, efeito aparente do texto e efetividade
+# --------------------------------------------------------------------------- #
+import re
+import unicodedata
+
+LIMITE_BUSCA = 30
+
+
+def _sem_acento(s: str) -> str:
+    return "".join(c for c in unicodedata.normalize("NFD", s or "") if unicodedata.category(c) != "Mn").lower()
+
+
+# Efeito aparente do texto da EMENTA, só por palavras (sem IA, sem leitura do projeto inteiro). Descreve o que o
+# texto diz que faz; não é posição política. Cada grupo é uma expressão regular sobre texto sem acento e minúsculo.
+_RESTRINGE = re.compile(r"\b(tipifica\w*|crimes?|criminaliza\w*|penas?|penal|penais|hediond\w*|proibi\w*|proibe\w*|veda\w*|"
+                        r"vedacao|agrava\w*|endurece\w*|multas?|sancoes|sancao administrativa|reclusao|detencao|"
+                        r"suspende\w*|restring\w*|limita\w*|obrigatori\w*|obriga\w*)\b")
+_AMPLIA = re.compile(r"\b(garante\w*|assegura\w*|isen\w*|descriminaliza\w*|despenaliza\w*|autoriza\w*|permite\w*|amplia\w*|"
+                     r"reconhece\w*|anistia\w*|perdao|concede\w*|deducao|deducoes|dedutive\w*|incentiv\w*|beneficio\w*|gratuidade|gratuito\w*|"
+                     r"revoga\w*|flexibiliza\w*|facilita\w*|desonera\w*|credito presumido|direito\w* de|passe livre)\b")
+_PROCEDIMENTAL = re.compile(r"\b(denomina\w*|inscreve\w*|livro dos her\w*|dia nacional|semana nacional|mes de|homenag\w*|"
+                            r"institui o dia|institui a semana|cadastro\w*|relatorio\w*|registro\w*|regulamenta\w*|"
+                            r"diretrizes|procedimento\w*|sistema nacional|politica nacional|programa nacional|"
+                            r"campanha|estatuto|consolida\w*|prazo\w*|competencia\w*|orgao\w*|fiscaliza\w*|transparencia)\b")
+
+ROTULOS_EFEITO = {
+    "restringe": "Restringe ou pune mais",
+    "amplia": "Amplia permissões ou direitos",
+    "procedimental": "Procedimental ou de organização",
+    "indefinido": "Não classificado",
+}
+
+
+def efeito_da_ementa(ementa: str) -> str:
+    """Efeito aparente do texto: restringe/pune, amplia permissões/direitos, procedimental. Empate ou nada = indefinido."""
+    t = _sem_acento(ementa)
+    if re.search(r"\b(denomina\w*|inscreve\w*|livro dos her\w*|dia nacional|semana nacional|homenag\w*)\b", t):
+        return "procedimental"
+    r, a, p = len(_RESTRINGE.findall(t)), len(_AMPLIA.findall(t)), len(_PROCEDIMENTAL.findall(t))
+    topo = max(r, a, p)
+    if topo == 0:
+        return "indefinido"
+    vencedores = [n for n, v in (("restringe", r), ("amplia", a), ("procedimental", p)) if v == topo]
+    return vencedores[0] if len(vencedores) == 1 else "indefinido"
+
+
+def _efetividade(d: dict, p: dict) -> str:
+    etapa = _parada(d, p)["etapa"]
+    return "aprovado" if etapa == "lei" else "arquivado" if etapa == "arquivada" else "em_tramitacao"
+
+
+def buscar_projetos(q: str | None, tipo: str | None, efeito: str | None, efetividade: str | None,
+                    desde=None, ate=None, deslocamento: int = 0) -> dict:
+    d = _dados()
+    desde, ate = _periodo(d, desde, ate)
+    termos = [t for t in _sem_acento(q or "").split() if len(t) >= 2]
+    base = []
+    for p in d["projetos"]:
+        if not (desde <= p["data"] <= ate):
+            continue
+        sigla = p["ident"].split()[0]
+        if tipo and sigla != tipo:
+            continue
+        if termos:
+            texto = _sem_acento(p["ementa"])
+            if not all(t in texto for t in termos):
+                continue
+        base.append((p, sigla))
+    # termômetro: sobre tudo o que casou com busca, tipo e período (não muda com os filtros de efeito/situação)
+    marcados = [(p, s, efeito_da_ementa(p["ementa"]), _efetividade(d, p)) for p, s in base]
+    cont_tipo, cont_efeito, cont_efet = Counter(), Counter(), Counter()
+    for _, s, e, f in marcados:
+        cont_tipo[s] += 1
+        cont_efeito[e] += 1
+        cont_efet[f] += 1
+    filtrados = [m for m in marcados if (not efeito or m[2] == efeito) and (not efetividade or m[3] == efetividade)]
+    filtrados.sort(key=lambda m: (m[0]["data"], m[0]["id"]), reverse=True)
+    pagina = filtrados[deslocamento:deslocamento + LIMITE_BUSCA]
+    return {
+        "periodo": {"desde": desde, "ate": ate}, "consulta": q or "",
+        "total_busca": len(marcados), "total_filtrado": len(filtrados),
+        "por_tipo": dict(cont_tipo), "por_efeito": dict(cont_efeito), "por_efetividade": dict(cont_efet),
+        "rotulos_efeito": ROTULOS_EFEITO,
+        "projetos": [{
+            "ident": p["ident"], "tipo_norma": s, "data": p["data"], "ementa": p["ementa"], "url": p["url"],
+            "efetividade": f, "orientacao_tema": e, "situacao": p["situacao"], "parada": _parada(d, p),
+            "n_autores": len(p["autores"]) + len(p.get("outros") or []),
+            "autores": [{"nome": d["politicos"][a]["nome"], "partido": d["politicos"][a]["partido"], "uf": d["politicos"][a]["uf"]}
+                        for a in p["autores"][:3]] + [{"nome": o["nome"], "partido": "", "uf": ""} for o in (p.get("outros") or [])[:1]],
+            "temas": [d["temas"].get(t, str(t)) for t in p["temas"]],
+        } for p, s, e, f in pagina],
+        **_aviso(d),
+    }
