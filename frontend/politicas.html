@@ -230,42 +230,49 @@
 
     <!-- Autoria dos projetos da Câmara: divisão por tema e projetos por político -->
     <section id="autoria" class="hidden mt-5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 sm:p-5" aria-labelledby="tAutoria">
-        <h2 id="tAutoria" class="text-lg font-bold"><i class="fa-solid fa-table-cells mr-2 text-brand-600" aria-hidden="true"></i>Quem propõe e o que vira lei</h2>
-        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Matriz de cruzamento de projetos de lei (PL, PLP e PEC) da Câmara dos Deputados: os temas que você escolher ficam nas colunas e, nas linhas, partido, parlamentar ou o ponto da tramitação onde o projeto parou. Só contagem oficial: quantidade não mede qualidade. O período desta matriz é escolhido aqui, à parte do período da página.</p>
+        <h2 id="tAutoria" class="text-lg font-bold"><i class="fa-solid fa-magnifying-glass-chart mr-2 text-brand-600" aria-hidden="true"></i>Quem propõe e o que vira lei</h2>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Monte a sua busca em três passos e veja o que a Câmara dos Deputados fez com o tema: projetos de lei (PL, PLP e PEC), por partido, por intenção do texto, por parlamentar ou por onde a tramitação travou. Só contagem oficial e percentuais calculados dos dados: nada aqui avalia partido ou parlamentar, e quantidade não mede qualidade. O período desta busca é escolhido aqui, à parte do período da página.</p>
         <p id="autoriaTotais" class="text-sm mt-3"></p>
-        <form id="barraMatriz" class="mt-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/40 p-3 sm:p-4" onsubmit="return false" aria-label="Ferramentas da matriz de cruzamento">
-            <div class="grid grid-cols-2 lg:grid-cols-12 gap-3 items-end">
-                <fieldset class="col-span-2 lg:col-span-3">
-                    <legend class="text-xs font-semibold">Período (de 1 a 20 anos)</legend>
-                    <div class="mt-1 flex items-center gap-2">
-                        <label class="sr-only" for="mDe">Ano inicial</label>
-                        <input id="mDe" type="number" inputmode="numeric" min="1990" max="2100" class="w-28 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-2 text-sm" aria-describedby="mPeriodoAviso">
-                        <span class="text-xs text-slate-500" aria-hidden="true">até</span>
-                        <label class="sr-only" for="mAte">Ano final</label>
-                        <input id="mAte" type="number" inputmode="numeric" min="1990" max="2100" class="w-28 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-2 text-sm" aria-describedby="mPeriodoAviso">
-                    </div>
-                </fieldset>
-                <label class="col-span-2 lg:col-span-4 block text-xs font-semibold">Tema base (eixo X) — escolha até 6
-                    <select id="mTema" class="mt-1 block w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-2 text-sm font-normal"></select></label>
-                <label class="col-span-1 lg:col-span-3 block text-xs font-semibold">Cruzar com (eixo Y)
-                    <select id="mY" class="mt-1 block w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-2 text-sm font-normal">
-                        <option value="partido">Partido</option>
-                        <option value="parlamentar">Parlamentar</option>
-                        <option value="parada">Onde pararam (tramitação)</option></select></label>
-                <label class="col-span-1 lg:col-span-2 block text-xs font-semibold">Efeito do texto
-                    <select id="mEfeito" class="mt-1 block w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-2 text-sm font-normal">
-                        <option value="">Todos</option>
-                        <option value="restringe">Restringe ou pune</option>
-                        <option value="amplia">Amplia direitos</option>
-                        <option value="procedimental">Procedimental</option></select></label>
-            </div>
-            <p id="mPeriodoAviso" class="text-[11px] text-slate-500 mt-2" role="status"></p>
-            <div id="mChips" class="mt-2 flex flex-wrap gap-2" aria-label="Temas escolhidos"></div>
+
+        <form id="construtor" class="mt-4 grid gap-3 lg:grid-cols-12" onsubmit="return false" aria-label="Construtor de busca">
+            <!-- Passo 1 -->
+            <section class="lg:col-span-5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/40 p-3 sm:p-4" aria-labelledby="cb1">
+                <h3 id="cb1" class="text-sm font-bold"><span class="inline-flex w-5 h-5 mr-1.5 rounded-full bg-brand-600 text-white text-[11px] items-center justify-center" aria-hidden="true">1</span>Tema e palavras-chave</h3>
+                <div class="mt-2 flex gap-2">
+                    <label class="sr-only" for="cTermo">Tema ou palavra-chave</label>
+                    <input id="cTermo" type="text" list="cSugestoes" maxlength="40" autocomplete="off" placeholder="Digite ex: Aborto, Armas, IRPF…"
+                           class="min-w-0 flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                    <button type="button" id="cAdd" class="shrink-0 px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 text-sm font-semibold hover:bg-white dark:hover:bg-slate-800">Adicionar</button>
+                    <datalist id="cSugestoes"></datalist>
+                </div>
+                <p class="text-[11px] text-slate-500 mt-1.5">Escolha uma sugestão (temas oficiais da Câmara e assuntos) ou escreva qualquer palavra: ela é procurada no resumo (ementa) dos projetos. Até 6 termos; o resultado reúne os projetos de todos eles.</p>
+                <div id="cPilulas" class="mt-2 flex flex-wrap gap-2" aria-label="Termos escolhidos"></div>
+            </section>
+            <!-- Passo 2 -->
+            <section class="lg:col-span-7 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/40 p-3 sm:p-4" aria-labelledby="cb2">
+                <h3 id="cb2" class="text-sm font-bold"><span class="inline-flex w-5 h-5 mr-1.5 rounded-full bg-brand-600 text-white text-[11px] items-center justify-center" aria-hidden="true">2</span>Período</h3>
+                <div class="mt-2 flex flex-wrap gap-2" id="cAtalhos">
+                    <button type="button" data-atalho="5" class="px-3 py-1.5 rounded-full border border-slate-300 dark:border-slate-600 text-xs font-semibold hover:bg-white dark:hover:bg-slate-800">Últimos 5 anos</button>
+                    <button type="button" data-atalho="10" class="px-3 py-1.5 rounded-full border border-slate-300 dark:border-slate-600 text-xs font-semibold hover:bg-white dark:hover:bg-slate-800">Últimos 10 anos</button>
+                    <button type="button" data-atalho="leg" class="px-3 py-1.5 rounded-full border border-slate-300 dark:border-slate-600 text-xs font-semibold hover:bg-white dark:hover:bg-slate-800">Últimas 3 legislaturas</button>
+                </div>
+                <div class="mt-3 flex flex-wrap items-end gap-3">
+                    <label class="block text-xs font-semibold">De (mês/ano)
+                        <input id="cDe" type="month" min="2015-01" class="mt-1 block bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-2 text-sm font-normal"></label>
+                    <label class="block text-xs font-semibold">Até (mês/ano)
+                        <input id="cAte" type="month" class="mt-1 block bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-2 text-sm font-normal"></label>
+                </div>
+                <p id="cPeriodoInfo" class="text-xs mt-2" role="status"></p>
+            </section>
+            <!-- Passo 3 -->
+            <section class="lg:col-span-12 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/40 p-3 sm:p-4" aria-labelledby="cb3">
+                <h3 id="cb3" class="text-sm font-bold"><span class="inline-flex w-5 h-5 mr-1.5 rounded-full bg-brand-600 text-white text-[11px] items-center justify-center" aria-hidden="true">3</span>Como olhar para esse tema</h3>
+                <div id="cLentes" class="mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-4" role="radiogroup" aria-label="Lente de análise"></div>
+            </section>
         </form>
-        <div id="mResumo" class="text-sm font-semibold mt-5" aria-live="polite"></div>
-        <p id="mLacuna" class="hidden mt-2 text-xs rounded-lg border border-amber-300 bg-amber-50 text-amber-900 dark:bg-amber-950/40 dark:text-amber-200 dark:border-amber-800 px-3 py-2" role="status"></p>
-        <div id="mTabela" class="mt-2 overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700"></div>
-        <ul id="mNotas" class="mt-2 text-[11px] text-slate-500 list-disc pl-5 space-y-1"></ul>
+
+        <div id="rResultado" class="mt-6" aria-live="polite" aria-busy="false"></div>
+        <ul id="rNotas" class="mt-3 text-[11px] text-slate-500 list-disc pl-5 space-y-1"></ul>
         <div class="mt-5 border-t border-slate-200 dark:border-slate-700 pt-4">
             <label for="buscaPolitico" class="text-sm font-semibold">Ver os projetos de um(a) deputado(a)</label>
             <input id="buscaPolitico" type="search" autocomplete="off" maxlength="60" placeholder="Nome ou sigla do estado (ex.: SP)"
@@ -827,110 +834,183 @@ $('lista').addEventListener('click', async (ev) => {
 
 
 /* ====================================================================== *
- *  Autoria: matriz de cruzamento (tema base × partido / parlamentar / onde pararam) e projetos por político
+ *  Autoria: construtor de busca (tema/palavras-chave + período + lente) e projetos por político
  * ====================================================================== */
 let reqAutoria = 0;
 const POL = { id: null, tema: '' };
-// Período próprio da matriz (anos); começa em 10 anos e é limitado a 20 pelo servidor
-const MZ = { x: ['a:aborto', 'a:irpf', 'a:seguranca'], y: 'partido', efeito: '', de: null, ate: null, opcoes: [], req: 0 };
-const MAX_COLUNAS = 6, MAX_ANOS_MZ = 20;
-const ROT_Y = { partido: 'Partido', parlamentar: 'Parlamentar', parada: 'Onde o projeto está agora' };
-
-function validarPeriodoMatriz() {
-    const de = Number($('mDe').value), ate = Number($('mAte').value), av = $('mPeriodoAviso');
-    let msg = '';
-    if (!de || !ate) msg = 'Informe o ano inicial e o final (AAAA).';
-    else if (de > ate) msg = 'O ano inicial não pode ser posterior ao final.';
-    else if (ate - de + 1 > MAX_ANOS_MZ) msg = `O período pode ter no máximo ${MAX_ANOS_MZ} anos (você pediu ${ate - de + 1}).`;
-    av.textContent = msg;
-    av.className = 'text-[11px] mt-2 ' + (msg ? 'text-red-700 dark:text-red-400 font-semibold' : 'text-slate-500');
-    if (!msg) { MZ.de = de; MZ.ate = ate; av.textContent = `${ate - de + 1} ano(s) de projetos apresentados.`; }
-    return !msg;
-}
-function desenharChips() {
-    const nome = (c) => (MZ.opcoes.find((o) => o.chave === c) || { nome: c }).nome;
-    $('mChips').innerHTML = MZ.x.map((c) => `<span class="inline-flex items-center gap-1 rounded-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 pl-3 pr-1 py-1 text-xs font-semibold">${esc(nome(c))}
-        <button type="button" data-tirar-tema="${esc(c)}" class="w-5 h-5 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 leading-none" aria-label="Tirar ${esc(nome(c))}">×</button></span>`).join('')
-        || '<span class="text-xs text-slate-500">Escolha ao menos um tema base.</span>';
-    const sel = $('mTema'), grupo = (g, t) => `<optgroup label="${t}">${MZ.opcoes.filter((o) => o.grupo === g && !MZ.x.includes(o.chave))
-        .map((o) => `<option value="${esc(o.chave)}">${esc(o.nome)}</option>`).join('')}</optgroup>`;
-    sel.disabled = MZ.x.length >= MAX_COLUNAS;
-    sel.innerHTML = `<option value="">${MZ.x.length >= MAX_COLUNAS ? 'Limite de 6 temas — tire um para trocar' : '+ Adicionar tema…'}</option>`
-        + grupo('assunto', 'Assuntos (busca por palavras na ementa)') + grupo('tema', 'Temas oficiais da Câmara');
-}
-function celula(c, max) {
-    if (!c.criados) return '<td class="px-3 py-2 text-center text-slate-300 dark:text-slate-600">0</td>';
-    const a = (0.08 + 0.32 * Math.sqrt(c.criados / max)).toFixed(2);
-    return `<td class="px-3 py-2 text-center tabular-nums" style="background:rgba(71,85,105,${a})"><b>${nf(c.criados)}</b>
-        <span class="block text-[10px] font-normal opacity-80">${nf(c.aprovados)} viraram lei</span></td>`;
-}
-async function desenharMatriz() {
-    const minha = ++MZ.req;
-    if (!MZ.opcoes.length || !validarPeriodoMatriz()) { if (MZ.opcoes.length) $('mTabela').innerHTML = ''; return; }
-    if (!MZ.x.length) { $('mTabela').innerHTML = ''; $('mResumo').textContent = ''; return; }
-    const q = new URLSearchParams({ y: MZ.y, ano_de: MZ.de, ano_ate: MZ.ate });
-    MZ.x.forEach((c) => q.append('x', c));
-    if (MZ.efeito) q.set('efeito', MZ.efeito);
-    $('mTabela').setAttribute('aria-busy', 'true');
-    let r;
-    try { r = await api('/api/autoria/matriz?' + q); }
-    catch (e) { if (minha === MZ.req) { $('mTabela').innerHTML = `<p class="p-4 text-sm text-slate-500">Não foi possível carregar a matriz agora. ${esc(e.message || '')}</p>`; $('mTabela').removeAttribute('aria-busy'); } return; }
-    if (minha !== MZ.req) return;
-    $('mTabela').removeAttribute('aria-busy');
-    const max = Math.max(1, ...r.linhas.flatMap((l) => l.celulas.map((c) => c.criados)));
-    $('mResumo').textContent = `${nf(r.unicos.criados)} projetos distintos nos temas escolhidos, ${r.periodo.de}–${r.periodo.ate} · ${nf(r.unicos.aprovados)} viraram lei${r.rotulo_efeito ? ` · efeito: ${r.rotulo_efeito.toLowerCase()}` : ''}`;
-    const av = $('mLacuna');
-    av.classList.toggle('hidden', !r.lacuna);
-    av.textContent = r.lacuna || '';
-    if (!r.linhas.length) {
-        $('mTabela').innerHTML = '<p class="p-4 text-sm text-slate-500">Nenhum projeto com esta combinação de filtros no período.</p>';
-    } else {
-        const rotulo = (l) => (r.y === 'parlamentar' && l.id ? `<button type="button" data-pol="${Number(l.id)}" class="text-left font-semibold underline decoration-dotted hover:text-brand-700 dark:hover:text-brand-400">${esc(l.rotulo)}</button>`
-            : `<span class="font-semibold" ${l.onde ? `title="${esc(l.onde)}"` : ''}>${esc(l.rotulo)}</span>`);
-        $('mTabela').innerHTML = `<table class="min-w-full text-sm">
-            <caption class="sr-only">Projetos por ${esc(ROT_Y[r.y])} e tema base, ${r.periodo.de} a ${r.periodo.ate}</caption>
-            <thead class="bg-slate-100 dark:bg-slate-900/60 text-xs"><tr>
-                <th scope="col" class="px-3 py-2 text-left sticky left-0 bg-slate-100 dark:bg-slate-900">${esc(ROT_Y[r.y])}</th>
-                ${r.x.map((c) => `<th scope="col" class="px-3 py-2 text-center min-w-[7.5rem]">${esc(c.rotulo)}</th>`).join('')}</tr></thead>
-            <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
-            ${r.linhas.map((l) => `<tr><th scope="row" class="px-3 py-2 text-left font-normal normal-case tracking-normal sticky left-0 bg-white dark:bg-slate-800 max-w-[16rem]">${rotulo(l)}</th>${l.celulas.map((c) => celula(c, max)).join('')}</tr>`).join('')}
-            </tbody>
-            <tfoot class="bg-slate-50 dark:bg-slate-900/40 text-xs"><tr><th scope="row" class="px-3 py-2 text-left sticky left-0 bg-slate-50 dark:bg-slate-900">Total do tema${r.linhas_total > r.linhas.length ? ' (todas as linhas)' : ''}</th>
-                ${r.totais_coluna.map((c) => `<td class="px-3 py-2 text-center tabular-nums"><b>${nf(c.criados)}</b> <span class="opacity-80">· ${nf(c.aprovados)} lei</span></td>`).join('')}</tr></tfoot></table>`;
-    }
-    $('mNotas').innerHTML = r.notas.map((n) => `<li>${esc(n)}</li>`).join('')
-        + `<li>Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(r.fonte.url))}">${esc(r.fonte.nome)}</a>. Dados coletados em ${esc(fmtDataHora(r.gerado_em))}, de ${r.periodo.coletado_de} a ${r.periodo.coletado_ate}.</li>`;
-}
-const refazerMatriz = debounce(desenharMatriz, 300);
-document.addEventListener('click', (ev) => {
-    const t = ev.target.closest && ev.target.closest('[data-tirar-tema]');
-    if (t) { MZ.x = MZ.x.filter((c) => c !== t.dataset.tirarTema); desenharChips(); desenharMatriz(); }
-});
-document.addEventListener('change', (ev) => {
-    const id = ev.target.id;
-    if (id === 'mTema') {
-        if (ev.target.value && MZ.x.length < MAX_COLUNAS && !MZ.x.includes(ev.target.value)) MZ.x.push(ev.target.value);
-        desenharChips(); desenharMatriz();
-    } else if (id === 'mY') { MZ.y = ev.target.value; desenharMatriz(); }
-    else if (id === 'mEfeito') { MZ.efeito = ev.target.value; desenharMatriz(); }
-    else if (id === 'mDe' || id === 'mAte') { if (validarPeriodoMatriz()) refazerMatriz(); }
-});
-document.addEventListener('input', (ev) => { if (ev.target.id === 'mDe' || ev.target.id === 'mAte') validarPeriodoMatriz(); });
-
-async function iniciarMatriz(coletadoDe, coletadoAte) {
-    if (!MZ.opcoes.length) {
-        // as opções de tema vêm do servidor junto com a primeira matriz
-        try {
-            const r = await api('/api/autoria/matriz?' + new URLSearchParams([['x', MZ.x[0]], ['y', 'partido'], ['ano_de', coletadoDe], ['ano_ate', coletadoAte]]));
-            MZ.opcoes = r.opcoes;
-        } catch (e) { return; }
-        $('mDe').value = coletadoDe; $('mAte').value = coletadoAte;
-        desenharChips();
-    }
-    desenharMatriz();
-}
-
+const CB = { termos: [], lente: 'partido', de: '', ate: '', sugestoes: [], limites: null, req: 0 };
+const LENTES = [
+    ['partido', 'fa-flag', 'Presença do tema por partido', 'Quanto da produção de cada partido trata do tema (ordem alfabética, sem classificar partidos).'],
+    ['intencao', 'fa-scale-balanced', 'Intenção do texto', 'Restringe ou pune, amplia direitos ou é procedimental, segundo as palavras da ementa.'],
+    ['parlamentares', 'fa-user-pen', 'Quem apresenta e o que vira lei', 'Parlamentares que mais apresentam projetos do tema e quantos viraram lei (em ordem alfabética).'],
+    ['gargalo', 'fa-road-barrier', 'Onde a pauta trava', 'Em que comissão ou etapa estão hoje os projetos que não viraram lei.'],
+];
+const semAcento = (s) => String(s).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+const pct = (v) => (v == null ? '—' : `${Number(v).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%`);
+const mesNum = (s) => Number(s.slice(0, 4)) * 12 + Number(s.slice(5, 7)) - 1;
+const mesTxt = (n) => `${Math.floor(n / 12)}-${String((n % 12) + 1).padStart(2, '0')}`;
+const mesBr = (s) => `${s.slice(5, 7)}/${s.slice(0, 4)}`;
 const nf = (n) => Number(n).toLocaleString('pt-BR');
+
+function desenharPilulas() {
+    $('cPilulas').innerHTML = CB.termos.map((t) => `<span class="inline-flex items-center gap-1 rounded-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 pl-3 pr-1 py-1 text-xs font-semibold">${esc(t.rotulo)}
+        <button type="button" data-tirar="${esc(t.chave)}" class="w-5 h-5 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 leading-none" aria-label="Tirar ${esc(t.rotulo)}">×</button></span>`).join('')
+        || `<span class="text-xs text-slate-500">Nenhum termo ainda. Exemplos: ${['Aborto', 'Armas de fogo', 'Dedução no IRPF'].map((n) => `<button type="button" data-exemplo="${esc(n)}" class="underline">${esc(n)}</button>`).join(' · ')}</span>`;
+    $('cAdd').disabled = CB.termos.length >= 6;
+    $('cTermo').disabled = CB.termos.length >= 6;
+}
+function adicionarTermo(texto) {
+    const t = String(texto || '').trim();
+    if (t.length < 2 || CB.termos.length >= 6) return;
+    const n = semAcento(t);
+    const exato = CB.sugestoes.find((s) => semAcento(s.nome) === n);
+    const prefixo = CB.sugestoes.filter((s) => semAcento(s.nome).startsWith(n));
+    const s = exato || (prefixo.length === 1 ? prefixo[0] : null);
+    const termo = s ? { chave: s.chave, rotulo: s.nome } : { chave: `k:${t}`, rotulo: `“${t}”` };
+    if (!CB.termos.some((x) => x.chave === termo.chave)) CB.termos.push(termo);
+    $('cTermo').value = '';
+    desenharPilulas(); consultar();
+}
+function periodoValido() {
+    const info = $('cPeriodoInfo'), L = CB.limites;
+    const de = $('cDe').value, ate = $('cAte').value;
+    let msg = '';
+    if (!/^\d{4}-\d{2}$/.test(de) || !/^\d{4}-\d{2}$/.test(ate)) msg = 'Informe o mês e o ano inicial e final.';
+    else if (de > ate) msg = 'O mês inicial não pode ser posterior ao final.';
+    else if (mesNum(ate) - mesNum(de) + 1 > L.max_meses) msg = `O período pode ter no máximo ${L.max_meses / 12} anos (você pediu ${Math.floor((mesNum(ate) - mesNum(de) + 1) / 12)} anos e ${(mesNum(ate) - mesNum(de) + 1) % 12} meses).`;
+    if (msg) {
+        info.textContent = msg; info.className = 'text-xs mt-2 text-red-700 dark:text-red-400 font-semibold';
+        return false;
+    }
+    const m = mesNum(ate) - mesNum(de) + 1, a = Math.floor(m / 12), r = m % 12;
+    const plural = (n, u) => `${n} ${u}${n === 1 ? '' : u === 'mês' ? '' : 's'}`.replace('meses', 'meses');
+    const partes = [a ? `${a} ${a === 1 ? 'ano' : 'anos'}` : '', r ? `${r} ${r === 1 ? 'mês' : 'meses'}` : ''].filter(Boolean).join(' e ');
+    info.innerHTML = `Analisando <b>${esc(partes)}</b> de produção legislativa (${esc(mesBr(de))} a ${esc(mesBr(ate))}).`;
+    info.className = 'text-xs mt-2 text-slate-700 dark:text-slate-300';
+    CB.de = de; CB.ate = ate;
+    return true;
+}
+function desenharLentes() {
+    $('cLentes').innerHTML = LENTES.map(([id, icone, nome, desc]) => {
+        const on = CB.lente === id;
+        return `<button type="button" role="radio" aria-checked="${on}" data-lente="${id}" class="text-left rounded-xl border p-3 transition ${on ? 'border-brand-600 bg-white dark:bg-slate-800 ring-2 ring-brand-500' : 'border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800'}">
+            <span class="block text-sm font-bold"><i class="fa-solid ${icone} mr-1.5 text-brand-600" aria-hidden="true"></i>${esc(nome)}</span>
+            <span class="block text-[11px] text-slate-500 dark:text-slate-400 mt-1">${esc(desc)}</span></button>`;
+    }).join('');
+}
+// barra horizontal: trilho cinza = projetos; trecho verde = os que viraram lei
+function barra(rotulo, sub, valor, max, lei, direita) {
+    const w = max ? Math.max(valor ? 1 : 0, (100 * valor) / max) : 0, wl = valor && max ? (100 * Math.min(lei || 0, valor)) / max : 0;
+    return `<li class="grid grid-cols-1 sm:grid-cols-[minmax(0,13rem)_1fr] gap-x-3 gap-y-1 items-center py-1.5">
+        <div class="min-w-0"><span class="block text-sm font-semibold truncate" title="${esc(rotulo)}${sub ? ' — ' + esc(sub) : ''}">${esc(rotulo)}</span>${sub ? `<span class="block text-[11px] text-slate-500 truncate" title="${esc(sub)}">${esc(sub)}</span>` : ''}</div>
+        <div><div class="relative h-3 rounded bg-slate-100 dark:bg-slate-700" role="img" aria-label="${esc(rotulo)}: ${esc(direita)}"><div class="absolute inset-y-0 left-0 rounded bg-slate-400 dark:bg-slate-500" style="width:${w.toFixed(1)}%"></div>
+            ${wl ? `<div class="absolute inset-y-0 left-0 rounded bg-emerald-600" style="width:${wl.toFixed(1)}%"></div>` : ''}</div>
+            <span class="block text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">${esc(direita)}</span></div></li>`;
+}
+const cartaoNumero = (titulo, valor, nota) => `<div class="rounded-xl border border-slate-200 dark:border-slate-700 p-3"><p class="text-[11px] font-semibold text-slate-500 dark:text-slate-400">${esc(titulo)}</p>
+    <p class="text-2xl font-extrabold mt-0.5 tabular-nums">${esc(valor)}</p><p class="text-[11px] text-slate-500 mt-0.5">${esc(nota)}</p></div>`;
+
+function htmlResultado(r) {
+    const s = r.resumo, L = r.lente;
+    if (!s.projetos) {
+        return `<div class="rounded-xl border border-dashed border-slate-300 dark:border-slate-600 p-5 text-sm"><p class="font-semibold">Nenhum projeto encontrado para essa busca.</p>
+            <p class="mt-1 text-slate-600 dark:text-slate-400">Tente <b>ampliar o intervalo</b> de datas (até 20 anos) ou <b>trocar a palavra-chave</b>: a busca olha o resumo (ementa) do projeto, então um sinônimo ou uma palavra mais curta, como “arma” em vez de “armamento”, pode encontrar mais. Os temas oficiais da Câmara também ajudam.</p></div>`;
+    }
+    const m1 = s.metades[0], m2 = s.metades[1];
+    const tendencia = [
+        s.classificados ? `Entre os ${nf(s.classificados)} projetos com efeito classificado, ${pct(s.restringe_pct)} têm teor restritivo ou punitivo, ${pct(s.amplia_pct)} ampliam permissões ou direitos e ${pct(s.procedimental_pct)} são procedimentais.` : '',
+        m1.restringe_pct != null && m2.restringe_pct != null ? `Teor restritivo ou punitivo: ${pct(m1.restringe_pct)} na primeira metade do período e ${pct(m2.restringe_pct)} na segunda.` : '',
+        `${pct(s.taxa_lei_pct)} dos projetos do período viraram lei (${nf(s.viraram_lei)} de ${nf(s.projetos)}).`,
+    ].filter(Boolean);
+    const cartoes = `<div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        ${cartaoNumero('Projetos apresentados', nf(s.projetos), s.por_termo.length > 1 ? s.por_termo.map((t) => `${t.rotulo}: ${nf(t.projetos)}`).join(' · ') : 'no período escolhido')}
+        ${cartaoNumero('Viraram lei', nf(s.viraram_lei), `${pct(s.taxa_lei_pct)} dos projetos`)}
+        ${cartaoNumero('Teor restritivo ou punitivo', pct(s.restringe_pct), s.classificados ? `dos ${nf(s.classificados)} com efeito classificado` : 'nenhum projeto classificado')}
+        ${cartaoNumero('Sem classificação de efeito', pct(s.sem_classificacao_pct), 'a ementa não deixa claro o efeito')}</div>
+        <ul class="mt-3 text-sm space-y-1 list-disc pl-5">${tendencia.map((t) => `<li>${esc(t)}</li>`).join('')}</ul>`;
+    let corpo = '', titulo = '', leg = 'Cinza: projetos apresentados · verde: os que viraram lei.';
+    if (L === 'partido') {
+        titulo = 'Quanto da produção de cada partido trata do tema';
+        const max = Math.max(...r.itens.map((x) => x.proporcao_pct || 0));
+        corpo = r.itens.length ? `<ul>${r.itens.map((x) => barra(x.rotulo, `${nf(x.projetos)} de ${nf(x.total_partido)} projetos do partido`, x.proporcao_pct || 0, max, 0, `${pct(x.proporcao_pct)} dos projetos do partido · ${nf(x.projetos)} sobre o tema, ${nf(x.viraram_lei)} viraram lei`)).join('')}</ul>` : '<p class="text-sm text-slate-500">Nenhum projeto de deputado(a) neste tema.</p>';
+        leg = 'Ordem alfabética. A barra é a proporção entre os projetos do partido: partidos com poucos projetos no total oscilam muito, por isso o número de projetos vem junto. Não há classificação ideológica de partidos.';
+        if (r.sem_autor_deputado) leg += ` ${nf(r.sem_autor_deputado)} projeto(s) do tema são do Executivo, Senado ou comissões e ficam de fora desta lista.`;
+    } else if (L === 'intencao') {
+        titulo = 'Intenção do texto, pela ementa';
+        const max = Math.max(...r.itens.map((x) => x.projetos));
+        corpo = `<ul>${r.itens.map((x) => barra(x.cod === 'procedimental' ? 'Procedimental ou regulatório' : x.rotulo, '', x.projetos, max, x.viraram_lei, `${nf(x.projetos)} projetos (${pct(100 * x.projetos / s.projetos)}) · ${nf(x.viraram_lei)} viraram lei`)).join('')}</ul>`;
+        leg += ' Classificação automática por palavras da ementa, sem posição política: “restringe” e “amplia” não significam bom ou ruim.';
+    } else if (L === 'parlamentares') {
+        titulo = 'Parlamentares com projetos no tema';
+        corpo = r.itens.length ? `<ul class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">${r.itens.map((x) => `<li><button type="button" data-pol="${Number(x.id)}" class="w-full text-left rounded-xl border border-slate-200 dark:border-slate-700 p-3 hover:bg-slate-50 dark:hover:bg-slate-900/40">
+            <span class="block text-sm font-bold">${esc(x.rotulo)}</span><span class="block text-[11px] text-slate-500">${esc(x.partido)}-${esc(x.uf)}</span>
+            <span class="block text-sm mt-1.5"><b>${nf(x.projetos)}</b> apresentado(s) · <b>${nf(x.viraram_lei)}</b> virou(aram) lei <span class="text-slate-500">(${pct(x.taxa_lei_pct)})</span></span></button></li>`).join('')}</ul>` : '<p class="text-sm text-slate-500">Nenhum projeto de deputado(a) neste tema.</p>';
+        leg = `Dos ${nf(r.parlamentares_total)} parlamentares com projetos no tema, aparecem os ${nf(r.itens.length)} com mais projetos, em ordem alfabética: é contagem, não avaliação. Clique num nome para ver os projetos.`;
+    } else {
+        titulo = 'Onde estão os projetos que não viraram lei';
+        const max = Math.max(1, ...r.itens.map((x) => x.projetos));
+        corpo = r.itens.length ? `<ul>${r.itens.map((x) => barra(x.sigla || x.rotulo, x.sigla ? x.rotulo : '', x.projetos, max, 0, `${nf(x.projetos)} projetos (${pct(x.proporcao_pct)} dos parados)`)).join('')}</ul>` : '<p class="text-sm text-slate-500">Todos os projetos do tema viraram lei.</p>';
+        leg = `${nf(r.parados)} projetos não viraram lei. Barras em ordem de volume (contagem), até ${r.itens.length} de ${nf(r.locais_total)} locais. Inclui arquivados e os que já passaram pela Câmara e esperam o Senado.`;
+    }
+    return `${cartoes}<h3 class="text-sm font-bold mt-6">${esc(titulo)}</h3><div class="mt-1">${corpo}</div><p class="text-[11px] text-slate-500 mt-2">${esc(leg)}</p>`;
+}
+async function consultar() {
+    const minha = ++CB.req, box = $('rResultado');
+    if (!CB.limites || !periodoValido()) { if (CB.limites) box.innerHTML = ''; return; }
+    if (!CB.termos.length) { box.innerHTML = '<p class="text-sm text-slate-500">Adicione ao menos um tema ou palavra-chave no passo 1 para ver o resultado.</p>'; $('rNotas').innerHTML = ''; return; }
+    box.setAttribute('aria-busy', 'true');
+    const q = new URLSearchParams({ lente: CB.lente, de: CB.de, ate: CB.ate });
+    CB.termos.forEach((t) => q.append('termo', t.chave));
+    let r;
+    try { r = await api('/api/autoria/analise?' + q); }
+    catch (e) { if (minha === CB.req) { box.innerHTML = `<p class="text-sm text-slate-500">Não foi possível montar a análise agora. ${esc(e.message || '')}</p>`; box.setAttribute('aria-busy', 'false'); } return; }
+    if (minha !== CB.req) return;
+    box.setAttribute('aria-busy', 'false');
+    box.innerHTML = (r.lacuna ? `<p class="mb-3 text-xs rounded-lg border border-amber-300 bg-amber-50 text-amber-900 dark:bg-amber-950/40 dark:text-amber-200 dark:border-amber-800 px-3 py-2" role="status">${esc(r.lacuna)}</p>` : '') + htmlResultado(r);
+    $('rNotas').innerHTML = r.notas.map((n) => `<li>${esc(n)}</li>`).join('')
+        + `<li>Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(r.fonte.url))}">${esc(r.fonte.nome)}</a>. Dados coletados em ${esc(fmtDataHora(r.gerado_em))}.</li>`;
+}
+const consultarSuave = debounce(consultar, 300);
+function aplicarAtalho(a) {
+    const L = CB.limites, fim = L.dados_ate;
+    let ini;
+    if (a === 'leg') { // legislaturas começam em fevereiro de 2015, 2019, 2023…; pega a atual e as duas anteriores
+        let y = Number(fim.slice(0, 4)), m = Number(fim.slice(5, 7));
+        let s = y - ((y - 2015) % 4);
+        if (s === y && m < 2) s -= 4;
+        ini = `${s - 8}-02`;
+    } else ini = mesTxt(mesNum(fim) - Number(a) * 12 + 1);
+    $('cDe').value = ini < L.dados_de ? L.dados_de : ini; $('cAte').value = fim;
+    consultar();
+}
+document.addEventListener('click', (ev) => {
+    const alvo = ev.target.closest && ev.target.closest('[data-tirar],[data-exemplo],[data-atalho],[data-lente],#cAdd');
+    if (!alvo) return;
+    if (alvo.dataset.tirar) { CB.termos = CB.termos.filter((t) => t.chave !== alvo.dataset.tirar); desenharPilulas(); consultar(); }
+    else if (alvo.dataset.exemplo) adicionarTermo(alvo.dataset.exemplo);
+    else if (alvo.dataset.atalho) aplicarAtalho(alvo.dataset.atalho);
+    else if (alvo.dataset.lente) { CB.lente = alvo.dataset.lente; desenharLentes(); consultar(); }
+    else if (alvo.id === 'cAdd') adicionarTermo($('cTermo').value);
+});
+document.addEventListener('keydown', (ev) => { if (ev.key === 'Enter' && ev.target.id === 'cTermo') { ev.preventDefault(); adicionarTermo(ev.target.value); } });
+document.addEventListener('input', (ev) => {
+    if (ev.target.id === 'cTermo' && ev.inputType === 'insertReplacementText') adicionarTermo(ev.target.value); // escolha no autocompletar
+    else if (ev.target.id === 'cDe' || ev.target.id === 'cAte') { if (periodoValido()) consultarSuave(); }
+});
+document.addEventListener('change', (ev) => { if (ev.target.id === 'cDe' || ev.target.id === 'cAte') consultar(); });
+
+async function iniciarConstrutor() {
+    if (!CB.limites) {
+        try { CB.limites = await api('/api/autoria/catalogo'); } catch (e) { return; }
+        CB.sugestoes = CB.limites.sugestoes;
+        $('cSugestoes').innerHTML = CB.sugestoes.map((s) => `<option value="${esc(s.nome)}"></option>`).join('');
+        $('cDe').min = CB.limites.dados_de; $('cDe').max = $('cAte').max = CB.limites.dados_ate;
+        $('cAte').value = CB.limites.dados_ate;
+        $('cDe').value = mesTxt(mesNum(CB.limites.dados_ate) - 10 * 12 + 1) < CB.limites.dados_de ? CB.limites.dados_de : mesTxt(mesNum(CB.limites.dados_ate) - 10 * 12 + 1);
+        desenharPilulas(); desenharLentes();
+    }
+    consultar();
+}
 function paramsPeriodo() {
     const iv = intervalo(), q = new URLSearchParams();
     if (iv.desde) q.set('desde', iv.desde);
@@ -965,7 +1045,7 @@ async function carregarAutoria() {
             ${a.geral.mais_criados ? `<br><span class="text-xs text-slate-600 dark:text-slate-400">Mais projetos criados: ${lider(a.geral.mais_criados, '', 'projetos')} · mais aprovados: ${lider(a.geral.mais_aprovados, 'nenhum no período', 'aprovados')}</span>` : ''}`;
         $('autoriaNotas').innerHTML = a.notas.map((n) => `<li>${esc(n)}</li>`).join('') +
             `<li>Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(a.fonte.url))}">${esc(a.fonte.nome)}</a>. Dados coletados em ${esc(fmtDataHora(a.gerado_em))}.</li>`;
-        iniciarMatriz(a.periodo.coletado_de.slice(0, 4), a.periodo.coletado_ate.slice(0, 4));
+        iniciarConstrutor();
         preencherIndicadores();
         if (POL.id) abrirPolitico(POL.id, POL.tema);
         else if ($('buscaPolitico').value.trim().length >= 2) buscarPolitico();
