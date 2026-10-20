@@ -318,30 +318,28 @@ function renderSegNorma() {
 }
 function blocoNorma(n) {
     const c = (P.normasContagem || {})[n.id];
-    return `<div class="pir-bloco">
-        <div class="pir-topo">${tagNorma(n.id)}<span class="pir-vira">vira ${esc(n.vira)}</span></div>
-        <p class="pir-curto">${esc(n.curto)}</p>
-        <dl class="pir-dl"><dt>O que é</dt><dd>${esc(n.o_que_e)}</dd><dt>Como se aprova</dt><dd>${esc(n.rigor)}</dd><dt>Exemplo</dt><dd>${esc(n.exemplo)}</dd></dl>
-        <button type="button" data-norma="${esc(n.id)}" class="pir-filtro" ${c === 0 ? 'disabled' : ''}>${c == null ? 'Ver só este tipo' : c === 0 ? 'Nenhum no período' : `Ver só este tipo (${c})`}</button></div>`;
+    const nivel = { 1: 'nível 1 · topo', 2: 'nível 2', 3: 'nível 3' }[n.degrau] || '';
+    return `<li class="pir-card pir-card--${esc(n.id)}">
+        <p class="pir-num"><b aria-label="Tipo ${n.ordem}">${n.ordem}</b><span>${esc(nivel)}</span></p>
+        <p class="pir-topo">${tagNorma(n.id)}</p>
+        <h3 class="pir-curto">${esc(n.curto)}</h3>
+        <p class="pir-vira">vira ${esc(n.vira)}</p>
+        <dl class="pir-dl"><dt>Como se aprova</dt><dd>${esc(n.rigor)}</dd></dl>
+        <details class="pir-mais"><summary>O que é e exemplo</summary>
+            <dl class="pir-dl"><dt>O que é</dt><dd>${esc(n.o_que_e)}</dd><dt>Exemplo</dt><dd>${esc(n.exemplo)}</dd></dl></details>
+        <button type="button" data-norma="${esc(n.id)}" class="pir-filtro" ${c === 0 ? 'disabled' : ''}>${c == null ? 'Ver só este tipo' : c === 0 ? 'Nenhum no período' : `Ver só este (${c})`}</button></li>`;
 }
 function renderPiramide() {
     const s = $('hierarquia'), c = P.normas;
     if (!c) { s.classList.add('hidden'); return; }
     s.classList.remove('hidden');
-    const n = (id) => normaInfo(id), adm = c.administrativos;
+    const adm = c.administrativos;
     s.innerHTML = `<h2 id="tHierarquia" class="text-lg font-bold"><i class="fa-solid fa-layer-group mr-2 text-brand-600" aria-hidden="true"></i>Qual é o peso de cada norma?</h2>
-        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1" style="max-width:75ch">É a pirâmide de Kelsen: quanto mais alto, mais difícil de aprovar e mais forte a norma. Se duas normas se contradizem, vale a de cima.
-            Serve para não confundir uma regra geral com uma mudança na Constituição, nem uma lei com um ato administrativo. A etiqueta de cada ato abaixo mostra o degrau dele.</p>
-        <div class="pir">
-            <div class="pir-degrau pir-degrau--1"><p class="pir-nivel">Degrau 1 · topo</p>${blocoNorma(n('constitucional'))}</div>
-            <div class="pir-degrau pir-degrau--2"><p class="pir-nivel">Degrau 2</p>${blocoNorma(n('complementar'))}</div>
-            <div class="pir-degrau pir-degrau--3"><p class="pir-mesmo">Degrau 3 · mesmo nível, assuntos e ritos diferentes: nenhuma manda na outra</p>
-                <div class="pir-trio">${blocoNorma(n('ordinaria'))}${blocoNorma(n('medida_provisoria'))}${blocoNorma(n('ato_congresso'))}</div></div>
-            <div class="pir-degrau pir-degrau--4"><p class="pir-nivel">Abaixo da lei · não são proposições do Congresso</p>
-                <div class="pir-topo"><span class="norma-tag">${esc(adm.rotulo)}</span><span class="pir-vira">${esc(adm.nome)}</span></div>
-                <dl class="pir-dl"><dt>O que é</dt><dd>${esc(adm.o_que_e)}</dd><dt>Limite</dt><dd>${esc(adm.limite)}</dd></dl></div>
-        </div>
-        <p class="pir-seta"><span>↑ mais rigor para aprovar e mais força</span><span>↓ mais fácil de mudar</span></p>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1" style="max-width:80ch">É a pirâmide de Kelsen, do tipo mais difícil de aprovar (1) ao mais simples (5). Se duas normas de níveis diferentes se contradizem, vale a de nível mais alto.
+            Lei ordinária, medida provisória e ato do Congresso ficam no mesmo nível 3: têm assuntos e ritos diferentes, mas nenhuma manda na outra.
+            Serve para não confundir uma regra geral com uma mudança na Constituição, nem uma lei com um ato administrativo. A etiqueta de cada ato mostra o tipo dele.</p>
+        <ol class="pir">${c.hierarquia.map(blocoNorma).join('')}</ol>
+        <p class="pir-adm"><span class="norma-tag">${esc(adm.rotulo)}</span><span><b>Abaixo da lei, e não é proposição do Congresso:</b> ${esc(adm.nome)}. ${esc(adm.o_que_e)} ${esc(adm.limite)}</span></p>
         <p class="mt-3 text-[11px] text-slate-500">${esc(c.nota)} Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(c.fonte.url))}">${esc(c.fonte.nome)}</a>.
             O coletor ainda não traz decretos legislativos e resoluções, então esse tipo pode aparecer zerado.</p>`;
 }
