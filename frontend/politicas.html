@@ -185,19 +185,32 @@
     <!-- Busca de projetos de lei por tema: tipo de norma, efeito aparente do texto e situação -->
     <section id="buscaProj" class="mt-5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 sm:p-5" aria-labelledby="tBuscaProj">
         <h2 id="tBuscaProj" class="text-lg font-bold"><i class="fa-solid fa-magnifying-glass-chart mr-2 text-brand-600" aria-hidden="true"></i>Buscar projetos por tema</h2>
-        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Pesquise uma palavra da ementa oficial (ex.: aborto, armas, isenção, dedução) entre os projetos da Câmara dos Deputados no período escolhido acima e veja como eles se distribuem.</p>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Pesquise uma palavra da ementa oficial (ex.: aborto, armas, isenção, dedução) entre os projetos da Câmara dos Deputados e veja como a pauta mudou ao longo dos anos.</p>
         <form id="formProj" class="mt-3 flex gap-2" role="search">
             <label for="qProj" class="sr-only">Palavra-chave</label>
             <input id="qProj" type="search" maxlength="80" autocomplete="off" placeholder="Palavra-chave da ementa: aborto, armas, isenção…"
                    class="flex-1 min-w-0 px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
             <button type="submit" class="px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold">Buscar</button>
         </form>
+        <div class="mt-3 text-xs">
+            <p class="font-bold mb-1">Período (por ano de apresentação)</p>
+            <div id="fPeriodo" class="flex flex-wrap gap-1" role="group" aria-label="Atalhos de período"></div>
+            <div class="mt-2 flex flex-wrap items-center gap-2">
+                <label for="anoDe">De</label><select id="anoDe" class="px-2 py-1 border border-slate-300 dark:border-slate-600 bg-transparent"></select>
+                <label for="anoAte">até</label><select id="anoAte" class="px-2 py-1 border border-slate-300 dark:border-slate-600 bg-transparent"></select>
+                <span id="notaPeriodo" class="text-slate-500"></span></div>
+        </div>
         <div class="mt-3 grid gap-3 sm:grid-cols-3 text-xs">
             <div><p class="font-bold mb-1">Tipo de norma</p><div id="fTipo" class="flex flex-wrap gap-1" role="radiogroup" aria-label="Tipo de norma"></div></div>
             <div><p class="font-bold mb-1">Efeito aparente do texto</p><div id="fEfeito" class="flex flex-wrap gap-1" role="radiogroup" aria-label="Efeito aparente do texto"></div></div>
             <div><p class="font-bold mb-1">Situação</p><div id="fSit" class="flex flex-wrap gap-1" role="radiogroup" aria-label="Situação"></div></div>
         </div>
         <div id="termoProj" class="mt-4" aria-live="polite"></div>
+        <div id="curvaProj" class="hidden mt-4">
+            <h3 class="font-bold">A curva da pauta: projetos apresentados por ano</h3>
+            <div class="mt-2" style="height:300px"><canvas id="graficoSerie" role="img" aria-label="Projetos apresentados por ano, divididos pelo efeito aparente do texto"></canvas></div>
+            <div id="perfilProj" class="mt-3"></div>
+        </div>
         <ul id="listaProj" class="mt-3 space-y-3 list-none p-0"></ul>
         <div class="text-center mt-3"><button id="maisProj" type="button" class="hidden px-4 py-2 border border-slate-300 dark:border-slate-600 text-sm font-semibold">Ver mais projetos</button></div>
         <ul class="mt-4 text-[11px] text-slate-500 list-disc pl-5 space-y-1">
@@ -999,7 +1012,10 @@ document.getElementById('btnTema')?.addEventListener('click', () => setTimeout((
 /* ====================================================================== *
  *  Busca de projetos por tema
  * ====================================================================== */
-const BP = { q: '', tipo: '', efeito: '', efet: '', desloc: 0, req: 0 };
+const ANO_ATUAL = new Date().getFullYear();
+const BP = { q: '', tipo: '', efeito: '', efet: '', desloc: 0, req: 0, anoDe: ANO_ATUAL - 10, anoAte: ANO_ATUAL, anoMin: 2015 };
+// Legislaturas (aqui por ano de apresentação)
+const LEGISLATURAS = [['57ª', 2023, 2026], ['56ª', 2019, 2022], ['55ª', 2015, 2018], ['54ª', 2011, 2014]];
 const OPC_TIPO = [['', 'Todos'], ['PEC', 'PEC · Constituição'], ['PLP', 'PLP · Lei complementar'], ['PL', 'PL · Lei ordinária']];
 const OPC_EFEITO = [['', 'Todos'], ['restringe', 'Restringe ou pune mais'], ['amplia', 'Amplia permissões ou direitos'], ['procedimental', 'Procedimental'], ['indefinido', 'Não classificado']];
 const OPC_SIT = [['', 'Todas'], ['aprovado', 'Aprovado'], ['em_tramitacao', 'Em tramitação'], ['arquivado', 'Arquivado']];
@@ -1007,6 +1023,44 @@ const ROT_TIPO = { PEC: 'PEC · altera a Constituição', PLP: 'PLP · lei compl
 const ROT_SIT = { aprovado: 'Aprovado', em_tramitacao: 'Em tramitação', arquivado: 'Arquivado' };
 const COR_EFEITO = { restringe: '#A92823', amplia: '#0d9488', procedimental: '#64748b', indefinido: '#cbd5e1' };
 let rotulosEfeito = {};
+let graficoSerie = null;
+
+function desenharPeriodo() {
+    const atalho = (rot, de, ate) => {
+        const ativo = BP.anoDe === de && BP.anoAte === ate, fora = de < BP.anoMin;
+        return `<button type="button" data-pper="${de}-${ate}" ${fora ? 'disabled' : ''} title="${fora ? 'Ainda não coletamos anos anteriores a ' + BP.anoMin : ''}"
+            style="${ativo ? 'background:var(--fg) !important;color:var(--papel) !important;' : ''}${fora ? 'opacity:.4;' : ''}" class="px-2.5 py-1 border text-xs font-semibold border-slate-300 dark:border-slate-600">${esc(rot)}</button>`;
+    };
+    $('fPeriodo').innerHTML = atalho(`Últimos 10 anos (${ANO_ATUAL - 10}–${ANO_ATUAL})`, ANO_ATUAL - 10, ANO_ATUAL)
+        + atalho(`Tudo que coletamos (${BP.anoMin}–${ANO_ATUAL})`, BP.anoMin, ANO_ATUAL)
+        + LEGISLATURAS.map(([n, de, ate]) => atalho(`${n} legislatura (${de}–${ate})`, de, ate)).join('');
+    const anos = []; for (let a = ANO_ATUAL; a >= BP.anoMin; a--) anos.push(a);
+    const opt = (v) => anos.map((a) => `<option ${a === v ? 'selected' : ''}>${a}</option>`).join('');
+    $('anoDe').innerHTML = opt(BP.anoDe); $('anoAte').innerHTML = opt(BP.anoAte);
+    $('notaPeriodo').textContent = BP.anoAte >= ANO_ATUAL ? `${ANO_ATUAL} está incompleto (ano em curso).` : '';
+}
+
+const COR_SERIE = [['restringe', 'Restringe ou pune mais'], ['amplia', 'Amplia permissões ou direitos'], ['procedimental', 'Procedimental ou de organização'], ['indefinido', 'Não classificado']];
+function desenharSerie(r) {
+    const cor = document.documentElement.classList.contains('dark') ? '#cbd5e1' : '#475569';
+    graficoSerie?.destroy();
+    graficoSerie = new Chart($('graficoSerie'), {
+        type: 'bar',
+        data: { labels: r.serie_anual.map((x) => x.ano), datasets: COR_SERIE.map(([k, rot]) => ({ label: rot, data: r.serie_anual.map((x) => x[k]), backgroundColor: COR_EFEITO[k], stack: 'a' })) },
+        options: { responsive: true, maintainAspectRatio: false, animation: false,
+            plugins: { legend: { labels: { color: cor } }, tooltip: { mode: 'index', callbacks: { footer: (it) => 'Total: ' + nf(it.reduce((a, x) => a + x.parsed.y, 0)) } } },
+            scales: { x: { stacked: true, ticks: { color: cor } }, y: { stacked: true, beginAtZero: true, ticks: { color: cor, precision: 0 }, title: { display: true, text: 'Projetos apresentados', color: cor } } } },
+    });
+    const pf = r.perfil;
+    if (!pf) { $('perfilProj').innerHTML = '<p class="text-xs text-slate-500">Escolha um período de 4 anos ou mais para ver a comparação entre o início e o fim.</p>'; return; }
+    const rot = (k) => (k ? (r.rotulos_efeito[k] || k).toLowerCase() : 'sem projetos classificados');
+    const bloco = (t) => `<b>${t.anos[0] === t.anos[1] ? t.anos[0] : `${t.anos[0]}–${t.anos[1]}`}</b>: ${nf(t.total)} projetos${t.dominante ? `; entre os classificados (${nf(t.classificados)}), ${t.pct_dominante}% ${esc(rot(t.dominante))}` : ''}`;
+    const v = pf.variacao_volume_pct;
+    $('perfilProj').innerHTML = `<div class="border border-slate-300 dark:border-slate-600 p-3 text-sm"><p class="text-xs font-extrabold uppercase tracking-wide">Mudança de perfil</p>
+        <p class="mt-1">Volume: ${v == null ? 'sem base de comparação' : `<b>${v > 0 ? '+' : v < 0 ? '−' : ''}${nf(Math.abs(v))}%</b> de projetos no fim do período em relação ao início`}${pf.ano_parcial ? ' (o ano em curso está incompleto, então a variação real tende a ser maior)' : ''}.</p>
+        <p class="mt-1">Início: ${bloco(pf.inicio)}.</p><p class="mt-1">Recente: ${bloco(pf.fim)}.</p>
+        <p class="mt-1 text-[11px] text-slate-500">Compara os primeiros e os últimos anos do período escolhido. A classificação é automática, só por palavras da ementa, e uma parte dos projetos fica sem classificação.</p></div>`;
+}
 
 function desenharFiltrosProj() {
     const grupo = (id, opcoes, chave) => {
@@ -1037,7 +1091,7 @@ function cartaProjeto(x) {
 async function buscarProjetos(acrescentar = false) {
     const minha = ++BP.req;
     if (!acrescentar) BP.desloc = 0;
-    const p = paramsPeriodo();
+    const p = new URLSearchParams({ ano_de: BP.anoDe, ano_ate: BP.anoAte });
     if (BP.q) p.set('q', BP.q);
     if (BP.tipo) p.set('tipo', BP.tipo);
     if (BP.efeito) p.set('efeito', BP.efeito);
@@ -1047,7 +1101,10 @@ async function buscarProjetos(acrescentar = false) {
         const r = await api('/api/autoria/projetos?' + p);
         if (minha !== BP.req) return;
         rotulosEfeito = r.rotulos_efeito;
+        if (r.anos_disponiveis && r.anos_disponiveis[0] !== BP.anoMin) { BP.anoMin = r.anos_disponiveis[0]; BP.anoDe = Math.max(BP.anoDe, BP.anoMin); desenharPeriodo(); }
         if (!acrescentar) {
+            $('curvaProj').classList.toggle('hidden', !r.total_busca);
+            if (r.total_busca) desenharSerie(r);
             const tot = r.total_busca;
             const efeitos = Object.keys(r.rotulos_efeito).map((k) => ({ k, rot: r.rotulos_efeito[k], n: r.por_efeito[k] || 0 }));
             const efs = [['aprovado', 'Aprovados'], ['em_tramitacao', 'Em tramitação'], ['arquivado', 'Arquivados']].map(([k, rot]) => ({ k, rot, n: r.por_efetividade[k] || 0 }));
@@ -1063,7 +1120,17 @@ async function buscarProjetos(acrescentar = false) {
         $('maisProj').classList.toggle('hidden', BP.desloc >= r.total_filtrado);
     } catch (e) { if (minha === BP.req) $('termoProj').innerHTML = mensagemErro(e); }
 }
-desenharFiltrosProj();
+desenharFiltrosProj(); desenharPeriodo();
+document.addEventListener('click', (ev) => {
+    const b = ev.target.closest && ev.target.closest('[data-pper]');
+    if (!b) return;
+    [BP.anoDe, BP.anoAte] = b.dataset.pper.split('-').map(Number); desenharPeriodo(); buscarProjetos();
+});
+['anoDe', 'anoAte'].forEach((id) => $(id).addEventListener('change', () => {
+    BP.anoDe = Number($('anoDe').value); BP.anoAte = Number($('anoAte').value);
+    if (BP.anoDe > BP.anoAte) [BP.anoDe, BP.anoAte] = [BP.anoAte, BP.anoDe];
+    desenharPeriodo(); buscarProjetos();
+}));
 $('formProj').addEventListener('submit', (ev) => { ev.preventDefault(); BP.q = $('qProj').value.trim(); buscarProjetos(); });
 $('maisProj').addEventListener('click', () => buscarProjetos(true));
 document.addEventListener('click', (ev) => {
