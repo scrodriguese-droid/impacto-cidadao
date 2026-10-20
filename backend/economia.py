@@ -423,6 +423,40 @@ def _capacidade_uniao() -> dict:
     }
 
 
+def _fluxo_federal(a6: list[dict], ano: int, bim: int) -> dict | None:
+    """Receita e despesa primárias do Governo Federal, como o RREO (Anexo 06) as declara até o bimestre: a receita
+    REALIZADA e a despesa PAGA (as pagas no ano mais os restos a pagar pagos). Receita − despesa + o ajuste
+    metodológico dá o resultado primário oficial que aparece nos déficits; os juros líquidos da dívida (nominal −
+    primário) fecham a conta. Tudo da mesma fonte, sem misturar com o Banco Central."""
+    receita = _valor(a6, "RREO6TotalReceitaPrimaria", "RECEITAS REALIZADAS")
+    paga = _valor(a6, "RREO6TotalDespesaPrimaria", "DESPESAS PAGAS")
+    if receita is None or paga is None:
+        return None
+    restos = (_valor(a6, "RREO6TotalDespesaPrimaria", "RESTOS A PAGAR PROCESSADOS PAGOS") or 0) + (_valor(a6, "RREO6TotalDespesaPrimaria", "PAGOS") or 0)
+    ajuste = _valor(a6, "RREO6AjusteMetodologicoDoResultadoPrimarioAcimaDaLinha", "VALOR")
+    return {"receita_primaria": round(float(receita), 2), "despesa_primaria_paga": round(float(paga) + float(restos), 2),
+            "ajuste_metodologico": round(float(ajuste), 2) if ajuste is not None else None,
+            "periodo": f"acumulado até o {bim}º bimestre de {ano}"}
+
+
+def _estoque_federal(a6: list[dict], ano: int, bim: int) -> dict | None:
+    """Dívida consolidada (bruta) e dívida consolidada líquida do Governo Federal, como o próprio ente declara no RREO
+    (Anexo 06, posição até o bimestre). É a visão "Governo Federal" do estoque, separada das séries do Banco Central
+    (setor público consolidado). A líquida desconta disponibilidades de caixa e haveres financeiros."""
+    bruta = _valor(a6, "DividaConsolidada", "Até o Bimestre")
+    liquida = _valor(a6, "DividaConsolidadaLiquida", "Até o Bimestre")
+    if bruta is None and liquida is None:
+        return None
+    itens = []
+    if bruta is not None:
+        itens.append({"id": "bruta", "nome": "Dívida consolidada (bruta)", "valor_rs": float(bruta)})
+    if liquida is not None:
+        itens.append({"id": "liquida", "nome": "Dívida consolidada líquida", "valor_rs": float(liquida),
+                      "nota": "A bruta menos o dinheiro em caixa e os haveres financeiros do governo."})
+    return {"itens": itens, "periodo": f"posição até o {bim}º bimestre de {ano}",
+            "fonte": {"nome": "SICONFI / Tesouro Nacional (RREO, Anexo 06)", "url": "https://siconfi.tesouro.gov.br/"}}
+
+
 def _situacao_subnacional(ente: int, a1: list[dict], a6: list[dict], deficits: dict, pessoal: dict | None, instituicao: str | None) -> dict:
     prim, nom = deficits["primario"]["valor"], deficits["nominal"]["valor"]
     itens_fluxo = [
@@ -575,6 +609,8 @@ def painel_economia(ente: int) -> dict | None:
             "educacao": funcoes.get("Educação"),
         },
         "deficits": deficits,
+        "fluxo_federal": _fluxo_federal(a6, ano, bim) if esfera == "uniao" else None,
+        "estoque_federal": _estoque_federal(a6, ano, bim) if esfera == "uniao" else None,
         "nivel2": {"receitas": _receitas(a1, a3, esfera), "despesas": despesas},
         "nivel3": {"execucao": _execucao(a1)},
         "fonte": "SICONFI / Tesouro Nacional (RREO e RGF declarados pelos próprios entes)",
