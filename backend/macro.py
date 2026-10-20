@@ -695,14 +695,21 @@ def classificar_social_historico(desde: str = "2013-01") -> list[dict]:
     return saida
 
 
-# Marcos institucionais para dar contexto ao gráfico de longo prazo. São datas de normas publicadas: o gráfico NÃO afirma
-# que uma norma causou uma mudança na dívida.
+# Marcos institucionais para dar contexto à linha do tempo. São datas de normas publicadas: o gráfico NÃO afirma que uma
+# norma causou uma mudança na dívida. `rotulo` é o nome curto que vai direto no gráfico; `norma`, a sigla de quem quer
+# conferir; `o_que_e`, o que o texto da norma diz, sem juízo de valor.
 MARCOS = [
-    {"mes": "2016-12", "data": "15/12/2016", "titulo": "Emenda Constitucional 95: teto de gastos",
+    {"mes": "2016-12", "data": "15/12/2016", "rotulo": "Teto de gastos", "norma": "Emenda Constitucional 95",
+     "titulo": "Emenda Constitucional 95: teto de gastos",
+     "o_que_e": "Limitou, por 20 anos, o crescimento da despesa primária federal à inflação do ano anterior.",
      "url": "https://www.planalto.gov.br/ccivil_03/constituicao/emendas/emc/emc95.htm"},
-    {"mes": "2020-03", "data": "20/03/2020", "titulo": "Estado de calamidade pública reconhecido pelo Congresso na pandemia (Decreto Legislativo 6/2020)",
+    {"mes": "2020-03", "data": "20/03/2020", "rotulo": "Pandemia", "norma": "Decreto Legislativo 6/2020",
+     "titulo": "Estado de calamidade pública reconhecido pelo Congresso na pandemia (Decreto Legislativo 6/2020)",
+     "o_que_e": "O Congresso reconheceu o estado de calamidade pública da covid-19, o que dispensou a União de cumprir a meta de resultado fiscal de 2020.",
      "url": "https://www.planalto.gov.br/ccivil_03/portaria/dlg6-2020.htm"},
-    {"mes": "2023-08", "data": "30/08/2023", "titulo": "Lei Complementar 200: novo arcabouço fiscal",
+    {"mes": "2023-08", "data": "30/08/2023", "rotulo": "Novo arcabouço fiscal", "norma": "Lei Complementar 200",
+     "titulo": "Lei Complementar 200: novo arcabouço fiscal",
+     "o_que_e": "Trocou o teto de gastos por metas de resultado primário e por um limite para o gasto crescer: 70% do avanço da receita, numa faixa de 0,6% a 2,5% acima da inflação.",
      "url": "https://www.planalto.gov.br/ccivil_03/leis/lcp/lcp200.htm"},
 ]
 _MESES_ABREV = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"]
