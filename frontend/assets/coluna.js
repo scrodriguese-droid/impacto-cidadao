@@ -21,7 +21,7 @@
         background: var(--fg) !important; color: var(--papel) !important; border: 0 !important; font: 800 .7rem/1 var(--fonte-texto); letter-spacing: .14em; text-transform: uppercase; cursor: pointer; }
     body button.col-aba * { color: inherit !important; }
     .col-aba span { background: var(--vermelho, #A92823); color: #fff; padding: .1rem .3rem; margin-bottom: .4rem; display: inline-block; transform: rotate(90deg); }
-    .col-painel { position: fixed; top: 0; right: 0; bottom: 0; z-index: 66; width: min(100vw, 24rem); overflow-y: auto; padding: 1rem;
+    .col-painel { position: fixed; top: 0; right: 0; bottom: 0; z-index: 66; width: min(100vw, 24rem); overflow-y: auto; padding: 1rem 1rem 6rem; /* folga embaixo: a barra de post-its do editor fica por cima */
         background: var(--papel) !important; color: var(--fg) !important; border-left: 2px solid var(--fg); box-shadow: -6px 0 24px rgba(0,0,0,.25); }
     .col-painel[hidden] { display: none; }
     .col-painel .col-titulo { font: 400 1.9rem/.95 var(--fonte-titulo); text-transform: uppercase; margin: 1.4rem 0 .3rem; }
