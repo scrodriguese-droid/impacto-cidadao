@@ -311,12 +311,17 @@ def buscar_projetos(q: str | None, tipo: str | None, efeito: str | None, efetivi
         if tipo and sigla != tipo:
             continue
         if termos:
-            texto = _sem_acento(p["ementa"])
+            if "_t" not in p:  # ementa sem acento, calculada uma vez por projeto
+                p["_t"] = _sem_acento(p["ementa"])
+            texto = p["_t"]
             if not all(t in texto for t in termos):
                 continue
         base.append((p, sigla))
     # termômetro: sobre tudo o que casou com busca, tipo e período (não muda com os filtros de efeito/situação)
-    marcados = [(p, s, efeito_da_ementa(p["ementa"]), _efetividade(d, p)) for p, s in base]
+    for p, _ in base:  # a classificação por palavras é cara: calcula uma vez por projeto e guarda em memória
+        if "_ef" not in p:
+            p["_ef"] = efeito_da_ementa(p["ementa"])
+    marcados = [(p, s, p["_ef"], _efetividade(d, p)) for p, s in base]
     cont_tipo, cont_efeito, cont_efet = Counter(), Counter(), Counter()
     for _, s, e, f in marcados:
         cont_tipo[s] += 1
