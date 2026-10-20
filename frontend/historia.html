@@ -56,7 +56,16 @@
         </ul>
     </details>
 
-    <section class="mt-5" aria-labelledby="tLista">
+    <section class="mt-5" aria-labelledby="tGrafico">
+        <h2 id="tGrafico" class="text-lg font-bold"><i class="fa-solid fa-chart-line mr-2 text-brand-600" aria-hidden="true"></i>Executivo e Congresso no tempo</h2>
+        <p class="text-xs text-slate-500 mt-1">Cada linha é uma posição na escala esquerda–direita. Em cada uma, o bloco de cima é o <b>Executivo</b> e o de baixo é a <b>maioria do Congresso</b>: quando os dois estão na mesma linha, estavam alinhados. Clique em um bloco do Executivo para ir ao cartão do governo.</p>
+        <div class="mt-3 overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-2 sm:p-3">
+            <div id="grafico" class="min-w-[720px]"></div></div>
+        <p class="mt-2 text-[11px] text-slate-500">A linha “Esquerda” está vazia porque nenhum governo nem maioria do Congresso foi classificado assim; o ponto mais à esquerda usado é o centro-esquerda. A linha “Fora da escala” reúne os períodos em que esquerda e direita não descrevem a política (oligarquias, Vargas, interinos) e os anos sem Congresso.</p>
+        <div id="resumoAlinha" class="mt-3"></div>
+    </section>
+
+    <section class="mt-8" aria-labelledby="tLista">
         <h2 id="tLista" class="text-lg font-bold"><i class="fa-solid fa-timeline mr-2 text-brand-600" aria-hidden="true"></i>Quem governou e a maioria do Congresso</h2>
         <div id="chipsFase" class="mt-3 flex flex-wrap gap-1.5" role="group" aria-label="Filtrar por período histórico"></div>
         <div id="legenda" class="mt-3 flex flex-wrap gap-x-3 gap-y-1.5 text-[11px]"></div>
@@ -109,7 +118,7 @@ function cartao(p) {
     const frase = dom && al !== 'na'
         ? `Executivo de ${D.eixos[p.eixo].toLowerCase()} e maioria do Congresso de ${D.eixos[dom.eixo].toLowerCase()}.`
         : 'A comparação não se aplica: pelo menos um dos lados não cabe na escala esquerda–direita ou o Congresso não funcionava.';
-    return `<article class="relative">
+    return `<article class="relative" id="gov-${esc(p.id)}">
         <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 sm:p-5 text-left">
             <div class="flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
                 <span class="text-xs font-bold text-brand-700 dark:text-brand-400">${esc(fmt(p.ini))} a ${esc(fmt(p.fim))}</span>
@@ -165,12 +174,83 @@ document.addEventListener('click', (ev) => {
     if (b) { H.fase = b.dataset.fase; desenharChips(); desenharLista(); }
 });
 
+
+/* ---------- gráfico: Executivo × Congresso na escala esquerda–direita ---------- */
+const COR = { E: '#6d28d9', CE: '#c4b5fd', C: '#cbd5e1', CD: '#99f6e4', D: '#0f766e' };
+const LINHAS = ['D', 'CD', 'C', 'CE', 'E', 'FORA'];
+function desenharGrafico() {
+    const D = H.dados, W = 1000, ML = 118, MR = 12, MT = 34, LH = 56, PW = W - ML - MR, H_ = MT + LH * LINHAS.length + 26;
+    const t0 = dt(D.presidentes[0].ini), t1 = Date.now(), X = (t) => ML + (Math.min(Math.max(t, t0), t1) - t0) / (t1 - t0) * PW;
+    const linha = (e) => { const i = LINHAS.indexOf(e in POS ? e : 'FORA'); return i; };
+    let svg = `<svg viewBox="0 0 ${W} ${H_}" class="w-full h-auto" role="img" aria-label="Orientação do Executivo e da maioria do Congresso ao longo do tempo, de 1889 a hoje" font-family="Inter, system-ui, sans-serif">
+        <defs><pattern id="hach" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="#f1f5f9"/><rect width="3" height="6" fill="#cbd5e1"/></pattern></defs>`;
+    // faixas das eras
+    D.fases.forEach((f, i) => {
+        const ps = D.presidentes.filter((p) => p.fase === f.id);
+        const a = X(dt(ps[0].ini)), b = X(fim(ps[ps.length - 1]));
+        svg += `<rect x="${a}" y="${MT - 22}" width="${b - a}" height="${LH * LINHAS.length + 22}" fill="${i % 2 ? '#94a3b8' : '#64748b'}" opacity="${i % 2 ? .07 : .12}"/>
+            <text x="${(a + b) / 2}" y="${MT - 8}" text-anchor="middle" font-size="10" font-weight="700" fill="currentColor" opacity=".75">${esc(f.nome.replace('Ditadura militar', 'Ditadura'))}</text>`;
+    });
+    // linhas da escala
+    LINHAS.forEach((k, i) => {
+        const y = MT + i * LH;
+        svg += `<line x1="${ML}" x2="${W - MR}" y1="${y}" y2="${y}" stroke="currentColor" opacity=".15"/>
+            <text x="${ML - 8}" y="${y + LH / 2 + 3}" text-anchor="end" font-size="11" font-weight="600" fill="currentColor">${esc(k === 'FORA' ? 'Fora da escala' : D.eixos[k])}</text>`;
+    });
+    svg += `<line x1="${ML}" x2="${W - MR}" y1="${MT + LH * LINHAS.length}" y2="${MT + LH * LINHAS.length}" stroke="currentColor" opacity=".15"/>`;
+    // anos
+    [1889, 1900, 1930, 1946, 1964, 1985, 2000, 2026].forEach((a) => {
+        const x = X(Date.UTC(a, 0, 1));
+        svg += `<line x1="${x}" x2="${x}" y1="${MT + LH * LINHAS.length}" y2="${MT + LH * LINHAS.length + 4}" stroke="currentColor" opacity=".4"/>
+            <text x="${x}" y="${H_ - 8}" text-anchor="${a === 2026 ? 'end' : a === 1889 ? 'start' : 'middle'}" font-size="10" fill="currentColor" opacity=".7">${a}</text>`;
+    });
+    const bloco = (x, eixo, faixaTopo, titulo, extra) => {
+        const a = X(dt(x.ini)), b = X(fim(x)), i = linha(eixo), y = MT + i * LH + faixaTopo;
+        const fill = eixo in COR ? COR[eixo] : eixo === 'FORA' ? 'url(#hach)' : '#fff';
+        return `<rect ${extra} x="${a}" y="${y}" width="${Math.max(b - a - .6, 1.5)}" height="20" rx="2" fill="${fill}" stroke="#334155" stroke-width=".7"><title>${esc(titulo)}</title></rect>`;
+    };
+    D.parlamento.forEach((x) => {
+        svg += bloco(x, x.eixo === 'SEM' ? 'FORA' : x.eixo, 30, `Congresso · ${x.nome} (${anos(x)}): ${D.eixos[x.eixo]}`, '');
+    });
+    D.presidentes.forEach((p) => {
+        svg += bloco(p, p.eixo, 6, `${p.nome} (${anos(p)}): ${D.eixos[p.eixo]}`, `data-gov="${esc(p.id)}" style="cursor:pointer"`);
+    });
+    svg += '</svg>';
+    $('grafico').innerHTML = svg;
+    $('grafico').onclick = (ev) => {
+        const r = ev.target.closest('[data-gov]');
+        if (!r) return;
+        const p = D.presidentes.find((x) => x.id === r.dataset.gov);
+        H.fase = p.fase; desenharChips(); desenharLista();
+        const a = $('gov-' + p.id);
+        if (a) { a.scrollIntoView({ behavior: 'smooth', block: 'center' }); a.firstElementChild.style.boxShadow = '0 0 0 3px #A92823'; setTimeout(() => { a.firstElementChild.style.boxShadow = ''; }, 1800); }
+    };
+    resumoAlinhamento();
+}
+
+// Quanto do tempo (só onde a escala se aplica aos dois lados) os dois estiveram alinhados, a um passo ou em tensão.
+function resumoAlinhamento() {
+    const D = H.dados, ms = { alinhado: 0, parcial: 0, tensao: 0 };
+    D.presidentes.forEach((p) => D.parlamento.forEach((x) => {
+        const o = sobreposicao(p, x), al = alinhamento(p.eixo, x.eixo);
+        if (o > 0 && al !== 'na') ms[al] += o;
+    }));
+    const tot = ms.alinhado + ms.parcial + ms.tensao;
+    const anosDe = (m) => Math.round(m / 31557600000);
+    const itens = [['alinhado', 'bg-emerald-500'], ['parcial', 'bg-amber-400'], ['tensao', 'bg-rose-500']];
+    $('resumoAlinha').innerHTML = `<p class="text-xs font-semibold">Tempo em que os dois estiveram… <span class="font-normal text-slate-500">(só os ${anosDe(tot)} anos em que os dois lados cabem na escala; a classificação é editorial)</span></p>
+        <div class="mt-1.5 flex h-5 rounded-lg overflow-hidden" role="img" aria-label="Divisão do tempo entre alinhado, parcialmente alinhado e em tensão">
+            ${itens.map(([k, c]) => `<div class="${c}" style="width:${100 * ms[k] / tot}%" title="${esc(ALINHA[k][0])}: ${anosDe(ms[k])} anos"></div>`).join('')}</div>
+        <div class="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-[11px]">
+            ${itens.map(([k, c]) => `<span class="inline-flex items-center gap-1.5"><span class="inline-block w-3 h-3 rounded ${c}"></span>${esc(ALINHA[k][0])}: ${Math.round(100 * ms[k] / tot)}% (${anosDe(ms[k])} anos)</span>`).join('')}</div>`;
+}
+
 (async () => {
     try {
         const r = await fetch('assets/historia.json');
         if (!r.ok) throw new Error('HTTP ' + r.status);
         H.dados = await r.json();
-        desenharChips(); desenharLista();
+        desenharChips(); desenharLista(); desenharGrafico();
         $('legenda').innerHTML = ORDEM.map((k) => `<span class="inline-flex items-center gap-1.5"><span class="eixo-${k} inline-block w-4 h-4 rounded"></span>${esc(H.dados.eixos[k])}</span>`).join('');
         $('fontes').innerHTML = H.dados.fontes.map((f) => `<li><a class="sem-sublinhado font-semibold text-brand-700 dark:text-brand-400 hover:underline" target="_blank" rel="noopener" href="${esc(urlSegura(f.url))}">${esc(f.nome)}</a></li>`).join('');
     } catch (e) {
