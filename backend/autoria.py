@@ -450,3 +450,157 @@ def buscar_projetos(q: str | None, tipo: str | None, efeito: str | None, efetivi
         } for p, s, e, f in pagina],
         **_aviso(d),
     }
+
+
+# --------------------------------------------------------------------------- #
+# Matriz de cruzamento: tema base (eixo X) × partido, parlamentar ou onde pararam (eixo Y)
+# --------------------------------------------------------------------------- #
+MAX_ANOS = 20
+MAX_COLUNAS = 6
+LINHAS_MATRIZ = 20
+
+# Assuntos que a Câmara não tem como tema oficial: busca por palavras na ementa (texto sem acento). Declarado na tela.
+ASSUNTOS: dict[str, tuple[str, Any]] = {
+    "aborto": ("Aborto", re.compile(r"\b(aborto\w*|interrupcao (voluntaria |legal )?da gravidez|nascituro\w*)\b")),
+    "irpf": ("Dedução no IRPF", re.compile(r"(irpf|imposto (sobre a |de )?renda)")),
+    "armas": ("Armas de fogo", re.compile(r"\b(armas?|armamento\w*|municoes|municao)\b")),
+    "drogas": ("Drogas", re.compile(r"\b(drogas?|entorpecente\w*|maconha|canabi\w*|cannabis|psicotropic\w*)\b")),
+}
+_DEDUCAO = re.compile(r"(deduc|dedut|abat|desconto|isen)")
+NOTA_IRPF = "“Dedução no IRPF” só reúne ementas que citam o imposto de renda e também dedução, abatimento, desconto ou isenção."
+
+SEGURANCA = ("seguranca", "Segurança (Defesa e Segurança + Direito Penal)", (57, 43))
+_cache_matriz: dict[str, Any] = {"mtime": None, "itens": {}}
+
+
+def _pertence(p: dict, chave: str) -> bool:
+    tipo, _, valor = chave.partition(":")
+    if tipo == "t" and valor.isdigit():
+        return int(valor) in p["temas"]
+    if tipo == "a" and valor == SEGURANCA[0]:
+        return bool(set(SEGURANCA[2]) & set(p["temas"]))
+    if tipo == "a" and valor in ASSUNTOS:
+        if "_t" not in p:
+            p["_t"] = _sem_acento(p["ementa"])
+        return bool(ASSUNTOS[valor][1].search(p["_t"]) and (valor != "irpf" or _DEDUCAO.search(p["_t"])))
+    raise ValueError("Tema base desconhecido.")
+
+
+def _rotulo_base(d: dict, chave: str) -> str:
+    tipo, _, valor = chave.partition(":")
+    if tipo == "t" and valor.isdigit():
+        if int(valor) not in d["temas"]:
+            raise ValueError("Tema base desconhecido.")
+        return d["temas"][int(valor)]
+    if tipo == "a" and valor == SEGURANCA[0]:
+        return SEGURANCA[1]
+    if tipo == "a" and valor in ASSUNTOS:
+        return ASSUNTOS[valor][0]
+    raise ValueError("Tema base desconhecido.")
+
+
+def opcoes_matriz(d: dict) -> list[dict]:
+    assuntos = [{"chave": f"a:{SEGURANCA[0]}", "nome": SEGURANCA[1], "grupo": "assunto"}]
+    assuntos += [{"chave": f"a:{k}", "nome": v[0], "grupo": "assunto"} for k, v in ASSUNTOS.items()]
+    temas = [{"chave": f"t:{c}", "nome": n, "grupo": "tema"} for c, n in sorted(d["temas"].items(), key=lambda kv: kv[1].casefold())]
+    return assuntos + temas
+
+
+def matriz(x: list[str], y: str, ano_de: int | None, ano_ate: int | None, efeito: str | None) -> dict:
+    """Cruza os temas base escolhidos (colunas) com partido, parlamentar ou etapa de tramitação (linhas).
+
+    Cada célula conta projetos do período e quantos viraram lei. Um projeto com vários autores/temas entra em cada
+    célula correspondente, então somar células não dá o total de projetos. As linhas saem em ordem alfabética (ou
+    de tramitação), não por volume: o volume só decide quais linhas cabem quando passam do limite.
+    """
+    if y not in ("partido", "parlamentar", "parada"):
+        raise ValueError("Eixo Y desconhecido.")
+    if efeito and efeito not in ROTULOS_EFEITO:
+        raise ValueError("Efeito desconhecido.")
+    x = list(dict.fromkeys(x))
+    if not x or len(x) > MAX_COLUNAS:
+        raise ValueError(f"Escolha de 1 a {MAX_COLUNAS} temas base.")
+    d = _dados()
+    primeiro, ultimo = d["anos"]
+    ano_de, ano_ate = ano_de or primeiro, ano_ate or ultimo
+    if ano_de > ano_ate:
+        raise ValueError("O ano inicial não pode ser posterior ao final.")
+    if ano_ate - ano_de + 1 > MAX_ANOS:
+        raise ValueError(f"O período pode ter no máximo {MAX_ANOS} anos.")
+    de_efetivo, ate_efetivo = max(ano_de, primeiro), min(ano_ate, ultimo)
+    if de_efetivo > ate_efetivo:
+        raise ValueError(f"Sem dados nesse período: a Câmara foi coletada de {primeiro} a {ultimo}.")
+    colunas = [{"chave": c, "rotulo": _rotulo_base(d, c)} for c in x]
+    chave_cache = f"{','.join(x)}|{y}|{ano_de}|{ano_ate}|{efeito or ''}"
+    with _trava:
+        if _cache_matriz["mtime"] != _cache["mtime"]:
+            _cache_matriz.update(mtime=_cache["mtime"], itens={})
+        if chave_cache in _cache_matriz["itens"]:
+            return _cache_matriz["itens"][chave_cache]
+    no_periodo = [p for p in d["projetos"] if de_efetivo <= int(p["data"][:4]) <= ate_efetivo]
+    for p in no_periodo:
+        if "_ef" not in p:
+            p["_ef"] = efeito_da_ementa(p["ementa"])
+    if efeito:
+        no_periodo = [p for p in no_periodo if p["_ef"] == efeito]
+    linhas: dict[Any, dict] = {}
+    por_coluna = [[0, 0] for _ in x]
+    projetos_unicos = [0, 0]
+    for p in no_periodo:
+        pertence = [i for i, c in enumerate(x) if _pertence(p, c)]
+        if not pertence:
+            continue
+        projetos_unicos[0] += 1
+        projetos_unicos[1] += p["aprovado"]
+        for i in pertence:
+            por_coluna[i][0] += 1
+            por_coluna[i][1] += p["aprovado"]
+        if y == "partido":
+            chaves = {sg: sg for sg in {d["politicos"][a]["partido"] or "Sem partido" for a in p["autores"]}}
+            par = None
+        elif y == "parlamentar":
+            chaves = {a: f"{d['politicos'][a]['nome']} ({d['politicos'][a]['partido']}-{d['politicos'][a]['uf']})" for a in set(p["autores"])}
+            par = None
+        else:
+            par = _parada(d, p)
+            chaves = {(par["etapa"], par["sigla"], par["onde"]): par["sigla"] or par["onde"]}
+        for k, rot in chaves.items():
+            lin = linhas.setdefault(k, {"rotulo": rot, "id": k if y == "parlamentar" else None,
+                                        "etapa": par["etapa"] if par else None, "onde": par["onde"] if par else None,
+                                        "celulas": [[0, 0] for _ in x]})
+            for i in pertence:
+                lin["celulas"][i][0] += 1
+                lin["celulas"][i][1] += p["aprovado"]
+    for lin in linhas.values():
+        lin["total"] = sum(c[0] for c in lin["celulas"])
+        lin["celulas"] = [{"criados": c[0], "aprovados": c[1]} for c in lin["celulas"]]
+    mantidas = sorted(linhas.values(), key=lambda l: (-l["total"], l["rotulo"].casefold()))[:LINHAS_MATRIZ]
+    if y == "parada":
+        ordem = {"lei": 0, "senado": 1, "plenario": 2, "comissao": 3, "mesa": 4, "outro": 5, "arquivada": 6}
+        mantidas.sort(key=lambda l: (ordem.get(l["etapa"], 9), l["rotulo"].casefold()))
+    else:
+        mantidas.sort(key=lambda l: l["rotulo"].casefold())
+    notas = [
+        "Cada célula conta projetos (PL, PLP e PEC) apresentados no período que tratam do tema da coluna e quantos deles viraram lei. Um projeto com vários temas ou autores aparece em cada célula correspondente, então somar células não dá o total de projetos (o total sem repetição está acima).",
+        "Quantidade de projetos não mede qualidade nem importância. As linhas estão em ordem " + ("de tramitação" if y == "parada" else "alfabética") + ", não de volume."
+        + (f" Só as {LINHAS_MATRIZ} linhas com mais projetos cabem na tela ({len(linhas)} no total)." if len(linhas) > LINHAS_MATRIZ else ""),
+        "Temas oficiais seguem a classificação da Câmara. Os “assuntos” (aborto, dedução no IRPF, armas, drogas) são buscas por palavras na ementa e podem deixar de fora projetos que tratam do assunto com outras palavras. " + NOTA_IRPF,
+        "O efeito é uma classificação automática por palavras da ementa, sem posição política: não é julgamento de bom ou ruim, pode errar e deixa muitos projetos sem classificação.",
+    ]
+    if y in ("partido", "parlamentar"):
+        notas.append("Só projetos assinados por deputados(as) entram nesse eixo; projetos do Executivo, do Senado e de comissões ficam de fora das linhas.")
+    if y == "parada":
+        notas.append("Mostra onde cada projeto está agora, inclusive os que já viraram lei.")
+    lacuna = None
+    if (ano_de, ano_ate) != (de_efetivo, ate_efetivo):
+        lacuna = f"Você pediu {ano_de}–{ano_ate}, mas só há dados da Câmara de {primeiro} a {ultimo}; a análise usa {de_efetivo}–{ate_efetivo}."
+    res = {"x": colunas, "y": y,
+           "periodo": {"de": de_efetivo, "ate": ate_efetivo, "coletado_de": primeiro, "coletado_ate": ultimo},
+           "lacuna": lacuna, "efeito": efeito, "rotulo_efeito": ROTULOS_EFEITO.get(efeito) if efeito else None,
+           "unicos": {"criados": projetos_unicos[0], "aprovados": projetos_unicos[1]},
+           "totais_coluna": [{"criados": c[0], "aprovados": c[1]} for c in por_coluna],
+           "linhas": mantidas, "linhas_total": len(linhas), "max_anos": MAX_ANOS, "opcoes": opcoes_matriz(d),
+           "notas": notas, **_aviso(d)}
+    with _trava:
+        _cache_matriz["itens"][chave_cache] = res
+    return res

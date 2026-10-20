@@ -230,37 +230,42 @@
 
     <!-- Autoria dos projetos da Câmara: divisão por tema e projetos por político -->
     <section id="autoria" class="hidden mt-5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 sm:p-5" aria-labelledby="tAutoria">
-        <h2 id="tAutoria" class="text-lg font-bold"><i class="fa-solid fa-chart-column mr-2 text-brand-600" aria-hidden="true"></i>Quem propõe e o que vira lei</h2>
-        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Projetos de lei (PL, PLP e PEC) da Câmara dos Deputados no período escolhido acima. Escolha como dividir e use os filtros para cruzar tema, partido e efeito. Só contagem oficial: quantidade não mede qualidade.</p>
+        <h2 id="tAutoria" class="text-lg font-bold"><i class="fa-solid fa-table-cells mr-2 text-brand-600" aria-hidden="true"></i>Quem propõe e o que vira lei</h2>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Matriz de cruzamento de projetos de lei (PL, PLP e PEC) da Câmara dos Deputados: os temas que você escolher ficam nas colunas e, nas linhas, partido, parlamentar ou o ponto da tramitação onde o projeto parou. Só contagem oficial: quantidade não mede qualidade. O período desta matriz é escolhido aqui, à parte do período da página.</p>
         <p id="autoriaTotais" class="text-sm mt-3"></p>
-        <div id="segAutor" class="mt-4 inline-flex flex-wrap gap-1 p-1 rounded-2xl bg-slate-200/70 dark:bg-slate-800" role="radiogroup" aria-label="Dividir os projetos por">
-            <button type="button" role="radio" data-autor="tema" class="px-3 py-1.5 rounded-xl text-sm font-semibold">Por tema</button>
-            <button type="button" role="radio" data-autor="partido" class="px-3 py-1.5 rounded-xl text-sm font-semibold">Por partido</button>
-            <button type="button" role="radio" data-autor="deputado" class="px-3 py-1.5 rounded-xl text-sm font-semibold">Por deputado(a)</button>
-            <button type="button" role="radio" data-autor="efeito" class="px-3 py-1.5 rounded-xl text-sm font-semibold">Por efeito do texto</button>
-            <button type="button" role="radio" data-autor="parada" class="px-3 py-1.5 rounded-xl text-sm font-semibold">Onde pararam</button>
-            <button type="button" role="radio" data-autor="tipo" class="px-3 py-1.5 rounded-xl text-sm font-semibold">Por tipo de autor</button></div>
-        <div class="mt-3 rounded-xl border border-slate-200 dark:border-slate-700 p-3 sm:p-4">
-            <div class="flex items-center justify-between gap-3">
-                <select id="aPergunta" aria-label="Perguntas frequentes" class="max-w-full sm:w-auto bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-2 text-sm font-normal">
-                    <option value="">💡 Perguntas frequentes</option>
-                    <option value="dh">Quais partidos mais propuseram Direitos Humanos e Minorias?</option>
-                    <option value="amplia">Quais partidos mais propõem ampliar direitos e permissões?</option>
-                    <option value="restringe">Quais partidos mais propõem restringir ou punir mais?</option></select>
-                <button type="button" id="aLimpar" class="shrink-0 text-xs underline text-slate-500 hover:text-slate-700 dark:hover:text-slate-300">limpar filtros</button>
+        <form id="barraMatriz" class="mt-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/40 p-3 sm:p-4" onsubmit="return false" aria-label="Ferramentas da matriz de cruzamento">
+            <div class="grid grid-cols-2 lg:grid-cols-12 gap-3 items-end">
+                <fieldset class="col-span-2 lg:col-span-3">
+                    <legend class="text-xs font-semibold">Período (de 1 a 20 anos)</legend>
+                    <div class="mt-1 flex items-center gap-2">
+                        <label class="sr-only" for="mDe">Ano inicial</label>
+                        <input id="mDe" type="number" inputmode="numeric" min="1990" max="2100" class="w-28 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-2 text-sm" aria-describedby="mPeriodoAviso">
+                        <span class="text-xs text-slate-500" aria-hidden="true">até</span>
+                        <label class="sr-only" for="mAte">Ano final</label>
+                        <input id="mAte" type="number" inputmode="numeric" min="1990" max="2100" class="w-28 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-2 text-sm" aria-describedby="mPeriodoAviso">
+                    </div>
+                </fieldset>
+                <label class="col-span-2 lg:col-span-4 block text-xs font-semibold">Tema base (eixo X) — escolha até 6
+                    <select id="mTema" class="mt-1 block w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-2 text-sm font-normal"></select></label>
+                <label class="col-span-1 lg:col-span-3 block text-xs font-semibold">Cruzar com (eixo Y)
+                    <select id="mY" class="mt-1 block w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-2 text-sm font-normal">
+                        <option value="partido">Partido</option>
+                        <option value="parlamentar">Parlamentar</option>
+                        <option value="parada">Onde pararam (tramitação)</option></select></label>
+                <label class="col-span-1 lg:col-span-2 block text-xs font-semibold">Efeito do texto
+                    <select id="mEfeito" class="mt-1 block w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-2 text-sm font-normal">
+                        <option value="">Todos</option>
+                        <option value="restringe">Restringe ou pune</option>
+                        <option value="amplia">Amplia direitos</option>
+                        <option value="procedimental">Procedimental</option></select></label>
             </div>
-            <div class="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <label class="block text-xs font-semibold">Tema
-                    <select id="aTema" class="mt-1 block w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-2 text-sm font-normal"></select></label>
-                <label class="block text-xs font-semibold">Partido
-                    <select id="aPartido" class="mt-1 block w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-2 text-sm font-normal"></select></label>
-                <label class="block text-xs font-semibold">Efeito do texto
-                    <select id="aEfeito" class="mt-1 block w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-2 text-sm font-normal"></select></label>
-            </div>
-        </div>
-        <p id="tituloAutor" class="text-sm font-semibold mt-6"></p>
-        <div class="mt-2" id="boxAutores" style="height:440px"><canvas id="graficoAutores" role="img" aria-label="Projetos criados e aprovados, divididos conforme a escolha acima"></canvas></div>
-        <p id="notaAutor" class="text-[11px] text-slate-500 mt-1"></p>
+            <p id="mPeriodoAviso" class="text-[11px] text-slate-500 mt-2" role="status"></p>
+            <div id="mChips" class="mt-2 flex flex-wrap gap-2" aria-label="Temas escolhidos"></div>
+        </form>
+        <div id="mResumo" class="text-sm font-semibold mt-5" aria-live="polite"></div>
+        <p id="mLacuna" class="hidden mt-2 text-xs rounded-lg border border-amber-300 bg-amber-50 text-amber-900 dark:bg-amber-950/40 dark:text-amber-200 dark:border-amber-800 px-3 py-2" role="status"></p>
+        <div id="mTabela" class="mt-2 overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700"></div>
+        <ul id="mNotas" class="mt-2 text-[11px] text-slate-500 list-disc pl-5 space-y-1"></ul>
         <div class="mt-5 border-t border-slate-200 dark:border-slate-700 pt-4">
             <label for="buscaPolitico" class="text-sm font-semibold">Ver os projetos de um(a) deputado(a)</label>
             <input id="buscaPolitico" type="search" autocomplete="off" maxlength="60" placeholder="Nome ou sigla do estado (ex.: SP)"
@@ -822,112 +827,108 @@ $('lista').addEventListener('click', async (ev) => {
 
 
 /* ====================================================================== *
- *  Autoria: líderes por tema, projetos por político e divisão por tema (Câmara)
+ *  Autoria: matriz de cruzamento (tema base × partido / parlamentar / onde pararam) e projetos por político
  * ====================================================================== */
 let reqAutoria = 0;
 const POL = { id: null, tema: '' };
-const AUTOR = { modo: 'tema', grafico: null };
-function corEixo() { return document.documentElement.classList.contains('dark') ? '#cbd5e1' : '#475569'; }
-const FILTRO = { tema: '', partido: '', efeito: '' };
-let reqPainel = 0, ultimoPainel = null;
-const TITULOS_VISAO = { tema: 'Projetos por tema', partido: 'Projetos por partido', deputado: 'Projetos por deputado(a)', efeito: 'Projetos por efeito do texto', tipo: 'Projetos por tipo de autor', parada: 'Projetos que não viraram lei, por onde estão agora' };
-const NOTAS_VISAO = {
-    tema: 'Um projeto pode ter mais de um tema e entra na conta de cada um. Clique em uma barra para ver quais partidos mais propuseram aquele tema.',
-    partido: 'Os 15 partidos com mais projetos, pelo partido que a Câmara informa para o(a) autor(a). Quando há autores de partidos diferentes, o projeto conta em cada um. Clique em uma barra para ver os temas daquele partido.',
-    deputado: 'Os 15 deputados(as) com mais projetos, ordenados pelo número de projetos (quantidade não mede qualidade). Clique em uma barra para ver os projetos do(a) deputado(a). Projetos com vários autores contam para cada um.',
-    efeito: 'Classificação automática pelas palavras da ementa. Não é posição política nem julgamento: descreve o que o texto diz que faz. Muitos projetos ficam sem classificação.',
-    parada: 'Órgão em que cada projeto está agora (comissões, Plenário, Mesa), além dos arquivados e dos que já passaram pela Câmara e esperam o Senado. Só entram os que não viraram lei; passe o mouse para ver o nome completo.',
-    tipo: 'Quantos projetos têm cada tipo de autor. Um projeto com autores de tipos diferentes conta em cada tipo.',
-};
-function opcoesSelect(el, primeiro, itens, atual) {
-    el.innerHTML = `<option value="">${primeiro}</option>` + itens.map(([v, t]) => `<option value="${esc(String(v))}" ${String(v) === String(atual) ? 'selected' : ''}>${esc(t)}</option>`).join('');
+// Período próprio da matriz (anos); começa em 10 anos e é limitado a 20 pelo servidor
+const MZ = { x: ['a:aborto', 'a:irpf', 'a:seguranca'], y: 'partido', efeito: '', de: null, ate: null, opcoes: [], req: 0 };
+const MAX_COLUNAS = 6, MAX_ANOS_MZ = 20;
+const ROT_Y = { partido: 'Partido', parlamentar: 'Parlamentar', parada: 'Onde o projeto está agora' };
+
+function validarPeriodoMatriz() {
+    const de = Number($('mDe').value), ate = Number($('mAte').value), av = $('mPeriodoAviso');
+    let msg = '';
+    if (!de || !ate) msg = 'Informe o ano inicial e o final (AAAA).';
+    else if (de > ate) msg = 'O ano inicial não pode ser posterior ao final.';
+    else if (ate - de + 1 > MAX_ANOS_MZ) msg = `O período pode ter no máximo ${MAX_ANOS_MZ} anos (você pediu ${ate - de + 1}).`;
+    av.textContent = msg;
+    av.className = 'text-[11px] mt-2 ' + (msg ? 'text-red-700 dark:text-red-400 font-semibold' : 'text-slate-500');
+    if (!msg) { MZ.de = de; MZ.ate = ate; av.textContent = `${ate - de + 1} ano(s) de projetos apresentados.`; }
+    return !msg;
 }
-function descreverFiltros() {
-    const o = ultimoPainel && ultimoPainel.opcoes, p = [];
-    if (FILTRO.tema && o) { const t = o.temas.find((x) => String(x.cod) === String(FILTRO.tema)); p.push(`tema “${t ? t.nome : FILTRO.tema}”`); }
-    if (FILTRO.partido) p.push(`partido ${FILTRO.partido}`);
-    if (FILTRO.efeito && o) { const e = o.efeitos.find((x) => x.cod === FILTRO.efeito); p.push(`efeito “${e ? e.nome.toLowerCase() : FILTRO.efeito}”`); }
-    return p.length ? ' — ' + p.join(' · ') : '';
+function desenharChips() {
+    const nome = (c) => (MZ.opcoes.find((o) => o.chave === c) || { nome: c }).nome;
+    $('mChips').innerHTML = MZ.x.map((c) => `<span class="inline-flex items-center gap-1 rounded-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 pl-3 pr-1 py-1 text-xs font-semibold">${esc(nome(c))}
+        <button type="button" data-tirar-tema="${esc(c)}" class="w-5 h-5 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 leading-none" aria-label="Tirar ${esc(nome(c))}">×</button></span>`).join('')
+        || '<span class="text-xs text-slate-500">Escolha ao menos um tema base.</span>';
+    const sel = $('mTema'), grupo = (g, t) => `<optgroup label="${t}">${MZ.opcoes.filter((o) => o.grupo === g && !MZ.x.includes(o.chave))
+        .map((o) => `<option value="${esc(o.chave)}">${esc(o.nome)}</option>`).join('')}</optgroup>`;
+    sel.disabled = MZ.x.length >= MAX_COLUNAS;
+    sel.innerHTML = `<option value="">${MZ.x.length >= MAX_COLUNAS ? 'Limite de 6 temas — tire um para trocar' : '+ Adicionar tema…'}</option>`
+        + grupo('assunto', 'Assuntos (busca por palavras na ementa)') + grupo('tema', 'Temas oficiais da Câmara');
 }
-async function desenharAutores() {
-    document.querySelectorAll('#segAutor [data-autor]').forEach((b) => {
-        const on = b.dataset.autor === AUTOR.modo;
-        b.setAttribute('aria-checked', String(on));
-        b.className = 'px-3 py-1.5 rounded-xl text-sm font-semibold ' + (on ? 'bg-white dark:bg-slate-700 shadow text-brand-700 dark:text-brand-300' : 'text-slate-500');
-    });
-    const minha = ++reqPainel;
-    const q = paramsPeriodo(); q.set('visao', AUTOR.modo);
-    for (const k of ['tema', 'partido', 'efeito']) if (FILTRO[k]) q.set(k, FILTRO[k]);
+function celula(c, max) {
+    if (!c.criados) return '<td class="px-3 py-2 text-center text-slate-300 dark:text-slate-600">0</td>';
+    const a = (0.08 + 0.32 * Math.sqrt(c.criados / max)).toFixed(2);
+    return `<td class="px-3 py-2 text-center tabular-nums" style="background:rgba(71,85,105,${a})"><b>${nf(c.criados)}</b>
+        <span class="block text-[10px] font-normal opacity-80">${nf(c.aprovados)} viraram lei</span></td>`;
+}
+async function desenharMatriz() {
+    const minha = ++MZ.req;
+    if (!MZ.opcoes.length || !validarPeriodoMatriz()) { if (MZ.opcoes.length) $('mTabela').innerHTML = ''; return; }
+    if (!MZ.x.length) { $('mTabela').innerHTML = ''; $('mResumo').textContent = ''; return; }
+    const q = new URLSearchParams({ y: MZ.y, ano_de: MZ.de, ano_ate: MZ.ate });
+    MZ.x.forEach((c) => q.append('x', c));
+    if (MZ.efeito) q.set('efeito', MZ.efeito);
+    $('mTabela').setAttribute('aria-busy', 'true');
     let r;
-    try { r = await api('/api/autoria/painel?' + q); } catch (e) { $('notaAutor').textContent = 'Não foi possível carregar este gráfico agora.'; return; }
-    if (minha !== reqPainel) return;
-    ultimoPainel = r;
-    // cada filtro mostra quantos projetos sobram ao escolhê-lo (considerando os outros filtros)
-    opcoesSelect($('aTema'), 'Todos os temas', r.opcoes.temas.map((t) => [t.cod, `${t.nome} (${nf(t.criados)})`]), FILTRO.tema);
-    opcoesSelect($('aPartido'), 'Todos os partidos', r.opcoes.partidos.map((x) => [x.sigla, `${x.sigla} (${nf(x.criados)})`]), FILTRO.partido);
-    opcoesSelect($('aEfeito'), 'Todos os efeitos', r.opcoes.efeitos.map((x) => [x.cod, `${x.nome} (${nf(x.criados)})`]), FILTRO.efeito);
-    $('tituloAutor').textContent = `${TITULOS_VISAO[AUTOR.modo]}${descreverFiltros()}: ${AUTOR.modo === 'parada' ? `${nf(r.total.criados - r.total.aprovados)} projetos` : `${nf(r.total.criados)} criados · ${nf(r.total.aprovados)} aprovados`}`;
-    $('notaAutor').textContent = NOTAS_VISAO[AUTOR.modo] + (AUTOR.modo === 'parada' ? ' Cores por etapa: comissão (vermelho), Plenário (roxo), Mesa (cinza-azul), arquivada (rosa), Senado (verde).' : ' Vermelho: viraram lei; cinza: todos os criados (os aprovados estão incluídos nos criados). Ao fim de cada barra: criados · aprovados · taxa.');
-    const cor = corEixo(), lin = r.itens.map((x) => ({ r: AUTOR.modo === 'partido' && x.deputados ? `${x.rotulo} (${nf(x.deputados)} dep.)` : x.rotulo, c: x.criados, a: x.aprovados, id: x.id, chave: x.chave, etapa: x.etapa, onde: x.onde }));
-    AUTOR.grafico?.destroy();
-    if (!lin.length) { $('notaAutor').textContent = 'Nenhum projeto com esta combinação de filtros no período.'; return; }
-    const parada = AUTOR.modo === 'parada';
-    const CORES = { comissao: '#A92823', plenario: '#7c3aed', mesa: '#64748b', arquivada: '#be123c', senado: '#059669', outro: '#8F8F8B' };
-    const datasets = parada ? [{ label: 'Projetos parados aqui', data: lin.map((x) => x.c), backgroundColor: lin.map((x) => CORES[x.etapa] || '#8F8F8B') }]
-                    : [{ label: 'Aprovados (viraram lei)', data: lin.map((x) => x.a), backgroundColor: '#A92823' },
-                      { label: 'Todos os criados', data: lin.map((x) => x.c), backgroundColor: '#8F8F8B' }];
-    AUTOR.grafico = new Chart($('graficoAutores'), {
-        type: 'bar', data: { labels: lin.map((x) => x.r), datasets },
-        options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, animation: false, layout: { padding: { right: 150 } },
-            // clicar na barra: deputado(a) abre os projetos; partido e tema viram filtro e trocam a divisão
-            onClick: (ev, _el, ch) => {
-                const l = lin[ch.scales.y.getValueForPixel(ev.y)];
-                if (!l) return;
-                if (AUTOR.modo === 'deputado' && l.id) abrirPolitico(l.id);
-                else if (AUTOR.modo === 'partido' && l.chave) { FILTRO.partido = l.chave; AUTOR.modo = 'tema'; desenharAutores(); }
-                else if (AUTOR.modo === 'tema' && l.chave) { FILTRO.tema = String(l.chave); AUTOR.modo = 'partido'; desenharAutores(); }
-            },
-            onHover: (ev, _el, ch) => {
-                const l = lin[ch.scales.y.getValueForPixel(ev.y)];
-                ev.native.target.style.cursor = l && (l.id || l.chave) && AUTOR.modo !== 'efeito' ? 'pointer' : 'default';
-            },
-            plugins: { legend: { display: !parada, labels: { color: cor } }, tooltip: { callbacks: { title: (x) => (parada ? lin[x[0].dataIndex].onde : x[0].label), label: (x) => `${x.dataset.label}: ${nf(x.parsed.x)} projetos` } } },
-            scales: { x: { beginAtZero: true, ticks: { color: cor, precision: 0 }, title: { display: true, text: 'Número de projetos', color: cor } }, y: { ticks: { color: cor, autoSkip: false } } } },
-        // as barras vermelhas são minúsculas perto das cinzas: os números ao fim de cada linha mostram o que o desenho não mostra
-        plugins: [{ id: 'contagens', afterDatasetsDraw(ch) {
-            const { ctx } = ch;
-            ctx.save(); ctx.fillStyle = cor; ctx.font = '11px Inter, sans-serif'; ctx.textBaseline = 'middle';
-            ch.getDatasetMeta(datasets.length - 1).data.forEach((barra, i) => {
-                const x = lin[i];
-                if (parada) { ctx.fillText(nf(x.c), barra.x + 6, barra.y); return; }
-                const taxa = x.c ? ` · ${(100 * x.a / x.c).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%` : '';
-                ctx.fillText(`${nf(x.c)} · ${nf(x.a)} aprov.${taxa}`, barra.x + 6, barra.y);
-            });
-            ctx.restore();
-        } }],
-    });
+    try { r = await api('/api/autoria/matriz?' + q); }
+    catch (e) { if (minha === MZ.req) { $('mTabela').innerHTML = `<p class="p-4 text-sm text-slate-500">Não foi possível carregar a matriz agora. ${esc(e.message || '')}</p>`; $('mTabela').removeAttribute('aria-busy'); } return; }
+    if (minha !== MZ.req) return;
+    $('mTabela').removeAttribute('aria-busy');
+    const max = Math.max(1, ...r.linhas.flatMap((l) => l.celulas.map((c) => c.criados)));
+    $('mResumo').textContent = `${nf(r.unicos.criados)} projetos distintos nos temas escolhidos, ${r.periodo.de}–${r.periodo.ate} · ${nf(r.unicos.aprovados)} viraram lei${r.rotulo_efeito ? ` · efeito: ${r.rotulo_efeito.toLowerCase()}` : ''}`;
+    const av = $('mLacuna');
+    av.classList.toggle('hidden', !r.lacuna);
+    av.textContent = r.lacuna || '';
+    if (!r.linhas.length) {
+        $('mTabela').innerHTML = '<p class="p-4 text-sm text-slate-500">Nenhum projeto com esta combinação de filtros no período.</p>';
+    } else {
+        const rotulo = (l) => (r.y === 'parlamentar' && l.id ? `<button type="button" data-pol="${Number(l.id)}" class="text-left font-semibold underline decoration-dotted hover:text-brand-700 dark:hover:text-brand-400">${esc(l.rotulo)}</button>`
+            : `<span class="font-semibold" ${l.onde ? `title="${esc(l.onde)}"` : ''}>${esc(l.rotulo)}</span>`);
+        $('mTabela').innerHTML = `<table class="min-w-full text-sm">
+            <caption class="sr-only">Projetos por ${esc(ROT_Y[r.y])} e tema base, ${r.periodo.de} a ${r.periodo.ate}</caption>
+            <thead class="bg-slate-100 dark:bg-slate-900/60 text-xs"><tr>
+                <th scope="col" class="px-3 py-2 text-left sticky left-0 bg-slate-100 dark:bg-slate-900">${esc(ROT_Y[r.y])}</th>
+                ${r.x.map((c) => `<th scope="col" class="px-3 py-2 text-center min-w-[7.5rem]">${esc(c.rotulo)}</th>`).join('')}</tr></thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
+            ${r.linhas.map((l) => `<tr><th scope="row" class="px-3 py-2 text-left font-normal normal-case tracking-normal sticky left-0 bg-white dark:bg-slate-800 max-w-[16rem]">${rotulo(l)}</th>${l.celulas.map((c) => celula(c, max)).join('')}</tr>`).join('')}
+            </tbody>
+            <tfoot class="bg-slate-50 dark:bg-slate-900/40 text-xs"><tr><th scope="row" class="px-3 py-2 text-left sticky left-0 bg-slate-50 dark:bg-slate-900">Total do tema${r.linhas_total > r.linhas.length ? ' (todas as linhas)' : ''}</th>
+                ${r.totais_coluna.map((c) => `<td class="px-3 py-2 text-center tabular-nums"><b>${nf(c.criados)}</b> <span class="opacity-80">· ${nf(c.aprovados)} lei</span></td>`).join('')}</tr></tfoot></table>`;
+    }
+    $('mNotas').innerHTML = r.notas.map((n) => `<li>${esc(n)}</li>`).join('')
+        + `<li>Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(r.fonte.url))}">${esc(r.fonte.nome)}</a>. Dados coletados em ${esc(fmtDataHora(r.gerado_em))}, de ${r.periodo.coletado_de} a ${r.periodo.coletado_ate}.</li>`;
 }
+const refazerMatriz = debounce(desenharMatriz, 300);
 document.addEventListener('click', (ev) => {
-    const b = ev.target.closest && ev.target.closest('[data-autor]');
-    if (b) { AUTOR.modo = b.dataset.autor; desenharAutores(); return; }
-    if (ev.target.closest && ev.target.closest('#aLimpar')) { FILTRO.tema = FILTRO.partido = FILTRO.efeito = ''; desenharAutores(); return; }
+    const t = ev.target.closest && ev.target.closest('[data-tirar-tema]');
+    if (t) { MZ.x = MZ.x.filter((c) => c !== t.dataset.tirarTema); desenharChips(); desenharMatriz(); }
 });
 document.addEventListener('change', (ev) => {
-    if (ev.target.id === 'aPergunta') {
-        const q = ev.target.value;
-        ev.target.value = '';
-        if (!q) return;
-        const temaDH = ultimoPainel && ultimoPainel.opcoes.temas.find((t) => /direitos humanos/i.test(t.nome));
-        Object.assign(FILTRO, { tema: '', partido: '', efeito: '' });
-        AUTOR.modo = 'partido';
-        if (q === 'dh' && temaDH) FILTRO.tema = String(temaDH.cod);
-        else if (q !== 'dh') FILTRO.efeito = q;
-        desenharAutores();
-        return;
-    }
-    const m = { aTema: 'tema', aPartido: 'partido', aEfeito: 'efeito' }[ev.target.id];
-    if (m) { FILTRO[m] = ev.target.value; desenharAutores(); }
+    const id = ev.target.id;
+    if (id === 'mTema') {
+        if (ev.target.value && MZ.x.length < MAX_COLUNAS && !MZ.x.includes(ev.target.value)) MZ.x.push(ev.target.value);
+        desenharChips(); desenharMatriz();
+    } else if (id === 'mY') { MZ.y = ev.target.value; desenharMatriz(); }
+    else if (id === 'mEfeito') { MZ.efeito = ev.target.value; desenharMatriz(); }
+    else if (id === 'mDe' || id === 'mAte') { if (validarPeriodoMatriz()) refazerMatriz(); }
 });
+document.addEventListener('input', (ev) => { if (ev.target.id === 'mDe' || ev.target.id === 'mAte') validarPeriodoMatriz(); });
+
+async function iniciarMatriz(coletadoDe, coletadoAte) {
+    if (!MZ.opcoes.length) {
+        // as opções de tema vêm do servidor junto com a primeira matriz
+        try {
+            const r = await api('/api/autoria/matriz?' + new URLSearchParams([['x', MZ.x[0]], ['y', 'partido'], ['ano_de', coletadoDe], ['ano_ate', coletadoAte]]));
+            MZ.opcoes = r.opcoes;
+        } catch (e) { return; }
+        $('mDe').value = coletadoDe; $('mAte').value = coletadoAte;
+        desenharChips();
+    }
+    desenharMatriz();
+}
 
 const nf = (n) => Number(n).toLocaleString('pt-BR');
 function paramsPeriodo() {
@@ -964,7 +965,7 @@ async function carregarAutoria() {
             ${a.geral.mais_criados ? `<br><span class="text-xs text-slate-600 dark:text-slate-400">Mais projetos criados: ${lider(a.geral.mais_criados, '', 'projetos')} · mais aprovados: ${lider(a.geral.mais_aprovados, 'nenhum no período', 'aprovados')}</span>` : ''}`;
         $('autoriaNotas').innerHTML = a.notas.map((n) => `<li>${esc(n)}</li>`).join('') +
             `<li>Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(a.fonte.url))}">${esc(a.fonte.nome)}</a>. Dados coletados em ${esc(fmtDataHora(a.gerado_em))}.</li>`;
-        desenharAutores();
+        iniciarMatriz(a.periodo.coletado_de.slice(0, 4), a.periodo.coletado_ate.slice(0, 4));
         preencherIndicadores();
         if (POL.id) abrirPolitico(POL.id, POL.tema);
         else if ($('buscaPolitico').value.trim().length >= 2) buscarPolitico();
@@ -1023,7 +1024,6 @@ document.addEventListener('click', (ev) => {
 });
 document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape' && POL.id) { POL.id = null; $('projPolitico').innerHTML = ''; } });
 document.addEventListener('change', (ev) => { if (ev.target.id === 'temaPolitico') abrirPolitico(POL.id, ev.target.value); });
-document.getElementById('btnTema')?.addEventListener('click', () => setTimeout(() => { if (P.autoria) { desenharAutores(); } }, 50));
 
 /* ====================================================================== *
  *  Busca de projetos por tema

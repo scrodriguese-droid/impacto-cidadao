@@ -598,6 +598,15 @@ def autoria_painel(visao: Annotated[str, Query(pattern="^(tema|deputado|partido|
     return _autoria(autoria.painel, visao, desde, ate, tema, partido, efeito)
 
 
+@router.get("/autoria/matriz", tags=["autoria"])
+def autoria_matriz(x: Annotated[list[str], Query(min_length=1, max_length=6, description="Temas base: t:<código> ou a:<assunto>")],
+                   y: Annotated[str, Query(pattern="^(partido|parlamentar|parada)$")] = "partido",
+                   ano_de: Annotated[int | None, Query(ge=1990, le=2100)] = None,
+                   ano_ate: Annotated[int | None, Query(ge=1990, le=2100)] = None,
+                   efeito: Annotated[str | None, Query(pattern="^(restringe|amplia|procedimental|indefinido)$")] = None) -> dict:
+    return _autoria(autoria.matriz, x, y, ano_de, ano_ate, efeito)
+
+
 @router.get("/autoria/projetos", tags=["autoria"])
 def autoria_projetos(q: Annotated[str | None, Query(max_length=80)] = None,
                      tipo: Annotated[str | None, Query(pattern="^(PEC|PLP|PL)$")] = None,
