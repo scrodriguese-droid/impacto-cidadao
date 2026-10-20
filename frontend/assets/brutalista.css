@@ -862,29 +862,26 @@ button.norma-todas[aria-pressed="true"] { background: var(--fg) !important; colo
 .norma-curto { font-size: .78rem; font-weight: 600; color: var(--muted); }
 .norma-explica { padding: .75rem .9rem; border-left: 4px solid var(--fg); font-size: .78rem; line-height: 1.5; }
 .norma-explica p + p { margin-top: .35rem; }
-/* pirâmide: degraus que se alargam de cima para baixo */
-.pir { display: grid; gap: .6rem; justify-items: center; margin-top: 1.1rem; }
-.pir-degrau { width: 100%; border: 2px solid var(--line); padding: .9rem 1.1rem 1.1rem; position: relative; }
-@media (min-width: 900px) { .pir-degrau--1 { width: 56%; } .pir-degrau--2 { width: 78%; } }
-.pir-degrau--1 { border-width: 4px; border-color: var(--n-const); }
-.pir-degrau--2 { border-width: 3px; border-color: var(--n-comp); }
-.pir-nivel { font: 800 .62rem/1 var(--fonte-texto); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin-bottom: .55rem; }
-.pir-topo { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .7rem; }
-.pir-vira { font-size: .74rem; font-weight: 600; color: var(--muted); }
-.pir-curto { font-family: var(--fonte-titulo); font-size: 1.35rem; line-height: 1.1; text-transform: uppercase; margin-top: .55rem; }
-.pir-dl { margin-top: .5rem; font-size: .84rem; line-height: 1.5; }
-.pir-dl dt { font: 800 .62rem/1.3 var(--fonte-texto); letter-spacing: .12em; text-transform: uppercase; color: var(--vermelho); margin-top: .55rem; }
+/* tipos de norma lado a lado, numerados, do mais ao menos rigoroso: a barra de cima leva a cor e o peso do tipo */
+.pir { list-style: none; padding: 0; margin: 1.1rem 0 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(8.4rem, 1fr)); gap: 0 .9rem; }
+@media (max-width: 640px) { .pir { grid-template-columns: 1fr; } }
+.pir-card { display: flex; flex-direction: column; align-items: flex-start; padding: .7rem 0 1rem; border-top: 4px solid var(--fg); }
+.pir-card--constitucional { border-top: 7px solid var(--n-const); }
+.pir-card--complementar { border-top: 6px solid var(--n-comp); }
+.pir-card--ordinaria { border-top: 5px solid var(--n-ord); }
+.pir-card--medida_provisoria { border-top: 5px solid var(--n-mpv); }
+.pir-card--ato_congresso { border-top: 3px dashed var(--fg); }
+.pir-num { display: flex; align-items: center; gap: .45rem; margin-bottom: .55rem; font: 700 .62rem/1 var(--fonte-texto); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.pir-num b { display: inline-flex; align-items: center; justify-content: center; width: 1.55rem; height: 1.55rem; border: 2px solid var(--fg); border-radius: 50%; font: 800 .8rem/1 var(--fonte-texto); letter-spacing: 0; color: var(--fg); }
+.pir-topo { margin: 0; }
+.pir-card .norma-tag { white-space: normal; max-width: 100%; letter-spacing: .05em; font-size: .64rem; padding: .25rem .45rem; }
+.pir-curto { font-family: var(--fonte-titulo); font-size: 1.05rem; font-weight: 400; line-height: 1.12; text-transform: uppercase; letter-spacing: 0; margin: .55rem 0 0; }
+.pir-vira { font-size: .7rem; font-weight: 600; color: var(--muted); margin-top: .25rem; }
+.pir-dl { margin-top: .35rem; font-size: .76rem; line-height: 1.45; }
+.pir-card > .pir-dl { flex: 1 1 auto; }
+.pir-mais { margin-top: .6rem; font-size: .76rem; }
+.pir-mais summary { cursor: pointer; font: 800 .58rem/1.3 var(--fonte-texto); letter-spacing: .1em; text-transform: uppercase; text-decoration: underline; text-underline-offset: 3px; }
+.pir-dl dt { font: 800 .58rem/1.3 var(--fonte-texto); letter-spacing: .12em; text-transform: uppercase; color: var(--vermelho); margin-top: .5rem; }
 .pir-dl dd { margin: 0; }
-.pir-filtro { margin-top: .8rem; padding: .35rem .7rem; }
-.pir-mesmo { font: 800 .66rem/1.4 var(--fonte-texto); letter-spacing: .1em; text-transform: uppercase; margin-bottom: .7rem; }
-.pir-trio { display: grid; gap: 0; }
-.pir-trio > .pir-bloco { padding: .9rem 0 1rem; border-top: 1px solid var(--line); }
-.pir-trio > .pir-bloco:first-child { border-top: 0; padding-top: 0; }
-@media (min-width: 900px) {
-    .pir-trio { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-    .pir-trio > .pir-bloco { border-top: 0; padding: 0 1rem; border-left: 1px solid var(--line); }
-    .pir-trio > .pir-bloco:first-child { padding-left: 0; border-left: 0; }
-}
-.pir-degrau--3 { border-width: 2px; }
-.pir-degrau--4 { border: 2px dashed var(--line); background: transparent; }
-.pir-seta { display: flex; justify-content: space-between; gap: 1rem; font: 700 .66rem/1.3 var(--fonte-texto); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-top: .9rem; }
+.pir-filtro { width: 100%; margin-top: .8rem; padding: .3rem .55rem; }
+.pir-adm { display: flex; flex-wrap: wrap; align-items: baseline; gap: .5rem .8rem; margin-top: .6rem; padding: .7rem .9rem; border: 2px dashed var(--line); font-size: .76rem; line-height: 1.45; }
