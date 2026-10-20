@@ -94,6 +94,12 @@ function renderLayout(paginaAtual) {
         sc.dataset.coluna = '1';
         document.body.append(sc);
     }
+    // termos do glossário no texto (negrito + explicação ao passar o cursor): assets/glossario-auto.js
+    if (!document.querySelector('script[data-glossario-auto]')) {
+        const sc = Object.assign(document.createElement('script'), { src: 'assets/glossario-auto.js' });
+        sc.dataset.glossarioAuto = '1';
+        document.body.append(sc);
+    }
     if (!document.querySelector('link[rel="icon"]')) {
         // Logo = ícone "user-group" do Lucide. SVG (nítido em qualquer tamanho) + PNG de reserva;
         // apple-touch-icon para quem salva o site na tela inicial do celular. Arquivos: scripts/gerar_icones.py
