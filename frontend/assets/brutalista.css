@@ -834,3 +834,57 @@ body.postit-escolhendo, body.postit-escolhendo * { cursor: crosshair !important;
 .ciclo-def, .ciclo-det, .ciclo-link { margin: 0 !important; }
 .ciclo-chip { margin: 0 !important; }
 .ciclo-cab { min-height: 1.6rem; align-items: center !important; }
+
+/* ---------- hierarquia das normas (pirâmide de Kelsen) ----------
+   Cor e peso da etiqueta seguem o degrau: quanto mais alto na pirâmide, mais cheia, maior e mais pesada. */
+:root { --n-const: #A92823; --n-comp: #B4540C; --n-ord: #1F4E8C; --n-mpv: #F2C200; }
+.norma-tag { display: inline-flex; align-items: center; gap: .35rem; padding: .22rem .55rem; border: 2px solid var(--fg); font: 800 .66rem/1.1 var(--fonte-texto); letter-spacing: .1em; text-transform: uppercase; white-space: nowrap; color: var(--fg); background: transparent; }
+.norma-tag--constitucional { background: var(--n-const); border-color: var(--n-const); color: #fff; font-weight: 900; font-size: .74rem; padding: .3rem .65rem; }
+.norma-tag--complementar { background: var(--n-comp); border-color: var(--n-comp); color: #fff; font-weight: 800; font-size: .7rem; padding: .26rem .6rem; }
+.norma-tag--ordinaria { background: var(--n-ord); border-color: var(--n-ord); color: #fff; font-weight: 700; }
+.norma-tag--medida_provisoria { background: var(--n-mpv); border-color: #000; color: #000; font-weight: 800; }
+.norma-tag--ato_congresso { background: transparent; border-style: dashed; color: var(--fg); font-weight: 700; font-size: .62rem; }
+/* as regras globais de <button> pintam tudo de transparente: a etiqueta-botão precisa manter a cor do degrau */
+button.norma-tag { cursor: pointer; }
+button.norma-tag--constitucional { background: var(--n-const) !important; color: #fff !important; border-color: var(--n-const) !important; }
+button.norma-tag--complementar { background: var(--n-comp) !important; color: #fff !important; border-color: var(--n-comp) !important; }
+button.norma-tag--ordinaria { background: var(--n-ord) !important; color: #fff !important; border-color: var(--n-ord) !important; }
+button.norma-tag--medida_provisoria { background: var(--n-mpv) !important; color: #000 !important; border-color: #000 !important; }
+button.norma-tag--ato_congresso { background: transparent !important; color: var(--fg) !important; border-color: var(--fg) !important; }
+button.norma-tag:hover { filter: brightness(1.12); }
+button.norma-tag--ato_congresso:hover { background: var(--papel-2) !important; color: var(--fg) !important; }
+button.norma-tag[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--papel), 0 0 0 4px var(--fg) !important; }
+.norma-filtros.com-filtro button.norma-tag[aria-pressed="false"] { opacity: .5; }
+button.norma-tag:disabled { opacity: .35; cursor: default; filter: none; }
+.norma-tag small { font: 700 .66rem/1 var(--fonte-texto); letter-spacing: 0; opacity: .9; }
+.norma-todas { font: 800 .66rem/1.1 var(--fonte-texto); letter-spacing: .1em; padding: .22rem .55rem; border: 2px solid var(--fg); }
+button.norma-todas[aria-pressed="true"] { background: var(--fg) !important; color: var(--papel) !important; }
+.norma-curto { font-size: .78rem; font-weight: 600; color: var(--muted); }
+.norma-explica { padding: .75rem .9rem; border-left: 4px solid var(--fg); font-size: .78rem; line-height: 1.5; }
+.norma-explica p + p { margin-top: .35rem; }
+/* pirâmide: degraus que se alargam de cima para baixo */
+.pir { display: grid; gap: .6rem; justify-items: center; margin-top: 1.1rem; }
+.pir-degrau { width: 100%; border: 2px solid var(--line); padding: .9rem 1.1rem 1.1rem; position: relative; }
+@media (min-width: 900px) { .pir-degrau--1 { width: 56%; } .pir-degrau--2 { width: 78%; } }
+.pir-degrau--1 { border-width: 4px; border-color: var(--n-const); }
+.pir-degrau--2 { border-width: 3px; border-color: var(--n-comp); }
+.pir-nivel { font: 800 .62rem/1 var(--fonte-texto); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin-bottom: .55rem; }
+.pir-topo { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .7rem; }
+.pir-vira { font-size: .74rem; font-weight: 600; color: var(--muted); }
+.pir-curto { font-family: var(--fonte-titulo); font-size: 1.35rem; line-height: 1.1; text-transform: uppercase; margin-top: .55rem; }
+.pir-dl { margin-top: .5rem; font-size: .84rem; line-height: 1.5; }
+.pir-dl dt { font: 800 .62rem/1.3 var(--fonte-texto); letter-spacing: .12em; text-transform: uppercase; color: var(--vermelho); margin-top: .55rem; }
+.pir-dl dd { margin: 0; }
+.pir-filtro { margin-top: .8rem; padding: .35rem .7rem; }
+.pir-mesmo { font: 800 .66rem/1.4 var(--fonte-texto); letter-spacing: .1em; text-transform: uppercase; margin-bottom: .7rem; }
+.pir-trio { display: grid; gap: 0; }
+.pir-trio > .pir-bloco { padding: .9rem 0 1rem; border-top: 1px solid var(--line); }
+.pir-trio > .pir-bloco:first-child { border-top: 0; padding-top: 0; }
+@media (min-width: 900px) {
+    .pir-trio { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .pir-trio > .pir-bloco { border-top: 0; padding: 0 1rem; border-left: 1px solid var(--line); }
+    .pir-trio > .pir-bloco:first-child { padding-left: 0; border-left: 0; }
+}
+.pir-degrau--3 { border-width: 2px; }
+.pir-degrau--4 { border: 2px dashed var(--line); background: transparent; }
+.pir-seta { display: flex; justify-content: space-between; gap: 1rem; font: 700 .66rem/1.3 var(--fonte-texto); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-top: .9rem; }
