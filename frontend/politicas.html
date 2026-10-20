@@ -679,7 +679,7 @@ function cartao(p) {
             <div class="flex items-start justify-between gap-3">
                 <div class="min-w-0">
                     ${p.norma && normaInfo(p.norma) ? `<p class="flex flex-wrap items-center gap-x-2.5 gap-y-1 mb-1.5">${tagNorma(p.norma)}<span class="norma-curto">${esc(normaInfo(p.norma).curto)}</span></p>` : ''}
-                    <p class="text-[11px] font-bold tracking-wide uppercase text-slate-500 dark:text-slate-400">
+                    <p data-sem-gl class="text-[11px] font-bold tracking-wide uppercase text-slate-500 dark:text-slate-400">
                         <i class="fa-solid ${ICONE_NIVEL[p.nivel] || 'fa-landmark'} mr-1" aria-hidden="true"></i>${esc(NOME_NIVEL[p.nivel] || p.nivel)} · ${esc(tipo)} ${esc(numero)} · ${esc(NOME_INST[p.instancia] || p.instancia)}</p>
                 </div>
                 ${statusPilula(p)}
