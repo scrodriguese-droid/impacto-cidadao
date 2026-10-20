@@ -20,6 +20,8 @@
         /* aba lateral com os projetos do(a) deputado(a): abre ao lado do gráfico, sem tirar o leitor do lugar */
         .gaveta-projetos { position: fixed; top: 0; right: 0; bottom: 0; z-index: 60; width: min(100vw, 30rem); overflow-y: auto; padding: .75rem; box-shadow: -6px 0 24px rgba(0,0,0,.25); border-left: 2px solid #111; }
         .gaveta-projetos:empty { display: none; }
+        /* gaveta "Mais filtros": fundo sólido (o tema do site zera bg-white) e alinhada à direita do botão */
+        .gaveta-filtros { right: 0; background: var(--papel) !important; color: var(--fg) !important; border: 2px solid var(--fg) !important; box-shadow: 6px 6px 0 rgba(0,0,0,.25) !important; max-width: calc(100vw - 2rem); }
         .gaveta-projetos { background: var(--papel) !important; color: var(--fg) !important; }
         /* em telas largas, abre espaço para a aba em vez de cobrir o conteúdo */
         @media (min-width: 1280px) { body:has(.gaveta-projetos:not(:empty)) main#conteudo { padding-right: 31rem !important; max-width: none !important; } }
@@ -65,19 +67,14 @@
         </div>
     </div>
 
-    <!-- Nível de governo (segmentado) -->
-    <div id="segNivel" class="mt-4 inline-flex flex-wrap gap-1 p-1 rounded-2xl bg-slate-200/70 dark:bg-slate-800" role="radiogroup" aria-label="Nível de governo"></div>
-
-    <!-- Filtros rápidos -->
-    <div class="mt-3 flex flex-wrap items-center gap-2 text-sm">
-        <label class="sr-only" for="filtroCategoria">Tema</label>
-        <select id="filtroCategoria" class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2"></select>
-        <label class="sr-only" for="filtroInstancia">Poder</label>
-        <select id="filtroInstancia" class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2">
-            <option value="">Todos os poderes</option>
-            <option value="executivo">Executivo</option>
-            <option value="legislativo">Legislativo</option>
-        </select>
+    <!-- Busca ampla com o período ao lado; o resto fica na gaveta "Mais filtros" -->
+    <div class="mt-8 flex flex-wrap items-stretch gap-2 text-sm">
+        <div class="relative flex-1 min-w-0">
+            <label for="busca" class="sr-only">Buscar</label>
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-4 text-slate-400 text-xs" aria-hidden="true"></i>
+            <input id="busca" type="search" maxlength="120" placeholder="Buscar leis e medidas: FGTS, MEI, imposto…"
+                   class="w-full pl-8 pr-3 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 focus:outline-none">
+        </div>
         <div class="relative">
             <button id="btnPeriodo" type="button" class="inline-flex items-center gap-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2" aria-expanded="false" aria-controls="popPeriodo">
                 <i class="fa-regular fa-calendar text-xs text-slate-400" aria-hidden="true"></i><span id="periodoRotulo">Todo o período</span>
@@ -108,15 +105,26 @@
                 </form>
             </div>
         </div>
-        <div class="relative flex-grow min-w-[10rem] max-w-xs">
-            <label for="busca" class="sr-only">Buscar</label>
-            <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400 text-xs" aria-hidden="true"></i>
-            <input id="busca" type="search" maxlength="120" placeholder="FGTS, MEI, imposto…"
-                   class="w-full pl-8 pr-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 focus:outline-none">
-        </div>
+    </div>
+    <div class="mt-3 flex flex-wrap items-center gap-2 text-sm">
+        <label class="sr-only" for="filtroCategoria">Tema</label>
+        <select id="filtroCategoria" class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2"></select>
+        <label class="sr-only" for="filtroInstancia">Poder</label>
+        <select id="filtroInstancia" class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2">
+            <option value="">Todos os poderes</option>
+            <option value="executivo">Executivo</option>
+            <option value="legislativo">Legislativo</option>
+        </select>
         <details class="relative">
             <summary class="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300"><i class="fa-solid fa-sliders mr-1.5 text-xs" aria-hidden="true"></i>Mais filtros</summary>
-            <div class="absolute z-20 mt-2 w-64 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg p-3 space-y-3">
+            <div class="gaveta-filtros absolute z-30 mt-2 w-[min(92vw,34rem)] p-3 space-y-3">
+                                <div><p class="text-xs font-semibold mb-1">Esfera de governo</p>
+    <div id="segNivel" class="inline-flex flex-wrap gap-1 p-1 rounded-2xl bg-slate-200/70 dark:bg-slate-800" role="radiogroup" aria-label="Nível de governo"></div></div>
+    <div id="blocoNorma" class="hidden">
+        <p class="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">Peso da norma
+            <a href="#hierarquia" class="normal-case tracking-normal font-semibold underline ml-1">o que é isso?</a></p>
+        <div id="segNorma" class="norma-filtros flex flex-wrap items-center gap-2" role="group" aria-label="Filtrar por tipo de norma"></div>
+    </div>
                 <label class="block text-xs font-semibold">Situação
                     <select id="filtroStatus" class="mt-1 w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-2 text-sm font-normal"></select></label>
                 <label class="block text-xs font-semibold">Ordenar por
@@ -128,20 +136,13 @@
         </details>
     </div>
 
-    <!-- Peso da norma (pirâmide de Kelsen): legenda e filtro ao mesmo tempo -->
-    <div id="blocoNorma" class="hidden mt-4">
-        <p class="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">Peso da norma
-            <a href="#hierarquia" class="normal-case tracking-normal font-semibold underline ml-1">o que é isso?</a></p>
-        <div id="segNorma" class="norma-filtros flex flex-wrap items-center gap-2" role="group" aria-label="Filtrar por tipo de norma"></div>
-    </div>
-
     <div id="chipsFiltro" class="flex flex-wrap gap-2 mt-3"></div>
     <p id="contagem" class="text-xs text-slate-500 dark:text-slate-400 mt-3" aria-live="polite">Carregando…</p>
     <p id="frescor" class="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5"></p>
     <p id="avisoPeriodo" class="hidden mt-2 text-xs text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 rounded-lg px-3 py-2"></p>
 
     <!-- Infográfico: caminho de uma proposta até virar lei (conteúdo fixo, regras da Constituição) -->
-    <section id="processo" class="mt-5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 sm:p-5" aria-labelledby="tProcesso">
+    <section id="processo" class="mt-14 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 sm:p-5" aria-labelledby="tProcesso">
         <h2 id="tProcesso" class="text-lg font-bold"><i class="fa-solid fa-route mr-2 text-brand-600" aria-hidden="true"></i>Como uma ideia vira lei</h2>
         <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">O caminho da tramitação legislativa em 5 etapas, em linguagem simples. Vale para o Congresso; em Assembleias e Câmaras Municipais o roteiro é parecido, com as diferenças indicadas.</p>
         <ol class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5 list-none p-0">
