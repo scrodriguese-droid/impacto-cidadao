@@ -569,18 +569,11 @@ function radarEconomico(dg) {
         <p class="ficha-nota mt-2">↑ melhorou · → estável · ↓ piorou, sempre em comparação com 12 meses antes. Fonte dos números: Banco Central (despesa primária: SICONFI).</p>
         ${faixaConexao(c.conexao, !!historia)}${historia}${visoes(c.visoes)}`
         : `<div class="radar-aviso" role="status"><b>O confronto entre política fiscal e monetária não carregou.</b> Atualize a página em alguns minutos.</div>`;
-    const itens = dg.cotidiano.itens.map((i) => `<div class="radar-destaque-item"><h4>${esc(i.tema)}</h4>
-        <p class="radar-stat">${esc(i.destaque.valor)}</p><p class="radar-stat-leg">${esc(i.destaque.legenda)}</p>
-        <ul class="radar-pontos">${i.pontos.map((t) => `<li>${negrito(t)}</li>`).join('')}</ul></div>`).join('');
     const criterios = [dg.social ? ['Economia e vida da população', dg.social] : null, ['Situação fiscal', dg.fiscal]].filter(Boolean)
         .map(([t, p]) => `<p class="ficha-nota mt-2"><b>${t}.</b> ${esc(p.criterio)} Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(p.fonte.url))}">${esc(p.fonte.nome)}</a>.</p>`).join('');
     return `<div class="radar" id="radar">
         <p class="radar-sub">${esc(dg.subtitulo)}.</p>
         ${confronto}
-        <div class="radar-destaque">
-            <div class="radar-destaque-cab"><p>O que isso significa para a sua vida</p><h3>${esc(dg.cotidiano.titulo)}</h3></div>
-            <div class="radar-destaque-corpo">${itens}</div>
-            ${dg.cotidiano.conjunto ? `<p class="radar-conjunto">${negrito(dg.cotidiano.conjunto)}</p>` : ''}</div>
         ${avisoSocial}${dg.social ? painelSocial(dg.social) : ''}
         ${c ? '' : historia}
         <details class="sanfona mt-4"><summary>Como classificamos</summary>
