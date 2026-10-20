@@ -172,6 +172,31 @@
         <p class="mt-3 text-[11px] text-slate-500">Fonte: Constituição Federal, arts. 59 a 69 (processo legislativo) e art. 66 (sanção e veto); regimentos internos da Câmara dos Deputados e do Senado Federal. Os prazos e quóruns municipais e estaduais seguem a Lei Orgânica e a Constituição Estadual de cada ente.</p>
     </section>
 
+    <!-- Busca de projetos de lei por tema: tipo de norma, efeito aparente do texto e situação -->
+    <section id="buscaProj" class="mt-5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 sm:p-5" aria-labelledby="tBuscaProj">
+        <h2 id="tBuscaProj" class="text-lg font-bold"><i class="fa-solid fa-magnifying-glass-chart mr-2 text-brand-600" aria-hidden="true"></i>Buscar projetos por tema</h2>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Pesquise uma palavra da ementa oficial (ex.: aborto, armas, isenção, dedução) entre os projetos da Câmara dos Deputados no período escolhido acima e veja como eles se distribuem.</p>
+        <form id="formProj" class="mt-3 flex gap-2" role="search">
+            <label for="qProj" class="sr-only">Palavra-chave</label>
+            <input id="qProj" type="search" maxlength="80" autocomplete="off" placeholder="Palavra-chave da ementa: aborto, armas, isenção…"
+                   class="flex-1 min-w-0 px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+            <button type="submit" class="px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold">Buscar</button>
+        </form>
+        <div class="mt-3 grid gap-3 sm:grid-cols-3 text-xs">
+            <div><p class="font-bold mb-1">Tipo de norma</p><div id="fTipo" class="flex flex-wrap gap-1" role="radiogroup" aria-label="Tipo de norma"></div></div>
+            <div><p class="font-bold mb-1">Efeito aparente do texto</p><div id="fEfeito" class="flex flex-wrap gap-1" role="radiogroup" aria-label="Efeito aparente do texto"></div></div>
+            <div><p class="font-bold mb-1">Situação</p><div id="fSit" class="flex flex-wrap gap-1" role="radiogroup" aria-label="Situação"></div></div>
+        </div>
+        <div id="termoProj" class="mt-4" aria-live="polite"></div>
+        <ul id="listaProj" class="mt-3 space-y-3 list-none p-0"></ul>
+        <div class="text-center mt-3"><button id="maisProj" type="button" class="hidden px-4 py-2 border border-slate-300 dark:border-slate-600 text-sm font-semibold">Ver mais projetos</button></div>
+        <ul class="mt-4 text-[11px] text-slate-500 list-disc pl-5 space-y-1">
+            <li><b>Tipo de norma:</b> PEC altera a Constituição; PLP é lei complementar; PL é lei ordinária. Medidas provisórias (MPV) não estão neste conjunto: aparecem na lista de atos do Executivo, abaixo.</li>
+            <li><b>Efeito aparente do texto:</b> classificação automática, só por palavras da ementa, sem posição política: “restringe ou pune mais” (proíbe, tipifica, aumenta pena, obriga…), “amplia permissões ou direitos” (garante, isenta, autoriza, descriminaliza…) ou “procedimental” (cadastros, programas, homenagens, organização). Pode errar e deixa muitos projetos sem classificação; a ementa oficial aparece sempre para você conferir.</li>
+            <li><b>Situação:</b> “aprovado” = virou lei ou emenda constitucional; “arquivado” = arquivado pela Câmara; “em tramitação” = os demais, inclusive os parados em comissões.</li>
+        </ul>
+    </section>
+
     <!-- Autoria dos projetos da Câmara: divisão por tema e projetos por político -->
     <section id="autoria" class="hidden mt-5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 sm:p-5" aria-labelledby="tAutoria">
         <h2 id="tAutoria" class="text-lg font-bold"><i class="fa-solid fa-chart-column mr-2 text-brand-600" aria-hidden="true"></i>Quem propõe e o que vira lei</h2>
@@ -888,6 +913,82 @@ document.addEventListener('click', (ev) => {
 document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape' && POL.id) { POL.id = null; $('projPolitico').innerHTML = ''; } });
 document.addEventListener('change', (ev) => { if (ev.target.id === 'temaPolitico') abrirPolitico(POL.id, ev.target.value); });
 document.getElementById('btnTema')?.addEventListener('click', () => setTimeout(() => { if (P.autoria) { desenharGraficoTemas(P.autoria); desenharAutores(); desenharParadas(); } }, 50));
+
+/* ====================================================================== *
+ *  Busca de projetos por tema
+ * ====================================================================== */
+const BP = { q: '', tipo: '', efeito: '', efet: '', desloc: 0, req: 0 };
+const OPC_TIPO = [['', 'Todos'], ['PEC', 'PEC · Constituição'], ['PLP', 'PLP · Lei complementar'], ['PL', 'PL · Lei ordinária']];
+const OPC_EFEITO = [['', 'Todos'], ['restringe', 'Restringe ou pune mais'], ['amplia', 'Amplia permissões ou direitos'], ['procedimental', 'Procedimental'], ['indefinido', 'Não classificado']];
+const OPC_SIT = [['', 'Todas'], ['aprovado', 'Aprovado'], ['em_tramitacao', 'Em tramitação'], ['arquivado', 'Arquivado']];
+const ROT_TIPO = { PEC: 'PEC · altera a Constituição', PLP: 'PLP · lei complementar', PL: 'PL · lei ordinária' };
+const ROT_SIT = { aprovado: 'Aprovado', em_tramitacao: 'Em tramitação', arquivado: 'Arquivado' };
+const COR_EFEITO = { restringe: '#A92823', amplia: '#0d9488', procedimental: '#64748b', indefinido: '#cbd5e1' };
+let rotulosEfeito = {};
+
+function desenharFiltrosProj() {
+    const grupo = (id, opcoes, chave) => {
+        $(id).innerHTML = opcoes.map(([v, r]) => `<button type="button" role="radio" aria-checked="${BP[chave] === v}" data-fproj="${chave}" data-v="${v}"
+            style="${BP[chave] === v ? 'background:var(--fg) !important;color:var(--papel) !important' : ''}" class="px-2.5 py-1 border text-xs font-semibold border-slate-300 dark:border-slate-600">${esc(r)}</button>`).join('');
+    };
+    grupo('fTipo', OPC_TIPO, 'tipo'); grupo('fEfeito', OPC_EFEITO, 'efeito'); grupo('fSit', OPC_SIT, 'efet');
+}
+const barraProporcao = (partes, total, cor) => `<div class="flex h-3 w-full overflow-hidden border border-slate-300 dark:border-slate-600" role="img" aria-label="Proporção">${
+    partes.filter((x) => x.n > 0).map((x) => `<div style="width:${(100 * x.n) / total}%;background:${cor(x.k)}" title="${esc(x.rot)}: ${nf(x.n)}"></div>`).join('')}</div>`;
+const legendaProp = (partes, total) => `<ul class="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-[11px] list-none p-0">${partes.filter((x) => x.n > 0).map((x) => `<li>${esc(x.rot)}: <b>${(100 * x.n / total).toLocaleString('pt-BR', { maximumFractionDigits: 0 })}%</b> (${nf(x.n)})</li>`).join('')}</ul>`;
+
+function cartaProjeto(x) {
+    const etq = 'px-1.5 py-0.5 text-[10px] font-extrabold tracking-wide uppercase border';
+    const a0 = x.autores[0];
+    const aut = a0 ? `${esc(a0.nome)}${a0.partido ? ` (${esc(a0.partido)}-${esc(a0.uf)})` : ''}${x.n_autores > 1 ? ` e outros ${nf(x.n_autores - 1)} autor(es)` : ''}` : 'não informada';
+    return `<li class="border border-slate-200 dark:border-slate-700 p-3">
+        <div class="flex flex-wrap items-center gap-1.5">
+            <span class="${etq}" style="border-color:#A92823;color:#A92823">${esc(ROT_TIPO[x.tipo_norma] || x.tipo_norma)}</span>
+            <span class="${etq}">${esc(ROT_SIT[x.efetividade])}</span>
+            <span class="${etq}" style="border-color:${COR_EFEITO[x.orientacao_tema]}">${esc(rotulosEfeito[x.orientacao_tema] || '')}</span></div>
+        <p class="mt-2 text-sm"><a class="font-extrabold underline" target="_blank" rel="noopener" href="${esc(urlSegura(x.url))}">${esc(x.ident)}</a> <span class="text-xs text-slate-500">· apresentado em ${esc(fmtData(x.data))}</span></p>
+        <p class="mt-1 text-sm italic text-slate-700 dark:text-slate-300">“${esc(x.ementa)}”</p>
+        <p class="mt-1.5 text-[11px] text-slate-500"><b>Autoria:</b> ${aut}</p>
+        ${x.efetividade === 'aprovado' ? '' : `<p class="text-[11px] text-slate-500"><b>Situação:</b> ${esc(x.parada.onde)}${x.situacao ? ` · ${esc(x.situacao)}` : ''}</p>`}</li>`;
+}
+
+async function buscarProjetos(acrescentar = false) {
+    const minha = ++BP.req;
+    if (!acrescentar) BP.desloc = 0;
+    const p = paramsPeriodo();
+    if (BP.q) p.set('q', BP.q);
+    if (BP.tipo) p.set('tipo', BP.tipo);
+    if (BP.efeito) p.set('efeito', BP.efeito);
+    if (BP.efet) p.set('efetividade', BP.efet);
+    if (BP.desloc) p.set('deslocamento', BP.desloc);
+    try {
+        const r = await api('/api/autoria/projetos?' + p);
+        if (minha !== BP.req) return;
+        rotulosEfeito = r.rotulos_efeito;
+        if (!acrescentar) {
+            const tot = r.total_busca;
+            const efeitos = Object.keys(r.rotulos_efeito).map((k) => ({ k, rot: r.rotulos_efeito[k], n: r.por_efeito[k] || 0 }));
+            const efs = [['aprovado', 'Aprovados'], ['em_tramitacao', 'Em tramitação'], ['arquivado', 'Arquivados']].map(([k, rot]) => ({ k, rot, n: r.por_efetividade[k] || 0 }));
+            $('termoProj').innerHTML = tot ? `<p class="text-sm"><b>${nf(tot)}</b> projeto(s) ${BP.q ? `com “${esc(BP.q)}” na ementa` : 'no período'}, de ${fmtData(r.periodo.desde)} a ${fmtData(r.periodo.ate)}${r.total_filtrado !== tot ? ` · <b>${nf(r.total_filtrado)}</b> com os filtros acima` : ''}.</p>
+                <div class="mt-3 grid gap-4 sm:grid-cols-2">
+                    <div><p class="text-xs font-bold">Distribuição por efeito aparente do texto</p>${barraProporcao(efeitos, tot, (k) => COR_EFEITO[k])}${legendaProp(efeitos, tot)}</div>
+                    <div><p class="text-xs font-bold">Efetividade: aprovados, em tramitação e arquivados</p>${barraProporcao(efs, tot, (k) => (k === 'aprovado' ? '#A92823' : k === 'arquivado' ? '#475569' : '#cbd5e1'))}${legendaProp(efs, tot)}</div></div>`
+                : '<p class="text-sm text-slate-600 dark:text-slate-400">Nenhum projeto encontrado para esta busca e período.</p>';
+            $('listaProj').innerHTML = '';
+        }
+        $('listaProj').insertAdjacentHTML('beforeend', r.projetos.map(cartaProjeto).join(''));
+        BP.desloc += r.projetos.length;
+        $('maisProj').classList.toggle('hidden', BP.desloc >= r.total_filtrado);
+    } catch (e) { if (minha === BP.req) $('termoProj').innerHTML = mensagemErro(e); }
+}
+desenharFiltrosProj();
+$('formProj').addEventListener('submit', (ev) => { ev.preventDefault(); BP.q = $('qProj').value.trim(); buscarProjetos(); });
+$('maisProj').addEventListener('click', () => buscarProjetos(true));
+document.addEventListener('click', (ev) => {
+    const b = ev.target.closest && ev.target.closest('[data-fproj]');
+    if (!b) return;
+    BP[b.dataset.fproj] = b.dataset.v; desenharFiltrosProj(); buscarProjetos();
+});
 
 /* ====================================================================== *
  *  Inicialização
