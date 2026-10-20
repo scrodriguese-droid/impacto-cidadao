@@ -598,13 +598,17 @@ def autoria_painel(visao: Annotated[str, Query(pattern="^(tema|deputado|partido|
     return _autoria(autoria.painel, visao, desde, ate, tema, partido, efeito)
 
 
-@router.get("/autoria/matriz", tags=["autoria"])
-def autoria_matriz(x: Annotated[list[str], Query(min_length=1, max_length=6, description="Temas base: t:<código> ou a:<assunto>")],
-                   y: Annotated[str, Query(pattern="^(partido|parlamentar|parada)$")] = "partido",
-                   ano_de: Annotated[int | None, Query(ge=1990, le=2100)] = None,
-                   ano_ate: Annotated[int | None, Query(ge=1990, le=2100)] = None,
-                   efeito: Annotated[str | None, Query(pattern="^(restringe|amplia|procedimental|indefinido)$")] = None) -> dict:
-    return _autoria(autoria.matriz, x, y, ano_de, ano_ate, efeito)
+@router.get("/autoria/catalogo", tags=["autoria"])
+def autoria_catalogo() -> dict:
+    return _autoria(autoria.catalogo)
+
+
+@router.get("/autoria/analise", tags=["autoria"])
+def autoria_analise(termo: Annotated[list[str], Query(min_length=1, max_length=6, description="t:<código>, a:<assunto> ou k:<palavra>")],
+                    de: Annotated[str, Query(pattern=r"^\d{4}-(0[1-9]|1[0-2])$", description="AAAA-MM")],
+                    ate: Annotated[str, Query(pattern=r"^\d{4}-(0[1-9]|1[0-2])$", description="AAAA-MM")],
+                    lente: Annotated[str, Query(pattern="^(partido|intencao|parlamentares|gargalo)$")] = "partido") -> dict:
+    return _autoria(autoria.analise, termo, lente, de, ate)
 
 
 @router.get("/autoria/projetos", tags=["autoria"])
