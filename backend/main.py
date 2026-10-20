@@ -611,6 +611,19 @@ def autoria_analise(termo: Annotated[list[str], Query(min_length=1, max_length=6
     return _autoria(autoria.analise, termo, lente, de, ate)
 
 
+@router.get("/autoria/analise/projetos", tags=["autoria"])
+def autoria_analise_projetos(termo: Annotated[list[str], Query(min_length=1, max_length=6)],
+                             de: Annotated[str, Query(pattern=r"^\d{4}-(0[1-9]|1[0-2])$")],
+                             ate: Annotated[str, Query(pattern=r"^\d{4}-(0[1-9]|1[0-2])$")],
+                             partido: Annotated[str | None, Query(max_length=30)] = None,
+                             efeito: Annotated[str | None, Query(pattern="^(restringe|amplia|procedimental|indefinido)$")] = None,
+                             etapa: Annotated[str | None, Query(pattern="^(arquivada|senado|plenario|comissao|mesa|outro)$")] = None,
+                             sigla: Annotated[str | None, Query(max_length=30)] = None,
+                             onde: Annotated[str | None, Query(max_length=200)] = None,
+                             so_lei: bool = False) -> dict:
+    return _autoria(autoria.projetos_da_analise, termo, de, ate, partido, efeito, etapa, sigla, onde, so_lei)
+
+
 @router.get("/autoria/projetos", tags=["autoria"])
 def autoria_projetos(q: Annotated[str | None, Query(max_length=80)] = None,
                      tipo: Annotated[str | None, Query(pattern="^(PEC|PLP|PL)$")] = None,

@@ -899,15 +899,15 @@ function desenharLentes() {
     }).join('');
 }
 // barra horizontal: trilho cinza = projetos; trecho verde = os que viraram lei
-function barra(rotulo, sub, valor, max, lei, direita) {
+function barra(rotulo, sub, valor, max, lei, direita, filtro) {
     const w = max ? Math.max(valor ? 1 : 0, (100 * valor) / max) : 0, wl = valor && max ? (100 * Math.min(lei || 0, valor)) / max : 0;
-    return `<li class="grid grid-cols-1 sm:grid-cols-[minmax(0,13rem)_1fr] gap-x-3 gap-y-1 items-center py-1.5">
+    return `<li class="grid grid-cols-1 sm:grid-cols-[minmax(0,13rem)_1fr] gap-x-3 gap-y-1 items-center py-1.5 ${filtro && valor ? 'cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800/60' : ''}" ${filtro && valor ? `data-filtro="${esc(JSON.stringify(filtro))}" role="button" tabindex="0" title="Ver os projetos"` : ''}>
         <div class="min-w-0"><span class="block text-sm font-semibold truncate" title="${esc(rotulo)}${sub ? ' — ' + esc(sub) : ''}">${esc(rotulo)}</span>${sub ? `<span class="block text-[11px] text-slate-500 truncate" title="${esc(sub)}">${esc(sub)}</span>` : ''}</div>
         <div><div class="relative h-3 rounded bg-slate-100 dark:bg-slate-700" role="img" aria-label="${esc(rotulo)}: ${esc(direita)}"><div class="absolute inset-y-0 left-0 rounded bg-slate-400 dark:bg-slate-500" style="width:${w.toFixed(1)}%"></div>
             ${wl ? `<div class="absolute inset-y-0 left-0 rounded bg-emerald-600" style="width:${wl.toFixed(1)}%"></div>` : ''}</div>
-            <span class="block text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">${esc(direita)}</span></div></li>`;
+            <span class="block text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">${esc(direita)}${filtro && valor ? ' · ver projetos' : ''}</span></div></li>`;
 }
-const cartaoNumero = (titulo, valor, nota) => `<div class="rounded-xl border border-slate-200 dark:border-slate-700 p-3"><p class="text-[11px] font-semibold text-slate-500 dark:text-slate-400">${esc(titulo)}</p>
+const cartaoNumero = (titulo, valor, nota, filtro) => `<div class="rounded-xl border border-slate-200 dark:border-slate-700 p-3 ${filtro ? 'cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800/60' : ''}" ${filtro ? `data-filtro="${esc(JSON.stringify(filtro))}" role="button" tabindex="0"` : ''}><p class="text-[11px] font-semibold text-slate-500 dark:text-slate-400">${esc(titulo)}</p>
     <p class="text-2xl font-extrabold mt-0.5 tabular-nums">${esc(valor)}</p><p class="text-[11px] text-slate-500 mt-0.5">${esc(nota)}</p></div>`;
 
 function htmlResultado(r) {
@@ -923,8 +923,8 @@ function htmlResultado(r) {
         `${pct(s.taxa_lei_pct)} dos projetos do período viraram lei (${nf(s.viraram_lei)} de ${nf(s.projetos)}).`,
     ].filter(Boolean);
     const cartoes = `<div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        ${cartaoNumero('Projetos apresentados', nf(s.projetos), s.por_termo.length > 1 ? s.por_termo.map((t) => `${t.rotulo}: ${nf(t.projetos)}`).join(' · ') : 'no período escolhido')}
-        ${cartaoNumero('Viraram lei', nf(s.viraram_lei), `${pct(s.taxa_lei_pct)} dos projetos`)}
+        ${cartaoNumero('Projetos apresentados', nf(s.projetos), s.por_termo.length > 1 ? s.por_termo.map((t) => `${t.rotulo}: ${nf(t.projetos)}`).join(' · ') : 'no período escolhido · ver lista', {})}
+        ${cartaoNumero('Viraram lei', nf(s.viraram_lei), `${pct(s.taxa_lei_pct)} dos projetos · ver quais`, { so_lei: 1 })}
         ${cartaoNumero('Teor restritivo ou punitivo', pct(s.restringe_pct), s.classificados ? `dos ${nf(s.classificados)} com efeito classificado` : 'nenhum projeto classificado')}
         ${cartaoNumero('Sem classificação de efeito', pct(s.sem_classificacao_pct), 'a ementa não deixa claro o efeito')}</div>
         <ul class="mt-3 text-sm space-y-1 list-disc pl-5">${tendencia.map((t) => `<li>${esc(t)}</li>`).join('')}</ul>`;
@@ -932,13 +932,13 @@ function htmlResultado(r) {
     if (L === 'partido') {
         titulo = 'Quanto da produção de cada partido trata do tema';
         const max = Math.max(...r.itens.map((x) => x.proporcao_pct || 0));
-        corpo = r.itens.length ? `<ul>${r.itens.map((x) => barra(x.rotulo, `${nf(x.projetos)} de ${nf(x.total_partido)} projetos do partido`, x.proporcao_pct || 0, max, 0, `${pct(x.proporcao_pct)} dos projetos do partido · ${nf(x.projetos)} sobre o tema, ${nf(x.viraram_lei)} viraram lei`)).join('')}</ul>` : '<p class="text-sm text-slate-500">Nenhum projeto de deputado(a) neste tema.</p>';
+        corpo = r.itens.length ? `<ul>${r.itens.map((x) => barra(x.rotulo, `${nf(x.projetos)} de ${nf(x.total_partido)} projetos do partido`, x.proporcao_pct || 0, max, 0, `${pct(x.proporcao_pct)} dos projetos do partido · ${nf(x.projetos)} sobre o tema, ${nf(x.viraram_lei)} viraram lei`, { partido: x.rotulo })).join('')}</ul>` : '<p class="text-sm text-slate-500">Nenhum projeto de deputado(a) neste tema.</p>';
         leg = 'Ordem alfabética. A barra é a proporção entre os projetos do partido: partidos com poucos projetos no total oscilam muito, por isso o número de projetos vem junto. Não há classificação ideológica de partidos.';
         if (r.sem_autor_deputado) leg += ` ${nf(r.sem_autor_deputado)} projeto(s) do tema são do Executivo, Senado ou comissões e ficam de fora desta lista.`;
     } else if (L === 'intencao') {
         titulo = 'Intenção do texto, pela ementa';
         const max = Math.max(...r.itens.map((x) => x.projetos));
-        corpo = `<ul>${r.itens.map((x) => barra(x.cod === 'procedimental' ? 'Procedimental ou regulatório' : x.rotulo, '', x.projetos, max, x.viraram_lei, `${nf(x.projetos)} projetos (${pct(100 * x.projetos / s.projetos)}) · ${nf(x.viraram_lei)} viraram lei`)).join('')}</ul>`;
+        corpo = `<ul>${r.itens.map((x) => barra(x.cod === 'procedimental' ? 'Procedimental ou regulatório' : x.rotulo, '', x.projetos, max, x.viraram_lei, `${nf(x.projetos)} projetos (${pct(100 * x.projetos / s.projetos)}) · ${nf(x.viraram_lei)} viraram lei`, { efeito: x.cod })).join('')}</ul>`;
         leg += ' Classificação automática por palavras da ementa, sem posição política: “restringe” e “amplia” não significam bom ou ruim.';
     } else if (L === 'parlamentares') {
         titulo = 'Parlamentares com projetos no tema';
@@ -949,10 +949,10 @@ function htmlResultado(r) {
     } else {
         titulo = 'Onde estão os projetos que não viraram lei';
         const max = Math.max(1, ...r.itens.map((x) => x.projetos));
-        corpo = r.itens.length ? `<ul>${r.itens.map((x) => barra(x.sigla || x.rotulo, x.sigla ? x.rotulo : '', x.projetos, max, 0, `${nf(x.projetos)} projetos (${pct(x.proporcao_pct)} dos parados)`)).join('')}</ul>` : '<p class="text-sm text-slate-500">Todos os projetos do tema viraram lei.</p>';
+        corpo = r.itens.length ? `<ul>${r.itens.map((x) => barra(x.sigla || x.rotulo, x.sigla ? x.rotulo : '', x.projetos, max, 0, `${nf(x.projetos)} projetos (${pct(x.proporcao_pct)} dos parados)`, { etapa: x.etapa, sigla: x.sigla, onde: x.sigla ? '' : x.rotulo })).join('')}</ul>` : '<p class="text-sm text-slate-500">Todos os projetos do tema viraram lei.</p>';
         leg = `${nf(r.parados)} projetos não viraram lei. Barras em ordem de volume (contagem), até ${r.itens.length} de ${nf(r.locais_total)} locais. Inclui arquivados e os que já passaram pela Câmara e esperam o Senado.`;
     }
-    return `${cartoes}<h3 class="text-sm font-bold mt-6">${esc(titulo)}</h3><div class="mt-1">${corpo}</div><p class="text-[11px] text-slate-500 mt-2">${esc(leg)}</p>`;
+    return `${cartoes}<div id="rProjetos" class="mt-4" aria-live="polite"></div><h3 class="text-sm font-bold mt-6">${esc(titulo)}</h3><div class="mt-1">${corpo}</div><p class="text-[11px] text-slate-500 mt-2">${esc(leg)}</p>`;
 }
 async function consultar() {
     const minha = ++CB.req, box = $('rResultado');
@@ -970,6 +970,44 @@ async function consultar() {
     $('rNotas').innerHTML = r.notas.map((n) => `<li>${esc(n)}</li>`).join('')
         + `<li>Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(r.fonte.url))}">${esc(r.fonte.nome)}</a>. Dados coletados em ${esc(fmtDataHora(r.gerado_em))}.</li>`;
 }
+// lista de projetos por trás de uma barra ou cartão (mesmos termos e período da análise)
+const LP = { filtro: null, req: 0 };
+const RPT = { restringe: 'Restringe ou pune mais', amplia: 'Amplia permissões ou direitos', procedimental: 'Procedimental ou regulatório', indefinido: 'Não classificado' };
+async function abrirProjetos(filtro, soLei) {
+    LP.filtro = filtro;
+    const box = $('rProjetos'); if (!box) return;
+    const minha = ++LP.req;
+    const q = new URLSearchParams({ de: CB.de, ate: CB.ate });
+    CB.termos.forEach((t) => q.append('termo', t.chave));
+    for (const k of ['partido', 'efeito', 'etapa', 'sigla', 'onde']) if (filtro[k]) q.set(k, filtro[k]);
+    const lei = soLei === undefined ? !!filtro.so_lei : soLei;
+    if (lei) q.set('so_lei', 'true');
+    box.innerHTML = '<p class="text-sm text-slate-500">Carregando projetos…</p>';
+    let r;
+    try { r = await api('/api/autoria/analise/projetos?' + q); } catch (e) { if (minha === LP.req) box.innerHTML = `<p class="text-sm text-slate-500">Não foi possível carregar os projetos agora. ${esc(e.message || '')}</p>`; return; }
+    if (minha !== LP.req) return;
+    const quem = [filtro.partido ? `partido ${filtro.partido}` : '', filtro.efeito ? `efeito “${(RPT[filtro.efeito] || filtro.efeito).toLowerCase()}”` : '', filtro.etapa ? `parados em ${filtro.sigla || filtro.onde}` : ''].filter(Boolean).join(' · ') || (lei ? 'os que viraram lei' : 'todos os da busca');
+    box.innerHTML = `<div class="rounded-xl border border-slate-200 dark:border-slate-700 p-4">
+        <div class="flex items-start justify-between gap-3"><div>
+            <h3 class="font-bold text-sm">Projetos: ${esc(quem)}</h3>
+            <p class="text-sm">${nf(r.total)} projeto(s) · ${nf(r.viraram_lei)} virou(aram) lei${r.total > r.limite ? ` · mostrando os ${nf(r.limite)} mais recentes` : ''}</p></div>
+            <button type="button" data-fechar-lista class="text-xs text-slate-500 underline">fechar</button></div>
+        <label class="mt-2 inline-flex items-center gap-2 text-xs font-semibold"><input type="checkbox" id="lpSoLei" ${lei ? 'checked' : ''}> Só os que viraram lei</label>
+        <ul class="mt-3 divide-y divide-slate-100 dark:divide-slate-700 max-h-[28rem] overflow-auto">${r.projetos.length ? r.projetos.map((x) => `<li class="py-2.5 text-sm">
+            <div class="flex flex-wrap items-center gap-2"><a class="font-semibold underline" target="_blank" rel="noopener" href="${esc(urlSegura(x.url))}">${esc(x.ident)}</a>
+                <span class="text-xs text-slate-500">${esc(fmtData(x.data))}</span>
+                ${x.aprovado ? '<span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">Virou lei</span>' : `<span class="text-[11px] text-slate-500">${esc(x.situacao || 'Em tramitação')}</span>`}</div>
+            <p class="text-xs text-slate-600 dark:text-slate-400 mt-0.5">${esc(x.ementa)}</p>
+            <p class="text-[11px] text-slate-500 mt-0.5"><b>Autoria:</b> ${esc(x.autores.join(', ') || 'não informada')}${x.aprovado ? '' : ` · <b>Parou em:</b> ${esc(x.parada.onde)}`} · efeito: ${esc(x.efeito.toLowerCase())}</p></li>`).join('') : '<li class="py-3 text-sm text-slate-500">Nenhum projeto com esse filtro.</li>'}</ul></div>`;
+    box.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+}
+document.addEventListener('click', (ev) => {
+    const f = ev.target.closest && ev.target.closest('[data-filtro]');
+    if (f) { abrirProjetos(JSON.parse(f.dataset.filtro)); return; }
+    if (ev.target.closest && ev.target.closest('[data-fechar-lista]')) { $('rProjetos').innerHTML = ''; LP.filtro = null; }
+});
+document.addEventListener('keydown', (ev) => { const f = ev.target.closest && ev.target.closest('[data-filtro]'); if (f && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); abrirProjetos(JSON.parse(f.dataset.filtro)); } });
+document.addEventListener('change', (ev) => { if (ev.target.id === 'lpSoLei' && LP.filtro) abrirProjetos(LP.filtro, ev.target.checked); });
 const consultarSuave = debounce(consultar, 300);
 function aplicarAtalho(a) {
     const L = CB.limites, fim = L.dados_ate;

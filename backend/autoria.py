@@ -639,3 +639,42 @@ def analise(termos: list[str], lente: str, de: str, ate: str) -> dict:
     with _trava:
         _cache_analise["itens"][chave] = res
     return res
+
+
+def projetos_da_analise(termos: list[str], de: str, ate: str, partido: str | None = None, efeito: str | None = None,
+                        etapa: str | None = None, sigla: str | None = None, onde: str | None = None, so_lei: bool = False) -> dict:
+    """Lista os projetos por trás de uma barra ou cartão da análise (mesmos termos e período), mais recentes primeiro."""
+    if not (_MES.match(de or "") and _MES.match(ate or "")) or de > ate or _meses(de, ate) > MAX_MESES:
+        raise ValueError("Período inválido.")
+    termos = list(dict.fromkeys(termos))
+    if not termos or len(termos) > MAX_TERMOS:
+        raise ValueError(f"Escolha de 1 a {MAX_TERMOS} temas ou palavras-chave.")
+    if efeito and efeito not in ROTULOS_EFEITO:
+        raise ValueError("Efeito desconhecido.")
+    d = _dados()
+    for t in termos:
+        _rotulo_base(d, t)
+    de_ef, ate_ef = max(de, f"{d['anos'][0]}-01"), min(ate, _ultimo_mes(d))
+    achados = [p for p in d["projetos"] if de_ef <= p["data"][:7] <= ate_ef and any(_pertence(p, t) for t in termos)]
+    sel = []
+    for p in achados:
+        if "_ef" not in p:
+            p["_ef"] = efeito_da_ementa(p["ementa"])
+        if so_lei and not p["aprovado"]:
+            continue
+        if efeito and p["_ef"] != efeito:
+            continue
+        if partido and partido not in {d["politicos"][a]["partido"] or "Sem partido" for a in p["autores"]}:
+            continue
+        if etapa is not None:
+            x = _parada(d, p)
+            if p["aprovado"] or x["etapa"] != etapa or x["sigla"] != (sigla or "") or (not sigla and x["onde"] != (onde or "")):
+                continue
+        sel.append(p)
+    sel.sort(key=lambda p: (p["data"], p["id"]), reverse=True)
+    return {"total": len(sel), "viraram_lei": sum(1 for p in sel if p["aprovado"]), "limite": LIMITE_PROJETOS,
+            "projetos": [{"ident": p["ident"], "data": p["data"], "ementa": p["ementa"], "url": p["url"], "aprovado": p["aprovado"],
+                          "situacao": p["situacao"], "parada": _parada(d, p), "efeito": ROTULOS_EFEITO[p["_ef"]],
+                          "autores": [d["politicos"][a]["nome"] + f" ({d['politicos'][a]['partido']}-{d['politicos'][a]['uf']})" for a in p["autores"][:4]]
+                                     + [o["nome"] for o in (p.get("outros") or [])[:2]]} for p in sel[:LIMITE_PROJETOS]],
+            **_aviso(d)}
