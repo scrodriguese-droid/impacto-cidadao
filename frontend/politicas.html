@@ -193,18 +193,22 @@
                    class="flex-1 min-w-0 px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
             <button type="submit" class="px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold">Buscar</button>
         </form>
-        <div class="mt-3 text-xs">
-            <p class="font-bold mb-1">Período (por ano de apresentação)</p>
-            <div id="fPeriodo" class="flex flex-wrap gap-1" role="group" aria-label="Atalhos de período"></div>
-            <div class="mt-2 flex flex-wrap items-center gap-2">
+        <div class="mt-3 flex flex-wrap items-center gap-2 text-sm">
+            <label class="sr-only" for="selPeriodo">Período (por ano de apresentação)</label>
+            <select id="selPeriodo" class="px-3 py-2 border border-slate-300 dark:border-slate-600 bg-transparent"></select>
+            <span id="perCustom" class="hidden items-center gap-2 text-xs">
                 <label for="anoDe">De</label><select id="anoDe" class="px-2 py-1 border border-slate-300 dark:border-slate-600 bg-transparent"></select>
-                <label for="anoAte">até</label><select id="anoAte" class="px-2 py-1 border border-slate-300 dark:border-slate-600 bg-transparent"></select>
-                <span id="notaPeriodo" class="text-slate-500"></span></div>
-        </div>
-        <div class="mt-3 grid gap-3 sm:grid-cols-3 text-xs">
-            <div><p class="font-bold mb-1">Tipo de norma</p><div id="fTipo" class="flex flex-wrap gap-1" role="radiogroup" aria-label="Tipo de norma"></div></div>
-            <div><p class="font-bold mb-1">Efeito aparente do texto</p><div id="fEfeito" class="flex flex-wrap gap-1" role="radiogroup" aria-label="Efeito aparente do texto"></div></div>
-            <div><p class="font-bold mb-1">Situação</p><div id="fSit" class="flex flex-wrap gap-1" role="radiogroup" aria-label="Situação"></div></div>
+                <label for="anoAte">até</label><select id="anoAte" class="px-2 py-1 border border-slate-300 dark:border-slate-600 bg-transparent"></select></span>
+            <details class="relative">
+                <summary class="px-3 py-2 border border-slate-300 dark:border-slate-600 cursor-pointer"><i class="fa-solid fa-sliders mr-1.5 text-xs" aria-hidden="true"></i>Mais filtros<span id="nFiltrosProj" class="ml-1 font-bold"></span></summary>
+                <div class="gaveta-filtros absolute z-30 mt-2 w-[min(92vw,26rem)] p-3 space-y-3 text-xs" style="left:0;right:auto">
+                    <label class="block font-semibold">Tipo de norma<select id="fTipo" class="mt-1 w-full px-2 py-2 border border-slate-300 dark:border-slate-600 bg-transparent text-sm font-normal"></select></label>
+                    <label class="block font-semibold">Efeito aparente do texto<select id="fEfeito" class="mt-1 w-full px-2 py-2 border border-slate-300 dark:border-slate-600 bg-transparent text-sm font-normal"></select></label>
+                    <label class="block font-semibold">Situação<select id="fSit" class="mt-1 w-full px-2 py-2 border border-slate-300 dark:border-slate-600 bg-transparent text-sm font-normal"></select></label>
+                    <button type="button" id="limparFiltrosProj" class="underline">limpar filtros</button>
+                </div>
+            </details>
+            <span id="notaPeriodo" class="text-xs text-slate-500"></span>
         </div>
         <div id="termoProj" class="mt-4" aria-live="polite"></div>
         <div id="curvaProj" class="hidden mt-4">
@@ -214,11 +218,14 @@
         </div>
         <ul id="listaProj" class="mt-3 space-y-3 list-none p-0"></ul>
         <div class="text-center mt-3"><button id="maisProj" type="button" class="hidden px-4 py-2 border border-slate-300 dark:border-slate-600 text-sm font-semibold">Ver mais projetos</button></div>
-        <ul class="mt-4 text-[11px] text-slate-500 list-disc pl-5 space-y-1">
-            <li><b>Tipo de norma:</b> PEC altera a Constituição; PLP é lei complementar; PL é lei ordinária. Medidas provisórias (MPV) não estão neste conjunto: aparecem na lista de atos do Executivo, abaixo.</li>
-            <li><b>Efeito aparente do texto:</b> classificação automática, só por palavras da ementa, sem posição política: “restringe ou pune mais” (proíbe, tipifica, aumenta pena, obriga…), “amplia permissões ou direitos” (garante, isenta, autoriza, descriminaliza…) ou “procedimental” (cadastros, programas, homenagens, organização). Pode errar e deixa muitos projetos sem classificação; a ementa oficial aparece sempre para você conferir.</li>
-            <li><b>Situação:</b> “aprovado” = virou lei ou emenda constitucional; “arquivado” = arquivado pela Câmara; “em tramitação” = os demais, inclusive os parados em comissões.</li>
-        </ul>
+        <details class="mt-4 text-[11px] text-slate-500">
+            <summary class="cursor-pointer font-semibold">Como ler esta busca (critérios dos filtros)</summary>
+            <ul class="mt-2 list-disc pl-5 space-y-1">
+                <li><b>Tipo de norma:</b> PEC altera a Constituição; PLP é lei complementar; PL é lei ordinária. Medidas provisórias (MPV) não estão neste conjunto: aparecem na lista de atos do Executivo, acima.</li>
+                <li><b>Efeito aparente do texto:</b> classificação automática, só por palavras da ementa, sem posição política: “restringe ou pune mais” (proíbe, tipifica, aumenta pena, obriga…), “amplia permissões ou direitos” (garante, isenta, autoriza, descriminaliza…) ou “procedimental” (cadastros, programas, homenagens, organização). Pode errar e deixa muitos projetos sem classificação; a ementa oficial aparece sempre para você conferir.</li>
+                <li><b>Situação:</b> “aprovado” = virou lei ou emenda constitucional; “arquivado” = arquivado pela Câmara; “em tramitação” = os demais, inclusive os parados em comissões.</li>
+            </ul>
+        </details>
     </section>
 
     <!-- Autoria dos projetos da Câmara: divisão por tema e projetos por político -->
@@ -1025,14 +1032,14 @@ let rotulosEfeito = {};
 let graficoSerie = null;
 
 function desenharPeriodo() {
-    const atalho = (rot, de, ate) => {
-        const ativo = BP.anoDe === de && BP.anoAte === ate, fora = de < BP.anoMin;
-        return `<button type="button" data-pper="${de}-${ate}" ${fora ? 'disabled' : ''} title="${fora ? 'Ainda não coletamos anos anteriores a ' + BP.anoMin : ''}"
-            style="${ativo ? 'background:var(--fg) !important;color:var(--papel) !important;' : ''}${fora ? 'opacity:.4;' : ''}" class="px-2.5 py-1 border text-xs font-semibold border-slate-300 dark:border-slate-600">${esc(rot)}</button>`;
-    };
-    $('fPeriodo').innerHTML = atalho(`Últimos 10 anos (${ANO_ATUAL - 10}–${ANO_ATUAL})`, ANO_ATUAL - 10, ANO_ATUAL)
-        + atalho(`Tudo que coletamos (${BP.anoMin}–${ANO_ATUAL})`, BP.anoMin, ANO_ATUAL)
-        + LEGISLATURAS.map(([n, de, ate]) => atalho(`${n} legislatura (${de}–${ate})`, de, ate)).join('');
+    const opcoes = [[`${ANO_ATUAL - 10}-${ANO_ATUAL}`, `Últimos 10 anos (${ANO_ATUAL - 10}–${ANO_ATUAL})`], [`${BP.anoMin}-${ANO_ATUAL}`, `Tudo que coletamos (${BP.anoMin}–${ANO_ATUAL})`]]
+        .concat(LEGISLATURAS.filter(([, de]) => de >= BP.anoMin).map(([n, de, ate]) => [`${de}-${ate}`, `${n} legislatura (${de}–${ate})`]));
+    const atual = `${BP.anoDe}-${BP.anoAte}`;
+    const achou = opcoes.some(([v]) => v === atual);
+    $('selPeriodo').innerHTML = opcoes.map(([v, r]) => `<option value="${v}" ${v === atual ? 'selected' : ''}>${esc(r)}</option>`).join('')
+        + `<option value="custom" ${achou ? '' : 'selected'}>Personalizado…</option>`;
+    $('perCustom').classList.toggle('hidden', achou);
+    $('perCustom').classList.toggle('flex', !achou);
     const anos = []; for (let a = ANO_ATUAL; a >= BP.anoMin; a--) anos.push(a);
     const opt = (v) => anos.map((a) => `<option ${a === v ? 'selected' : ''}>${a}</option>`).join('');
     $('anoDe').innerHTML = opt(BP.anoDe); $('anoAte').innerHTML = opt(BP.anoAte);
@@ -1062,11 +1069,10 @@ function desenharSerie(r) {
 }
 
 function desenharFiltrosProj() {
-    const grupo = (id, opcoes, chave) => {
-        $(id).innerHTML = opcoes.map(([v, r]) => `<button type="button" role="radio" aria-checked="${BP[chave] === v}" data-fproj="${chave}" data-v="${v}"
-            style="${BP[chave] === v ? 'background:var(--fg) !important;color:var(--papel) !important' : ''}" class="px-2.5 py-1 border text-xs font-semibold border-slate-300 dark:border-slate-600">${esc(r)}</button>`).join('');
-    };
+    const grupo = (id, opcoes, chave) => { $(id).innerHTML = opcoes.map(([v, r]) => `<option value="${v}" ${BP[chave] === v ? 'selected' : ''}>${esc(r)}</option>`).join(''); };
     grupo('fTipo', OPC_TIPO, 'tipo'); grupo('fEfeito', OPC_EFEITO, 'efeito'); grupo('fSit', OPC_SIT, 'efet');
+    const n = [BP.tipo, BP.efeito, BP.efet].filter(Boolean).length;
+    $('nFiltrosProj').textContent = n ? `(${n})` : '';
 }
 const barraProporcao = (partes, total, cor) => `<div class="flex h-3 w-full overflow-hidden border border-slate-300 dark:border-slate-600" role="img" aria-label="Proporção">${
     partes.filter((x) => x.n > 0).map((x) => `<div style="width:${(100 * x.n) / total}%;background:${cor(x.k)}" title="${esc(x.rot)}: ${nf(x.n)}"></div>`).join('')}</div>`;
@@ -1120,10 +1126,10 @@ async function buscarProjetos(acrescentar = false) {
     } catch (e) { if (minha === BP.req) $('termoProj').innerHTML = mensagemErro(e); }
 }
 desenharFiltrosProj(); desenharPeriodo();
-document.addEventListener('click', (ev) => {
-    const b = ev.target.closest && ev.target.closest('[data-pper]');
-    if (!b) return;
-    [BP.anoDe, BP.anoAte] = b.dataset.pper.split('-').map(Number); desenharPeriodo(); buscarProjetos();
+$('selPeriodo').addEventListener('change', () => {
+    const v = $('selPeriodo').value;
+    if (v === 'custom') { $('perCustom').classList.remove('hidden'); $('perCustom').classList.add('flex'); return; }
+    [BP.anoDe, BP.anoAte] = v.split('-').map(Number); desenharPeriodo(); buscarProjetos();
 });
 ['anoDe', 'anoAte'].forEach((id) => $(id).addEventListener('change', () => {
     BP.anoDe = Number($('anoDe').value); BP.anoAte = Number($('anoAte').value);
@@ -1132,12 +1138,10 @@ document.addEventListener('click', (ev) => {
 }));
 $('formProj').addEventListener('submit', (ev) => { ev.preventDefault(); BP.q = $('qProj').value.trim(); buscarProjetos(); });
 $('maisProj').addEventListener('click', () => buscarProjetos(true));
-document.addEventListener('click', (ev) => {
-    const b = ev.target.closest && ev.target.closest('[data-fproj]');
-    if (!b) return;
-    BP[b.dataset.fproj] = b.dataset.v; desenharFiltrosProj(); buscarProjetos();
-});
-
+[['fTipo', 'tipo'], ['fEfeito', 'efeito'], ['fSit', 'efet']].forEach(([id, chave]) => $(id).addEventListener('change', () => {
+    BP[chave] = $(id).value; desenharFiltrosProj(); buscarProjetos();
+}));
+$('limparFiltrosProj').addEventListener('click', () => { BP.tipo = BP.efeito = BP.efet = ''; desenharFiltrosProj(); buscarProjetos(); });
 /* ====================================================================== *
  *  Inicialização
  * ====================================================================== */
