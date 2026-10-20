@@ -270,9 +270,37 @@ def _efetividade(d: dict, p: dict) -> str:
     return "aprovado" if etapa == "lei" else "arquivado" if etapa == "arquivada" else "em_tramitacao"
 
 
+def _perfil(serie: list[dict], ano_corrente_parcial: bool) -> dict | None:
+    """Compara o início e o fim do período buscado (primeiros e últimos 3 anos): volume e efeito predominante."""
+    if len(serie) < 4:
+        return None
+    k = min(3, len(serie) // 2)
+    ini, fim = serie[:k], serie[-k:]
+
+    def soma(trecho: list[dict]) -> dict:
+        t = {c: sum(x[c] for x in trecho) for c in ("restringe", "amplia", "procedimental", "indefinido")}
+        t["total"] = sum(t.values())
+        classificados = t["total"] - t["indefinido"]
+        dom = max(("restringe", "amplia", "procedimental"), key=lambda c: t[c]) if classificados else None
+        t["dominante"] = dom
+        t["pct_dominante"] = round(100 * t[dom] / classificados) if dom else None
+        t["classificados"] = classificados
+        t["anos"] = [trecho[0]["ano"], trecho[-1]["ano"]]
+        return t
+
+    a, b = soma(ini), soma(fim)
+    # o ano em curso está incompleto: a variação do volume usa média por ano só quando o fim o inclui
+    variacao = round(100 * (b["total"] - a["total"]) / a["total"]) if a["total"] else None
+    return {"inicio": a, "fim": b, "variacao_volume_pct": variacao, "ano_parcial": ano_corrente_parcial}
+
+
 def buscar_projetos(q: str | None, tipo: str | None, efeito: str | None, efetividade: str | None,
-                    desde=None, ate=None, deslocamento: int = 0) -> dict:
+                    desde=None, ate=None, deslocamento: int = 0, ano_de: int | None = None, ano_ate: int | None = None) -> dict:
     d = _dados()
+    if ano_de or ano_ate:
+        from datetime import date as _date
+        desde = _date(max(ano_de or d["anos"][0], d["anos"][0]), 1, 1)
+        ate = _date(min(ano_ate or d["anos"][1], d["anos"][1]), 12, 31)
     desde, ate = _periodo(d, desde, ate)
     termos = [t for t in _sem_acento(q or "").split() if len(t) >= 2]
     base = []
@@ -294,6 +322,13 @@ def buscar_projetos(q: str | None, tipo: str | None, efeito: str | None, efetivi
         cont_tipo[s] += 1
         cont_efeito[e] += 1
         cont_efet[f] += 1
+    por_ano: dict[int, Counter] = {}
+    for p, _s, e, _f in marcados:
+        por_ano.setdefault(int(p["data"][:4]), Counter())[e] += 1
+    anos = range(int(desde[:4]), int(ate[:4]) + 1)
+    serie = [{"ano": a, **{c: por_ano.get(a, Counter()).get(c, 0) for c in ("restringe", "amplia", "procedimental", "indefinido")}} for a in anos]
+    from datetime import date as _hoje
+    parcial = int(ate[:4]) >= _hoje.today().year
     filtrados = [m for m in marcados if (not efeito or m[2] == efeito) and (not efetividade or m[3] == efetividade)]
     filtrados.sort(key=lambda m: (m[0]["data"], m[0]["id"]), reverse=True)
     pagina = filtrados[deslocamento:deslocamento + LIMITE_BUSCA]
@@ -301,7 +336,8 @@ def buscar_projetos(q: str | None, tipo: str | None, efeito: str | None, efetivi
         "periodo": {"desde": desde, "ate": ate}, "consulta": q or "",
         "total_busca": len(marcados), "total_filtrado": len(filtrados),
         "por_tipo": dict(cont_tipo), "por_efeito": dict(cont_efeito), "por_efetividade": dict(cont_efet),
-        "rotulos_efeito": ROTULOS_EFEITO,
+        "rotulos_efeito": ROTULOS_EFEITO, "anos_disponiveis": d["anos"],
+        "serie_anual": serie, "perfil": _perfil(serie, parcial),
         "projetos": [{
             "ident": p["ident"], "tipo_norma": s, "data": p["data"], "ementa": p["ementa"], "url": p["url"],
             "efetividade": f, "orientacao_tema": e, "situacao": p["situacao"], "parada": _parada(d, p),

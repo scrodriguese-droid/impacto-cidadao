@@ -595,8 +595,10 @@ def autoria_projetos(q: Annotated[str | None, Query(max_length=80)] = None,
                      efetividade: Annotated[str | None, Query(pattern="^(em_tramitacao|aprovado|arquivado)$")] = None,
                      desde: Annotated[date | None, Query(description="AAAA-MM-DD")] = None,
                      ate: Annotated[date | None, Query(description="AAAA-MM-DD")] = None,
-                     deslocamento: Annotated[int, Query(ge=0, le=100000)] = 0) -> dict:
-    return _autoria(autoria.buscar_projetos, q, tipo, efeito, efetividade, desde, ate, deslocamento)
+                     deslocamento: Annotated[int, Query(ge=0, le=100000)] = 0,
+                     ano_de: Annotated[int | None, Query(ge=1990, le=2100)] = None,
+                     ano_ate: Annotated[int | None, Query(ge=1990, le=2100)] = None) -> dict:
+    return _autoria(autoria.buscar_projetos, q, tipo, efeito, efetividade, desde, ate, deslocamento, ano_de, ano_ate)
 
 
 @router.get("/autoria/politicos", tags=["autoria"])
