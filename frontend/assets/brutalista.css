@@ -479,12 +479,12 @@ a.chip-link:hover { background: var(--ativo); color: var(--ativo-fg); }
 .lt-grafico figcaption { font-size: .82rem; line-height: 1.5; color: var(--muted); max-width: 78ch; margin-top: .7rem; }
 .lt-txt { font: 600 11px var(--fonte-texto); fill: var(--fg); paint-order: stroke; stroke: var(--papel); stroke-width: 3px; stroke-linejoin: round; }
 .lt-eixo { font-size: 10px; font-weight: 500; fill: var(--muted); stroke: none; }
-.lt-painel { font-size: 9.5px; font-weight: 800; letter-spacing: .09em; }
+.lt-painel { font-size: 10px; font-weight: 700; letter-spacing: .06em; }
 .lt-grade { stroke: var(--fg); stroke-opacity: .14; stroke-width: 1; }
 .lt-zero { stroke-opacity: .55; }
 .lt-tick { stroke: var(--fg); stroke-opacity: .6; stroke-width: 1; }
 .lt-marco { stroke: var(--fg); stroke-width: 1; stroke-dasharray: 2 3; opacity: .8; }
-.lt-marco-ano { font-size: 12px; font-weight: 800; fill: var(--vermelho); }
+.lt-marco-ano { font-size: 12px; font-weight: 700; fill: var(--vermelho); }
 .lt-marco-nome { font-weight: 700; }
 .lt-linha { fill: none; stroke-linejoin: round; stroke-linecap: round; }
 .lt-linha--div { stroke: var(--vermelho); stroke-width: 2.6; }
@@ -507,16 +507,16 @@ a.chip-link:hover { background: var(--ativo); color: var(--ativo-fg); }
 }
 .lt-card-quando { font-size: .74rem; font-weight: 600; color: var(--muted); }
 .lt-card-quando b { font: 400 2rem/1 var(--fonte-titulo); color: var(--vermelho); margin-right: .35rem; vertical-align: -.12em; }
-.lt-card-natureza { font-weight: 800; letter-spacing: .08em; text-transform: uppercase; font-size: .66rem; color: var(--fg); }
+.lt-card-natureza { font-weight: 700; letter-spacing: .06em; text-transform: uppercase; font-size: .7rem; color: var(--fg); }
 .radar-conexao-segue { margin-top: 1.1rem; padding-top: .9rem; border-top: 1px solid var(--line); font-size: .88rem; font-weight: 700; }
-.lt-card h4 { font-family: var(--fonte-titulo); font-size: 1.45rem; font-weight: 400; line-height: 1.1; text-transform: uppercase; letter-spacing: 0; margin-top: .25rem; }
-.lt-card-norma { font: 800 .66rem/1.3 var(--fonte-texto); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-top: .3rem; }
+.lt-card h4 { font-family: var(--fonte-titulo); font-size: 1.45rem; font-weight: 400 !important; line-height: 1.1; text-transform: uppercase; letter-spacing: 0; margin-top: .25rem; }
+.lt-card-norma { font: 700 .7rem/1.3 var(--fonte-texto); letter-spacing: .07em; text-transform: uppercase; color: var(--muted); margin-top: .3rem; }
 .lt-card-oque { font-size: .88rem; line-height: 1.5; margin-top: .7rem; }
 .lt-card-fato { font-size: .82rem; line-height: 1.45; margin-top: .7rem; padding-left: .65rem; border-left: 3px solid var(--fg); }
 .lt-card { display: flex; flex-direction: column; align-items: flex-start; }
 .lt-card-link { margin-top: auto; padding-top: .8rem; font-size: .8rem; font-weight: 700; }
 .lt-conclusao { margin-top: 1.6rem; padding: 1rem 1.2rem 1.1rem; border: 3px solid var(--line); font-size: 1.05rem; line-height: 1.5; font-weight: 600; max-width: 75ch; }
-.lt-conclusao b { display: block; font: 800 .68rem/1.3 var(--fonte-texto); letter-spacing: .14em; text-transform: uppercase; color: var(--vermelho); margin-bottom: .35rem; }
+.lt-conclusao b { display: block; font: 700 .72rem/1.3 var(--fonte-texto); letter-spacing: .1em; text-transform: uppercase; color: var(--vermelho); margin-bottom: .35rem; }
 .radar-tabela { width: 100%; max-width: 40rem; border-collapse: collapse; font-size: .85rem; margin-top: .5rem; }
 .radar-tabela th, .radar-tabela td { text-align: left; padding: .35rem .5rem; border-bottom: 1px solid var(--line); }
 .radar-tabela th { font-weight: 800; border-bottom: 2px solid var(--line); }
@@ -838,12 +838,12 @@ body.postit-escolhendo, body.postit-escolhendo * { cursor: crosshair !important;
 /* ---------- hierarquia das normas (pirâmide de Kelsen) ----------
    Cor e peso da etiqueta seguem o degrau: quanto mais alto na pirâmide, mais cheia, maior e mais pesada. */
 :root { --n-const: #A92823; --n-comp: #B4540C; --n-ord: #1F4E8C; --n-mpv: #F2C200; }
-.norma-tag { display: inline-flex; align-items: center; gap: .35rem; padding: .22rem .55rem; border: 2px solid var(--fg); font: 800 .66rem/1.1 var(--fonte-texto); letter-spacing: .1em; text-transform: uppercase; white-space: nowrap; color: var(--fg); background: transparent; }
-.norma-tag--constitucional { background: var(--n-const); border-color: var(--n-const); color: #fff; font-weight: 900; font-size: .74rem; padding: .3rem .65rem; }
-.norma-tag--complementar { background: var(--n-comp); border-color: var(--n-comp); color: #fff; font-weight: 800; font-size: .7rem; padding: .26rem .6rem; }
+.norma-tag { display: inline-flex; align-items: center; gap: .35rem; padding: .24rem .55rem; border: 2px solid var(--fg); font: 700 .72rem/1.15 var(--fonte-texto); letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; color: var(--fg); background: transparent; }
+.norma-tag--constitucional { background: var(--n-const); border-color: var(--n-const); color: #fff; font-weight: 700; font-size: .78rem; padding: .3rem .65rem; }
+.norma-tag--complementar { background: var(--n-comp); border-color: var(--n-comp); color: #fff; font-weight: 700; font-size: .75rem; padding: .27rem .6rem; }
 .norma-tag--ordinaria { background: var(--n-ord); border-color: var(--n-ord); color: #fff; font-weight: 700; }
-.norma-tag--medida_provisoria { background: var(--n-mpv); border-color: #000; color: #000; font-weight: 800; }
-.norma-tag--ato_congresso { background: transparent; border-style: dashed; color: var(--fg); font-weight: 700; font-size: .62rem; }
+.norma-tag--medida_provisoria { background: var(--n-mpv); border-color: #000; color: #000; font-weight: 700; }
+.norma-tag--ato_congresso { background: transparent; border-style: dashed; color: var(--fg); font-weight: 600; font-size: .7rem; }
 /* as regras globais de <button> pintam tudo de transparente: a etiqueta-botão precisa manter a cor do degrau */
 button.norma-tag { cursor: pointer; }
 button.norma-tag--constitucional { background: var(--n-const) !important; color: #fff !important; border-color: var(--n-const) !important; }
@@ -856,8 +856,8 @@ button.norma-tag--ato_congresso:hover { background: var(--papel-2) !important; c
 button.norma-tag[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--papel), 0 0 0 4px var(--fg) !important; }
 .norma-filtros.com-filtro button.norma-tag[aria-pressed="false"] { opacity: .5; }
 button.norma-tag:disabled { opacity: .35; cursor: default; filter: none; }
-.norma-tag small { font: 700 .66rem/1 var(--fonte-texto); letter-spacing: 0; opacity: .9; }
-.norma-todas { font: 800 .66rem/1.1 var(--fonte-texto); letter-spacing: .1em; padding: .22rem .55rem; border: 2px solid var(--fg); }
+.norma-tag small { font: 600 .72rem/1 var(--fonte-texto); letter-spacing: 0; }
+.norma-todas { font: 700 .72rem/1.15 var(--fonte-texto); letter-spacing: .06em; padding: .24rem .55rem; border: 2px solid var(--fg); }
 button.norma-todas[aria-pressed="true"] { background: var(--fg) !important; color: var(--papel) !important; }
 .norma-curto { font-size: .78rem; font-weight: 600; color: var(--muted); }
 .norma-explica { padding: .75rem .9rem; border-left: 4px solid var(--fg); font-size: .78rem; line-height: 1.5; }
@@ -871,17 +871,17 @@ button.norma-todas[aria-pressed="true"] { background: var(--fg) !important; colo
 .pir-card--ordinaria { border-top: 5px solid var(--n-ord); }
 .pir-card--medida_provisoria { border-top: 5px solid var(--n-mpv); }
 .pir-card--ato_congresso { border-top: 3px dashed var(--fg); }
-.pir-num { display: flex; align-items: center; gap: .45rem; margin-bottom: .55rem; font: 700 .62rem/1 var(--fonte-texto); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
-.pir-num b { display: inline-flex; align-items: center; justify-content: center; width: 1.55rem; height: 1.55rem; border: 2px solid var(--fg); border-radius: 50%; font: 800 .8rem/1 var(--fonte-texto); letter-spacing: 0; color: var(--fg); }
+.pir-num { display: flex; align-items: center; gap: .45rem; margin-bottom: .55rem; font: 600 .7rem/1 var(--fonte-texto); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.pir-num b { display: inline-flex; align-items: center; justify-content: center; width: 1.55rem; height: 1.55rem; border: 2px solid var(--fg); border-radius: 50%; font: 700 .85rem/1 var(--fonte-texto); letter-spacing: 0; color: var(--fg); }
 .pir-topo { margin: 0; }
-.pir-card .norma-tag { white-space: normal; max-width: 100%; letter-spacing: .05em; font-size: .64rem; padding: .25rem .45rem; }
-.pir-curto { font-family: var(--fonte-titulo); font-size: 1.05rem; font-weight: 400; line-height: 1.12; text-transform: uppercase; letter-spacing: 0; margin: .55rem 0 0; }
-.pir-vira { font-size: .7rem; font-weight: 600; color: var(--muted); margin-top: .25rem; }
+.pir-card .norma-tag { white-space: normal; max-width: 100%; letter-spacing: .03em; font-size: .7rem; padding: .25rem .45rem; }
+.pir-curto { font-family: var(--fonte-titulo); font-size: 1.1rem; font-weight: 400 !important; line-height: 1.15; text-transform: uppercase; letter-spacing: 0; margin: .55rem 0 0; }
+.pir-vira { font-size: .74rem; font-weight: 500; color: var(--muted); margin-top: .25rem; }
 .pir-dl { margin-top: .35rem; font-size: .76rem; line-height: 1.45; }
 .pir-card > .pir-dl { flex: 1 1 auto; }
 .pir-mais { margin-top: .6rem; font-size: .76rem; }
-.pir-mais summary { cursor: pointer; font: 800 .58rem/1.3 var(--fonte-texto); letter-spacing: .1em; text-transform: uppercase; text-decoration: underline; text-underline-offset: 3px; }
-.pir-dl dt { font: 800 .58rem/1.3 var(--fonte-texto); letter-spacing: .12em; text-transform: uppercase; color: var(--vermelho); margin-top: .5rem; }
+.pir-mais summary { cursor: pointer; font: 600 .68rem/1.3 var(--fonte-texto); letter-spacing: .06em; text-transform: uppercase; text-decoration: underline; text-underline-offset: 3px; }
+.pir-dl dt { font: 600 .68rem/1.3 var(--fonte-texto); letter-spacing: .07em; text-transform: uppercase; color: var(--vermelho); margin-top: .5rem; }
 .pir-dl dd { margin: 0; }
-.pir-filtro { width: 100%; margin-top: .8rem; padding: .3rem .55rem; }
+.pir-filtro { width: 100%; margin-top: .8rem; padding: .35rem .55rem; font: 600 .8rem/1.2 var(--fonte-texto); letter-spacing: 0; text-transform: none; }
 .pir-adm { display: flex; flex-wrap: wrap; align-items: baseline; gap: .5rem .8rem; margin-top: .6rem; padding: .7rem .9rem; border: 2px dashed var(--line); font-size: .76rem; line-height: 1.45; }
