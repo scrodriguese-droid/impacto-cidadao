@@ -488,10 +488,10 @@ a.chip-link:hover { background: var(--ativo); color: var(--ativo-fg); }
 .lt-marco-nome { font-weight: 700; }
 .lt-linha { fill: none; stroke-linejoin: round; stroke-linecap: round; }
 .lt-linha--div { stroke: var(--vermelho); stroke-width: 2.6; }
-.lt-linha--juro { stroke: var(--fg); stroke-width: 1.8; }
+.lt-linha--nom, .lt-linha--juro { stroke: var(--fg); stroke-width: 1.8; }
 .lt-ponto { fill: var(--papel); stroke-width: 2; }
 .lt-ponto--div { stroke: var(--vermelho); }
-.lt-ponto--juro { stroke: var(--fg); }
+.lt-ponto--nom, .lt-ponto--juro { stroke: var(--fg); }
 .lt-extremo, .lt-ponto-fim { fill: var(--fg); stroke: var(--papel); stroke-width: 1.5; }
 .lt-destaque { font-size: 10.5px; font-weight: 700; }
 .lt-fim { font-size: 12px; font-weight: 800; }
@@ -507,6 +507,8 @@ a.chip-link:hover { background: var(--ativo); color: var(--ativo-fg); }
 }
 .lt-card-quando { font-size: .74rem; font-weight: 600; color: var(--muted); }
 .lt-card-quando b { font: 400 2rem/1 var(--fonte-titulo); color: var(--vermelho); margin-right: .35rem; vertical-align: -.12em; }
+.lt-card-natureza { font-weight: 800; letter-spacing: .08em; text-transform: uppercase; font-size: .66rem; color: var(--fg); }
+.radar-conexao-segue { margin-top: 1.1rem; padding-top: .9rem; border-top: 1px solid var(--line); font-size: .88rem; font-weight: 700; }
 .lt-card h4 { font-family: var(--fonte-titulo); font-size: 1.45rem; font-weight: 400; line-height: 1.1; text-transform: uppercase; letter-spacing: 0; margin-top: .25rem; }
 .lt-card-norma { font: 800 .66rem/1.3 var(--fonte-texto); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-top: .3rem; }
 .lt-card-oque { font-size: .88rem; line-height: 1.5; margin-top: .7rem; }

@@ -209,6 +209,7 @@ def test_marcos_da_linha_do_tempo_tem_rotulo_curto_e_descricao_sem_causalidade()
     for m in macro.MARCOS:
         assert m["rotulo"] and len(m["rotulo"]) <= 24          # cabe direto no gráfico, sem nota de rodapé
         assert m["norma"] and m["o_que_e"]
+        assert m["natureza"] in ("regra fiscal", "choque")     # liga o marco à política fiscal (regra) ou a um acontecimento
         assert m["data"][-4:] == m["mes"][:4]                  # a data exibida é a do mês marcado
         texto = (m["rotulo"] + " " + m["o_que_e"]).lower()
         for palavra in ("causou", "provocou", "gerou", "culpa", "moldou", "devido a"):

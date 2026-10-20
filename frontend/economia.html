@@ -369,19 +369,20 @@ function colunaConfronto(c) {
         <p class="radar-legenda">${esc(c.papel)}</p><ul class="radar-itens">${c.itens.map(itemConfronto).join('')}</ul></section>`;
 }
 /* Onde as duas políticas se encontram: o déficit nominal é o resultado primário somado aos juros (fatos × interpretação) */
-function faixaConexao(cx) {
+function faixaConexao(cx, comHistoria) {
     const b = cx.barra;
     const barra = b ? `<p class="radar-conexao-total">${esc(b.total)}</p>
         <div class="radar-barra" role="img" aria-label="${esc(b.total)}: ${b.partes.map((x) => `${esc(x.nome)} ${esc(x.txt)} do PIB`).join(' e ')}">
             ${b.partes.map((x, k) => `<span class="radar-barra-parte radar-barra-parte--${k}" style="flex-grow:${Math.max(Math.abs(x.pct), 0.05)}"></span>`).join('')}</div>
         <p class="radar-barra-leg">${b.partes.map((x, k) => `<span class="radar-barra-chip radar-barra-chip--${k}"></span>${esc(x.nome)}: <b>${esc(x.txt)}</b> do PIB`).join(' &nbsp;+&nbsp; ')}</p>` : '';
-    return `<div class="radar-conexao">
+    return `<div class="radar-conexao" id="conexao">
         <h3 class="radar-secao-h">Onde as duas políticas se encontram</h3>
         ${barra}
         <div class="radar-conexao-colunas">
             <div><h4>O que as contas mostram <span>(fatos)</span></h4><ul class="radar-pontos">${cx.fatos.map((t) => `<li>${esc(t)}</li>`).join('')}</ul></div>
             <div><h4>Como se costuma explicar <span>(interpretação)</span></h4><ul class="radar-pontos">${cx.interpretacao.map((t) => `<li>${esc(t)}</li>`).join('')}</ul></div>
-        </div></div>`;
+        </div>
+        ${comHistoria ? '<p class="radar-conexao-segue"><a class="underline" href="#linhaTempo">Como esses números chegaram até aqui: a linha do tempo desde 2011 ↓</a></p>' : ''}</div>`;
 }
 /* Duas leituras econômicas, lado a lado e atribuídas: argumento, números que a sustentam e a objeção da outra */
 function visoes(v) {
@@ -431,75 +432,84 @@ function painelSocial(sc) {
         <p class="radar-legenda">Como a economia está entregando em relação a 12 meses antes. ↑ melhorou · → estável · ↓ piorou (a seta indica se o quadro melhorou ou piorou, não se o número subiu ou caiu).</p>
         <ul class="radar-itens">${itens}</ul>${blocoAnual(sc.desigualdade)}</section>`;
 }
-/* Linha do tempo da dívida e dos juros: UM gráfico (dívida em cima, juro real embaixo, mesmos meses no eixo), com as
-   normas marcadas direto na linha e um cartão por marco. Sem faixas de fundo e sem notas de rodapé numeradas. */
+/* Linha do tempo da dívida e dos juros: UM gráfico em três faixas alinhadas, na mesma ordem do confronto logo acima
+   (política fiscal, o ponto de encontro, política monetária), com as normas marcadas direto na linha e um cartão por marco.
+   Sem faixas de fundo e sem notas de rodapé numeradas. */
 const MESES_ABREV = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
 const rotuloMes = (m) => `${MESES_ABREV[Number(m.slice(5, 7)) - 1]}/${m.slice(0, 4)}`;
 const fnum = (v, d = 1) => `${v < 0 ? '−' : ''}${Math.abs(v).toLocaleString('pt-BR', { minimumFractionDigits: d, maximumFractionDigits: d })}`;
 function graficoLinhaTempo(h, compacto) {
     const W = compacto ? 360 : 760, L = compacto ? 32 : 40, R = compacto ? 58 : 78;
-    const TAG = compacto ? 30 : 42, H1 = compacto ? 170 : 215, GAP = compacto ? 38 : 44, H2 = compacto ? 74 : 92;
-    const T1 = TAG + 22, T2 = T1 + H1 + GAP, H = T2 + H2 + 26;
+    const TAG = compacto ? 30 : 42, GAP = compacto ? 34 : 40;
+    const alturas = compacto ? [150, 58, 62] : [190, 70, 80];
     const pts = h.pontos, n = pts.length;
     const x = (i) => L + ((W - L - R) * i) / (n - 1);
     const escala = (lo, hi, topo, alt) => (v) => topo + alt * (1 - (v - lo) / (hi - lo));
-    const vd = pts.map((p) => p.divida), vj = pts.map((p) => p.juro_real).filter((v) => v != null);
-    const dMin = Math.min(...vd), dMax = Math.max(...vd), jMin = Math.min(...vj), jMax = Math.max(...vj);
-    const yD = escala(dMin - 6, dMax + 4, T1, H1), yJ = escala(Math.min(jMin, 0) - 3.8, jMax + 4.5, T2, H2);
-    const grade = (y, lo, hi, passo, un) => {
+    // as três faixas seguem o confronto acima: política fiscal (dívida), onde as duas se encontram (déficit nominal), política monetária (juro real)
+    const defs = [
+        { chave: 'divida', cls: 'div', un: '%', passo: 10, folga: [6, 4], titulo: compacto ? 'FISCAL · DÍVIDA BRUTA (% DO PIB)' : 'POLÍTICA FISCAL · DÍVIDA BRUTA (% DO PIB)' },
+        { chave: 'nominal', cls: 'nom', un: '%', passo: 5, folga: [3, 5.5], titulo: compacto ? 'ENCONTRO · DÉFICIT NOMINAL (% DO PIB)' : 'ONDE SE ENCONTRAM · DÉFICIT NOMINAL (% DO PIB, 12 MESES)' },
+        { chave: 'juro_real', cls: 'juro', un: '', passo: 5, folga: [3.8, 4.5], titulo: compacto ? 'MONETÁRIA · JURO REAL (P.P.)' : 'POLÍTICA MONETÁRIA · JURO REAL (SELIC − IPCA, P.P.)' },
+    ];
+    let topo = TAG + 22;
+    defs.forEach((d, k) => {
+        const v = pts.map((p) => p[d.chave]).filter((z) => z != null);
+        d.mn = Math.min(...v); d.mx = Math.max(...v);
+        d.lo = (d.chave === 'divida' ? d.mn : Math.min(d.mn, 0)) - d.folga[0]; d.hi = d.mx + d.folga[1];
+        d.topo = topo; d.alt = alturas[k]; d.y = escala(d.lo, d.hi, topo, d.alt);
+        d.iMax = pts.findIndex((p) => p[d.chave] === d.mx); d.iMin = pts.findIndex((p) => p[d.chave] === d.mn);
+        topo += d.alt + GAP;
+    });
+    const fundo = defs[2].topo + defs[2].alt, H = fundo + 26;
+    const grade = (d) => {
         let s = '';
-        for (let v = Math.ceil(lo / passo) * passo; v <= hi; v += passo) {
-            s += `<line class="lt-grade${v === 0 ? ' lt-zero' : ''}" x1="${L}" x2="${W - R}" y1="${y(v).toFixed(1)}" y2="${y(v).toFixed(1)}"/>
-                <text class="lt-txt lt-eixo" x="${L - 5}" y="${(y(v) + 3.5).toFixed(1)}" text-anchor="end">${fnum(v, 0)}${un}</text>`;
+        for (let v = Math.ceil(d.lo / d.passo) * d.passo; v <= d.hi; v += d.passo) {
+            s += `<line class="lt-grade${v === 0 ? ' lt-zero' : ''}" x1="${L}" x2="${W - R}" y1="${d.y(v).toFixed(1)}" y2="${d.y(v).toFixed(1)}"/>
+                <text class="lt-txt lt-eixo" x="${L - 5}" y="${(d.y(v) + 3.5).toFixed(1)}" text-anchor="end">${fnum(v, 0)}${d.un}</text>`;
         }
         return s;
     };
-    const grades = grade(yD, dMin - 6, dMax + 4, 10, '%') + grade(yJ, Math.min(jMin, 0) - 3.8, jMax + 4.5, 5, '');
     const ancora = (xm) => (xm < L + 30 ? 'start' : xm > W - R - 30 ? 'end' : 'middle');
     const idx = (mes) => pts.findIndex((p) => p.mes >= mes);
-    // marcos: traço vertical que atravessa os dois painéis + o nome da norma no topo + um ponto em cada linha
+    // marcos: traço vertical que atravessa as três faixas + o nome da norma no topo + um ponto em cada linha
     let tracos = '', rotulos = '', pontosMarco = '';
     h.marcos.forEach((m) => {
         const i = idx(m.mes);
         if (i < 0) return;
         const xm = x(i).toFixed(1), ac = ancora(x(i));
-        tracos += `<line class="lt-marco" x1="${xm}" x2="${xm}" y1="${TAG - 3}" y2="${T2 + H2}"/>`;
+        tracos += `<line class="lt-marco" x1="${xm}" x2="${xm}" y1="${TAG - 3}" y2="${fundo}"/>`;
         rotulos += `<text class="lt-txt lt-marco-ano" x="${xm}" y="${compacto ? TAG - 8 : TAG - 21}" text-anchor="${ac}">${esc(m.mes.slice(0, 4))}</text>`;
         if (!compacto && m.rotulo) rotulos += `<text class="lt-txt lt-marco-nome" x="${xm}" y="${TAG - 8}" text-anchor="${ac}">${esc(m.rotulo)}</text>`;
-        pontosMarco += `<circle class="lt-ponto lt-ponto--div" cx="${xm}" cy="${yD(pts[i].divida).toFixed(1)}" r="4"/>
-            <circle class="lt-ponto lt-ponto--juro" cx="${xm}" cy="${yJ(pts[i].juro_real).toFixed(1)}" r="3.5"/>`;
+        defs.forEach((d) => { if (pts[i][d.chave] != null) pontosMarco += `<circle class="lt-ponto lt-ponto--${d.cls}" cx="${xm}" cy="${d.y(pts[i][d.chave]).toFixed(1)}" r="${d.cls === 'div' ? 4 : 3.3}"/>`; });
     });
-    const caminho = (chave, y) => pts.map((p, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)} ${y(p[chave]).toFixed(1)}`).join('');
-    // picos e vales: marcados na própria linha, com o valor e o mês
-    const iMax = vd.indexOf(dMax), iMin = vd.indexOf(dMin);
-    const iJMax = pts.findIndex((p) => p.juro_real === jMax), iJMin = pts.findIndex((p) => p.juro_real === jMin);
-    const extremo = (i, chave, y, txt, dx, dy, ac) => `<circle class="lt-extremo" cx="${x(i).toFixed(1)}" cy="${y(pts[i][chave]).toFixed(1)}" r="3.2"/>
-        <text class="lt-txt lt-destaque" x="${(x(i) + dx).toFixed(1)}" y="${(y(pts[i][chave]) + dy).toFixed(1)}" text-anchor="${ac}">${txt}</text>`;
+    const caminho = (d) => pts.map((p, i) => (p[d.chave] == null ? '' : `${i && pts[i - 1][d.chave] != null ? 'L' : 'M'}${x(i).toFixed(1)} ${d.y(p[d.chave]).toFixed(1)}`)).join('');
     const mes = (i) => rotuloMes(pts[i].mes);
+    // picos e vales: marcados na própria linha, com o valor e o mês
+    const extremo = (d, i, txt, dx, dy, ac) => `<circle class="lt-extremo" cx="${x(i).toFixed(1)}" cy="${d.y(pts[i][d.chave]).toFixed(1)}" r="3.2"/>
+        <text class="lt-txt lt-destaque" x="${(x(i) + dx).toFixed(1)}" y="${(d.y(pts[i][d.chave]) + dy).toFixed(1)}" text-anchor="${ac}">${txt}</text>`;
+    const [dv, nm, jr] = defs;
     const extremos =
-        extremo(iMax, 'divida', yD, compacto ? `Pico ${fnum(dMax)}%` : `Pico: ${fnum(dMax)}% (${mes(iMax)})`, 8, -7, 'start') +
-        extremo(iMin, 'divida', yD, compacto ? `Mín. ${fnum(dMin)}%` : `Mínimo: ${fnum(dMin)}% (${mes(iMin)})`, -2, 17, 'start') +
-        extremo(iJMax, 'juro_real', yJ, compacto ? fnum(jMax) : `máx. ${fnum(jMax)} (${mes(iJMax)})`, 0, -8, ancora(x(iJMax))) +
-        extremo(iJMin, 'juro_real', yJ, compacto ? fnum(jMin) : `mín. ${fnum(jMin)} (${mes(iJMin)})`, 0, 16, ancora(x(iJMin)));
-    // valor mais recente, à direita
+        extremo(dv, dv.iMax, compacto ? `Pico ${fnum(dv.mx)}%` : `Pico: ${fnum(dv.mx)}% (${mes(dv.iMax)})`, 8, -7, 'start') +
+        extremo(dv, dv.iMin, compacto ? `Mín. ${fnum(dv.mn)}%` : `Mínimo: ${fnum(dv.mn)}% (${mes(dv.iMin)})`, -2, 17, 'start') +
+        extremo(nm, nm.iMax, compacto ? fnum(nm.mx) : `máx. ${fnum(nm.mx)}% (${mes(nm.iMax)})`, 0, -8, ancora(x(nm.iMax))) +
+        extremo(jr, jr.iMax, compacto ? fnum(jr.mx) : `máx. ${fnum(jr.mx)} (${mes(jr.iMax)})`, 0, -8, ancora(x(jr.iMax))) +
+        extremo(jr, jr.iMin, compacto ? fnum(jr.mn) : `mín. ${fnum(jr.mn)} (${mes(jr.iMin)})`, 0, 16, ancora(x(jr.iMin)));
+    // valor mais recente, à direita: são os mesmos números do confronto logo acima
     const ult = pts[n - 1];
-    const fim = (chave, y, txt) => `<circle class="lt-ponto-fim" cx="${x(n - 1).toFixed(1)}" cy="${y(ult[chave]).toFixed(1)}" r="3.5"/>
-        <text class="lt-txt lt-fim" x="${(x(n - 1) + 8).toFixed(1)}" y="${(y(ult[chave]) + 4).toFixed(1)}">${txt}</text>`;
-    const fins = fim('divida', yD, `${fnum(ult.divida)}%`) + fim('juro_real', yJ, fnum(ult.juro_real));
+    const fins = defs.map((d) => `<circle class="lt-ponto-fim" cx="${x(n - 1).toFixed(1)}" cy="${d.y(ult[d.chave]).toFixed(1)}" r="3.5"/>
+        <text class="lt-txt lt-fim" x="${(x(n - 1) + 8).toFixed(1)}" y="${(d.y(ult[d.chave]) + 4).toFixed(1)}">${fnum(ult[d.chave])}${d.un}</text>`).join('');
     const ano0 = Number(pts[0].mes.slice(0, 4)), ano1 = Number(ult.mes.slice(0, 4));
     let anos = '';
     [ano0, ...[2015, 2020, 2025].filter((a) => a > ano0 + 2 && a <= ano1)].forEach((a) => {
         const i = idx(`${a}-01`);
-        if (i >= 0) anos += `<line class="lt-tick" x1="${x(i).toFixed(1)}" x2="${x(i).toFixed(1)}" y1="${T2 + H2}" y2="${T2 + H2 + 4}"/>
-            <text class="lt-txt lt-eixo" x="${x(i).toFixed(1)}" y="${T2 + H2 + 17}" text-anchor="${a === ano0 ? 'start' : 'middle'}">${a}</text>`;
+        if (i >= 0) anos += `<line class="lt-tick" x1="${x(i).toFixed(1)}" x2="${x(i).toFixed(1)}" y1="${fundo}" y2="${fundo + 4}"/>
+            <text class="lt-txt lt-eixo" x="${x(i).toFixed(1)}" y="${fundo + 17}" text-anchor="${a === ano0 ? 'start' : 'middle'}">${a}</text>`;
     });
-    const titulos = `<text class="lt-txt lt-painel" x="${L}" y="${T1 - 9}">DÍVIDA BRUTA · % DO PIB</text>
-        <text class="lt-txt lt-painel" x="${L}" y="${T2 - 9}">JURO REAL · SELIC MENOS IPCA, EM P.P.</text>`;
-    const alt = `Dívida bruta do governo geral: de ${fnum(pts[0].divida)}% do PIB em ${mes(0)} para ${fnum(ult.divida)}% em ${mes(n - 1)}, com pico de ${fnum(dMax)}% em ${mes(iMax)}. Juro real abaixo, no mesmo período.`;
+    const titulos = defs.map((d) => `<text class="lt-txt lt-painel" x="${L}" y="${d.topo - 9}">${d.titulo}</text>`).join('');
+    const linhas = defs.slice().reverse().map((d) => `<path class="lt-linha lt-linha--${d.cls}" d="${caminho(d)}"/>`).join('');
+    const alt = `Dívida bruta do governo geral: de ${fnum(pts[0].divida)}% do PIB em ${mes(0)} para ${fnum(ult.divida)}% em ${mes(n - 1)}, com pico de ${fnum(dv.mx)}% em ${mes(dv.iMax)}. Abaixo, no mesmo período, o déficit nominal e o juro real.`;
     return `<svg class="lt-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(alt)}">
-        ${grades}${tracos}
-        <path class="lt-linha lt-linha--juro" d="${caminho('juro_real', yJ)}"/>
-        <path class="lt-linha lt-linha--div" d="${caminho('divida', yD)}"/>
+        ${defs.map(grade).join('')}${tracos}${linhas}
         ${pontosMarco}${extremos}${fins}${titulos}${rotulos}${anos}
     </svg>`;
 }
@@ -514,11 +524,11 @@ function cartoesMarcos(h) {
         const pico = depois > 0 && depois <= 12
             ? `<p class="lt-card-fato">${depois} ${depois === 1 ? 'mês' : 'meses'} depois, a dívida chegou a <b>${fnum(pts[iPico].divida)}% do PIB</b>, o ponto mais alto da série (${rotuloMes(pts[iPico].mes)}).</p>` : '';
         return `<li class="lt-card">
-            <p class="lt-card-quando"><b>${esc(m.mes.slice(0, 4))}</b> · ${esc(m.data)}</p>
+            <p class="lt-card-quando"><b>${esc(m.mes.slice(0, 4))}</b> · ${esc(m.data)}${m.natureza ? ` · <span class="lt-card-natureza">${esc(m.natureza)}</span>` : ''}</p>
             <h4>${esc(m.rotulo || m.titulo)}</h4>
             ${m.norma ? `<p class="lt-card-norma">${esc(m.norma)}</p>` : ''}
             ${m.o_que_e ? `<p class="lt-card-oque">${esc(m.o_que_e)}</p>` : ''}
-            <p class="lt-card-fato">No mês da norma: dívida bruta em <b>${fnum(p.divida)}% do PIB</b> e juro real de <b>${fnum(p.juro_real)} p.p.</b></p>
+            <p class="lt-card-fato">No mês da norma: dívida bruta em <b>${fnum(p.divida)}% do PIB</b>, déficit nominal de <b>${fnum(p.nominal)}%</b> e juro real de <b>${fnum(p.juro_real)} p.p.</b></p>
             ${pico}
             <a class="underline lt-card-link" target="_blank" rel="noopener" href="${esc(urlSegura(m.url))}">Ler a norma ↗</a></li>`;
     }).join('');
@@ -526,15 +536,16 @@ function cartoesMarcos(h) {
 function perspectivaHistorica(h) {
     if (!h || !h.pontos || h.pontos.length < 24) return '';
     const linhas = h.tabela.map((t) => `<tr><td>${esc(rotuloMes(t.mes))}</td><td>${fnum(t.divida)}%</td><td>${fnum(t.nominal)}%</td><td>${fnum(t.juro_real)} p.p.</td></tr>`).join('');
-    const ate = h.fim.slice(0, 4);
-    return `<section class="lt" aria-labelledby="ltTitulo">
-        <p class="radar-pergunta">Perspectiva histórica · ${esc(h.inicio.slice(0, 4))} até hoje</p>
+    const ate = h.fim.slice(0, 4), u = h.pontos[h.pontos.length - 1];
+    return `<section class="lt" id="linhaTempo" aria-labelledby="ltTitulo">
+        <p class="radar-pergunta">Perspectiva histórica · de onde vieram os números de cima</p>
         <h3 class="radar-secao-h" id="ltTitulo">Linha do tempo da dívida e dos juros (${esc(h.inicio.slice(0, 4))} – ${esc(ate)})</h3>
-        <p class="lt-sub">Os números das contas do país, ao lado das regras e dos choques de cada época.</p>
+        <p class="lt-sub">Os mesmos números do confronto acima, vistos desde ${esc(h.inicio.slice(0, 4))}, ao lado das regras e dos choques de cada época. <a class="underline" href="#conexao">↑ Voltar aos números de hoje</a></p>
         <figure class="lt-grafico">
             <div class="lt-largo">${graficoLinhaTempo(h, false)}</div>
             <div class="lt-estreito">${graficoLinhaTempo(h, true)}</div>
-            <figcaption>${esc(h.resumo)} Linha vermelha: dívida bruta do governo geral. Linha fina: juro real, a Selic descontada a inflação (IPCA) dos últimos 12 meses. Traços verticais: data de uma norma.</figcaption>
+            <figcaption>${esc(h.resumo)} Na ponta direita estão os números de hoje, os mesmos do confronto: dívida de <b>${fnum(u.divida)}% do PIB</b>, déficit nominal de <b>${fnum(u.nominal)}%</b> e juro real de <b>${fnum(u.juro_real)} p.p.</b>
+                As três faixas seguem a ordem de cima: política fiscal, o ponto de encontro (o déficit nominal é o resultado primário somado aos juros) e política monetária. Traços verticais: data de uma norma.</figcaption>
         </figure>
         <h4 class="lt-marcos-h">O que estava acontecendo</h4>
         <ol class="lt-marcos">${cartoesMarcos(h)}</ol>
@@ -553,9 +564,10 @@ function radarEconomico(dg) {
     const avisoSocial = dg.social ? '' : `<div class="radar-aviso" role="status"><b>O painel de economia e vida da população não carregou.</b>
         Ele usa dados do IBGE, que não responderam. Atualize a página em alguns minutos.</div>`;
     const c = dg.confronto;
+    const historia = perspectivaHistorica(dg.historico);
     const confronto = c ? `<div class="radar-confronto">${colunaConfronto(c.fiscal)}${colunaConfronto(c.monetaria)}</div>
         <p class="ficha-nota mt-2">↑ melhorou · → estável · ↓ piorou, sempre em comparação com 12 meses antes. Fonte dos números: Banco Central (despesa primária: SICONFI).</p>
-        ${faixaConexao(c.conexao)}${visoes(c.visoes)}`
+        ${faixaConexao(c.conexao, !!historia)}${historia}${visoes(c.visoes)}`
         : `<div class="radar-aviso" role="status"><b>O confronto entre política fiscal e monetária não carregou.</b> Atualize a página em alguns minutos.</div>`;
     const itens = dg.cotidiano.itens.map((i) => `<div class="radar-destaque-item"><h4>${esc(i.tema)}</h4>
         <p class="radar-stat">${esc(i.destaque.valor)}</p><p class="radar-stat-leg">${esc(i.destaque.legenda)}</p>
@@ -570,7 +582,7 @@ function radarEconomico(dg) {
             <div class="radar-destaque-corpo">${itens}</div>
             ${dg.cotidiano.conjunto ? `<p class="radar-conjunto">${negrito(dg.cotidiano.conjunto)}</p>` : ''}</div>
         ${avisoSocial}${dg.social ? painelSocial(dg.social) : ''}
-        ${perspectivaHistorica(dg.historico)}
+        ${c ? '' : historia}
         <details class="sanfona mt-4"><summary>Como classificamos</summary>
             ${criterios}
             <p class="ficha-nota mt-2">Os limites são escolhas do projeto, não verdades universais, e a tendência compara cada indicador com 12 meses antes.</p></details>
