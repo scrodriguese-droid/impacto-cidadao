@@ -128,6 +128,13 @@
         </details>
     </div>
 
+    <!-- Peso da norma (pirâmide de Kelsen): legenda e filtro ao mesmo tempo -->
+    <div id="blocoNorma" class="hidden mt-4">
+        <p class="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">Peso da norma
+            <a href="#hierarquia" class="normal-case tracking-normal font-semibold underline ml-1">o que é isso?</a></p>
+        <div id="segNorma" class="norma-filtros flex flex-wrap items-center gap-2" role="group" aria-label="Filtrar por tipo de norma"></div>
+    </div>
+
     <div id="chipsFiltro" class="flex flex-wrap gap-2 mt-3"></div>
     <p id="contagem" class="text-xs text-slate-500 dark:text-slate-400 mt-3" aria-live="polite">Carregando…</p>
     <p id="frescor" class="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5"></p>
@@ -171,6 +178,9 @@
         </ol>
         <p class="mt-3 text-[11px] text-slate-500">Fonte: Constituição Federal, arts. 59 a 69 (processo legislativo) e art. 66 (sanção e veto); regimentos internos da Câmara dos Deputados e do Senado Federal. Os prazos e quóruns municipais e estaduais seguem a Lei Orgânica e a Constituição Estadual de cada ente.</p>
     </section>
+
+    <!-- Hierarquia das normas (pirâmide de Kelsen): o catálogo vem de /api/normas -->
+    <section id="hierarquia" class="hidden mt-5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 sm:p-5" aria-labelledby="tHierarquia"></section>
 
     <!-- Autoria dos projetos da Câmara: divisão por tema e projetos por político -->
     <section id="autoria" class="hidden mt-5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 sm:p-5" aria-labelledby="tAutoria">
@@ -234,8 +244,8 @@ renderLayout('politicas');
 const prefs = lerPrefs();
 const P = {
     perfil: prefs.perfil || '', municipio: prefs.municipio || null,
-    nivel: '', instancia: '', categoria: 'all', status: 'all', q: '', ordem: 'recentes',
-    pagina: 1, total: 0, itens: [], perfis: [], categorias: [], statusLista: [], resumo: null, temasContagem: {},
+    nivel: '', instancia: '', norma: '', categoria: 'all', status: 'all', q: '', ordem: 'recentes',
+    pagina: 1, total: 0, itens: [], perfis: [], categorias: [], statusLista: [], resumo: null, temasContagem: {}, normas: null, normasContagem: {},
     periodo: prefs.periodo || { modo: 'todos' }, // { modo: 'todos' } | { modo: 'dias', dias } | { modo: 'datas', de, ate }
     coleta: {},
 };
@@ -246,6 +256,66 @@ const NOME_TIPO = {
     MPV: 'Medida Provisória', PL: 'Projeto de Lei', PLP: 'Projeto de Lei Complementar',
     PEC: 'Proposta de Emenda à Constituição', PLN: 'Projeto de Lei do Congresso Nacional',
 };
+/* ---------- hierarquia das normas (pirâmide de Kelsen): o texto vem do backend (normas.py), a cor e o peso vêm do CSS ---------- */
+const normaInfo = (id) => (P.normas && P.normas.hierarquia.find((n) => n.id === id)) || null;
+const ICONE_NORMA = { medida_provisoria: '<i class="fa-solid fa-bolt" aria-hidden="true"></i>' };
+function tagNorma(id, contagem) {
+    const n = normaInfo(id);
+    if (!n) return '';
+    return `<span class="norma-tag norma-tag--${esc(id)}" title="${esc(n.curto)}">${ICONE_NORMA[id] || ''}${esc(n.rotulo)}${contagem != null ? ` <small>${contagem}</small>` : ''}</span>`;
+}
+function renderSegNorma() {
+    const caixa = $('blocoNorma');
+    if (!P.normas) { caixa.classList.add('hidden'); return; }
+    caixa.classList.remove('hidden');
+    const cont = P.normasContagem || {};
+    const botao = (n) => {
+        const c = cont[n.id], ativo = P.norma === n.id;
+        return `<button type="button" data-norma="${esc(n.id)}" aria-pressed="${ativo}" ${c === 0 && !ativo ? 'disabled' : ''}
+            class="norma-tag norma-tag--${esc(n.id)}" title="${esc(n.curto)}">${ICONE_NORMA[n.id] || ''}${esc(n.rotulo)}${c != null ? ` <small>${c}</small>` : ''}</button>`;
+    };
+    $('segNorma').classList.toggle('com-filtro', !!P.norma);
+    $('segNorma').innerHTML = `<button type="button" data-norma="" aria-pressed="${!P.norma}" class="norma-todas">Todos</button>` + P.normas.hierarquia.map(botao).join('');
+}
+function blocoNorma(n) {
+    const c = (P.normasContagem || {})[n.id];
+    return `<div class="pir-bloco">
+        <div class="pir-topo">${tagNorma(n.id)}<span class="pir-vira">vira ${esc(n.vira)}</span></div>
+        <p class="pir-curto">${esc(n.curto)}</p>
+        <dl class="pir-dl"><dt>O que é</dt><dd>${esc(n.o_que_e)}</dd><dt>Como se aprova</dt><dd>${esc(n.rigor)}</dd><dt>Exemplo</dt><dd>${esc(n.exemplo)}</dd></dl>
+        <button type="button" data-norma="${esc(n.id)}" class="pir-filtro" ${c === 0 ? 'disabled' : ''}>${c == null ? 'Ver só este tipo' : c === 0 ? 'Nenhum no período' : `Ver só este tipo (${c})`}</button></div>`;
+}
+function renderPiramide() {
+    const s = $('hierarquia'), c = P.normas;
+    if (!c) { s.classList.add('hidden'); return; }
+    s.classList.remove('hidden');
+    const n = (id) => normaInfo(id), adm = c.administrativos;
+    s.innerHTML = `<h2 id="tHierarquia" class="text-lg font-bold"><i class="fa-solid fa-layer-group mr-2 text-brand-600" aria-hidden="true"></i>Qual é o peso de cada norma?</h2>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1" style="max-width:75ch">É a pirâmide de Kelsen: quanto mais alto, mais difícil de aprovar e mais forte a norma. Se duas normas se contradizem, vale a de cima.
+            Serve para não confundir uma regra geral com uma mudança na Constituição, nem uma lei com um ato administrativo. A etiqueta de cada ato abaixo mostra o degrau dele.</p>
+        <div class="pir">
+            <div class="pir-degrau pir-degrau--1"><p class="pir-nivel">Degrau 1 · topo</p>${blocoNorma(n('constitucional'))}</div>
+            <div class="pir-degrau pir-degrau--2"><p class="pir-nivel">Degrau 2</p>${blocoNorma(n('complementar'))}</div>
+            <div class="pir-degrau pir-degrau--3"><p class="pir-mesmo">Degrau 3 · mesmo nível, assuntos e ritos diferentes: nenhuma manda na outra</p>
+                <div class="pir-trio">${blocoNorma(n('ordinaria'))}${blocoNorma(n('medida_provisoria'))}${blocoNorma(n('ato_congresso'))}</div></div>
+            <div class="pir-degrau pir-degrau--4"><p class="pir-nivel">Abaixo da lei · não são proposições do Congresso</p>
+                <div class="pir-topo"><span class="norma-tag">${esc(adm.rotulo)}</span><span class="pir-vira">${esc(adm.nome)}</span></div>
+                <dl class="pir-dl"><dt>O que é</dt><dd>${esc(adm.o_que_e)}</dd><dt>Limite</dt><dd>${esc(adm.limite)}</dd></dl></div>
+        </div>
+        <p class="pir-seta"><span>↑ mais rigor para aprovar e mais força</span><span>↓ mais fácil de mudar</span></p>
+        <p class="mt-3 text-[11px] text-slate-500">${esc(c.nota)} Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(c.fonte.url))}">${esc(c.fonte.nome)}</a>.
+            O coletor ainda não traz decretos legislativos e resoluções, então esse tipo pode aparecer zerado.</p>`;
+}
+function renderNormas() { renderSegNorma(); renderPiramide(); }
+document.addEventListener('click', (ev) => {
+    const b = ev.target.closest('button[data-norma]');
+    if (!b || b.disabled) return;
+    const id = b.dataset.norma;
+    P.norma = P.norma === id ? '' : id;
+    atualizar();
+    if (b.closest('#hierarquia')) $('contagem').scrollIntoView({ behavior: 'smooth', block: 'center' });
+});
+
 const STATUS_VISUAL = {
     'Proposta da Presidência': ['Proposta enviada', 'sky'],
     'Em análise no Congresso': ['Em análise no Congresso', 'amber'],
@@ -376,6 +446,7 @@ function renderChips() {
     if (P.periodo && P.periodo.modo !== 'todos') chips.push(['periodo', `Período: ${rotuloPeriodo()}`]);
     if (P.categoria !== 'all') chips.push(['categoria', `Tema: ${temaInfo(P.categoria).nome}`]);
     if (P.instancia) chips.push(['instancia', `Poder: ${NOME_INST[P.instancia]}`]);
+    if (P.norma && normaInfo(P.norma)) chips.push(['norma', `Norma: ${normaInfo(P.norma).rotulo.toLowerCase()}`]);
     if (P.status !== 'all') chips.push(['status', `Situação: ${(STATUS_VISUAL[P.status] || [P.status])[0]}`]);
     if (P.q) chips.push(['q', `Busca: “${P.q}”`]);
     $('chipsFiltro').innerHTML = chips.map(([k, t]) => `<button type="button" data-remover="${k}"
@@ -389,6 +460,7 @@ $('chipsFiltro').addEventListener('click', (ev) => {
     if (k === 'periodo') { P.periodo = { modo: 'todos' }; salvarPrefsParciais({ periodo: P.periodo }); renderPeriodo(); }
     else if (k === 'categoria') { P.categoria = 'all'; $('filtroCategoria').value = 'all'; }
     else if (k === 'instancia') { P.instancia = ''; $('filtroInstancia').value = ''; }
+    else if (k === 'norma') { P.norma = ''; }
     else if (k === 'status') { P.status = 'all'; $('filtroStatus').value = 'all'; }
     else if (k === 'q') { P.q = ''; $('busca').value = ''; }
     atualizar();
@@ -561,8 +633,11 @@ function cartao(p) {
     return `<article class="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 border-l-4 ${COR_TEMA[p.tema] || COR_TEMA.outros} shadow-sm overflow-hidden">
         <div class="p-5">
             <div class="flex items-start justify-between gap-3">
-                <p class="text-[11px] font-bold tracking-wide uppercase text-slate-500 dark:text-slate-400">
-                    <i class="fa-solid ${ICONE_NIVEL[p.nivel] || 'fa-landmark'} mr-1" aria-hidden="true"></i>${esc(NOME_NIVEL[p.nivel] || p.nivel)} · ${esc(tipo)} ${esc(numero)} · ${esc(NOME_INST[p.instancia] || p.instancia)}</p>
+                <div class="min-w-0">
+                    ${p.norma && normaInfo(p.norma) ? `<p class="flex flex-wrap items-center gap-x-2.5 gap-y-1 mb-1.5">${tagNorma(p.norma)}<span class="norma-curto">${esc(normaInfo(p.norma).curto)}</span></p>` : ''}
+                    <p class="text-[11px] font-bold tracking-wide uppercase text-slate-500 dark:text-slate-400">
+                        <i class="fa-solid ${ICONE_NIVEL[p.nivel] || 'fa-landmark'} mr-1" aria-hidden="true"></i>${esc(NOME_NIVEL[p.nivel] || p.nivel)} · ${esc(tipo)} ${esc(numero)} · ${esc(NOME_INST[p.instancia] || p.instancia)}</p>
+                </div>
                 ${statusPilula(p)}
             </div>
             <h3 class="mt-2 text-base sm:text-lg font-bold leading-snug">${esc(titulo)}</h3>
@@ -577,6 +652,10 @@ function cartao(p) {
                 <span class="group-open:hidden">Ver detalhes <i class="fa-solid fa-arrow-right ml-1" aria-hidden="true"></i></span>
                 <span class="hidden group-open:inline">Fechar <i class="fa-solid fa-xmark ml-1" aria-hidden="true"></i></span></summary>
             <div class="bg-slate-50/80 dark:bg-slate-900/50 p-5 space-y-6">
+                ${p.norma && normaInfo(p.norma) ? `<div class="norma-explica"><span class="font-bold text-slate-500 block mb-1.5">Que tipo de ato é este? ${tagNorma(p.norma)}</span>
+                    <p><b>O que é:</b> ${esc(normaInfo(p.norma).o_que_e)}</p>
+                    <p><b>Como se aprova:</b> ${esc(normaInfo(p.norma).rigor)}</p>
+                    <p><b>Se aprovada, vira:</b> ${esc(normaInfo(p.norma).vira)}. <a class="underline" href="#hierarquia">Ver a pirâmide</a></p></div>` : ''}
                 <div class="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 text-xs">
                     <span class="font-bold text-slate-500 block mb-1">Ementa oficial</span>
                     <p class="font-mono text-slate-600 dark:text-slate-400">${esc(p.ementa_oficial)}</p>
@@ -638,6 +717,7 @@ async function carregar(acrescentar = false) {
     const params = new URLSearchParams({ ordem: P.ordem, pagina: P.pagina, por_pagina: 10, incluir_pendentes: true, agrupar_por: 'tema' });
     if (P.nivel) params.set('nivel', P.nivel);
     if (P.instancia) params.set('instancia', P.instancia);
+    if (P.norma) params.set('norma', P.norma);
     const iv = intervalo();
     if (iv.desde) params.set('desde', iv.desde);
     if (iv.ate) params.set('ate', iv.ate);
@@ -650,6 +730,8 @@ async function carregar(acrescentar = false) {
         if (minha !== reqLista) return;
         P.total = r.total;
         P.temasContagem = r.temas || {};
+        P.normasContagem = r.normas || {};
+        renderNormas();
         P.itens = acrescentar ? P.itens.concat(r.itens) : r.itens;
         $('contagem').textContent = r.total
             ? `${r.total} ato${r.total === 1 ? '' : 's'}${P.perfil ? ` · os ainda sem tradução aparecem marcados, pois não sabemos se afetam ${perfilNome(P.perfil)}` : ''}`
@@ -897,6 +979,7 @@ async function iniciar() {
         const [perfis, categorias, statusLista, resumo] = await Promise.all([
             api('/api/perfis'), api('/api/categorias'), api('/api/status'), api('/api/politicas/resumo'),
         ]);
+        P.normas = await api('/api/normas').catch(() => null);   // opcional: sem ele a página funciona como antes, só sem as etiquetas
         P.perfis = perfis; P.categorias = categorias; P.statusLista = statusLista; P.resumo = resumo;
         P.coleta = resumo.coleta || {};
         if (P.perfil && !perfis.some((p) => p.id === P.perfil)) P.perfil = '';

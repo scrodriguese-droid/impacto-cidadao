@@ -41,6 +41,7 @@ import servicos
 import economia
 import equipamentos
 import macro
+import normas
 import orcamento
 import tributos
 import simuladores
@@ -167,6 +168,7 @@ def _proposicao_json(r: dict) -> dict:
         "id": r["id"],
         "identificacao": r["identificacao"],
         "sigla_tipo": r["sigla_tipo"],
+        "norma": normas.classificar(r["sigla_tipo"]),   # degrau da pirâmide de Kelsen (constitucional, complementar…)
         "instancia": r["instancia"],
         "nivel": r["nivel"],
         "uf": r["uf"],
@@ -240,6 +242,12 @@ def listar_categorias() -> list[dict]:
     return db.consultar("SELECT id, nome, icone FROM categorias ORDER BY ordem")
 
 
+@router.get("/normas", tags=["referencia"])
+def hierarquia_das_normas() -> dict:
+    """Pirâmide de Kelsen aplicada aos tipos de proposição: o que é cada um, o rigor para aprovar e um exemplo."""
+    return normas.catalogo()
+
+
 @router.get("/status", tags=["referencia"])
 def listar_status() -> list[str]:
     return list(STATUS)
@@ -257,6 +265,8 @@ def listar_proposicoes(
     ordem: Literal["recentes", "impacto"] = "recentes",
     instancia: Annotated[Literal["executivo", "legislativo"] | None, Query(
         description="poder de origem do ato")] = None,
+    norma: Annotated[Literal["constitucional", "complementar", "ordinaria", "medida_provisoria", "ato_congresso"] | None, Query(
+        description="tipo de norma na hierarquia (ver /api/normas)")] = None,
     nivel: Annotated[Literal["federal", "estadual", "municipal"] | None, Query(
         description="nível administrativo")] = None,
     incluir_pendentes: Annotated[bool, Query(
@@ -300,6 +310,7 @@ def listar_proposicoes(
          WHERE (p.analise_status = 'ok' OR %(pendentes)s)
            AND (%(instancia)s::text IS NULL OR p.instancia = %(instancia)s::text)
            AND (%(nivel)s::text IS NULL OR p.nivel = %(nivel)s::text)
+           AND (%(siglas)s::text[] IS NULL OR p.sigla_tipo = ANY (%(siglas)s::text[]))
            AND (%(desde)s::date IS NULL OR p.data_apresentacao >= %(desde)s::date)
            AND (%(ate)s::date IS NULL OR p.data_apresentacao <= %(ate)s::date)
            AND (%(perfil)s::text IS NULL OR %(perfil)s::text = ANY (p.perfis_impactados) OR 'todos' = ANY (p.perfis_impactados)
@@ -314,6 +325,7 @@ def listar_proposicoes(
         "perfil": perfil, "categoria": categoria, "status": status, "q": termo,
         "q_like": _escapar_like(termo) if termo else None,
         "instancia": instancia, "nivel": nivel, "pendentes": incluir_pendentes,
+        "siglas": normas.siglas_da_norma(norma) if norma else None,
         "desde": desde, "ate": ate, "ordem_temas": list(CATEGORIAS),
     }
     linhas = db.consultar(
@@ -332,9 +344,19 @@ def listar_proposicoes(
         f"SELECT {_TEMA_PRINCIPAL} AS tema, count(*) AS n FROM proposicoes_analisadas p {filtros} GROUP BY 1",
         parametros,
     )
+    # Quantos atos há em cada tipo de norma, sob os mesmos filtros MENOS o próprio tipo (para a pirâmide mostrar as opções).
+    por_sigla = db.consultar(
+        f"SELECT p.sigla_tipo AS sigla, count(*) AS n FROM proposicoes_analisadas p {filtros} GROUP BY 1",
+        {**parametros, "siglas": None},
+    )
+    por_norma: dict[str, int] = {i: 0 for i in normas.IDS}
+    for r in por_sigla:
+        nid = normas.classificar(r["sigla"])
+        if nid:
+            por_norma[nid] += r["n"]
     total = linhas[0]["total_geral"] if linhas else 0
     return {"total": total, "pagina": pagina, "por_pagina": por_pagina,
-            "temas": {r["tema"]: r["n"] for r in por_tema},
+            "temas": {r["tema"]: r["n"] for r in por_tema}, "normas": por_norma,
             "itens": [_proposicao_json(r) for r in linhas]}
 
 
