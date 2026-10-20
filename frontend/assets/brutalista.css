@@ -469,26 +469,54 @@ a.chip-link:hover { background: var(--ativo); color: var(--ativo-fg); }
 .radar-item-nota { grid-column: 1 / -1; font-size: .8rem; line-height: 1.45; color: var(--muted); }
 .radar-seta { font-weight: 700; }
 .radar-seta--piora { color: var(--vermelho); }
-/* perspectiva histórica */
-.radar-historico { display: grid; gap: 1.6rem 1.4rem; }
-@media (min-width: 900px) { .radar-historico { grid-template-columns: repeat(3, 1fr); } }
-.radar-grafico figcaption { font: 800 .72rem/1.3 var(--fonte-texto); letter-spacing: .06em; text-transform: uppercase; margin-bottom: .3rem; }
-.radar-grafico svg { width: 100%; height: auto; display: block; overflow: visible; }
-.rg-linha { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linejoin: round; }
-.rg-ponto { fill: var(--vermelho); }
-.rg-grade { stroke: rgba(128,128,128,.35); stroke-width: 1; }
-.rg-zero { stroke: currentColor; stroke-width: 1; opacity: .6; }
-.rg-marco { stroke: var(--vermelho); stroke-width: 1; stroke-dasharray: 3 3; }
-.rg-txt { font: 600 8.5px var(--fonte-texto); fill: currentColor; }
-.rg-num { font-weight: 800; fill: var(--vermelho); }
-.rg-fim { font-weight: 800; }
-.rg-faixa--1 { fill: rgba(128,128,128,.18); }
-.rg-faixa--2 { fill: rgba(169,40,35,.18); }
-.rg-legenda { display: inline-block; width: .9rem; height: .7rem; vertical-align: middle; border: 1px solid var(--line); }
-.rg-legenda--1 { background: rgba(128,128,128,.3); }
-.rg-legenda--2 { background: rgba(169,40,35,.35); }
-.radar-marcos { list-style: none; padding: 0; display: grid; gap: .35rem; font-size: .86rem; line-height: 1.4; }
-.radar-marcos b { color: var(--vermelho); margin-right: .3rem; }
+/* linha do tempo da dívida e dos juros: um só gráfico, marcos direto na linha, sem faixas de fundo */
+.lt { margin-top: 2rem; border-top: 3px solid var(--line); padding-top: .9rem; }
+.lt-sub { font-size: .95rem; line-height: 1.5; font-weight: 500; margin: .4rem 0 1.2rem; max-width: 70ch; }
+.lt-grafico { margin: 0; }
+.lt-grafico svg { width: 100%; height: auto; display: block; overflow: visible; }
+.lt-largo { display: none; }
+@media (min-width: 700px) { .lt-largo { display: block; } .lt-estreito { display: none; } }
+.lt-grafico figcaption { font-size: .82rem; line-height: 1.5; color: var(--muted); max-width: 78ch; margin-top: .7rem; }
+.lt-txt { font: 600 11px var(--fonte-texto); fill: var(--fg); paint-order: stroke; stroke: var(--papel); stroke-width: 3px; stroke-linejoin: round; }
+.lt-eixo { font-size: 10px; font-weight: 500; fill: var(--muted); stroke: none; }
+.lt-painel { font-size: 9.5px; font-weight: 800; letter-spacing: .09em; }
+.lt-grade { stroke: var(--fg); stroke-opacity: .14; stroke-width: 1; }
+.lt-zero { stroke-opacity: .55; }
+.lt-tick { stroke: var(--fg); stroke-opacity: .6; stroke-width: 1; }
+.lt-marco { stroke: var(--fg); stroke-width: 1; stroke-dasharray: 2 3; opacity: .8; }
+.lt-marco-ano { font-size: 12px; font-weight: 800; fill: var(--vermelho); }
+.lt-marco-nome { font-weight: 700; }
+.lt-linha { fill: none; stroke-linejoin: round; stroke-linecap: round; }
+.lt-linha--div { stroke: var(--vermelho); stroke-width: 2.6; }
+.lt-linha--nom, .lt-linha--juro { stroke: var(--fg); stroke-width: 1.8; }
+.lt-ponto { fill: var(--papel); stroke-width: 2; }
+.lt-ponto--div { stroke: var(--vermelho); }
+.lt-ponto--nom, .lt-ponto--juro { stroke: var(--fg); }
+.lt-extremo, .lt-ponto-fim { fill: var(--fg); stroke: var(--papel); stroke-width: 1.5; }
+.lt-destaque { font-size: 10.5px; font-weight: 700; }
+.lt-fim { font-size: 12px; font-weight: 800; }
+.lt-marcos-h { font: 800 .72rem/1.3 var(--fonte-texto); letter-spacing: .1em; text-transform: uppercase; color: var(--vermelho); margin: 1.8rem 0 .6rem; }
+.lt-marcos { list-style: none; padding: 0; margin: 0; display: grid; border-top: 4px solid var(--vermelho); }
+.lt-card { padding: 1rem 1.1rem 1.2rem 0; }
+.lt-card + .lt-card { border-top: 1px solid var(--line); }
+@media (min-width: 900px) {
+    .lt-marcos { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .lt-card { padding: 1rem 1.2rem 1.2rem; }
+    .lt-card:first-child { padding-left: 0; }
+    .lt-card + .lt-card { border-top: 0; border-left: 1px solid var(--line); }
+}
+.lt-card-quando { font-size: .74rem; font-weight: 600; color: var(--muted); }
+.lt-card-quando b { font: 400 2rem/1 var(--fonte-titulo); color: var(--vermelho); margin-right: .35rem; vertical-align: -.12em; }
+.lt-card-natureza { font-weight: 800; letter-spacing: .08em; text-transform: uppercase; font-size: .66rem; color: var(--fg); }
+.radar-conexao-segue { margin-top: 1.1rem; padding-top: .9rem; border-top: 1px solid var(--line); font-size: .88rem; font-weight: 700; }
+.lt-card h4 { font-family: var(--fonte-titulo); font-size: 1.45rem; font-weight: 400; line-height: 1.1; text-transform: uppercase; letter-spacing: 0; margin-top: .25rem; }
+.lt-card-norma { font: 800 .66rem/1.3 var(--fonte-texto); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-top: .3rem; }
+.lt-card-oque { font-size: .88rem; line-height: 1.5; margin-top: .7rem; }
+.lt-card-fato { font-size: .82rem; line-height: 1.45; margin-top: .7rem; padding-left: .65rem; border-left: 3px solid var(--fg); }
+.lt-card { display: flex; flex-direction: column; align-items: flex-start; }
+.lt-card-link { margin-top: auto; padding-top: .8rem; font-size: .8rem; font-weight: 700; }
+.lt-conclusao { margin-top: 1.6rem; padding: 1rem 1.2rem 1.1rem; border: 3px solid var(--line); font-size: 1.05rem; line-height: 1.5; font-weight: 600; max-width: 75ch; }
+.lt-conclusao b { display: block; font: 800 .68rem/1.3 var(--fonte-texto); letter-spacing: .14em; text-transform: uppercase; color: var(--vermelho); margin-bottom: .35rem; }
 .radar-tabela { width: 100%; max-width: 40rem; border-collapse: collapse; font-size: .85rem; margin-top: .5rem; }
 .radar-tabela th, .radar-tabela td { text-align: left; padding: .35rem .5rem; border-bottom: 1px solid var(--line); }
 .radar-tabela th { font-weight: 800; border-bottom: 2px solid var(--line); }
