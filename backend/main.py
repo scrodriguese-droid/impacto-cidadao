@@ -33,6 +33,7 @@ from pydantic import BaseModel, Field, field_validator
 
 import autoria
 import bancadas
+import capitulos
 import db
 import ciclo
 import competencias
@@ -1132,6 +1133,21 @@ def buscar_nos_planos(
     return {"consulta": termo or consulta, "modo": modo, "categoria": categoria,
             "ordenacao": "alfabética por nome de urna (sem ranking)", "aviso": AVISO_BUSCA,
             "candidatos": list(por_candidato.values())}
+
+
+AVISO_CAPITULOS = ("Capítulos tirados do sumário do próprio plano, sem inteligência artificial: cada um mostra a "
+                   "abertura literal do texto e os temas que aparecem nas suas páginas (mesmas palavras-chave "
+                   "para todos os candidatos). Não é um resumo interpretado; confira o documento original.")
+
+
+@router.get("/candidatos/{sq_candidato}/capitulos", tags=["candidatos"])
+def capitulos_do_candidato(sq_candidato: int) -> dict:
+    """Capítulos do plano (pelo sumário do PDF), com abertura literal e temas tocados — sem IA."""
+    plano = db.consultar_um(
+        "SELECT id, url_pdf FROM planos_governo WHERE sq_candidato = %s ORDER BY id DESC LIMIT 1", (sq_candidato,))
+    if not plano:
+        raise HTTPException(status_code=404, detail="Este candidato não tem plano registrado.")
+    return {**capitulos.capitulos_do_plano(plano["id"]), "url_pdf": plano["url_pdf"], "aviso": AVISO_CAPITULOS}
 
 
 @router.get("/candidatos/{sq_candidato}", tags=["candidatos"])
