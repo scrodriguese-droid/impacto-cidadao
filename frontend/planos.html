@@ -211,11 +211,49 @@ function cartaoCandidato(c, b, modo) {
             ${estat}
         </header>
         <div class="flex-grow">${corpo}</div>
+        ${c.plano_status !== 'sem_plano' ? `<details class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-700/60 text-xs" data-capitulos="${esc(c.sq_candidato)}">
+            <summary class="text-brand-700 dark:text-brand-400 font-semibold inline-flex items-center space-x-1 cursor-pointer">
+                <i class="fa-solid fa-list-ol mr-1" aria-hidden="true"></i><span>Ver por capítulo</span><i class="fa-solid fa-chevron-down text-[9px] chev" aria-hidden="true"></i></summary>
+            <div class="mt-3" data-capitulos-corpo></div></details>` : ''}
         ${pdf ? `<footer class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-700/60 text-xs">
             <a href="${esc(urlSegura(pdf))}" target="_blank" rel="noopener" class="text-brand-700 dark:text-brand-400 font-semibold hover:underline">
                 <i class="fa-solid fa-file-pdf mr-1" aria-hidden="true"></i>Ler o plano completo (TSE)<i class="fa-solid fa-arrow-up-right-from-square text-[9px] ml-1" aria-hidden="true"></i></a></footer>` : ''}
     </article>`;
 }
+
+/* Capítulos do plano (pelo sumário do PDF, sem IA): carregados só quando o cartão é aberto. */
+const MOTIVO_CAPITULOS = {
+    sem_sumario: 'Este plano não tem sumário que o sistema consiga ler. Use a busca por palavra ou abra o PDF.',
+    sumario_nao_entendido: 'O sumário deste plano tem um formato que o sistema não conseguiu interpretar. Use a busca por palavra ou abra o PDF.',
+    texto_indisponivel: 'O texto deste plano ainda não foi carregado.',
+};
+function capitulosHtml(d) {
+    if (!d.capitulos.length) return `<p class="text-slate-600 dark:text-slate-400">${esc(MOTIVO_CAPITULOS[d.motivo] || 'Capítulos indisponíveis.')}</p>`;
+    const pdf = d.url_pdf;
+    const lista = d.capitulos.map((c) => {
+        const pags = c.pagina_inicial === c.pagina_final ? `p. ${c.pagina_inicial}` : `pp. ${c.pagina_inicial}–${c.pagina_final}`;
+        const chips = c.temas.map((t) => `<span class="inline-flex px-2 py-0.5 rounded-full text-[11px] font-medium ${t.categoria === S.tema
+            ? 'bg-brand-600 text-white' : 'bg-slate-100 text-slate-600 dark:bg-slate-700/60 dark:text-slate-300'}">${esc(t.nome)}${t.propostas_analisadas ? ` · ${t.propostas_analisadas} proposta(s)` : ''}</span>`).join(' ');
+        const link = pdf ? ` · <a class="text-brand-700 dark:text-brand-400 hover:underline" target="_blank" rel="noopener" href="${esc(urlSegura(pdf))}#page=${esc(c.pagina_inicial)}">abrir no PDF</a>` : '';
+        return `<li class="rounded-xl border p-3 ${c.temas.some((t) => t.categoria === S.tema)
+            ? 'border-brand-400 bg-brand-50/60 dark:bg-brand-950/30' : 'border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-900/50'}">
+            <p class="text-sm font-semibold leading-snug">${esc(c.titulo)}</p>
+            <p class="text-[11px] text-slate-500 mt-0.5">${pags}${link}</p>
+            ${c.abertura ? `<p class="mt-1.5 text-xs leading-relaxed text-slate-600 dark:text-slate-400 italic">“${esc(c.abertura)}”</p>` : ''}
+            ${chips ? `<div class="flex flex-wrap gap-1.5 mt-2">${chips}</div>` : ''}</li>`;
+    }).join('');
+    return `<p class="text-[11px] text-slate-500 mb-2"><i class="fa-solid fa-info-circle mr-1" aria-hidden="true"></i>${esc(d.aviso)}</p>
+        <ol class="space-y-2.5 max-h-[32rem] overflow-y-auto pr-1">${lista}</ol>`;
+}
+$('candidatosGrid').addEventListener('toggle', async (ev) => {
+    const det = ev.target.closest && ev.target.closest('details[data-capitulos]');
+    if (!det || !det.open || det.dataset.carregado) return;
+    det.dataset.carregado = '1';
+    const corpo = det.querySelector('[data-capitulos-corpo]');
+    corpo.innerHTML = '<p class="text-slate-500"><i class="fa-solid fa-spinner fa-spin mr-2" aria-hidden="true"></i>Lendo o sumário…</p>';
+    try { corpo.innerHTML = capitulosHtml(await api(`/api/candidatos/${det.dataset.capitulos}/capitulos`)); }
+    catch (e) { delete det.dataset.carregado; corpo.innerHTML = mensagemErro(e); }
+}, true);
 
 let reqCandidatos = 0;
 /* Colunas = nº de candidatos (no máximo 3 em tela larga, 2 em média, 1 no celular): poucos candidatos ocupam a largura toda. */
