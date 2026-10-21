@@ -15,6 +15,7 @@ import unicodedata
 from typing import Any
 
 import db
+import maturidade
 from temas import TERMOS_POR_TEMA, consulta_tsquery
 
 MIN_CAPITULOS = 3          # abaixo disso o sumário não foi entendido: melhor não mostrar nada
@@ -152,5 +153,8 @@ def capitulos_do_plano(plano_id: int) -> dict[str, Any]:
         temas.sort(key=lambda t: (-t["paginas_com_o_tema"], t["nome"]))
         capitulos.append({"ordem": k + 1, "titulo": titulo, "pagina_inicial": ini_pg, "pagina_final": fim_pg,
                           "abertura": _abertura(paginas[i]["texto"], titulo),
-                          "pagina_compartilhada": compartilha, "temas": temas[:5]})
+                          "pagina_compartilhada": compartilha, "temas": temas[:5],
+                          # páginas que dividem título com outro capítulo não permitem separar os sinais
+                          "maturidade": None if compartilha else maturidade.avaliar_texto(
+                              "\n".join(p["texto"] for p in paginas[i:fim + 1]))})
     return {"capitulos": capitulos, "motivo": None}
