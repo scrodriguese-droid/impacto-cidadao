@@ -31,6 +31,7 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field, field_validator
 
+import apontamentos
 import autoria
 import bancadas
 import capitulos
@@ -1206,6 +1207,7 @@ def obter_candidato(sq_candidato: int) -> dict:
 
 app.include_router(router)
 app.include_router(editor.router)
+app.include_router(apontamentos.router)
 
 # Aplicativo web (HTML estático) servido na raiz — registrado por último para não
 # sombrear as rotas /api.

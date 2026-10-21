@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planos de governo: análise do editor — ImpactoCidadão</title>
+    <meta name="description" content="Apontamentos de editores sobre metas, financiamento, viabilidade e competência nos planos de governo, lado a lado, com o trecho oficial do PDF.">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="assets/tailwind-config.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Inter', system-ui, sans-serif; }
+        details > summary { list-style: none; cursor: pointer; }
+        details > summary::-webkit-details-marker { display: none; }
+        details[open] > summary .chev { transform: rotate(180deg); }
+        .chev { transition: transform .15s ease; }
+        dialog#modalApontamento { border: 0; padding: 0; border-radius: 1rem; width: min(40rem, calc(100vw - 2rem)); max-height: calc(100vh - 2rem); }
+        dialog#modalApontamento::backdrop { background: rgba(15, 23, 42, .55); }
+        :focus-visible { outline: 2px solid #A92823; outline-offset: 2px; }
+    </style>
+    <link rel="stylesheet" href="assets/brutalista.css">
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-full flex flex-col transition-colors duration-200">
+
+<a href="#conteudo" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-white focus:text-slate-900 focus:p-3">Ir para o conteúdo</a>
+
+<div id="cabecalho"></div>
+
+<main id="conteudo" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-10 flex-grow w-full space-y-6">
+    <h1 class="text-2xl font-extrabold tracking-tight">Planos de governo: análise do editor</h1>
+
+    <section aria-labelledby="tAnalise">
+        <h2 id="tAnalise" class="text-2xl font-bold text-slate-900 dark:text-white flex items-center">
+            <i class="fa-solid fa-pen-to-square text-brand-600 mr-2.5" aria-hidden="true"></i>Apontamentos por tópico
+        </h2>
+        <p class="text-sm text-slate-600 dark:text-slate-400 mt-1">Cada eixo tem os mesmos quatro tópicos para os dois candidatos, alinhados lado a lado. O texto em destaque é a análise de um editor; o trecho oficial do PDF que a sustenta fica na gaveta de cada cartão.</p>
+
+        <div class="rounded-xl border border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 text-xs p-3.5 flex items-start space-x-2.5 my-5" role="note">
+            <i class="fa-solid fa-triangle-exclamation mt-0.5" aria-hidden="true"></i>
+            <p><b>Isto é opinião de editor, assinada, e não recomendação de voto.</b> As etiquetas (meta objetiva, parcial, genérica) são o julgamento de quem escreveu, não um cálculo automático. Confira sempre o trecho original. O que um plano promete não é garantia de execução.</p>
+        </div>
+
+        <div class="flex flex-col gap-4 mb-6">
+            <div>
+                <p class="text-xs font-bold uppercase tracking-wide text-slate-500 mb-2">1. Escolha o eixo</p>
+                <div id="eixoChips" class="flex flex-wrap items-center gap-2" role="radiogroup" aria-label="Eixo temático"></div>
+            </div>
+            <div>
+                <p class="text-xs font-bold uppercase tracking-wide text-slate-500 mb-2">2. Compare dois candidatos</p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div><label for="candA" class="sr-only">Primeiro candidato</label>
+                        <select id="candA" class="w-full px-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold"></select></div>
+                    <div><label for="candB" class="sr-only">Segundo candidato</label>
+                        <select id="candB" class="w-full px-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold"></select></div>
+                </div>
+            </div>
+            <div id="barraEditor" class="text-sm"></div>
+        </div>
+
+        <div id="quadro" aria-live="polite"></div>
+    </section>
+</main>
+
+<dialog id="modalApontamento" aria-labelledby="tModal">
+    <form id="formApontamento" class="bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 p-5 space-y-4 overflow-y-auto" style="max-height: calc(100vh - 2rem)">
+        <div class="flex items-start justify-between gap-3">
+            <h2 id="tModal" class="text-lg font-bold">Novo apontamento</h2>
+            <button type="button" id="fecharModal" class="text-slate-500 hover:text-slate-900 dark:hover:text-white" aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div class="sm:col-span-3"><label for="fCand" class="block text-xs font-bold uppercase tracking-wide text-slate-500 mb-1">Candidato</label>
+                <select id="fCand" required class="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg text-sm"></select></div>
+            <div class="sm:col-span-2"><label for="fEixo" class="block text-xs font-bold uppercase tracking-wide text-slate-500 mb-1">Eixo</label>
+                <select id="fEixo" required class="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg text-sm"></select></div>
+            <div><label for="fTopico" class="block text-xs font-bold uppercase tracking-wide text-slate-500 mb-1">Tópico</label>
+                <select id="fTopico" required class="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg text-sm"></select></div>
+        </div>
+        <fieldset>
+            <legend class="block text-xs font-bold uppercase tracking-wide text-slate-500 mb-1">Etiqueta de status</legend>
+            <div id="fStatus" class="flex flex-wrap gap-2"></div>
+        </fieldset>
+        <div><label for="fTexto" class="block text-xs font-bold uppercase tracking-wide text-slate-500 mb-1">Texto analítico <span class="font-normal normal-case text-slate-400">(aparece em destaque)</span></label>
+            <textarea id="fTexto" required maxlength="4000" rows="5" class="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg text-sm"></textarea>
+            <p id="contaTexto" class="text-[11px] text-slate-400 text-right">0 / 4000</p></div>
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+            <div class="sm:col-span-3"><label for="fCitacao" class="block text-xs font-bold uppercase tracking-wide text-slate-500 mb-1">Citação do PDF <span class="font-normal normal-case text-slate-400">(literal)</span></label>
+                <textarea id="fCitacao" maxlength="3000" rows="3" class="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg text-sm"></textarea></div>
+            <div><label for="fPagina" class="block text-xs font-bold uppercase tracking-wide text-slate-500 mb-1">Página</label>
+                <input id="fPagina" type="number" min="1" max="2000" class="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg text-sm"></div>
+        </div>
+        <label class="inline-flex items-center space-x-2 text-sm cursor-pointer">
+            <input id="fPublico" type="checkbox" class="rounded border-slate-300 text-brand-600">
+            <span>Publicar para todos os visitantes <span class="text-slate-400">(sem marcar, fica como rascunho, só você vê)</span></span></label>
+        <p id="erroForm" class="text-sm text-rose-700 dark:text-rose-300 hidden" role="alert"></p>
+        <div class="flex flex-wrap items-center justify-between gap-3 pt-1">
+            <button type="button" id="apagarApontamento" class="hidden text-sm text-rose-700 dark:text-rose-300 underline">Apagar apontamento</button>
+            <div class="flex gap-2 ml-auto">
+                <button type="button" id="cancelarModal" class="px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 text-sm font-semibold">Cancelar</button>
+                <button type="submit" id="salvarApontamento" class="px-4 py-2 rounded-lg bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold">Salvar</button>
+            </div>
+        </div>
+    </form>
+</dialog>
+
+<div id="rodape"></div>
+
+<script src="assets/comum.js"></script>
+<script>
+renderLayout('analise-planos');
+
+const EMOJI_STATUS = { objetiva: '🟢', parcial: '🟡', generica: '🔴' };
+const COR_STATUS = {
+    objetiva: 'bg-emerald-100 text-emerald-900 dark:bg-emerald-950/60 dark:text-emerald-200',
+    parcial: 'bg-amber-100 text-amber-900 dark:bg-amber-950/60 dark:text-amber-200',
+    generica: 'bg-rose-100 text-rose-900 dark:bg-rose-950/60 dark:text-rose-200',
+};
+const EIXOS_PRINCIPAIS = ['saude', 'educacao', 'seguranca', 'economia'];
+const S = { categorias: [], candidatos: [], eixo: 'saude', a: null, b: null, itens: [], topicos: [], statusLista: [], eu: { logado: false } };
+async function chamar(metodo, caminho, corpo) {
+    let r;
+    try {
+        r = await fetch('/api' + caminho, { method: metodo, headers: corpo ? { 'Content-Type': 'application/json' } : undefined,
+            body: corpo ? JSON.stringify(corpo) : undefined, credentials: 'same-origin' });
+    } catch (_) { throw new Error('Não consegui falar com o servidor. Tente de novo em instantes.'); }
+    let j = null; try { j = await r.json(); } catch (_) { /* sem corpo */ }
+    if (!r.ok) {
+        if (j && typeof j.detail === 'string') throw new Error(j.detail);
+        if (r.status === 401) throw new Error('Sua sessão expirou. Entre de novo pela Área do editor.');
+        if (r.status === 422 && j && Array.isArray(j.detail) && j.detail[0]) throw new Error(`Confira o campo "${j.detail[0].loc.slice(-1)[0]}".`);
+        throw new Error(`Erro ${r.status}`);
+    }
+    return j;
+}
+
+/* ---------- seletores ---------- */
+function renderEixos() {
+    const lista = S.categorias.filter((c) => c.id !== 'outros');
+    const principais = lista.filter((c) => EIXOS_PRINCIPAIS.includes(c.id));
+    const outros = lista.filter((c) => !EIXOS_PRINCIPAIS.includes(c.id));
+    const noOutros = outros.some((c) => c.id === S.eixo);
+    $('eixoChips').innerHTML = principais.map((c) => {
+        const ativo = c.id === S.eixo;
+        return `<button type="button" role="radio" aria-checked="${ativo}" data-eixo="${esc(c.id)}" class="shrink-0 inline-flex items-center space-x-1.5 px-4 py-2 rounded-full text-sm font-semibold border transition ${ativo
+            ? 'bg-brand-600 border-brand-600 text-white' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-brand-400'}">
+            <i class="fa-solid ${esc(c.icone)}" aria-hidden="true"></i><span>${esc(c.nome)}</span></button>`;
+    }).join('') + `<label class="sr-only" for="eixoOutros">Outros eixos</label>
+        <select id="eixoOutros" class="px-3 py-2 rounded-full text-sm font-semibold border ${noOutros ? 'bg-brand-600 border-brand-600 text-white' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700'}">
+            <option value="">Outros eixos…</option>${outros.map((o) => `<option value="${esc(o.id)}" ${o.id === S.eixo ? 'selected' : ''}>${esc(o.nome)}</option>`).join('')}</select>`;
+}
+function opcoesCandidatos(sel) {
+    return S.candidatos.map((c) => `<option value="${esc(c.sq_candidato)}" ${String(c.sq_candidato) === String(sel) ? 'selected' : ''}>${esc(c.nome)}${c.partido ? ' · ' + esc(c.partido) : ''}</option>`).join('');
+}
+function renderSeletores() { $('candA').innerHTML = opcoesCandidatos(S.a); $('candB').innerHTML = opcoesCandidatos(S.b); }
+$('eixoChips').addEventListener('click', (ev) => { const b = ev.target.closest('[data-eixo]'); if (b) escolherEixo(b.dataset.eixo); });
+$('eixoChips').addEventListener('change', (ev) => { if (ev.target.id === 'eixoOutros' && ev.target.value) escolherEixo(ev.target.value); });
+$('candA').addEventListener('change', (ev) => { S.a = ev.target.value; carregar(); });
+$('candB').addEventListener('change', (ev) => { S.b = ev.target.value; carregar(); });
+function escolherEixo(id) { S.eixo = id; renderEixos(); carregar(); }
+
+/* ---------- quadro: um tópico por linha, os dois candidatos alinhados ---------- */
+const candidato = (sq) => S.candidatos.find((c) => String(c.sq_candidato) === String(sq));
+
+function cartaoApontamento(ap, cand) {
+    const pdf = cand && cand.plano && cand.plano.url_pdf;
+    const gaveta = ap.citacao ? `<details class="mt-4 rounded-xl border border-slate-200 dark:border-slate-700">
+        <summary class="px-3.5 py-2.5 text-sm font-semibold text-brand-700 dark:text-brand-400 flex items-center justify-between">
+            <span><i class="fa-solid fa-file-lines mr-2" aria-hidden="true"></i>Ver trecho oficial do PDF</span><i class="fa-solid fa-chevron-down text-[9px] chev" aria-hidden="true"></i></summary>
+        <div class="px-3.5 pb-3.5 text-xs">
+            <blockquote class="pl-3 border-l-2 border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-400 italic">“${esc(ap.citacao)}”</blockquote>
+            <p class="mt-2 text-[11px] text-slate-500">${ap.pagina_pdf ? `página ${esc(ap.pagina_pdf)}` : ''}${pdf ? `${ap.pagina_pdf ? ' · ' : ''}<a class="text-brand-700 dark:text-brand-400 hover:underline" target="_blank" rel="noopener" href="${esc(urlSegura(pdf))}${ap.pagina_pdf ? '#page=' + esc(ap.pagina_pdf) : ''}">abrir no PDF</a>` : ''}</p>
+        </div></details>` : '';
+    return `<article class="h-full bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-sm p-5 flex flex-col">
+        <div class="flex flex-wrap items-center gap-2 mb-3">
+            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold ${COR_STATUS[ap.status]}">${EMOJI_STATUS[ap.status]}&nbsp;${esc(ap.rotulo_status)}</span>
+            ${ap.publico ? '' : '<span class="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200">Rascunho (só você vê)</span>'}
+            ${ap.meu ? `<button type="button" data-editar="${esc(ap.id)}" class="ml-auto text-xs text-brand-700 dark:text-brand-400 underline"><i class="fa-solid fa-pen mr-1" aria-hidden="true"></i>Editar</button>` : ''}
+        </div>
+        <p class="text-base leading-relaxed text-slate-900 dark:text-slate-100 flex-grow">${esc(ap.texto)}</p>
+        <p class="mt-2 text-[11px] text-slate-500">Análise de ${esc(ap.autor)} · ${esc(fmtData(ap.atualizado_em))}</p>
+        ${gaveta}</article>`;
+}
+function cartaoVazio(topico, sq) {
+    return `<div class="h-full rounded-2xl border-2 border-dashed border-slate-300 dark:border-slate-700 p-5 flex flex-col items-start justify-center text-sm text-slate-500 dark:text-slate-400">
+        <p>Sem análise cadastrada neste tópico.</p>
+        ${S.eu.logado ? `<button type="button" data-novo="${esc(topico)}|${esc(sq)}" class="mt-2 text-brand-700 dark:text-brand-400 font-semibold underline"><i class="fa-solid fa-plus mr-1" aria-hidden="true"></i>Adicionar</button>` : ''}</div>`;
+}
+function renderQuadro() {
+    const lados = [S.a, S.b].filter(Boolean);
+    if (!lados.length) { $('quadro').innerHTML = '<p class="text-sm text-slate-500">Nenhum candidato encontrado.</p>'; return; }
+    const cab = lados.map((sq) => { const c = candidato(sq); return `<h3 class="text-lg font-bold">${esc(c ? c.nome : sq)}<span class="block text-xs font-normal text-slate-500">${c ? esc(c.partido || '') + ' · nº ' + esc(c.numero ?? '—') : ''}</span></h3>`; }).join('');
+    const linhas = S.topicos.map((t) => `<section class="mt-6" aria-labelledby="top-${esc(t.id)}">
+        <h4 id="top-${esc(t.id)}" class="text-xs font-bold uppercase tracking-wide text-slate-500 mb-2 border-b border-slate-200 dark:border-slate-700 pb-1">${esc(t.nome)}</h4>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch">
+            ${lados.map((sq) => { const ap = S.itens.find((i) => String(i.sq_candidato) === String(sq) && i.topico === t.id); return ap ? cartaoApontamento(ap, candidato(sq)) : cartaoVazio(t.id, sq); }).join('')}
+        </div></section>`).join('');
+    $('quadro').innerHTML = `<div class="grid grid-cols-1 md:grid-cols-2 gap-4">${cab}</div>${linhas}`;
+}
+async function carregar() {
+    $('quadro').innerHTML = '<p class="text-sm text-slate-500"><i class="fa-solid fa-spinner fa-spin mr-2" aria-hidden="true"></i>Carregando…</p>';
+    try {
+        const ids = [S.a, S.b].filter(Boolean).join(',');
+        const r = await chamar('GET', `/apontamentos?eixo=${encodeURIComponent(S.eixo)}${ids ? '&candidatos=' + ids : ''}`);
+        S.itens = r.itens; S.topicos = r.topicos; S.statusLista = r.status;
+        renderQuadro();
+    } catch (e) { $('quadro').innerHTML = mensagemErro(e); }
+}
+function renderBarraEditor() {
+    $('barraEditor').innerHTML = S.eu.logado
+        ? `<button type="button" id="novoApontamento" class="px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold"><i class="fa-solid fa-plus mr-1.5" aria-hidden="true"></i>Novo apontamento</button>
+           <span class="ml-2 text-xs text-slate-500">Você entrou como ${esc(S.eu.nome)}.</span>`
+        : '<p class="text-xs text-slate-500"><i class="fa-solid fa-lock mr-1" aria-hidden="true"></i>Para cadastrar ou editar apontamentos, entre pela <b>Área do editor</b>, no menu.</p>';
+}
+$('barraEditor').addEventListener('click', (ev) => { if (ev.target.closest('#novoApontamento')) abrirModal({ sq_candidato: S.a, eixo: S.eixo }); });
+$('quadro').addEventListener('click', (ev) => {
+    const ed = ev.target.closest('[data-editar]');
+    if (ed) { abrirModal(S.itens.find((i) => String(i.id) === ed.dataset.editar)); return; }
+    const nv = ev.target.closest('[data-novo]');
+    if (nv) { const [topico, sq] = nv.dataset.novo.split('|'); abrirModal({ sq_candidato: sq, eixo: S.eixo, topico }); }
+});
+
+/* ---------- modal de cadastro e edição ---------- */
+let editando = null;
+function abrirModal(base) {
+    editando = base && base.id ? base : null;
+    const v = base || {};
+    $('tModal').textContent = editando ? 'Editar apontamento' : 'Novo apontamento';
+    $('fCand').innerHTML = opcoesCandidatos(v.sq_candidato || S.a);
+    $('fEixo').innerHTML = S.categorias.filter((c) => c.id !== 'outros').map((c) => `<option value="${esc(c.id)}" ${c.id === (v.eixo || S.eixo) ? 'selected' : ''}>${esc(c.nome)}</option>`).join('');
+    $('fTopico').innerHTML = S.topicos.map((t) => `<option value="${esc(t.id)}" ${t.id === (v.topico || 'metas') ? 'selected' : ''}>${esc(t.nome)}</option>`).join('');
+    $('fStatus').innerHTML = S.statusLista.map((s) => `<label class="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-full text-sm font-semibold cursor-pointer border border-slate-300 dark:border-slate-600 has-[:checked]:ring-2 has-[:checked]:ring-brand-600 ${COR_STATUS[s.id]}">
+        <input type="radio" name="fStatusR" value="${esc(s.id)}" class="sr-only" ${s.id === (v.status || 'parcial') ? 'checked' : ''}><span>${EMOJI_STATUS[s.id]} ${esc(s.nome)}</span></label>`).join('');
+    $('fTexto').value = v.texto || ''; $('fCitacao').value = v.citacao || ''; $('fPagina').value = v.pagina_pdf || '';
+    $('fPublico').checked = !!v.publico; $('erroForm').classList.add('hidden');
+    // a chave (candidato, eixo, tópico) não muda numa edição
+    ['fCand', 'fEixo', 'fTopico'].forEach((id) => { $(id).disabled = !!editando; });
+    $('apagarApontamento').classList.toggle('hidden', !editando);
+    $('contaTexto').textContent = `${$('fTexto').value.length} / 4000`;
+    $('modalApontamento').showModal();
+}
+const fechar = () => $('modalApontamento').close();
+$('fecharModal').addEventListener('click', fechar); $('cancelarModal').addEventListener('click', fechar);
+$('fTexto').addEventListener('input', () => { $('contaTexto').textContent = `${$('fTexto').value.length} / 4000`; });
+const erroNoForm = (msg) => { $('erroForm').textContent = msg; $('erroForm').classList.remove('hidden'); };
+$('formApontamento').addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    const corpo = {
+        sq_candidato: Number(editando ? editando.sq_candidato : $('fCand').value), eixo: editando ? editando.eixo : $('fEixo').value,
+        topico: editando ? editando.topico : $('fTopico').value, status: (document.querySelector('input[name="fStatusR"]:checked') || {}).value,
+        texto: $('fTexto').value, citacao: $('fCitacao').value, pagina_pdf: $('fPagina').value ? Number($('fPagina').value) : null,
+        publico: $('fPublico').checked,
+    };
+    $('salvarApontamento').disabled = true;
+    try {
+        if (editando) await chamar('PUT', '/apontamentos/' + editando.id, corpo); else await chamar('POST', '/apontamentos', corpo);
+        fechar();
+        if (corpo.eixo !== S.eixo) { S.eixo = corpo.eixo; renderEixos(); }
+        carregar();
+    } catch (e) { erroNoForm(e.message); } finally { $('salvarApontamento').disabled = false; }
+});
+$('apagarApontamento').addEventListener('click', async () => {
+    if (!editando || !confirm('Apagar este apontamento? Não dá para desfazer.')) return;
+    try { await chamar('DELETE', '/apontamentos/' + editando.id); fechar(); carregar(); } catch (e) { erroNoForm(e.message); }
+});
+
+/* ---------- início ---------- */
+(async function iniciar() {
+    try {
+        const [categorias, lista, eu] = await Promise.all([api('/api/categorias'), api('/api/candidatos?turno2=false'), chamar('GET', '/editor/eu').catch(() => ({ logado: false }))]);
+        S.categorias = categorias; S.candidatos = lista.itens; S.eu = eu;
+        if (!categorias.some((c) => c.id === S.eixo)) S.eixo = categorias[0].id;
+        const seg = S.candidatos.filter((c) => (c.totalizacao || '').toLowerCase().startsWith('2'));
+        const base = seg.length >= 2 ? seg : S.candidatos;
+        S.a = base[0] && base[0].sq_candidato; S.b = base[1] && base[1].sq_candidato;
+    } catch (e) { $('quadro').innerHTML = mensagemErro(e); return; }
+    renderEixos(); renderSeletores(); renderBarraEditor(); carregar();
+})();
+</script>
+</body>
+</html>

@@ -77,12 +77,18 @@ _DDL_SQLITE = """
         editor_id INTEGER NOT NULL REFERENCES editores(id) ON DELETE CASCADE,
         criado_em TEXT NOT NULL, atualizado_em TEXT NOT NULL);
     CREATE INDEX IF NOT EXISTS ix_postits_pagina ON postits(pagina);
+    CREATE TABLE IF NOT EXISTS apontamentos (
+        id INTEGER PRIMARY KEY, sq_candidato INTEGER NOT NULL, eixo TEXT NOT NULL, topico TEXT NOT NULL,
+        status TEXT NOT NULL, texto TEXT NOT NULL, citacao TEXT NOT NULL DEFAULT '', pagina_pdf INTEGER,
+        publico INTEGER NOT NULL DEFAULT 0, editor_id INTEGER NOT NULL REFERENCES editores(id) ON DELETE CASCADE,
+        criado_em TEXT NOT NULL, atualizado_em TEXT NOT NULL, UNIQUE (sq_candidato, eixo, topico));
     CREATE TABLE IF NOT EXISTS convites (
         codigo_hash TEXT PRIMARY KEY, papel TEXT NOT NULL DEFAULT 'editor',
         criado_em TEXT NOT NULL, expira_em TEXT NOT NULL, usado_em TEXT);
 """
 _DDL_PG = _DDL_SQLITE.replace("id INTEGER PRIMARY KEY", "id BIGSERIAL PRIMARY KEY").replace(
-    "editor_id INTEGER NOT NULL", "editor_id BIGINT NOT NULL")
+    "editor_id INTEGER NOT NULL", "editor_id BIGINT NOT NULL").replace(
+    "sq_candidato INTEGER NOT NULL", "sq_candidato BIGINT NOT NULL")
 
 
 def _usa_postgres() -> bool:
@@ -119,7 +125,7 @@ class _ConexaoPG:
         sql = sql.replace("?", "%s")
         insere = sql.lstrip().upper().startswith("INSERT INTO") and "RETURNING" not in sql.upper()
         # só as tabelas com id numérico devolvem o id (sessoes e convites usam hash como chave)
-        com_id = insere and any(t in sql for t in ("INTO editores", "INTO postits"))
+        com_id = insere and any(t in sql for t in ("INTO editores", "INTO postits", "INTO apontamentos"))
         cur = self._c.execute(sql + (" RETURNING id" if com_id else ""), params)
         return _Cursor(cur, cur.fetchone()["id"] if com_id else None)
 
