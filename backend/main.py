@@ -42,6 +42,7 @@ import servicos
 import economia
 import equipamentos
 import macro
+import maturidade
 import normas
 import orcamento
 import tributos
@@ -1049,6 +1050,7 @@ def comparar_candidatos(
                 "especifica": {"meta_numerica": p["tem_meta_numerica"], "prazo": p["tem_prazo"],
                                "fonte_de_recurso": p["tem_fonte_recurso"]},
                 "canal": p["canal_execucao"], "perfis": p["perfis_beneficiados"],
+                "maturidade": maturidade.avaliar_proposta(p),
                 "como_chega_na_cidade": _como_chega(p["canal_execucao"], nome_cidade) if nome_cidade else None,
             } for p in exibidas],
         })
@@ -1147,7 +1149,8 @@ def capitulos_do_candidato(sq_candidato: int) -> dict:
         "SELECT id, url_pdf FROM planos_governo WHERE sq_candidato = %s ORDER BY id DESC LIMIT 1", (sq_candidato,))
     if not plano:
         raise HTTPException(status_code=404, detail="Este candidato não tem plano registrado.")
-    return {**capitulos.capitulos_do_plano(plano["id"]), "url_pdf": plano["url_pdf"], "aviso": AVISO_CAPITULOS}
+    return {**capitulos.capitulos_do_plano(plano["id"]), "url_pdf": plano["url_pdf"], "aviso": AVISO_CAPITULOS,
+            "regua": maturidade.EXPLICACAO}
 
 
 @router.get("/candidatos/{sq_candidato}", tags=["candidatos"])

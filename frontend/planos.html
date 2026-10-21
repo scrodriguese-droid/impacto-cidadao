@@ -143,6 +143,21 @@ const chip = (ok, texto) => `<span class="inline-flex items-center space-x-1 px-
     ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
     : 'bg-slate-100 text-slate-500 dark:bg-slate-700/60 dark:text-slate-400'}"><i class="fa-solid ${ok ? 'fa-check' : 'fa-minus'} text-[9px]" aria-hidden="true"></i><span>${texto}</span></span>`;
 
+/* Maturidade da promessa: régua objetiva (meta, prazo, fonte), cores neutras de propósito — não é aprovação nem reprovação. */
+const NIVEL_MATURIDADE = {
+    estruturada: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950/70 dark:text-indigo-300',
+    parcial: 'bg-sky-100 text-sky-800 dark:bg-sky-950/60 dark:text-sky-300',
+    generica: 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300',
+};
+const ROTULO_CRITERIO = { meta_numerica: 'meta numérica', prazo: 'prazo', fonte_de_recursos: 'fonte de recursos', quem_executa: 'quem executa', indicador: 'indicador' };
+function maturidadeHtml(m) {
+    if (!m) return '';
+    const itens = Object.entries(m.criterios).map(([k, ok]) => `<li class="inline-flex items-center space-x-1 ${ok ? 'text-slate-700 dark:text-slate-200' : 'text-slate-400 dark:text-slate-500 line-through'}"><i class="fa-solid ${ok ? 'fa-check' : 'fa-minus'} text-[9px]" aria-hidden="true"></i><span>${ROTULO_CRITERIO[k]}</span></li>`).join('');
+    return `<div class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px]">
+        <span class="inline-flex px-2 py-0.5 rounded-full font-semibold ${NIVEL_MATURIDADE[m.nivel]}">${esc(m.rotulo)}</span>
+        <ul class="flex flex-wrap gap-x-2.5">${itens}</ul></div>`;
+}
+
 function cartaoProposta(p) {
     const [rotuloCanal, iconeCanal] = CANAIS[p.canal] || CANAIS.nao_especificado;
     return `<li class="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-900/50 p-3.5">
@@ -152,6 +167,7 @@ function cartaoProposta(p) {
             <span class="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-sky-100 text-sky-800 dark:bg-sky-950/60 dark:text-sky-300">
                 <i class="fa-solid ${iconeCanal} text-[9px]" aria-hidden="true"></i><span>${esc(rotuloCanal)}</span></span>
         </div>
+        ${maturidadeHtml(p.maturidade)}
         ${p.como_chega_na_cidade ? `<p class="mt-2.5 text-xs leading-relaxed text-teal-900 dark:text-teal-200 bg-teal-50 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-900 rounded-lg p-2.5">
             <i class="fa-solid fa-location-dot mr-1" aria-hidden="true"></i><b>Na sua cidade:</b> ${esc(p.como_chega_na_cidade)}</p>` : ''}
         <details class="mt-2.5 text-xs">
@@ -240,9 +256,11 @@ function capitulosHtml(d) {
             <p class="text-sm font-semibold leading-snug">${esc(c.titulo)}</p>
             <p class="text-[11px] text-slate-500 mt-0.5">${pags}${link}</p>
             ${c.abertura ? `<p class="mt-1.5 text-xs leading-relaxed text-slate-600 dark:text-slate-400 italic">“${esc(c.abertura)}”</p>` : ''}
-            ${chips ? `<div class="flex flex-wrap gap-1.5 mt-2">${chips}</div>` : ''}</li>`;
+            ${chips ? `<div class="flex flex-wrap gap-1.5 mt-2">${chips}</div>` : ''}
+            ${maturidadeHtml(c.maturidade)}</li>`;
     }).join('');
     return `<p class="text-[11px] text-slate-500 mb-2"><i class="fa-solid fa-info-circle mr-1" aria-hidden="true"></i>${esc(d.aviso)}</p>
+        <p class="text-[11px] text-slate-500 mb-2"><i class="fa-solid fa-scale-balanced mr-1" aria-hidden="true"></i>${esc(d.regua)} No capítulo, os sinais podem vir de frases diferentes.</p>
         <ol class="space-y-2.5 max-h-[32rem] overflow-y-auto pr-1">${lista}</ol>`;
 }
 $('candidatosGrid').addEventListener('toggle', async (ev) => {
