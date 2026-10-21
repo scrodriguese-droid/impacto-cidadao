@@ -55,24 +55,35 @@
             <p><b>Isto é informação, não recomendação de voto.</b> Quando existe resumo, ele é gerado por inteligência artificial a partir do plano oficial e conferido automaticamente contra o PDF, mas pode conter imprecisões. A busca por palavra mostra apenas trechos literais, sem interpretação. Confira sempre o trecho original. O que um plano promete não é garantia de execução: depende do Congresso, do orçamento e, muitas vezes, de estados e prefeituras.</p>
         </div>
 
-        <div class="flex flex-col gap-3 mb-5">
-            <div id="temaChips" class="flex flex-wrap gap-2" role="radiogroup" aria-label="Tema"></div>
-            <label class="inline-flex items-center space-x-2 text-sm cursor-pointer self-start">
-                <input id="chkTurno2" type="checkbox" class="rounded border-slate-300 text-brand-600 focus:ring-brand-500">
-                <span>Somente candidatos no <b>2º turno</b></span>
-            </label>
-        </div>
-
-        <form id="formBuscaPlano" class="flex gap-2 mb-5" role="search">
-            <div class="relative flex-grow">
-                <label for="buscaPlano" class="sr-only">Buscar nos planos de governo</label>
-                <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-slate-400 text-xs" aria-hidden="true"></i>
-                <input id="buscaPlano" type="search" maxlength="100" autocomplete="off"
-                       placeholder="Buscar nos planos por palavra: creche, aposentadoria, SUS…"
-                       class="w-full pl-9 pr-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+        <div class="flex flex-col gap-4 mb-6">
+            <div>
+                <p class="text-xs font-bold uppercase tracking-wide text-slate-500 mb-2">1. Escolha o tema</p>
+                <div id="temaChips" class="flex flex-wrap items-center gap-2" role="radiogroup" aria-label="Tema"></div>
             </div>
-            <button type="submit" class="px-4 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold">Buscar</button>
-        </form>
+            <div>
+                <p class="text-xs font-bold uppercase tracking-wide text-slate-500 mb-2">2. Compare dois candidatos</p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div><label for="candA" class="sr-only">Primeiro candidato</label>
+                        <select id="candA" class="w-full px-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold"></select></div>
+                    <div><label for="candB" class="sr-only">Segundo candidato</label>
+                        <select id="candB" class="w-full px-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold"></select></div>
+                </div>
+            </div>
+            <details class="text-sm">
+                <summary class="inline-flex items-center space-x-1.5 text-brand-700 dark:text-brand-400 font-semibold">
+                    <i class="fa-solid fa-magnifying-glass text-xs" aria-hidden="true"></i><span>Buscar uma palavra específica nos planos</span><i class="fa-solid fa-chevron-down text-[9px] chev" aria-hidden="true"></i></summary>
+                <form id="formBuscaPlano" class="flex gap-2 mt-3" role="search">
+                    <div class="relative flex-grow">
+                        <label for="buscaPlano" class="sr-only">Buscar nos planos de governo</label>
+                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-slate-400 text-xs" aria-hidden="true"></i>
+                        <input id="buscaPlano" type="search" maxlength="100" autocomplete="off"
+                               placeholder="creche, aposentadoria, SUS…"
+                               class="w-full pl-9 pr-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                    </div>
+                    <button type="submit" class="px-4 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold">Buscar</button>
+                </form>
+            </details>
+        </div>
 
         <div id="candidatosGrid" aria-live="polite"></div>
     </section>
@@ -89,6 +100,7 @@ let contexto = null;   // barra de contexto compartilhada (perfil e cidade)
 /* ---------- estado ---------- */
 const prefs = ler('ic_prefs', {});
 const S = {
+    todos: [], a: null, b: null,
     perfil: prefs.perfil || '', municipio: prefs.municipio || null, tema: prefs.tema || 'saude',
     turno2: prefs.turno2 !== undefined ? prefs.turno2 : true,
     buscaPlano: '', categoria: 'all', status: 'all', q: '', ordem: 'recentes', pagina: 1, total: 0, itens: [],
@@ -122,22 +134,35 @@ const RELEVANCIA = { alta: ['Impacto alto no bolso', 'bg-rose-100 text-rose-800 
 /* ====================================================================== *
  *  Planos de governo
  * ====================================================================== */
+const TEMAS_PRINCIPAIS = ['saude', 'educacao', 'seguranca', 'economia'];
 function renderTemaChips() {
-    $('temaChips').innerHTML = S.categorias.map((c) => {
+    const principais = S.categorias.filter((c) => TEMAS_PRINCIPAIS.includes(c.id));
+    const outros = S.categorias.filter((c) => !TEMAS_PRINCIPAIS.includes(c.id));
+    const noOutros = outros.some((c) => c.id === S.tema);
+    $('temaChips').innerHTML = principais.map((c) => {
         const ativo = c.id === S.tema;
         return `<button type="button" role="radio" aria-checked="${ativo}" data-tema="${esc(c.id)}"
-            class="shrink-0 inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-full text-xs font-semibold border transition ${ativo
+            class="shrink-0 inline-flex items-center space-x-1.5 px-4 py-2 rounded-full text-sm font-semibold border transition ${ativo
             ? 'bg-brand-600 border-brand-600 text-white'
             : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-brand-400'}">
             <i class="fa-solid ${esc(c.icone)}" aria-hidden="true"></i><span>${esc(c.nome)}</span></button>`;
-    }).join('');
+    }).join('') + `<label class="sr-only" for="temaOutros">Outros temas</label>
+        <select id="temaOutros" class="px-3 py-2 rounded-full text-sm font-semibold border ${noOutros
+            ? 'bg-brand-600 border-brand-600 text-white' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700'}">
+            <option value="">Outros temas…</option>
+            ${outros.map((o) => `<option value="${esc(o.id)}" ${o.id === S.tema ? 'selected' : ''}>${esc(o.nome)}</option>`).join('')}</select>`;
 }
-$('temaChips').addEventListener('click', (ev) => {
-    const b = ev.target.closest('[data-tema]');
-    if (!b) return;
-    S.tema = b.dataset.tema; salvarPrefs(); renderTemaChips(); carregarCandidatos();
-});
-$('chkTurno2').addEventListener('change', (ev) => { S.turno2 = ev.target.checked; salvarPrefs(); carregarCandidatos(); });
+function escolherTema(id) { S.tema = id; salvarPrefs(); renderTemaChips(); carregarCandidatos(); }
+$('temaChips').addEventListener('click', (ev) => { const b = ev.target.closest('[data-tema]'); if (b) escolherTema(b.dataset.tema); });
+$('temaChips').addEventListener('change', (ev) => { if (ev.target.id === 'temaOutros' && ev.target.value) escolherTema(ev.target.value); });
+
+/* Os dois candidatos comparados: por padrão, os do 2º turno. */
+function renderSeletoresCandidatos() {
+    const opcoes = (sel) => S.todos.map((c) => `<option value="${esc(c.sq_candidato)}" ${String(c.sq_candidato) === String(sel) ? 'selected' : ''}>${esc(c.nome)}${c.partido ? ' · ' + esc(c.partido) : ''}</option>`).join('');
+    $('candA').innerHTML = opcoes(S.a); $('candB').innerHTML = opcoes(S.b);
+}
+$('candA').addEventListener('change', (ev) => { S.a = ev.target.value; carregarCandidatos(); });
+$('candB').addEventListener('change', (ev) => { S.b = ev.target.value; carregarCandidatos(); });
 
 const chip = (ok, texto) => `<span class="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full text-[11px] font-medium ${ok
     ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
@@ -192,31 +217,66 @@ function trechosHtml(b, pdf) {
             <p class="mt-1.5 text-[11px] text-slate-500">página ${esc(t.pagina)}${pdf ? ` · <a class="text-brand-700 dark:text-brand-400 hover:underline" target="_blank" rel="noopener" href="${esc(urlSegura(pdf))}#page=${esc(t.pagina)}">abrir no PDF</a>` : ''}</p></li>`).join('')}</ul>`;
 }
 
-function cartaoCandidato(c, b, modo) {
+/* Diagnóstico objetivo do tema, por contagem de páginas (sem IA, igual para todos). */
+function linhaDiag(rotulo, detalhe, x, n) {
+    const pct = n ? Math.round((x / n) * 100) : 0;
+    return `<div><dt class="text-sm font-semibold">${rotulo}</dt>
+        <dd class="text-xs text-slate-600 dark:text-slate-400 mt-0.5">${detalhe}</dd>
+        <div class="mt-1.5 h-1.5 rounded bg-slate-200 dark:bg-slate-700" aria-hidden="true"><div class="h-1.5 rounded bg-brand-600" style="width:${pct}%"></div></div></div>`;
+}
+function diagnosticoHtml(d, regua) {
+    if (!d) return `<p class="text-xs text-slate-500">Este tema não tem palavras-chave padrão. Use a busca por palavra.</p>`;
+    const n = d.paginas;
+    if (!n) return `<p class="text-sm text-slate-600 dark:text-slate-400"><i class="fa-solid fa-circle-minus mr-1.5" aria-hidden="true"></i>Nenhuma página do plano trata deste tema pelas palavras-chave padrão. Confira o documento original.</p>`;
+    const de = (x) => `${x} de ${n} página${n > 1 ? 's' : ''}`;
+    return `<dl class="space-y-3">
+        ${linhaDiag('Densidade operacional', `Meta numérica em ${de(d.com_meta_numerica)} · prazo em ${de(d.com_prazo)}`, Math.max(d.com_meta_numerica, d.com_prazo), n)}
+        ${linhaDiag('Fonte de custeio', `Indicada em ${de(d.com_fonte_de_recursos)}`, d.com_fonte_de_recursos, n)}
+        ${linhaDiag('Competência do cargo', `Cita quem executa (decreto, lei, ministério, prefeituras…) em ${de(d.com_quem_executa)}`, d.com_quem_executa, n)}
+    </dl>
+    <p class="mt-3 text-[11px] text-slate-500 leading-snug">Páginas do plano que tratam do tema. Contagem automática por padrões de texto, igual para todos. ${esc(regua || '')}</p>`;
+}
+
+const secao = (titulo, html) => `<section class="mb-4"><h4 class="text-xs font-bold uppercase tracking-wide text-slate-500 mb-2">${titulo}</h4>${html}</section>`;
+
+function cartaoCandidato(c, b, modo, regua) {
     const seg = (c.totalizacao || '').toLowerCase().startsWith('2');
     const r = S.candidatosResumo[c.sq_candidato];
     const plano = r ? r.plano : null;
     const pdf = c.url_pdf || (plano && plano.url_pdf);
     let corpo;
     if (modo === 'palavra') {
-        corpo = trechosHtml(b, pdf) || '<p class="text-xs text-slate-500">Busca indisponível.</p>';
-    } else if (c.plano_status !== 'ok') {
-        const aviso = b && b.texto_disponivel
-            ? `<p class="text-[11px] text-slate-500 mb-3"><i class="fa-solid fa-info-circle mr-1" aria-hidden="true"></i>${esc(STATUS_PLANO[c.plano_status] || 'Análise indisponível.')} Abaixo, os trechos do plano que mencionam este tema (busca por palavras-chave, sem interpretação).</p>`
-            : `<p class="text-sm text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-900/60 rounded-xl p-3.5"><i class="fa-solid fa-hourglass-half mr-1.5" aria-hidden="true"></i>${esc(STATUS_PLANO[c.plano_status] || 'Análise indisponível.')} Use a caixa de busca para procurar uma palavra no plano.</p>`;
-        corpo = aviso + (b && b.texto_disponivel ? trechosHtml(b, pdf) : '');
-    } else if (!c.mencionado) {
-        corpo = `<p class="text-sm text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-900/60 rounded-xl p-3.5">
-            <i class="fa-solid fa-circle-minus mr-1.5" aria-hidden="true"></i>Nenhuma proposta sobre este tema foi identificada na análise automática. Confira o documento original.</p>`;
+        corpo = secao('Trechos encontrados', trechosHtml(b, pdf) || '<p class="text-xs text-slate-500">Busca indisponível.</p>');
     } else {
-        corpo = `${c.resumo ? `<p class="text-sm text-slate-700 dark:text-slate-300 leading-relaxed mb-3">${esc(c.resumo)}</p>` : ''}
-            ${c.propostas.length ? `<ul class="space-y-3">${c.propostas.map(cartaoProposta).join('')}</ul>` : ''}
-            ${c.propostas_ocultas_pelo_perfil ? `<p class="mt-3 text-xs text-slate-500"><i class="fa-solid fa-eye-slash mr-1" aria-hidden="true"></i>${c.propostas_ocultas_pelo_perfil} proposta(s) deste tema não são específicas para o perfil escolhido. <button type="button" class="underline" data-acao="todos-perfis">Ver todas</button></p>` : ''}`;
+        const analisado = c.plano_status === 'ok';
+        const resumo = analisado && c.mencionado && c.resumo
+            ? `<p class="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">${esc(c.resumo)}</p>`
+            : `<p class="text-sm text-slate-500 dark:text-slate-400"><i class="fa-solid fa-hourglass-half mr-1.5" aria-hidden="true"></i>${analisado
+                ? 'Nenhuma proposta sobre este tema foi identificada na análise automática.'
+                : 'O resumo em linguagem simples ainda não foi gerado: ' + esc((STATUS_PLANO[c.plano_status] || 'análise indisponível.').replace(/^./, (m) => m.toLowerCase()))}</p>`;
+        const props = analisado && c.propostas.length
+            ? `<ul class="space-y-3">${c.propostas.map(cartaoProposta).join('')}</ul>`
+              + (c.propostas_ocultas_pelo_perfil ? `<p class="mt-3 text-xs text-slate-500"><i class="fa-solid fa-eye-slash mr-1" aria-hidden="true"></i>${c.propostas_ocultas_pelo_perfil} proposta(s) deste tema não são específicas para o perfil escolhido. <button type="button" class="underline" data-acao="todos-perfis">Ver todas</button></p>` : '')
+            : diagnosticoHtml(b && b.diagnostico, regua);
+        corpo = secao('Resumo da proposta', resumo) + secao('Diagnóstico da promessa', props);
     }
+    const trechos = modo === 'palavra' ? '' : (b ? trechosHtml(b, pdf) : '<p class="text-xs text-slate-500">Sem trechos para este tema.</p>');
+    const gaveta = `<details class="mt-2 rounded-xl border border-slate-200 dark:border-slate-700">
+        <summary class="px-3.5 py-2.5 text-sm font-semibold text-brand-700 dark:text-brand-400 flex items-center justify-between">
+            <span><i class="fa-solid fa-file-lines mr-2" aria-hidden="true"></i>Ver trecho oficial no PDF</span><i class="fa-solid fa-chevron-down text-[9px] chev" aria-hidden="true"></i></summary>
+        <div class="px-3.5 pb-3.5 space-y-4 text-xs">
+            ${trechos}
+            ${c.plano_status !== 'sem_plano' ? `<details class="pt-3 border-t border-slate-100 dark:border-slate-700/60" data-capitulos="${esc(c.sq_candidato)}">
+                <summary class="text-brand-700 dark:text-brand-400 font-semibold inline-flex items-center space-x-1">
+                    <i class="fa-solid fa-list-ol mr-1" aria-hidden="true"></i><span>Ver por capítulo</span><i class="fa-solid fa-chevron-down text-[9px] chev" aria-hidden="true"></i></summary>
+                <div class="mt-3" data-capitulos-corpo></div></details>` : ''}
+            ${pdf ? `<a href="${esc(urlSegura(pdf))}" target="_blank" rel="noopener" class="inline-block text-brand-700 dark:text-brand-400 font-semibold hover:underline">
+                <i class="fa-solid fa-file-pdf mr-1" aria-hidden="true"></i>Ler o plano completo (TSE)<i class="fa-solid fa-arrow-up-right-from-square text-[9px] ml-1" aria-hidden="true"></i></a>` : ''}
+        </div></details>`;
     const estat = plano && plano.status === 'ok'
         ? `<p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">${plano.propostas} propostas identificadas no plano · ${plano.com_meta_numerica} com meta numérica · ${plano.com_prazo} com prazo · ${plano.com_fonte_de_recurso} com fonte de recursos</p>` : '';
     return `<article class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-sm p-5 flex flex-col">
-        <header class="pb-3 mb-3 border-b border-slate-100 dark:border-slate-700/60">
+        <header class="pb-3 mb-4 border-b border-slate-100 dark:border-slate-700/60">
             <div class="flex items-start justify-between gap-2">
                 <div>
                     <h3 class="text-lg font-bold leading-tight">${esc(c.nome)}</h3>
@@ -227,13 +287,7 @@ function cartaoCandidato(c, b, modo) {
             ${estat}
         </header>
         <div class="flex-grow">${corpo}</div>
-        ${c.plano_status !== 'sem_plano' ? `<details class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-700/60 text-xs" data-capitulos="${esc(c.sq_candidato)}">
-            <summary class="text-brand-700 dark:text-brand-400 font-semibold inline-flex items-center space-x-1 cursor-pointer">
-                <i class="fa-solid fa-list-ol mr-1" aria-hidden="true"></i><span>Ver por capítulo</span><i class="fa-solid fa-chevron-down text-[9px] chev" aria-hidden="true"></i></summary>
-            <div class="mt-3" data-capitulos-corpo></div></details>` : ''}
-        ${pdf ? `<footer class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-700/60 text-xs">
-            <a href="${esc(urlSegura(pdf))}" target="_blank" rel="noopener" class="text-brand-700 dark:text-brand-400 font-semibold hover:underline">
-                <i class="fa-solid fa-file-pdf mr-1" aria-hidden="true"></i>Ler o plano completo (TSE)<i class="fa-solid fa-arrow-up-right-from-square text-[9px] ml-1" aria-hidden="true"></i></a></footer>` : ''}
+        ${gaveta}
     </article>`;
 }
 
@@ -287,24 +341,33 @@ async function carregarCandidatos() {
     const minha = ++reqCandidatos;
     grade.innerHTML = '<p class="text-sm text-slate-500 col-span-full"><i class="fa-solid fa-spinner fa-spin mr-2" aria-hidden="true"></i>Carregando planos…</p>';
     const modo = S.buscaPlano ? 'palavra' : 'tema';
-    const params = new URLSearchParams({ categoria: S.tema, turno2: S.turno2 });
+    const params = new URLSearchParams({ categoria: S.tema, turno2: false });
     if (S.perfil) params.set('perfil', S.perfil);
     if (S.municipio) params.set('municipio', S.municipio.codigo);
-    const pBusca = new URLSearchParams({ turno2: S.turno2 });
+    const pBusca = new URLSearchParams({ turno2: false });
     if (modo === 'palavra') pBusca.set('q', S.buscaPlano); else pBusca.set('categoria', S.tema);
     try {
         const [cmp, resumo, busca] = await Promise.all([
             modo === 'tema' ? api('/api/candidatos/comparar?' + params) : Promise.resolve(null),
-            api('/api/candidatos?turno2=' + S.turno2),
+            api('/api/candidatos?turno2=false'),
             // "Outros temas" não tem termos padrão de busca: só a busca por palavra se aplica.
             (modo === 'tema' && S.tema === 'outros') ? Promise.resolve(null)
                 : api('/api/candidatos/buscar?' + pBusca).catch((e) => (modo === 'palavra' ? { erro: e } : null)),
         ]);
         if (minha !== reqCandidatos) return; // resposta antiga
         S.candidatosResumo = Object.fromEntries(resumo.itens.map((i) => [i.sq_candidato, i]));
+        if (!S.todos.length) {
+            S.todos = resumo.itens;
+            const seg = S.todos.filter((c) => (c.totalizacao || '').toLowerCase().startsWith('2'));
+            const base = seg.length >= 2 ? seg : S.todos;
+            S.a = base[0] && base[0].sq_candidato; S.b = base[1] && base[1].sq_candidato;
+            renderSeletoresCandidatos();
+        }
         if (busca && busca.erro) throw busca.erro;
-        const buscaPorSq = Object.fromEntries(((busca && busca.candidatos) || []).map((x) => [x.sq_candidato, x]));
-        const lista = modo === 'tema' ? cmp.candidatos : ((busca && busca.candidatos) || []).map((x) => ({
+        const buscaPorSq = Object.fromEntries(((busca && busca.candidatos) || []).map((x) => [String(x.sq_candidato), x]));
+        const escolhidos = [S.a, S.b].filter(Boolean).map(String);
+        const base = modo === 'tema' ? cmp.candidatos : ((busca && busca.candidatos) || []);
+        const lista = escolhidos.map((sq) => base.find((x) => String(x.sq_candidato) === sq)).filter(Boolean).map((x) => (modo === 'tema' ? x : {
             sq_candidato: x.sq_candidato, nome: x.nome, numero: x.numero, partido: x.partido, totalizacao: x.totalizacao,
             vice: x.vice, plano_status: x.plano_status, url_pdf: x.url_pdf }));
         if (!lista.length) {
@@ -315,7 +378,8 @@ async function carregarCandidatos() {
         const cabecalhoBusca = modo === 'palavra'
             ? `<div class="col-span-full text-xs text-slate-600 dark:text-slate-400"><p><b>Resultados para “${esc(S.buscaPlano)}”.</b> ${esc((busca && busca.aviso) || '')}</p>
                <button type="button" class="mt-1 underline text-brand-700 dark:text-brand-400" data-acao="limpar-busca">Limpar busca</button></div>` : '';
-        grade.innerHTML = cabecalhoBusca + dicaCidade + lista.map((c) => cartaoCandidato(c, buscaPorSq[c.sq_candidato], modo)).join('');
+        const regua = busca && busca.regua;
+        grade.innerHTML = cabecalhoBusca + dicaCidade + lista.map((c) => cartaoCandidato(c, buscaPorSq[String(c.sq_candidato)], modo, regua)).join('');
         if (resumo.atualizado_em) {
             grade.insertAdjacentHTML('beforeend', `<p class="col-span-full text-[11px] text-slate-400 dark:text-slate-500"><i class="fa-solid fa-rotate mr-1" aria-hidden="true"></i>Planos lidos do TSE em ${esc(fmtDataHora(resumo.atualizado_em))}.</p>`);
         }
@@ -344,7 +408,6 @@ $('buscaPlano').addEventListener('search', () => { // clicar no "x" do campo
  *  Inicialização
  * ====================================================================== */
 async function iniciar() {
-    $('chkTurno2').checked = S.turno2;
     try {
         const [categorias, statusLista] = await Promise.all([api('/api/categorias'), api('/api/status')]);
         S.categorias = categorias; S.statusLista = statusLista;

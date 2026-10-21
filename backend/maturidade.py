@@ -33,7 +33,7 @@ _PRAZO = re.compile(
 _FONTE = re.compile(
     r"financiad|financiamento|custeio|custead|fonte[s]?\s+de\s+recursos?|dota[cç][aã]o|"
     r"\bPPPs?\b|parcerias?\s+p[uú]blico|concess[oõ]es|concess[aã]o|compensa[dç]|"
-    r"recursos?\s+(do|da|de|dos|das)\s+(fundo|or[cç]amento|tesouro|uni[aã]o|petr[oó]leo|royalties)|"
+    r"recursos?\s+(do|da|de|dos|das)\s+(fund(o|eb)|or[cç]amento|tesouro|uni[aã]o|petr[oó]leo|royalties)|"
     r"receitas?\s+(de|do|da|dos|das)\s", re.I)
 _EXECUTOR = re.compile(
     r"\bdecreto\b|medida provisória|projeto de lei|\bPEC\b|emenda constitucional|lei complementar|"
@@ -64,3 +64,12 @@ def avaliar_texto(texto: str) -> dict:
     """A partir de padrões no texto (capítulo inteiro): sinais presentes, não necessariamente numa só promessa."""
     return _montar(bool(_META.search(texto)), bool(_PRAZO.search(texto)), bool(_FONTE.search(texto)),
                    bool(_EXECUTOR.search(texto)), bool(_INDICADOR.search(texto)))
+
+
+def contar_paginas(textos: list[str]) -> dict:
+    """Em quantas páginas (sobre um tema) aparece cada sinal. Contagem simples, igual para todos."""
+    return {"paginas": len(textos),
+            "com_meta_numerica": sum(1 for t in textos if _META.search(t)),
+            "com_prazo": sum(1 for t in textos if _PRAZO.search(t)),
+            "com_fonte_de_recursos": sum(1 for t in textos if _FONTE.search(t)),
+            "com_quem_executa": sum(1 for t in textos if _EXECUTOR.search(t))}
