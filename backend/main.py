@@ -1132,8 +1132,23 @@ def buscar_nos_planos(
         if r["pagina"] is not None:
             item["trechos"].append({"pagina": r["pagina"], "trecho": r["trecho"]})
 
+    # Diagnóstico objetivo do tema: em quantas páginas que tratam dele há meta, prazo, fonte e executor.
+    plano_ids = [i["plano_id"] for i in linhas if i["plano_id"]]
+    paginas_tema = db.consultar(
+        "SELECT g.plano_id, g.texto FROM paginas_plano g "
+        "WHERE g.plano_id = ANY (%(planos)s) AND NOT g.indice "
+        "AND g.busca @@ websearch_to_tsquery('pt_busca', %(consulta)s)",
+        {"planos": plano_ids, "consulta": consulta}) if plano_ids else []
+    textos: dict[int, list[str]] = defaultdict(list)
+    for r in paginas_tema:
+        textos[r["plano_id"]].append(r["texto"])
+    plano_de = {i["sq_candidato"]: i["plano_id"] for i in linhas}
+    for sq, item in por_candidato.items():
+        item["diagnostico"] = maturidade.contar_paginas(textos.get(plano_de[sq], []))
+
     return {"consulta": termo or consulta, "modo": modo, "categoria": categoria,
             "ordenacao": "alfabética por nome de urna (sem ranking)", "aviso": AVISO_BUSCA,
+            "regua": maturidade.EXPLICACAO,
             "candidatos": list(por_candidato.values())}
 
 
