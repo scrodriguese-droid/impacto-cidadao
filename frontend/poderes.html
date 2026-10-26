@@ -54,17 +54,17 @@ const ABAS = {
         titulo: 'Poder Judiciário',
         sub: 'Onde se busca a justiça: interpreta as leis e decide os conflitos, inclusive os que envolvem o próprio governo.',
         html: () =>
-            secao('01', 'A cúpula e os tribunais', 'Os casos começam, em regra, com um juiz e podem subir a tribunais maiores por recurso.',
+            secao('01', 'STF: quem está lá e o que cada grupo julga', 'O Supremo Tribunal Federal guarda a Constituição. Escolha um grupo para ver o que ele julga e quem o compõe hoje.',
+                '<div id="stfSeg" class="seg-esfera mt-2" role="radiogroup" aria-label="Grupos do STF"></div><div id="stfPainel" class="mt-4"></div><div id="stfMinistros" class="mt-6"></div>') +
+            secao('02', 'Onde cai o seu caso?', 'Escolha o tipo de caso e veja em qual tribunal, e em qual “gaveta” dele, ele costuma cair.',
+                '<div id="casoSeletor" class="mt-2"></div><div id="casoResposta" class="mt-4" aria-live="polite"></div>') +
+            secao('03', 'Os outros tribunais superiores', 'STJ, TST e TSE: cada um uniformiza um tipo de assunto no país inteiro.',
+                '<div id="superiores"></div>') +
+            secao('04', 'Os tribunais do dia a dia', 'Os casos começam, em regra, com um juiz e podem subir a tribunais maiores por recurso.',
                 grade([
-                    bloco('Cúpula', 'STF: Supremo Tribunal Federal', 'Guarda da Constituição. Julga se uma lei respeita a Constituição.', lk(L('https://www.stf.jus.br/', 'stf.jus.br'))),
-                    bloco('Cúpula', 'STJ: Superior Tribunal de Justiça', 'Uniformiza a interpretação das leis federais em todo o país.', lk(L('https://www.stj.jus.br/', 'stj.jus.br'))),
                     bloco('Estado', 'Tribunais de Justiça e juízes de direito', 'Cuidam dos casos do dia a dia: família, contratos, vizinhança, crimes comuns.', lk(L('https://www.tjsp.jus.br/', 'TJSP'))),
-                ])) +
-            secao('02', 'Justiça especializada', 'Cada ramo cuida de um tipo de assunto.',
-                grade([
-                    bloco('Trabalho', 'Justiça do Trabalho', 'Conflitos entre trabalhadores e empregadores, com base na CLT.', lk(L('https://www.tst.jus.br/', 'tst.jus.br'))),
-                    bloco('Eleitoral', 'TSE e TREs', 'Organizam as eleições e julgam questões eleitorais.', lk(L('https://www.tse.jus.br/', 'tse.jus.br'))),
                     bloco('Federal', 'Justiça Federal', 'Casos em que a União, o INSS ou outro órgão federal é parte.', lk(L('https://www.cjf.jus.br/', 'cjf.jus.br'))),
+                    bloco('Eleitoral', 'Tribunais Regionais Eleitorais (TREs)', 'Organizam as eleições em cada estado e julgam questões eleitorais locais, com recurso ao TSE.', lk(L('https://www.tse.jus.br/', 'tse.jus.br'))),
                 ])),
     },
     controle: {
@@ -79,6 +79,108 @@ const ABAS = {
                 ])),
     },
 };
+/* ---------- Judiciário: STF, onde cai o caso e tribunais superiores ---------- */
+// Composição conferida no portal oficial do STF: lista de ministros (atualizada em 14/09/2026) e Turmas (atualizada em 06/08/2026).
+// A indicação presidencial e o ano da posse são registros públicos do tribunal. A cadeira de Luís Roberto Barroso está vaga desde a aposentadoria (out/2025).
+const URL_STF_COMPOSICAO = 'https://cms.stf.jus.br/post-sobreostf/composicao-atual/';
+const URL_STF_TURMAS = 'https://portal.stf.jus.br/textos/verTexto.asp?pagina=principal&servico=sobreStfComposicaoTurma';
+const STF_MINISTROS = [
+    { nome: 'Edson Fachin', cargo: 'Presidente do STF', turma: null, indicado: 'Dilma Rousseff', posse: 2015 },
+    { nome: 'Alexandre de Moraes', cargo: 'Vice-presidente do STF', turma: 1, indicado: 'Michel Temer', posse: 2017 },
+    { nome: 'Gilmar Mendes', cargo: 'Decano (o mais antigo)', turma: 2, indicado: 'Fernando Henrique Cardoso', posse: 2002 },
+    { nome: 'Cármen Lúcia', cargo: '', turma: 1, indicado: 'Lula', posse: 2006 },
+    { nome: 'Dias Toffoli', cargo: '', turma: 2, indicado: 'Lula', posse: 2009 },
+    { nome: 'Luiz Fux', cargo: 'Preside a 2ª Turma', turma: 2, indicado: 'Dilma Rousseff', posse: 2011 },
+    { nome: 'Nunes Marques', cargo: '', turma: 2, indicado: 'Jair Bolsonaro', posse: 2020 },
+    { nome: 'André Mendonça', cargo: '', turma: 2, indicado: 'Jair Bolsonaro', posse: 2021 },
+    { nome: 'Cristiano Zanin', cargo: '', turma: 1, indicado: 'Lula', posse: 2023 },
+    { nome: 'Flávio Dino', cargo: 'Preside a 1ª Turma', turma: 1, indicado: 'Lula', posse: 2024 },
+];
+const STF_GRUPOS = {
+    plenario: { rotulo: 'Plenário (todos os ministros)', quem: () => STF_MINISTROS.length,
+        julga: ['Ações que decidem se uma lei é constitucional: ADI, ADC e ADPF.',
+            'Crimes comuns do Presidente da República, do Vice e dos Presidentes da Câmara e do Senado.',
+            'Grandes temas nacionais, como a demarcação de terras indígenas e a descriminalização de condutas.'],
+        nota: 'O Presidente do STF comanda o Plenário e não integra as Turmas.' },
+    turma1: { rotulo: '1ª Turma (4 ministros hoje)', turma: 1,
+        julga: ['Inquéritos e ações penais contra deputados federais e senadores sorteados para esta Turma.',
+            'Extradições, habeas corpus e recursos extraordinários cíveis e trabalhistas.'],
+        nota: 'Preside a 1ª Turma: Flávio Dino. A distribuição dos casos entre as duas Turmas é por sorteio.' },
+    turma2: { rotulo: '2ª Turma (5 ministros hoje)', turma: 2,
+        julga: ['A mesma competência da 1ª Turma, distribuída por sorteio.',
+            'É a Turma que aparece no noticiário por grandes decisões e divergências em operações penais e acordos de delação.'],
+        nota: 'Preside a 2ª Turma: Luiz Fux.' },
+    mono: { rotulo: 'Decisão monocrática (1 ministro)',
+        julga: ['O ministro relator do caso decide sozinho, por exemplo suspendendo uma lei por um tempo (liminar) antes que a Turma ou o Plenário confirme.',
+            'Também autoriza quebra de sigilo e mandados de busca, e decide pedidos urgentes.'],
+        nota: 'A decisão sozinha vale até o colegiado julgar o caso; costuma ser levada a referendo.' },
+};
+const cartaoMinistro = (m) => `<div class="poder-bloco"><p class="poder-kicker">${esc(m.cargo || (m.turma ? m.turma + 'ª Turma' : 'Ministro'))}</p>
+    <h3>${esc(m.nome)}</h3><p>${m.turma ? `${m.turma}ª Turma · ` : ''}Indicado por <b>${esc(m.indicado)}</b> · posse em ${esc(m.posse)}</p></div>`;
+function desenharSTF() {
+    const seg = $('stfSeg');
+    if (!seg) return;
+    let atual = 'plenario';
+    const pinta = () => {
+        seg.innerHTML = Object.entries(STF_GRUPOS).map(([k, g]) => `<button type="button" role="radio" aria-checked="${k === atual}" data-stf="${k}">${esc(g.rotulo)}</button>`).join('');
+        const g = STF_GRUPOS[atual];
+        $('stfPainel').innerHTML = `<div class="poder-bloco"><p class="poder-kicker">O que julga</p>
+            <ul class="mt-2 space-y-2">${g.julga.map((t) => `<li>— ${esc(t)}</li>`).join('')}</ul>
+            <p class="mt-3 text-sm"><i>${esc(g.nota)}</i></p></div>`;
+        const lista = atual === 'turma1' ? STF_MINISTROS.filter((m) => m.turma === 1) : atual === 'turma2' ? STF_MINISTROS.filter((m) => m.turma === 2) : STF_MINISTROS;
+        const mostrar = atual === 'mono' ? [] : lista;
+        $('stfMinistros').innerHTML = mostrar.length
+            ? `<h3 class="text-sm font-bold uppercase" style="letter-spacing:.08em">${atual === 'plenario' ? 'Quem está no Plenário hoje' : 'Ministros desta Turma'}</h3>
+               <div class="poder-grade mt-3">${mostrar.map(cartaoMinistro).join('')}${atual === 'plenario' ? `<div class="poder-bloco"><p class="poder-kicker">Cadeira vaga</p><h3>Vaga de Luís Roberto Barroso</h3><p>O STF tem 11 cadeiras e hoje 10 ministros em exercício. Barroso se aposentou em outubro de 2025.</p></div>` : ''}</div>
+               <p class="ficha-nota mt-3">Fonte: STF, <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(URL_STF_COMPOSICAO))}">composição atual</a> (lista atualizada em 14/09/2026) e <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(URL_STF_TURMAS))}">composição das Turmas</a> (atualizada em 06/08/2026). A indicação presidencial e o ano de posse são registros públicos do tribunal. A composição muda quando um ministro se aposenta ou é nomeado: confira nas páginas oficiais.</p>
+               <p class="ficha-nota">Como cada ministro vota não está nesta página: não há aqui uma base própria e conferida de votos. Os resultados dos julgamentos estão no painel oficial do STF, <a class="underline" target="_blank" rel="noopener" href="https://transparencia.stf.jus.br/">Transparência / Corte Aberta</a>.</p>`
+            : '<p class="ficha-nota mt-3">Qualquer um dos 10 ministros em exercício pode ser o relator de um caso e decidir sozinho em situações urgentes.</p>';
+    };
+    seg.addEventListener('click', (ev) => { const b = ev.target.closest('[data-stf]'); if (b) { atual = b.dataset.stf; pinta(); } });
+    pinta();
+}
+
+// "Onde cai o seu caso?": roteiro das competências (Constituição e regimentos internos dos tribunais).
+const CASOS = [
+    { id: 'lei', rotulo: 'Dizer que uma lei do Congresso é inconstitucional', onde: 'STF, Plenário', como: 'Por ações de controle de constitucionalidade (ADI, ADC e ADPF), decididas por todos os ministros juntos.' },
+    { id: 'presidente', rotulo: 'Crime comum do Presidente, do Vice ou dos presidentes da Câmara e do Senado', onde: 'STF, Plenário', como: 'O Plenário julga, depois de autorização da Câmara no caso do Presidente e do Vice.' },
+    { id: 'parlamentar', rotulo: 'Crime atribuído a deputado federal ou senador', onde: 'STF, uma das Turmas', como: 'O caso é sorteado para a 1ª ou a 2ª Turma.' },
+    { id: 'hc', rotulo: 'Habeas corpus contra decisão de tribunal superior, ou extradição', onde: 'STF, Turmas', como: 'Distribuídos por sorteio entre a 1ª e a 2ª Turma.' },
+    { id: 'governador', rotulo: 'Crime comum de governador de estado', onde: 'STJ, Corte Especial', como: 'A Corte Especial reúne os 15 ministros mais antigos do STJ e também julga desembargadores.' },
+    { id: 'publico', rotulo: 'Imposto, licitação, improbidade administrativa ou servidor público', onde: 'STJ, 1ª Seção (1ª e 2ª Turmas)', como: 'É o “direito público”: as relações com o Estado.' },
+    { id: 'privado', rotulo: 'Banco, plano de saúde, contrato, herança, pensão alimentícia ou consumidor', onde: 'STJ, 2ª Seção (3ª e 4ª Turmas)', como: 'É o “direito privado”: as relações entre particulares.' },
+    { id: 'penal', rotulo: 'Crime, tráfico, lavagem de dinheiro, prisão preventiva ou habeas corpus', onde: 'STJ, 3ª Seção (5ª e 6ª Turmas)', como: 'É o direito penal. Se o caso for sobre a Constituição, pode ainda chegar ao STF.' },
+    { id: 'trabalho', rotulo: 'Conflito de trabalho (CLT), acordo coletivo ou greve nacional', onde: 'TST (8 Turmas e a Seção de Dissídios Coletivos)', como: 'Começa na Justiça do Trabalho, com juiz de primeira instância e tribunal regional (TRT), e só chega ao TST por recurso.' },
+    { id: 'eleicao', rotulo: 'Registro de candidatura, prestação de contas de campanha ou cassação por abuso de poder', onde: 'TSE (e TREs, nas eleições estaduais e municipais)', como: 'A Justiça Eleitoral organiza as eleições e julga esses casos.' },
+];
+function desenharCasos() {
+    const sel = $('casoSeletor');
+    if (!sel) return;
+    sel.innerHTML = `<label class="sr-only" for="casoEscolha">Tipo de caso</label>
+        <select id="casoEscolha" class="w-full max-w-2xl px-3 py-3"><option value="">Escolha o tipo de caso…</option>${CASOS.map((c) => `<option value="${c.id}">${esc(c.rotulo)}</option>`).join('')}</select>`;
+    $('casoEscolha').addEventListener('change', (ev) => {
+        const c = CASOS.find((x) => x.id === ev.target.value);
+        $('casoResposta').innerHTML = c ? `<div class="poder-bloco"><p class="poder-kicker">Onde cai</p><h3>${esc(c.onde)}</h3><p>${esc(c.como)}</p></div>
+            <p class="ficha-nota mt-2">Roteiro geral, simplificado: casos concretos dependem do texto da ação e de regras que mudam. Confira no tribunal.</p>` : '';
+    });
+}
+function desenharSuperiores() {
+    const el = $('superiores');
+    if (!el) return;
+    const t = (kicker, nome, ministros, texto, divisoes, url, rot) => `<div class="poder-bloco"><p class="poder-kicker">${esc(kicker)}</p><h3>${esc(nome)}</h3>
+        <p><b>${esc(ministros)}</b></p><p>${esc(texto)}</p><p class="mt-2 text-sm">${divisoes}</p>${lk(L(url, rot))}</div>`;
+    el.innerHTML = `<div class="poder-grade">${[
+        t('Tribunal da Cidadania', 'STJ: Superior Tribunal de Justiça', '33 ministros', 'Não discute a Constituição: garante que as leis federais (Código Civil, Código Penal, Código de Defesa do Consumidor) sejam aplicadas do mesmo jeito no país todo.',
+            'Corte Especial (15 ministros mais antigos) · 1ª Seção: direito público · 2ª Seção: direito privado · 3ª Seção: direito penal.', 'https://www.stj.jus.br/sites/portalp/Institucional/Composicao', 'Composição do STJ'),
+        t('Justiça do Trabalho', 'TST: Tribunal Superior do Trabalho', '27 ministros', 'Uniformiza as decisões sobre conflitos entre trabalhadores e empregadores: CLT, acordos coletivos e greves de abrangência nacional.',
+            '8 Turmas e a Seção de Dissídios Coletivos (SDC).', 'https://www.tst.jus.br/', 'tst.jus.br'),
+        t('Justiça Eleitoral', 'TSE: Tribunal Superior Eleitoral', '7 ministros titulares', 'Organiza as eleições, fiscaliza a prestação de contas de campanha, julga o registro de candidaturas e pode cassar mandatos por abuso de poder.',
+            'Composição: 3 ministros do STF, 2 do STJ e 2 juristas (advogados) nomeados pelo Presidente da República.', 'https://www.tse.jus.br/', 'tse.jus.br'),
+    ].join('')}</div>
+    <p class="ficha-nota mt-3">Os nomes dos ministros do STJ, do TST e do TSE não estão aqui porque mudam com frequência e não os conferimos nesta página: veja a composição no site de cada tribunal.</p>`;
+}
+function iniciarJudiciario() { desenharSTF(); desenharCasos(); desenharSuperiores(); }
+
 /* ---------- Executivo por esfera ---------- */
 const ESFERAS = [{ id: 'federal', rotulo: 'Federal' }, { id: 'estadual', rotulo: 'Estadual' }, { id: 'municipal', rotulo: 'Municipal' }];
 let ESFERA = ler('ic_esfera_poderes', 'federal');
@@ -271,6 +373,7 @@ $('titulo').textContent = a.titulo;
 $('subtitulo').textContent = a.sub;
 $('corpo').innerHTML = a.html() + `<p class="ficha-nota">Os parlamentares e as bancadas estão na aba <a class="underline" href="bancadas.html">Legislativo</a>. Quem ocupa cada cargo muda a cada eleição ou nomeação: consulte o site oficial de cada órgão.</p>`;
 iniciarExecutivo();
+if (ABA === 'judiciario') iniciarJudiciario();
 </script>
 </body>
 </html>
