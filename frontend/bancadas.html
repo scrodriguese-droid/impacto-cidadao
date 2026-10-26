@@ -60,8 +60,6 @@
         <div id="municipal" class="mt-3"></div>
     </section>
 
-    <section aria-label="Como este cargo é eleito"><div id="comoEleito"></div></section>
-
     <section aria-labelledby="h-notas" class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5">
         <h2 id="h-notas" class="font-bold">Como ler estes números</h2>
         <ul id="notas" class="mt-2 text-sm text-slate-600 dark:text-slate-400 list-disc pl-5 space-y-1.5"></ul>
@@ -73,10 +71,8 @@
 <div id="rodape"></div>
 
 <script src="assets/comum.js"></script>
-<script src="assets/eleicao.js"></script>
 <script>
 renderLayout('bancadas');
-comoEleito(document.getElementById('comoEleito'), 'federal');
 
 const CASAS = {};          // id -> dados
 const SEL = {};            // id -> Set de siglas escolhidas
