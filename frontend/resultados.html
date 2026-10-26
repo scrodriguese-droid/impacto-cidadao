@@ -43,6 +43,9 @@
         .res-gaveta { position: fixed; top: 0; right: 0; bottom: 0; z-index: 66; width: min(100vw, 26rem); overflow-y: auto; padding: 1rem 1rem 6rem; background: var(--papel) !important; color: var(--fg) !important; border-left: 2px solid var(--fg); box-shadow: -6px 0 24px rgba(0,0,0,.25); }
         .res-gaveta:empty { display: none; }
         .res-nota { font-size: .72rem; opacity: .8; }
+        .res-tabela tr[data-uf-linha] { cursor: pointer; }
+        .res-tabela tr[data-uf-linha]:hover { background: rgba(0,0,0,.06); }
+        .res-tabela tfoot td { font-weight: 800; border-top: 2px solid var(--fg); }
         #avisoDados:empty { display: none; }
     </style>
     <link rel="stylesheet" href="assets/brutalista.css">
@@ -72,6 +75,13 @@
             <div><svg id="svgMapa" viewBox="0 0 600 600" role="img" aria-label="Mapa do Brasil por estado"></svg><div id="legendaMapa" class="res-legenda"></div></div>
             <div id="resumoNacional"></div>
         </div>
+    </section>
+
+    <section aria-labelledby="h-cadeiras">
+        <h2 id="h-cadeiras" class="text-xl font-bold">Cadeiras por estado</h2>
+        <p class="text-sm mt-1" style="max-width:75ch">Quantas vagas cada estado tem na Câmara dos Deputados, na Assembleia Legislativa e no Senado, na eleição escolhida acima. Clique em um estado para ver como os votos viraram essas cadeiras.</p>
+        <div id="tabCadeiras" class="mt-3 overflow-x-auto"></div>
+        <ul class="res-nota mt-3 list-disc pl-5 space-y-1" id="regrasCadeiras"></ul>
     </section>
 
     <section id="secUf" class="hidden" aria-labelledby="h-uf"><h2 id="h-uf" class="text-xl font-bold"></h2><div id="corpoUf" class="mt-3 space-y-8"></div></section>
@@ -186,6 +196,32 @@ function resumoNacional() {
     $('notaFonte').innerHTML = `Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(S.mapa.fonte.url))}">${esc(S.mapa.fonte.nome)}</a>. Malha dos estados: IBGE.`;
 }
 
+/* ---------- cadeiras por estado ---------- */
+async function carregarCadeiras() {
+    const alvo = $('tabCadeiras');
+    alvo.innerHTML = '<p class="text-sm">Carregando…</p>';
+    const cargos = S.indice.anos.find((a) => a.ano === S.ano).cargos;
+    const tem = (id) => cargos.some((c) => c.id === id);
+    try {
+        const pega = (id) => (tem(id) ? api(`/api/eleicoes/mapa?ano=${S.ano}&cargo=${id}`) : Promise.resolve(null));
+        const [fed, est, dis, sen] = await Promise.all([pega('6-1'), pega('7-1'), pega('8-1'), pega('5-1')]);
+        if (!fed) { alvo.innerHTML = '<p class="text-sm">Sem dados de deputados nesta eleição.</p>'; return; }
+        const estaduais = (uf) => (est && est.ufs[uf] ? est.ufs[uf].cadeiras : dis && dis.ufs[uf] ? dis.ufs[uf].cadeiras : null);
+        const linhas = Object.entries(fed.ufs).map(([uf, u]) => ({ uf, nome: u.nome, fed: u.cadeiras, est: estaduais(uf), qe: u.qe, dist: !(est && est.ufs[uf]) && !!(dis && dis.ufs[uf]) }))
+            .sort((a, b) => b.fed - a.fed || a.nome.localeCompare(b.nome, 'pt-BR'));
+        const tot = (k) => linhas.reduce((a, l) => a + (l[k] || 0), 0);
+        const emDisputaSen = sen ? Object.values(sen.ufs).reduce((a, u) => a + u.cadeiras, 0) : null;
+        alvo.innerHTML = `<table class="res-tabela"><thead><tr><th>Estado</th><th class="n">Deputados federais${gl('SISTEMA_PROPORCIONAL')}</th><th class="n">Deputados estaduais ou distritais</th><th class="n">Senadores</th><th class="n">Votos por cadeira federal${gl('QUOCIENTE_ELEITORAL')}</th></tr></thead>
+            <tbody>${linhas.map((l) => `<tr data-uf-linha="${esc(l.uf)}" tabindex="0"><td><b>${esc(l.nome)}</b> <small>${esc(l.uf)}</small></td><td class="n"><b>${l.fed}</b></td><td class="n">${l.est == null ? '—' : l.est}${l.dist ? ' <small>(distritais)</small>' : ''}</td><td class="n">3</td><td class="n">${nf(l.qe)}</td></tr>`).join('')}</tbody>
+            <tfoot><tr><td>Brasil</td><td class="n">${tot('fed')}</td><td class="n">${tot('est')}</td><td class="n">${linhas.length * 3}</td><td></td></tr></tfoot></table>`;
+        $('regrasCadeiras').innerHTML = `
+            <li><b>Deputados federais:</b> são 513, divididos entre os estados e o Distrito Federal pela Lei Complementar nº 78/1993, em proporção à população, com mínimo de 8 e máximo de 70 por estado (Constituição, art. 45). A distribuição vem da quantidade de eleitos de cada estado na eleição de ${S.ano}.</li>
+            <li><b>Deputados estaduais ou distritais:</b> o triplo das vagas na Câmara, até 12; acima disso, 12 mais uma vaga para cada deputado federal além de 12 (Constituição, art. 27). No Distrito Federal são os deputados distritais.</li>
+            <li><b>Senadores:</b> 3 por estado e pelo Distrito Federal, 81 no total (Constituição, art. 46). A cada eleição renova-se 1/3 ou 2/3 do Senado${emDisputaSen != null ? `; em ${S.ano} estiveram em disputa ${emDisputaSen} vagas` : ''}.</li>
+            <li>Onde conferir: <a class="underline" target="_blank" rel="noopener" href="https://www.planalto.gov.br/ccivil_03/constituicao/constituicao.htm">Constituição Federal</a>, <a class="underline" target="_blank" rel="noopener" href="https://www.planalto.gov.br/ccivil_03/leis/lcp/lcp78.htm">Lei Complementar nº 78/1993</a>, a <a class="underline" target="_blank" rel="noopener" href="https://bibliotecadigital.tse.jus.br/bitstreams/82fa5d48-4f90-441b-949c-c31cebba3eb0/download">publicação do TSE com as vagas por estado</a> e a <a class="underline" target="_blank" rel="noopener" href="https://www.camara.leg.br/deputados/quem-sao">lista dos deputados em exercício, na Câmara</a>. A página <a class="underline" href="bancadas.html">Legislativo</a> mostra as bancadas atuais por partido.</li>`;
+    } catch (e) { alvo.innerHTML = mensagemErro(e); }
+}
+
 /* ---------- detalhe do estado ---------- */
 async function abrirUf(uf) {
     S.uf = uf; S.q = ''; S.partido = '';
@@ -294,12 +330,15 @@ async function detalheCandidato(sq) {
 document.addEventListener('click', (ev) => {
     const p = ev.target.closest && ev.target.closest('path[data-uf]');
     if (p) { abrirUf(p.dataset.uf); return; }
+    const lu = ev.target.closest && ev.target.closest('tr[data-uf-linha]');
+    if (lu) { abrirUf(lu.dataset.ufLinha); return; }
     const tr = ev.target.closest && ev.target.closest('tr[data-sq]');
     if (tr) { detalheCandidato(tr.dataset.sq); return; }
     if (ev.target.closest && ev.target.closest('#fechaGaveta')) $('gaveta').innerHTML = '';
 });
 document.addEventListener('keydown', (ev) => {
     if (ev.key === 'Escape') $('gaveta').innerHTML = '';
+    if (ev.key === 'Enter' && ev.target.matches && ev.target.matches('tr[data-uf-linha]')) abrirUf(ev.target.dataset.ufLinha);
     if ((ev.key === 'Enter' || ev.key === ' ') && ev.target.matches && ev.target.matches('path[data-uf]')) { ev.preventDefault(); abrirUf(ev.target.dataset.uf); }
 });
 async function carregarMapa() {
@@ -307,6 +346,7 @@ async function carregarMapa() {
     try {
         S.mapa = await api(`/api/eleicoes/mapa?ano=${S.ano}&cargo=${encodeURIComponent(S.cargo)}`);
         desenharControles(); desenharMapa(); resumoNacional();
+        if (S.anoCadeiras !== S.ano) { S.anoCadeiras = S.ano; carregarCadeiras(); }
         $('secUf').classList.add('hidden'); S.uf = null; $('gaveta').innerHTML = '';
     } catch (e) { $('estado').innerHTML = mensagemErro(e); }
 }
