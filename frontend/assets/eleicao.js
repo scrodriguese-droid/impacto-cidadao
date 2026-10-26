@@ -113,20 +113,21 @@
         <tr><td>Risco</td><td>Quem fica em 2º lugar não tem representação</td><td>Seu voto pode ajudar a eleger um colega de partido de quem você discorda</td></tr></tbody></table>`;
 
     // ---------- montagem ----------
-    window.comoEleito = function (el, inicial) {
+    // opcoes: { seletor: mostrar os botões de cargo, simulador: mostrar o exemplo prático } (ambos ligados por padrão)
+    window.comoEleito = function (el, inicial, opcoes) {
         if (!el) return;
+        const op = Object.assign({ seletor: true, simulador: true }, opcoes);
         const st = { cargo: CARGOS[inicial] ? inicial : 'presidente', maj: [48000, 32000, 20000], grande: true, cadeiras: 10,
             partidos: [{ nome: 'Partido X', v: 40000 }, { nome: 'Partido Y', v: 31000 }, { nome: 'Partido Z', v: 17000 }, { nome: 'Partido W', v: 12000 }] };
         const desenhar = () => {
             const c = CARGOS[st.cargo], maj = c.sistema === 'majoritario';
             el.innerHTML = `<div class="ce" role="group" aria-label="Como este cargo é eleito">
                 <p class="ce-cab">Como este cargo é eleito?</p>
-                <div class="ce-cargos" role="radiogroup" aria-label="Cargo">${Object.entries(CARGOS).map(([k, x]) => `<button type="button" role="radio" aria-checked="${k === st.cargo}" data-cargo="${k}">${esc(x.rotulo)}</button>`).join('')}</div>
+                ${op.seletor ? `<div class="ce-cargos" role="radiogroup" aria-label="Cargo">${Object.entries(CARGOS).map(([k, x]) => `<button type="button" role="radio" aria-checked="${k === st.cargo}" data-cargo="${k}">${esc(x.rotulo)}</button>`).join('')}</div>` : ''}
                 <h3>${esc(c.rotulo)}: sistema ${maj ? 'majoritário' : 'proporcional'}</h3>
                 <p class="ce-sistema">${maj ? '“Ganha quem tem mais votos”' : '“O voto vai para o partido”'}</p>
                 <p class="mt-1">${esc(RESUMO[c.sistema])}</p>
-                <p class="ce-passo">Exemplo prático</p>
-                ${maj ? simMajoritario(st.cargo, st) : simProporcional(st)}
+                ${op.simulador ? `<p class="ce-passo">Exemplo prático</p>${maj ? simMajoritario(st.cargo, st) : simProporcional(st)}` : ''}
                 <details data-det ${st.aberto ? 'open' : ''}><summary>Ver a matemática: ${maj ? 'turnos e maioria' : 'quociente eleitoral, quociente partidário e sobras'}</summary>
                     ${maj ? DETALHE_MAJ : DETALHE_PROP}${TABELA}</details></div>`;
         };
