@@ -75,6 +75,8 @@
 
     <section id="secUf" class="hidden" aria-labelledby="h-uf"><h2 id="h-uf" class="text-xl font-bold"></h2><div id="corpoUf" class="mt-3 space-y-8"></div></section>
 
+    <section id="como-eleito" aria-label="Como este cargo é eleito"><div id="comoEleito"></div></section>
+
     <section aria-labelledby="h-notas" class="rounded-2xl border border-slate-200 dark:border-slate-700 p-5">
         <h2 id="h-notas" class="font-bold">Como ler estes números</h2>
         <ul class="mt-2 text-xs text-slate-600 dark:text-slate-400 list-disc pl-5 space-y-1">
@@ -91,8 +93,10 @@
 <div id="rodape"></div>
 
 <script src="assets/comum.js"></script>
+<script src="assets/eleicao.js"></script>
 <script>
 renderLayout('resultados');
+comoEleito(document.getElementById('comoEleito'), 'federal');
 
 const nf = (n) => Number(n).toLocaleString('pt-BR');
 const pc = (v, d = 1) => Number(v).toLocaleString('pt-BR', { minimumFractionDigits: d, maximumFractionDigits: d }) + '%';
@@ -198,7 +202,7 @@ function blocoQuociente(d) {
         <td class="n">${pc(u.pct)}</td><td class="n">${u.qp_calc}</td><td class="n">${u.por_qp}</td><td class="n">${u.por_media}</td><td class="n"><b>${u.cadeiras}</b></td></tr>`).join('');
     return `<div><h3 class="font-bold text-lg">Quociente eleitoral e vagas por partido</h3>
         <div class="res-qe mt-2"><p><b>Quociente eleitoral (QE)</b> = <code>${nf(d.totais.validos)}</code> votos válidos ÷ <code>${d.cadeiras}</code> cadeiras = <b>${nf(d.qe)} votos por cadeira</b>.</p>
-        <p class="mt-1 text-sm">Cada partido (ou federação) ganha, de saída, uma cadeira a cada ${nf(d.qe)} votos que somou (<b>QP</b>). As cadeiras que sobram vão para quem tem a maior média. <a class="underline" href="poderes.html#comoEleito">Entenda o cálculo</a>.</p></div>
+        <p class="mt-1 text-sm">Cada partido (ou federação) ganha, de saída, uma cadeira a cada ${nf(d.qe)} votos que somou (<b>QP</b>). As cadeiras que sobram vão para quem tem a maior média. <a class="underline" href="#como-eleito">Entenda o cálculo</a>.</p></div>
         <div class="overflow-x-auto mt-3"><table class="res-tabela"><thead><tr><th>Partido ou federação</th><th class="n">Votos nominais</th><th class="n">Votos de legenda</th><th class="n">Total</th><th class="n">% dos válidos</th><th class="n">QP calculado</th><th class="n">Eleitos por QP</th><th class="n">Eleitos por média (sobras)</th><th class="n">Cadeiras</th></tr></thead><tbody>${linhas}</tbody></table></div>
         <p class="res-nota mt-1">“Eleitos por QP” e “por média” são os oficiais do TSE; “QP calculado” é a conta votos ÷ QE e pode diferir.</p></div>`;
 }

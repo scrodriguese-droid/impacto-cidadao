@@ -33,7 +33,6 @@
 
 <div id="rodape"></div>
 <script src="assets/comum.js"></script>
-<script src="assets/eleicao.js"></script>
 <script>
 const PARAM = new URLSearchParams(location.search).get('aba');
 const ABA = PARAM === 'judiciario' ? 'judiciario' : PARAM === 'controle' ? 'controle' : 'executivo';
@@ -49,7 +48,7 @@ const ABAS = {
     executivo: {
         titulo: 'Poder Executivo',
         sub: 'Quem administra e executa: transforma as leis e o orçamento em escola, posto de saúde, estrada e benefício.',
-        html: () => '<div id="esferas" class="seg-esfera" role="radiogroup" aria-label="Esfera de governo"></div><div id="execCorpo" class="space-y-10 mt-6"></div><section class="mt-10" aria-label="Como este cargo é eleito"><div id="comoEleito"></div></section>',
+        html: () => '<div id="esferas" class="seg-esfera" role="radiogroup" aria-label="Esfera de governo"></div><div id="execCorpo" class="space-y-10 mt-6"></div>',
     },
     judiciario: {
         titulo: 'Poder Judiciário',
@@ -375,7 +374,6 @@ $('subtitulo').textContent = a.sub;
 $('corpo').innerHTML = a.html() + `<p class="ficha-nota">Os parlamentares e as bancadas estão na aba <a class="underline" href="bancadas.html">Legislativo</a>. Quem ocupa cada cargo muda a cada eleição ou nomeação: consulte o site oficial de cada órgão.</p>`;
 iniciarExecutivo();
 if (ABA === 'judiciario') iniciarJudiciario();
-if (ABA === 'executivo') comoEleito($('comoEleito'), 'presidente');
 </script>
 </body>
 </html>
