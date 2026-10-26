@@ -86,8 +86,6 @@
 
     <section id="secUf" class="hidden" aria-labelledby="h-uf"><h2 id="h-uf" class="text-xl font-bold"></h2><div id="corpoUf" class="mt-3 space-y-8"></div></section>
 
-    <section id="como-eleito" aria-label="Como este cargo é eleito"><div id="comoEleito"></div></section>
-
     <section aria-labelledby="h-notas" class="rounded-2xl border border-slate-200 dark:border-slate-700 p-5">
         <h2 id="h-notas" class="font-bold">Como ler estes números</h2>
         <ul class="mt-2 text-xs text-slate-600 dark:text-slate-400 list-disc pl-5 space-y-1">
@@ -107,7 +105,6 @@
 <script src="assets/eleicao.js"></script>
 <script>
 renderLayout('resultados');
-comoEleito(document.getElementById('comoEleito'), 'federal');
 
 const nf = (n) => Number(n).toLocaleString('pt-BR');
 /* glossário: o "?" ao lado de cada conceito mostra o significado em linguagem simples e leva ao verbete */
@@ -254,7 +251,8 @@ function blocoQuociente(d) {
         <td class="n">${pc(u.pct)}</td><td class="n">${u.qp_calc}</td><td class="n">${u.por_qp}</td><td class="n">${u.por_media}</td><td class="n"><b>${u.cadeiras}</b></td></tr>`).join('');
     return `<div><h3 class="font-bold text-lg">Quociente eleitoral e vagas por partido</h3>
         <div class="res-qe mt-2"><p><b>Quociente eleitoral (QE)</b>${gl('QUOCIENTE_ELEITORAL')} = <code>${nf(d.totais.validos)}</code> votos válidos ÷ <code>${d.cadeiras}</code> cadeiras = <b>${nf(d.qe)} votos por cadeira</b>.</p>
-        <p class="mt-1 text-sm">Cada partido (ou federação) ganha, de saída, uma cadeira a cada ${nf(d.qe)} votos que somou (<b>QP</b>${gl('QUOCIENTE_PARTIDARIO')}). As cadeiras que sobram${gl('SOBRAS')} vão para quem tem a maior média. <a class="underline" href="#como-eleito">Entenda o cálculo</a>.</p></div>
+        <p class="mt-1 text-sm">Cada partido (ou federação) ganha, de saída, uma cadeira a cada ${nf(d.qe)} votos que somou (<b>QP</b>${gl('QUOCIENTE_PARTIDARIO')}). As cadeiras que sobram${gl('SOBRAS')} vão para quem tem a maior média. A matemática passo a passo está logo abaixo.</p></div>
+        <div id="comoEleitoUf" class="mt-4"></div>
         <div class="overflow-x-auto mt-3"><table class="res-tabela"><thead><tr><th>Partido ou federação${gl('FEDERACAO_PARTIDARIA')}</th><th class="n">Votos nominais${gl('VOTOS_NOMINAIS')}</th><th class="n">Votos de legenda${gl('VOTOS_LEGENDA')}</th><th class="n">Total</th><th class="n">% dos válidos</th><th class="n">QP calculado${gl('QUOCIENTE_PARTIDARIO')}</th><th class="n">Eleitos por QP${gl('ELEITO_POR_QP')}</th><th class="n">Eleitos por média (sobras)${gl('ELEITO_POR_MEDIA')}</th><th class="n">Cadeiras</th></tr></thead><tbody>${linhas}</tbody></table></div>
         <p class="res-nota mt-1">“Eleitos por QP” e “por média” são os oficiais do TSE; “QP calculado” é a conta votos ÷ QE e pode diferir, porque o candidato precisa de um mínimo de votos próprios${gl('DESEMPENHO_INDIVIDUAL')} para ocupar a vaga.</p></div>`;
 }
@@ -278,7 +276,11 @@ function blocoMunicipios(d) {
 }
 function desenharUf() {
     const d = S.det;
-    $('corpoUf').innerHTML = cartasTotais(d) + blocoQuociente(d) + blocoCandidatos(d) + blocoMunicipios(d);
+    const majoritario = !d.cargo.proporcional;
+    $('corpoUf').innerHTML = cartasTotais(d) + (majoritario ? '<div id="comoEleitoUf"></div>' : blocoQuociente(d)) + blocoCandidatos(d) + blocoMunicipios(d);
+    // "Como este cargo é eleito?": resumo e a matemática, junto do quociente eleitoral (sem o exemplo prático)
+    const CHAVE_CARGO = { 1: 'presidente', 3: 'governador', 5: 'senador', 6: 'federal', 7: 'estadual', 8: 'estadual' };
+    comoEleito($('comoEleitoUf'), CHAVE_CARGO[d.cargo.id.split('-')[0]] || 'federal', { seletor: false, simulador: false });
     const bq = $('bq');
     bq.addEventListener('input', debounce(async () => { S.q = bq.value.trim(); await recarregaCand(); }, 300));
     const bp = $('bp');
