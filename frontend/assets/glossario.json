@@ -544,5 +544,177 @@
         "indexador da dívida"
       ]
     }
+  },
+  "eleicoes_e_votos": {
+    "VOTOS_VALIDOS": {
+      "termo_tecnico": "Votos válidos",
+      "nome_cidadao": "Os votos que contam para eleger",
+      "explicacao_simples": "Soma dos votos dados a candidatos (nominais) e aos partidos (legenda). Brancos e nulos ficam de fora. É a base para calcular o quociente eleitoral e a porcentagem de cada um.",
+      "icone": "🗳️",
+      "categoria": "Eleições",
+      "aliases": [
+        "votos válidos",
+        "voto válido"
+      ]
+    },
+    "VOTOS_NOMINAIS": {
+      "termo_tecnico": "Votos nominais",
+      "nome_cidadao": "Votos em candidatos",
+      "explicacao_simples": "Votos dados digitando o número de uma pessoa. Contam para o candidato e, somados, para o partido ou federação dele.",
+      "icone": "👤",
+      "categoria": "Eleições",
+      "aliases": [
+        "votos nominais",
+        "voto nominal"
+      ]
+    },
+    "VOTOS_LEGENDA": {
+      "termo_tecnico": "Votos de legenda",
+      "nome_cidadao": "Votos no partido",
+      "explicacao_simples": "Votos dados só com o número do partido, sem escolher um candidato. Ajudam o partido a ganhar cadeiras, que ficam com os candidatos mais votados dele.",
+      "icone": "🏷️",
+      "categoria": "Eleições",
+      "aliases": [
+        "votos de legenda",
+        "voto de legenda",
+        "voto na legenda"
+      ]
+    },
+    "VOTOS_BRANCOS_NULOS": {
+      "termo_tecnico": "Votos em branco e nulos",
+      "nome_cidadao": "Brancos e nulos",
+      "explicacao_simples": "Branco: o eleitor não escolheu ninguém. Nulo: o número não existe ou o voto foi anulado. Nenhum dos dois entra nos votos válidos nem ajuda a eleger alguém.",
+      "icone": "⬜",
+      "categoria": "Eleições",
+      "aliases": [
+        "votos em branco",
+        "votos nulos",
+        "brancos e nulos"
+      ]
+    },
+    "COMPARECIMENTO": {
+      "termo_tecnico": "Comparecimento e eleitores aptos",
+      "nome_cidadao": "Quem foi votar",
+      "explicacao_simples": "Comparecimento é o número de eleitores que foram à urna. Aptos são os que poderiam votar. A diferença entre os dois são as abstenções.",
+      "icone": "🚶",
+      "categoria": "Eleições",
+      "aliases": [
+        "comparecimento",
+        "eleitores aptos",
+        "abstenção",
+        "abstenções"
+      ]
+    },
+    "QUOCIENTE_ELEITORAL": {
+      "termo_tecnico": "Quociente eleitoral (QE)",
+      "nome_cidadao": "O “preço” de cada cadeira",
+      "explicacao_simples": "Votos válidos ÷ número de cadeiras em disputa. Mostra quantos votos, em média, valem uma cadeira. A fração até 0,5 é desprezada; acima disso, arredonda para cima.",
+      "icone": "🧮",
+      "categoria": "Eleições",
+      "aliases": [
+        "quociente eleitoral"
+      ]
+    },
+    "QUOCIENTE_PARTIDARIO": {
+      "termo_tecnico": "Quociente partidário (QP)",
+      "nome_cidadao": "Cadeiras garantidas de saída",
+      "explicacao_simples": "Votos do partido (ou federação) ÷ quociente eleitoral, só a parte inteira. É quantas cadeiras ele ganha direto, antes da distribuição das sobras. Ex.: se der 3,8, são 3 cadeiras.",
+      "icone": "🪑",
+      "categoria": "Eleições",
+      "aliases": [
+        "quociente partidário"
+      ]
+    },
+    "SOBRAS": {
+      "termo_tecnico": "Sobras eleitorais (regra da maior média)",
+      "nome_cidadao": "Vagas que sobram",
+      "explicacao_simples": "Cadeiras que restam depois do quociente partidário. São distribuídas pela maior média: votos do partido ÷ (cadeiras já obtidas + 1). Ganha a vaga o partido com a maior média, e a conta se repete até acabarem as vagas.",
+      "icone": "➗",
+      "categoria": "Eleições",
+      "aliases": [
+        "sobras eleitorais",
+        "maior média",
+        "sobras"
+      ]
+    },
+    "ELEITO_POR_QP": {
+      "termo_tecnico": "Eleito por quociente partidário",
+      "nome_cidadao": "Eleito pela cota do partido",
+      "explicacao_simples": "Candidato que ocupou uma das cadeiras que o partido ou federação ganhou direto, pelo quociente partidário.",
+      "icone": "✅",
+      "categoria": "Eleições",
+      "aliases": [
+        "eleito por QP",
+        "eleitos por QP"
+      ]
+    },
+    "ELEITO_POR_MEDIA": {
+      "termo_tecnico": "Eleito por média",
+      "nome_cidadao": "Eleito pelas sobras",
+      "explicacao_simples": "Candidato que ocupou uma cadeira conquistada na distribuição das sobras, pela regra da maior média.",
+      "icone": "➕",
+      "categoria": "Eleições",
+      "aliases": [
+        "eleito por média",
+        "eleitos por média"
+      ]
+    },
+    "DESEMPENHO_INDIVIDUAL": {
+      "termo_tecnico": "Votação mínima individual",
+      "nome_cidadao": "Mínimo de votos do próprio candidato",
+      "explicacao_simples": "Para ocupar uma cadeira, o candidato precisa ter, em votos próprios, ao menos 20% do quociente eleitoral, mesmo que o partido tenha direito à vaga.",
+      "icone": "🚧",
+      "categoria": "Eleições",
+      "aliases": [
+        "votação mínima individual"
+      ]
+    },
+    "FEDERACAO_PARTIDARIA": {
+      "termo_tecnico": "Federação partidária",
+      "nome_cidadao": "Partidos que atuam como um só",
+      "explicacao_simples": "União de partidos por pelo menos quatro anos, que disputa as eleições e atua no Congresso como se fosse um partido único (ex.: PT, PCdoB e PV). Vale desde 2022 e soma os votos dos partidos.",
+      "icone": "🤝",
+      "categoria": "Eleições",
+      "aliases": [
+        "federação partidária",
+        "federação de partidos",
+        "federações partidárias"
+      ]
+    },
+    "COLIGACAO": {
+      "termo_tecnico": "Coligação",
+      "nome_cidadao": "Aliança só para a eleição",
+      "explicacao_simples": "União temporária de partidos numa eleição. Desde 2020 não vale nas eleições proporcionais (deputados e vereadores); continua valendo nas majoritárias (presidente, governador, prefeito e senador).",
+      "icone": "🔗",
+      "categoria": "Eleições",
+      "aliases": [
+        "coligação",
+        "coligações"
+      ]
+    },
+    "SISTEMA_PROPORCIONAL": {
+      "termo_tecnico": "Sistema proporcional",
+      "nome_cidadao": "O voto vai para o partido",
+      "explicacao_simples": "Usado para deputados e vereadores. As cadeiras são divididas entre os partidos em proporção aos votos, e os candidatos mais votados de cada partido ocupam as vagas.",
+      "icone": "⚖️",
+      "categoria": "Eleições",
+      "aliases": [
+        "sistema proporcional",
+        "eleição proporcional",
+        "eleições proporcionais"
+      ]
+    },
+    "SISTEMA_MAJORITARIO": {
+      "termo_tecnico": "Sistema majoritário",
+      "nome_cidadao": "Ganha quem tem mais votos",
+      "explicacao_simples": "Usado para presidente, governador, prefeito e senador. Vence o candidato mais votado; em alguns cargos é preciso passar de 50% dos votos válidos, senão há 2º turno.",
+      "icone": "🏆",
+      "categoria": "Eleições",
+      "aliases": [
+        "sistema majoritário",
+        "eleição majoritária",
+        "eleições majoritárias"
+      ]
+    }
   }
 }

@@ -43,6 +43,7 @@
         .res-gaveta { position: fixed; top: 0; right: 0; bottom: 0; z-index: 66; width: min(100vw, 26rem); overflow-y: auto; padding: 1rem 1rem 6rem; background: var(--papel) !important; color: var(--fg) !important; border-left: 2px solid var(--fg); box-shadow: -6px 0 24px rgba(0,0,0,.25); }
         .res-gaveta:empty { display: none; }
         .res-nota { font-size: .72rem; opacity: .8; }
+        #avisoDados:empty { display: none; }
     </style>
     <link rel="stylesheet" href="assets/brutalista.css">
 </head>
@@ -99,6 +100,21 @@ renderLayout('resultados');
 comoEleito(document.getElementById('comoEleito'), 'federal');
 
 const nf = (n) => Number(n).toLocaleString('pt-BR');
+/* glossário: o "?" ao lado de cada conceito mostra o significado em linguagem simples e leva ao verbete */
+const GLOSS = {};
+const gl = (sigla) => {
+    const g = GLOSS[sigla];
+    if (!g) return '';
+    return ` <a href="glossario.html#${encodeURIComponent(sigla)}" title="${esc(g.nome_cidadao)}: ${esc(g.explicacao_simples)}" aria-label="${esc(g.nome_cidadao)}: ver no glossário"
+        class="inline-flex items-center justify-center w-4 h-4 rounded-full bg-slate-200 dark:bg-slate-700 text-[10px] font-bold text-slate-600 dark:text-slate-300 hover:bg-brand-500 hover:text-white align-middle">?</a>`;
+};
+async function carregarGlossario() {
+    try {
+        const resp = await fetch('assets/glossario.json');
+        if (!resp.ok) return;
+        for (const termos of Object.values(await resp.json())) Object.assign(GLOSS, termos);
+    } catch (_) { /* sem glossário a página segue funcionando */ }
+}
 const pc = (v, d = 1) => Number(v).toLocaleString('pt-BR', { minimumFractionDigits: d, maximumFractionDigits: d }) + '%';
 const S = { indice: null, ano: null, cargo: null, metrica: 'lider', mapa: null, uf: null, geo: null, q: '', partido: '' };
 const PAL = ['#A92823', '#0d9488', '#b45309', '#1d4ed8', '#7c3aed', '#be185d', '#4d7c0f', '#0e7490', '#9a3412', '#475569', '#a16207', '#6d28d9', '#047857', '#9f1239', '#1e40af'];
@@ -164,8 +180,8 @@ function resumoNacional() {
     const soma = (k) => ufs.reduce((a, u) => a + (u[k] || 0), 0);
     const c = S.mapa.cargo;
     $('resumoNacional').innerHTML = `<div class="res-cards">
-        <div class="res-card"><b>${nf(soma('validos'))}</b><span>votos válidos${c.proporcional ? ' (todos os estados)' : ''}</span></div>
-        ${c.proporcional ? `<div class="res-card"><b>${nf(soma('nominais'))}</b><span>votos nominais (em candidatos)</span></div><div class="res-card"><b>${nf(soma('legenda'))}</b><span>votos de legenda (${pc(100 * soma('legenda') / (soma('validos') || 1))})</span></div><div class="res-card"><b>${nf(soma('cadeiras'))}</b><span>cadeiras</span></div>` : `<div class="res-card"><b>${nf(soma('brancos'))}</b><span>votos em branco</span></div><div class="res-card"><b>${nf(soma('nulos'))}</b><span>votos nulos</span></div>`}
+        <div class="res-card"><b>${nf(soma('validos'))}</b><span>votos válidos${gl('VOTOS_VALIDOS')}${c.proporcional ? ' (todos os estados)' : ''}</span></div>
+        ${c.proporcional ? `<div class="res-card"><b>${nf(soma('nominais'))}</b><span>votos nominais (em candidatos)${gl('VOTOS_NOMINAIS')}</span></div><div class="res-card"><b>${nf(soma('legenda'))}</b><span>votos de legenda (${pc(100 * soma('legenda') / (soma('validos') || 1))})${gl('VOTOS_LEGENDA')}</span></div><div class="res-card"><b>${nf(soma('cadeiras'))}</b><span>cadeiras</span></div>` : `<div class="res-card"><b>${nf(soma('brancos'))}</b><span>votos em branco${gl('VOTOS_BRANCOS_NULOS')}</span></div><div class="res-card"><b>${nf(soma('nulos'))}</b><span>votos nulos</span></div>`}
         </div><p class="res-nota mt-2">Os votos do exterior e em trânsito entram no estado em que foram apurados. Dados do TSE gerados em ${esc(fmtDataHora(S.mapa.gerado_em))}.</p>`;
     $('notaFonte').innerHTML = `Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(S.mapa.fonte.url))}">${esc(S.mapa.fonte.nome)}</a>. Malha dos estados: IBGE.`;
 }
@@ -190,10 +206,10 @@ const SIT = (s) => { const x = (s || '').toUpperCase(); return x.includes('QP') 
 function cartasTotais(d) {
     const t = d.totais;
     return `<div class="res-cards">
-        <div class="res-card"><b>${nf(t.validos)}</b><span>votos válidos</span></div>
-        ${d.cargo.proporcional ? `<div class="res-card"><b>${nf(t.nominais)}</b><span>votos nominais (${pc(100 - d.pct_legenda)})</span></div><div class="res-card"><b>${nf(t.legenda)}</b><span>votos de legenda (${pc(d.pct_legenda)})</span></div>` : ''}
-        <div class="res-card"><b>${nf(t.brancos)}</b><span>brancos</span></div><div class="res-card"><b>${nf(t.nulos)}</b><span>nulos</span></div>
-        <div class="res-card"><b>${nf(t.comparecimento)}</b><span>compareceram (de ${nf(t.aptos)} aptos)</span></div></div>`;
+        <div class="res-card"><b>${nf(t.validos)}</b><span>votos válidos${gl('VOTOS_VALIDOS')}</span></div>
+        ${d.cargo.proporcional ? `<div class="res-card"><b>${nf(t.nominais)}</b><span>votos nominais (${pc(100 - d.pct_legenda)})${gl('VOTOS_NOMINAIS')}</span></div><div class="res-card"><b>${nf(t.legenda)}</b><span>votos de legenda (${pc(d.pct_legenda)})${gl('VOTOS_LEGENDA')}</span></div>` : ''}
+        <div class="res-card"><b>${nf(t.brancos)}</b><span>brancos${gl('VOTOS_BRANCOS_NULOS')}</span></div><div class="res-card"><b>${nf(t.nulos)}</b><span>nulos${gl('VOTOS_BRANCOS_NULOS')}</span></div>
+        <div class="res-card"><b>${nf(t.comparecimento)}</b><span>compareceram (de ${nf(t.aptos)} aptos)${gl('COMPARECIMENTO')}</span></div></div>`;
 }
 function blocoQuociente(d) {
     if (!d.cargo.proporcional) return '';
@@ -201,10 +217,10 @@ function blocoQuociente(d) {
         <td class="n">${nf(u.nominais)}</td><td class="n">${nf(u.legenda)}</td><td class="n"><b>${nf(u.total)}</b><span class="res-barra"><i style="width:${Math.min(100, u.pct * 100 / ((d.unidades[0] || { pct: 1 }).pct || 1))}%"></i></span></td>
         <td class="n">${pc(u.pct)}</td><td class="n">${u.qp_calc}</td><td class="n">${u.por_qp}</td><td class="n">${u.por_media}</td><td class="n"><b>${u.cadeiras}</b></td></tr>`).join('');
     return `<div><h3 class="font-bold text-lg">Quociente eleitoral e vagas por partido</h3>
-        <div class="res-qe mt-2"><p><b>Quociente eleitoral (QE)</b> = <code>${nf(d.totais.validos)}</code> votos válidos ÷ <code>${d.cadeiras}</code> cadeiras = <b>${nf(d.qe)} votos por cadeira</b>.</p>
-        <p class="mt-1 text-sm">Cada partido (ou federação) ganha, de saída, uma cadeira a cada ${nf(d.qe)} votos que somou (<b>QP</b>). As cadeiras que sobram vão para quem tem a maior média. <a class="underline" href="#como-eleito">Entenda o cálculo</a>.</p></div>
-        <div class="overflow-x-auto mt-3"><table class="res-tabela"><thead><tr><th>Partido ou federação</th><th class="n">Votos nominais</th><th class="n">Votos de legenda</th><th class="n">Total</th><th class="n">% dos válidos</th><th class="n">QP calculado</th><th class="n">Eleitos por QP</th><th class="n">Eleitos por média (sobras)</th><th class="n">Cadeiras</th></tr></thead><tbody>${linhas}</tbody></table></div>
-        <p class="res-nota mt-1">“Eleitos por QP” e “por média” são os oficiais do TSE; “QP calculado” é a conta votos ÷ QE e pode diferir.</p></div>`;
+        <div class="res-qe mt-2"><p><b>Quociente eleitoral (QE)</b>${gl('QUOCIENTE_ELEITORAL')} = <code>${nf(d.totais.validos)}</code> votos válidos ÷ <code>${d.cadeiras}</code> cadeiras = <b>${nf(d.qe)} votos por cadeira</b>.</p>
+        <p class="mt-1 text-sm">Cada partido (ou federação) ganha, de saída, uma cadeira a cada ${nf(d.qe)} votos que somou (<b>QP</b>${gl('QUOCIENTE_PARTIDARIO')}). As cadeiras que sobram${gl('SOBRAS')} vão para quem tem a maior média. <a class="underline" href="#como-eleito">Entenda o cálculo</a>.</p></div>
+        <div class="overflow-x-auto mt-3"><table class="res-tabela"><thead><tr><th>Partido ou federação${gl('FEDERACAO_PARTIDARIA')}</th><th class="n">Votos nominais${gl('VOTOS_NOMINAIS')}</th><th class="n">Votos de legenda${gl('VOTOS_LEGENDA')}</th><th class="n">Total</th><th class="n">% dos válidos</th><th class="n">QP calculado${gl('QUOCIENTE_PARTIDARIO')}</th><th class="n">Eleitos por QP${gl('ELEITO_POR_QP')}</th><th class="n">Eleitos por média (sobras)${gl('ELEITO_POR_MEDIA')}</th><th class="n">Cadeiras</th></tr></thead><tbody>${linhas}</tbody></table></div>
+        <p class="res-nota mt-1">“Eleitos por QP” e “por média” são os oficiais do TSE; “QP calculado” é a conta votos ÷ QE e pode diferir, porque o candidato precisa de um mínimo de votos próprios${gl('DESEMPENHO_INDIVIDUAL')} para ocupar a vaga.</p></div>`;
 }
 function blocoCandidatos(d) {
     const partidos = [...new Set((S.det.unidades.length ? S.det.unidades.map((u) => u.id) : [...new Set(d.candidatos.map((c) => c.unidade))]))];
@@ -299,7 +315,7 @@ $('selCargo').addEventListener('change', () => { S.cargo = $('selCargo').value; 
 $('selMetrica').addEventListener('change', () => { S.metrica = $('selMetrica').value; desenharMapa(); });
 (async function iniciar() {
     try {
-        const [indice, geo] = await Promise.all([api('/api/eleicoes/indice'), fetch('assets/uf.geojson').then((r) => r.json())]);
+        const [indice, geo] = await Promise.all([api('/api/eleicoes/indice'), fetch('assets/uf.geojson').then((r) => r.json()), carregarGlossario()]);
         S.indice = indice; S.geo = geo; S.ano = indice.anos[0].ano;
         const cargos = indice.anos[0].cargos;
         S.cargo = (cargos.find((c) => c.id === '6-1') || cargos[0]).id;
