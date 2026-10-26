@@ -41,13 +41,16 @@ function salvarPrefsParciais(parcial) { guardar('ic_prefs', { ...lerPrefs(), ...
 })();
 
 /* ---------- cabeçalho e rodapé ---------- */
+// Planos de governo (comparar planos e análise do editor) só fazem sentido em época de eleição. Fora dela ficam fora do menu
+// (as páginas continuam existindo, só não são oferecidas). Na próxima campanha, troque para `true`.
+const PLANOS_VISIVEIS = false;
 const NAVEGACAO = [
     { id: 'inicio', paginas: ['inicio'], href: 'index.html', icone: 'fa-house', rotulo: 'Início' },
     { id: 'quem', paginas: ['servicos', 'quem'], href: 'servicos.html', icone: 'fa-magnifying-glass-location', rotulo: 'Quem resolve o quê?' },
     { id: 'orcamento', paginas: ['economia', 'fiscal', 'orcamento', 'tesouro', 'tributos', 'simuladores', 'macro', 'financiamento', 'ciclo'], href: 'economia.html', icone: 'fa-coins', rotulo: 'Orçamento e contas públicas' },
     { id: 'politicas', paginas: ['politicas'], href: 'politicas.html', icone: 'fa-landmark', rotulo: 'Leis e projetos' },
     { id: 'poderes', paginas: ['executivo', 'bancadas', 'judiciario', 'controle'], href: 'poderes.html', icone: 'fa-building-columns', rotulo: 'Conheça os três poderes' },
-    { id: 'planos', paginas: ['planos', 'analise-planos', 'resultados'], href: 'planos.html', icone: 'fa-flag', rotulo: 'Partidos e cadeiras' },
+    { id: 'planos', paginas: ['planos', 'analise-planos', 'resultados'], href: PLANOS_VISIVEIS ? 'planos.html' : 'resultados.html', icone: 'fa-flag', rotulo: 'Partidos e cadeiras' },
     { id: 'historia', paginas: ['historia'], href: 'historia.html', icone: 'fa-timeline', rotulo: 'História política do Brasil' },
 ];
 const NAV_GLOSSARIO = { id: 'glossario', paginas: ['glossario'], href: 'glossario.html', icone: 'fa-book', rotulo: 'Glossário' };
@@ -185,7 +188,10 @@ function renderLayout(paginaAtual) {
         document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') alternarMenu(false); });
         $('btnTemaMovel').addEventListener('click', () => $('btnTema').click());
         const grupo = NAVEGACAO.find((n) => n.paginas.includes(paginaAtual));
-        const abas = grupo && SUBNAVEGACAO[grupo.id];
+        let abas = grupo && SUBNAVEGACAO[grupo.id];
+        // fora da época de eleição, as abas de planos ficam ocultas (quem abrir uma delas direto ainda vê todas, para poder navegar)
+        if (grupo && grupo.id === 'planos' && !PLANOS_VISIVEIS && !['planos', 'analise-planos'].includes(paginaAtual)) abas = abas.filter((t) => t.id === 'resultados');
+        if (abas && abas.length < 2) abas = null;   // uma aba só não precisa de linha de abas
         const principal = document.querySelector('main');
         if (abas && principal) {
             const extra = APROFUNDAR[grupo.id] || [];
