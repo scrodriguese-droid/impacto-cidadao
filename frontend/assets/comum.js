@@ -47,7 +47,7 @@ const NAVEGACAO = [
     { id: 'orcamento', paginas: ['economia', 'fiscal', 'orcamento', 'tesouro', 'tributos', 'simuladores', 'macro', 'financiamento', 'ciclo'], href: 'economia.html', icone: 'fa-coins', rotulo: 'Orçamento e contas públicas' },
     { id: 'politicas', paginas: ['politicas'], href: 'politicas.html', icone: 'fa-landmark', rotulo: 'Leis e projetos' },
     { id: 'poderes', paginas: ['executivo', 'bancadas', 'judiciario', 'controle'], href: 'poderes.html', icone: 'fa-building-columns', rotulo: 'Conheça os três poderes' },
-    { id: 'planos', paginas: ['planos', 'analise-planos'], href: 'planos.html', icone: 'fa-flag', rotulo: 'Eleições: planos de governo' },
+    { id: 'planos', paginas: ['planos', 'analise-planos', 'resultados'], href: 'planos.html', icone: 'fa-flag', rotulo: 'Eleições: planos de governo' },
     { id: 'historia', paginas: ['historia'], href: 'historia.html', icone: 'fa-timeline', rotulo: 'História política do Brasil' },
 ];
 const NAV_GLOSSARIO = { id: 'glossario', paginas: ['glossario'], href: 'glossario.html', icone: 'fa-book', rotulo: 'Glossário' };
@@ -66,6 +66,7 @@ const SUBNAVEGACAO = {
     planos: [
         { id: 'planos', href: 'planos.html', rotulo: 'Comparar planos' },
         { id: 'analise-planos', href: 'analise-planos.html', rotulo: 'Análise do editor' },
+        { id: 'resultados', href: 'resultados.html', rotulo: 'Resultados das eleições' },
     ],
     orcamento: [
         { id: 'economia', href: 'economia.html', rotulo: '1 · De onde vem e vai' },

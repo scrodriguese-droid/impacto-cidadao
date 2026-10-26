@@ -41,6 +41,7 @@ import competencias
 import editor
 import servicos
 import economia
+import eleicoes
 import equipamentos
 import macro
 import maturidade
@@ -583,6 +584,45 @@ def _autoria(fn, *args):  # noqa: ANN001
     except Exception as exc:  # noqa: BLE001
         log.warning("Autoria indisponível: %s", exc)
         raise HTTPException(status_code=503, detail="Os dados de autoria dos projetos ainda não estão disponíveis.") from exc
+
+
+def _eleicoes(fn, *args):  # noqa: ANN001
+    try:
+        return fn(*args)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail="Cargo, estado ou candidato não encontrado nos resultados.") from exc
+    except Exception as exc:  # noqa: BLE001
+        log.warning("Resultados indisponíveis: %s", exc)
+        raise HTTPException(status_code=503, detail="Os resultados das eleições ainda não estão disponíveis.") from exc
+
+
+@router.get("/eleicoes/indice", tags=["eleicoes"])
+def eleicoes_indice() -> dict:
+    return _eleicoes(eleicoes.indice)
+
+
+@router.get("/eleicoes/mapa", tags=["eleicoes"])
+def eleicoes_mapa(ano: Annotated[int, Query(ge=1990, le=2100)], cargo: Annotated[str, Query(pattern=r"^\d-\d$")]) -> dict:
+    return _eleicoes(eleicoes.mapa, ano, cargo)
+
+
+@router.get("/eleicoes/uf", tags=["eleicoes"])
+def eleicoes_uf(ano: Annotated[int, Query(ge=1990, le=2100)], cargo: Annotated[str, Query(pattern=r"^\d-\d$")],
+                uf: Annotated[str, Query(pattern=r"^[A-Za-z]{2}$")], q: Annotated[str | None, Query(max_length=60)] = None,
+                partido: Annotated[str | None, Query(max_length=60)] = None, deslocamento: Annotated[int, Query(ge=0, le=100000)] = 0) -> dict:
+    return _eleicoes(eleicoes.detalhe_uf, ano, cargo, uf, q, partido, deslocamento)
+
+
+@router.get("/eleicoes/municipios", tags=["eleicoes"])
+def eleicoes_municipios(ano: Annotated[int, Query(ge=1990, le=2100)], cargo: Annotated[str, Query(pattern=r"^\d-\d$")],
+                        uf: Annotated[str, Query(pattern=r"^[A-Za-z]{2}$")]) -> dict:
+    return _eleicoes(eleicoes.municipios, ano, cargo, uf)
+
+
+@router.get("/eleicoes/candidato", tags=["eleicoes"])
+def eleicoes_candidato(ano: Annotated[int, Query(ge=1990, le=2100)], cargo: Annotated[str, Query(pattern=r"^\d-\d$")],
+                       uf: Annotated[str, Query(pattern=r"^[A-Za-z]{2}$")], sq: Annotated[str, Query(pattern=r"^\d{1,20}$")]) -> dict:
+    return _eleicoes(eleicoes.candidato, ano, cargo, uf, sq)
 
 
 @router.get("/autoria/resumo", tags=["autoria"])
