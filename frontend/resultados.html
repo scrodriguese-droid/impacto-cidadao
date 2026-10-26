@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resultados das eleições — ImpactoCidadão</title>
+    <meta name="description" content="Votos válidos, de legenda e nominais, quociente eleitoral, quociente partidário e vagas por partido em cada eleição, por estado e município, com dados abertos do TSE.">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="assets/tailwind-config.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Inter', system-ui, sans-serif; }
+        :focus-visible { outline: 2px solid #A92823; outline-offset: 2px; }
+        .res-controles { display: flex; flex-wrap: wrap; gap: .75rem; align-items: end; }
+        .res-controles label { font: 800 .68rem/1 'Inter', sans-serif; letter-spacing: .08em; text-transform: uppercase; display: grid; gap: .3rem; }
+        .res-controles select, .res-input { padding: .55rem .7rem; border: 1px solid var(--fg); background: transparent; font: 600 .85rem 'Inter', sans-serif; min-width: 12rem; }
+        .res-mapa { display: grid; gap: 1.2rem; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); align-items: start; }
+        @media (max-width: 800px) { .res-mapa { grid-template-columns: 1fr; } }
+        .res-mapa svg { width: 100%; height: auto; display: block; }
+        .res-mapa path { stroke: var(--papel); stroke-width: .6; cursor: pointer; transition: opacity .1s; }
+        .res-mapa path:hover { opacity: .75; stroke: var(--fg); stroke-width: 1.4; }
+        .res-mapa path.sel { stroke: var(--fg); stroke-width: 2; }
+        .res-legenda { display: flex; flex-wrap: wrap; gap: .3rem .8rem; font-size: .7rem; margin-top: .5rem; }
+        .res-legenda i { display: inline-block; width: .8rem; height: .8rem; margin-right: .3rem; vertical-align: -.1rem; }
+        .res-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr)); border: 1px solid var(--line); }
+        .res-card { padding: .7rem .8rem; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+        .res-card b { display: block; font: 400 1.6rem/1 'Anton', sans-serif; }
+        .res-card span { font-size: .72rem; }
+        .res-tabela { width: 100%; border-collapse: collapse; font-size: .82rem; }
+        .res-tabela th, .res-tabela td { border-bottom: 1px solid var(--line); padding: .4rem .5rem; text-align: left; vertical-align: top; }
+        .res-tabela th { font: 800 .65rem/1.2 'Inter', sans-serif; letter-spacing: .06em; text-transform: uppercase; }
+        .res-tabela .n { text-align: right; font-variant-numeric: tabular-nums; }
+        .res-tabela tr[data-sq] { cursor: pointer; }
+        .res-tabela tr[data-sq]:hover { background: rgba(0,0,0,.06); }
+        .res-barra { display: block; height: .5rem; background: rgba(0,0,0,.12); margin-top: .2rem; }
+        .res-barra i { display: block; height: 100%; background: var(--fg); }
+        .res-qe { border: 2px solid var(--fg); padding: .9rem 1rem; }
+        .res-qe code { font-family: ui-monospace, Consolas, monospace; background: rgba(0,0,0,.07); padding: 0 .25rem; }
+        .res-gaveta { position: fixed; top: 0; right: 0; bottom: 0; z-index: 66; width: min(100vw, 26rem); overflow-y: auto; padding: 1rem 1rem 6rem; background: var(--papel) !important; color: var(--fg) !important; border-left: 2px solid var(--fg); box-shadow: -6px 0 24px rgba(0,0,0,.25); }
+        .res-gaveta:empty { display: none; }
+        .res-nota { font-size: .72rem; opacity: .8; }
+    </style>
+    <link rel="stylesheet" href="assets/brutalista.css">
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-full flex flex-col transition-colors duration-200">
+
+<a href="#conteudo" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-white focus:text-slate-900 focus:p-3">Ir para o conteúdo</a>
+<div id="cabecalho"></div>
+
+<main id="conteudo" class="max-w-6xl mx-auto px-4 sm:px-6 pt-6 pb-10 flex-grow w-full space-y-10">
+    <header>
+        <h1 class="text-2xl font-extrabold tracking-tight">Resultados das eleições</h1>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1" style="max-width:70ch">Como os votos viraram cadeiras: votos válidos, de legenda e nominais, quociente eleitoral, quociente partidário e sobras, e os votos de cada candidato e partido por estado e município. Só números oficiais do TSE: sem previsão, sem ranking de “melhores” e sem juízo político.</p>
+        <div class="res-controles mt-4">
+            <label>Eleição<select id="selAno"></select></label>
+            <label>Cargo<select id="selCargo"></select></label>
+            <label>Colorir o mapa por<select id="selMetrica"></select></label>
+        </div>
+        <div id="estado" class="mt-3" aria-live="polite"></div>
+        <div id="avisoDados" class="mt-3 text-xs" role="note"></div>
+    </header>
+
+    <section aria-labelledby="h-mapa">
+        <h2 id="h-mapa" class="text-xl font-bold">O mapa do Brasil</h2>
+        <p class="text-sm mt-1" id="mapaSub">Clique em um estado para ver os votos, o quociente e as vagas.</p>
+        <div class="res-mapa mt-3">
+            <div><svg id="svgMapa" viewBox="0 0 600 600" role="img" aria-label="Mapa do Brasil por estado"></svg><div id="legendaMapa" class="res-legenda"></div></div>
+            <div id="resumoNacional"></div>
+        </div>
+    </section>
+
+    <section id="secUf" class="hidden" aria-labelledby="h-uf"><h2 id="h-uf" class="text-xl font-bold"></h2><div id="corpoUf" class="mt-3 space-y-8"></div></section>
+
+    <section aria-labelledby="h-notas" class="rounded-2xl border border-slate-200 dark:border-slate-700 p-5">
+        <h2 id="h-notas" class="font-bold">Como ler estes números</h2>
+        <ul class="mt-2 text-xs text-slate-600 dark:text-slate-400 list-disc pl-5 space-y-1">
+            <li><b>Votos válidos</b> = votos nominais (em candidatos) + votos de legenda (no partido ou federação). Brancos e nulos não entram.</li>
+            <li><b>Quociente eleitoral (QE)</b> = votos válidos ÷ cadeiras, aqui calculado por nós com o número de eleitos do estado. <b>Quociente partidário (QP)</b> = votos do partido ou federação ÷ QE, só a parte inteira. As cadeiras “por QP” e “por média” (sobras) da tabela são as oficiais de cada candidato eleito no TSE; a coluna “QP calculado” mostra a conta direta, e pode diferir porque o candidato precisa de um mínimo de votos individuais para ocupar a vaga.</li>
+            <li>Em 2022, partidos federados (ex.: PT, PCdoB e PV) disputam como uma unidade. Quando o quociente depende de coligações (eleições até 2018), a unidade é a coligação.</li>
+            <li>O detalhe por município dos candidatos proporcionais aparece para os eleitos e os com votação expressiva (a partir de 1.500 votos): os demais têm só o total.</li>
+            <li id="notaFonte"></li>
+        </ul>
+    </section>
+</main>
+
+<aside id="gaveta" class="res-gaveta" aria-label="Detalhe do candidato"></aside>
+<div id="rodape"></div>
+
+<script src="assets/comum.js"></script>
+<script>
+renderLayout('resultados');
+
+const nf = (n) => Number(n).toLocaleString('pt-BR');
+const pc = (v, d = 1) => Number(v).toLocaleString('pt-BR', { minimumFractionDigits: d, maximumFractionDigits: d }) + '%';
+const S = { indice: null, ano: null, cargo: null, metrica: 'lider', mapa: null, uf: null, geo: null, q: '', partido: '' };
+const PAL = ['#A92823', '#0d9488', '#b45309', '#1d4ed8', '#7c3aed', '#be185d', '#4d7c0f', '#0e7490', '#9a3412', '#475569', '#a16207', '#6d28d9', '#047857', '#9f1239', '#1e40af'];
+const corPorNome = (() => { const m = new Map(); return (n) => { if (!m.has(n)) m.set(n, PAL[m.size % PAL.length]); return m.get(n); }; })();
+
+/* ---------- controles ---------- */
+function desenharControles() {
+    $('selAno').innerHTML = S.indice.anos.map((a) => `<option value="${a.ano}" ${a.ano === S.ano ? 'selected' : ''}>${a.ano}</option>`).join('');
+    const cargos = S.indice.anos.find((a) => a.ano === S.ano).cargos;
+    $('selCargo').innerHTML = cargos.map((c) => `<option value="${esc(c.id)}" ${c.id === S.cargo ? 'selected' : ''}>${esc(c.nome)}${c.turno > 1 || cargos.some((x) => x.nome === c.nome && x.id !== c.id) ? ` · ${c.turno}º turno` : ''}</option>`).join('');
+    const prop = cargos.find((c) => c.id === S.cargo).proporcional;
+    const mets = prop ? [['lider', 'Partido ou federação mais votado'], ['validos', 'Votos válidos'], ['legenda', '% de votos de legenda'], ['cadeiras', 'Cadeiras em disputa']]
+        : [['lider', 'Candidato mais votado'], ['validos', 'Votos válidos'], ['nulos', '% de brancos e nulos']];
+    if (!mets.some(([v]) => v === S.metrica)) S.metrica = 'lider';
+    // avisos sobre o que o arquivo do TSE traz (ou ainda não traz) para este cargo
+    const nums = cargos.find((c) => c.id === S.cargo);
+    const num = S.cargo.split('-')[0];
+    const avisos = [];
+    if (['1', '3'].includes(num) && nums.turno === 1 && !cargos.some((c) => c.id === `${num}-2`))
+        avisos.push('Este arquivo do TSE só traz o 1º turno. O 2º turno (se houve) entra quando o TSE publicar a atualização: confira o resultado final no site do TSE.');
+    if (num === '5') avisos.push('Senador: cada eleitor vota em até dois candidatos nesta eleição (duas vagas por estado), então a soma de votos é cerca do dobro do número de eleitores.');
+    $('avisoDados').innerHTML = avisos.map((t) => `<p class="border border-slate-300 dark:border-slate-600 px-3 py-2 mb-1"><i class="fa-solid fa-circle-info mr-1" aria-hidden="true"></i>${esc(t)}</p>`).join('');
+    $('selMetrica').innerHTML = mets.map(([v, r]) => `<option value="${v}" ${v === S.metrica ? 'selected' : ''}>${r}</option>`).join('');
+}
+
+/* ---------- mapa (projeção simples a partir do GeoJSON do IBGE) ---------- */
+function projetar(geo) {
+    const pts = [];
+    const percorre = (c) => (typeof c[0] === 'number' ? pts.push(c) : c.forEach(percorre));
+    geo.features.forEach((f) => percorre(f.geometry.coordinates));
+    const xs = pts.map((p) => p[0]), ys = pts.map((p) => p[1]);
+    const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
+    const k = Math.cos(((y0 + y1) / 2) * Math.PI / 180);
+    const larg = (x1 - x0) * k, alt = y1 - y0, esc_ = 580 / Math.max(larg, alt);
+    const W = Math.round(larg * esc_ + 20), H = Math.round(alt * esc_ + 20);
+    const xy = (p) => `${((p[0] - x0) * k * esc_ + 10).toFixed(1)},${((y1 - p[1]) * esc_ + 10).toFixed(1)}`;
+    const anel = (r) => 'M' + r.map(xy).join('L') + 'Z';
+    const caminho = (g) => (g.type === 'Polygon' ? g.coordinates.map(anel).join('') : g.coordinates.map((poly) => poly.map(anel).join('')).join(''));
+    return { W, H, caminho };
+}
+const valorMetrica = (u, m) => (m === 'validos' ? u.validos : m === 'cadeiras' ? u.cadeiras : m === 'legenda' ? (u.validos ? 100 * u.legenda / u.validos : 0) : m === 'nulos' ? ((u.nulos + u.brancos) / (u.comparecimento || 1)) * 100 : 0);
+function desenharMapa() {
+    const svg = $('svgMapa'), leg = $('legendaMapa');
+    const proj = projetar(S.geo);
+    svg.setAttribute('viewBox', `0 0 ${proj.W} ${proj.H}`);
+    const ufs = S.mapa.ufs;
+    let cor, legenda = '';
+    if (S.metrica === 'lider') {
+        cor = (uf) => (ufs[uf] && ufs[uf].lider ? corPorNome(ufs[uf].lider.nome) : '#cbd5e1');
+        const usados = [...new Set(Object.values(ufs).map((u) => u.lider && u.lider.nome).filter(Boolean))];
+        legenda = usados.map((n) => `<span><i style="background:${corPorNome(n)}"></i>${esc(n)}</span>`).join('');
+    } else {
+        const vs = Object.values(ufs).map((u) => valorMetrica(u, S.metrica)), max = Math.max(...vs, 1), min = Math.min(...vs);
+        cor = (uf) => { const t = ufs[uf] ? (valorMetrica(ufs[uf], S.metrica) - min) / ((max - min) || 1) : 0; return `rgba(169,40,35,${(0.12 + 0.88 * t).toFixed(2)})`; };
+        const fmt = (v) => (S.metrica === 'legenda' || S.metrica === 'nulos' ? pc(v) : nf(Math.round(v)));
+        legenda = `<span>Menor: <b>${fmt(min)}</b></span><span style="display:inline-block;width:8rem;height:.7rem;background:linear-gradient(90deg,rgba(169,40,35,.12),rgba(169,40,35,1))"></span><span>Maior: <b>${fmt(max)}</b></span>`;
+    }
+    svg.innerHTML = S.geo.features.map((f) => `<path d="${proj.caminho(f.geometry)}" fill="${cor(f.properties.uf)}" data-uf="${f.properties.uf}" class="${S.uf === f.properties.uf ? 'sel' : ''}" tabindex="0" role="button" aria-label="${esc(ufs[f.properties.uf] ? ufs[f.properties.uf].nome : f.properties.uf)}"><title>${esc(ufs[f.properties.uf] ? ufs[f.properties.uf].nome : f.properties.uf)}</title></path>`).join('');
+    leg.innerHTML = legenda;
+}
+function resumoNacional() {
+    const ufs = Object.values(S.mapa.ufs);
+    const soma = (k) => ufs.reduce((a, u) => a + (u[k] || 0), 0);
+    const c = S.mapa.cargo;
+    $('resumoNacional').innerHTML = `<div class="res-cards">
+        <div class="res-card"><b>${nf(soma('validos'))}</b><span>votos válidos${c.proporcional ? ' (todos os estados)' : ''}</span></div>
+        ${c.proporcional ? `<div class="res-card"><b>${nf(soma('nominais'))}</b><span>votos nominais (em candidatos)</span></div><div class="res-card"><b>${nf(soma('legenda'))}</b><span>votos de legenda (${pc(100 * soma('legenda') / (soma('validos') || 1))})</span></div><div class="res-card"><b>${nf(soma('cadeiras'))}</b><span>cadeiras</span></div>` : `<div class="res-card"><b>${nf(soma('brancos'))}</b><span>votos em branco</span></div><div class="res-card"><b>${nf(soma('nulos'))}</b><span>votos nulos</span></div>`}
+        </div><p class="res-nota mt-2">Os votos do exterior e em trânsito entram no estado em que foram apurados. Dados do TSE gerados em ${esc(fmtDataHora(S.mapa.gerado_em))}.</p>`;
+    $('notaFonte').innerHTML = `Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(S.mapa.fonte.url))}">${esc(S.mapa.fonte.nome)}</a>. Malha dos estados: IBGE.`;
+}
+
+/* ---------- detalhe do estado ---------- */
+async function abrirUf(uf) {
+    S.uf = uf; S.q = ''; S.partido = '';
+    desenharMapa();
+    $('secUf').classList.remove('hidden');
+    $('h-uf').textContent = (S.mapa.ufs[uf] ? S.mapa.ufs[uf].nome : uf) + ' · ' + S.mapa.cargo.nome;
+    $('corpoUf').innerHTML = '<p class="text-sm">Carregando…</p>';
+    try {
+        const [d, m] = await Promise.all([carregaUf(0), api(`/api/eleicoes/municipios?ano=${S.ano}&cargo=${encodeURIComponent(S.cargo)}&uf=${uf}`)]);
+        S.det = d; S.muni = m.municipios;
+        desenharUf();
+        $('secUf').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (e) { $('corpoUf').innerHTML = mensagemErro(e); }
+}
+const carregaUf = (desloc) => api(`/api/eleicoes/uf?ano=${S.ano}&cargo=${encodeURIComponent(S.cargo)}&uf=${S.uf}&deslocamento=${desloc}${S.q ? '&q=' + encodeURIComponent(S.q) : ''}${S.partido ? '&partido=' + encodeURIComponent(S.partido) : ''}`);
+
+const SIT = (s) => { const x = (s || '').toUpperCase(); return x.includes('QP') ? 'Eleito por QP' : x.includes('MÉDIA') || x.includes('MEDIA') ? 'Eleito por média (sobras)' : x.startsWith('ELEITO') ? 'Eleito' : x.includes('SUPLENTE') ? 'Suplente' : x.includes('2º') ? 'Vai ao 2º turno' : 'Não eleito'; };
+function cartasTotais(d) {
+    const t = d.totais;
+    return `<div class="res-cards">
+        <div class="res-card"><b>${nf(t.validos)}</b><span>votos válidos</span></div>
+        ${d.cargo.proporcional ? `<div class="res-card"><b>${nf(t.nominais)}</b><span>votos nominais (${pc(100 - d.pct_legenda)})</span></div><div class="res-card"><b>${nf(t.legenda)}</b><span>votos de legenda (${pc(d.pct_legenda)})</span></div>` : ''}
+        <div class="res-card"><b>${nf(t.brancos)}</b><span>brancos</span></div><div class="res-card"><b>${nf(t.nulos)}</b><span>nulos</span></div>
+        <div class="res-card"><b>${nf(t.comparecimento)}</b><span>compareceram (de ${nf(t.aptos)} aptos)</span></div></div>`;
+}
+function blocoQuociente(d) {
+    if (!d.cargo.proporcional) return '';
+    const linhas = d.unidades.map((u) => `<tr><td><b>${esc(u.nome)}</b>${u.partidos.length > 1 ? `<br><small>${esc(u.partidos.join(', '))}</small>` : ''}</td>
+        <td class="n">${nf(u.nominais)}</td><td class="n">${nf(u.legenda)}</td><td class="n"><b>${nf(u.total)}</b><span class="res-barra"><i style="width:${Math.min(100, u.pct * 100 / ((d.unidades[0] || { pct: 1 }).pct || 1))}%"></i></span></td>
+        <td class="n">${pc(u.pct)}</td><td class="n">${u.qp_calc}</td><td class="n">${u.por_qp}</td><td class="n">${u.por_media}</td><td class="n"><b>${u.cadeiras}</b></td></tr>`).join('');
+    return `<div><h3 class="font-bold text-lg">Quociente eleitoral e vagas por partido</h3>
+        <div class="res-qe mt-2"><p><b>Quociente eleitoral (QE)</b> = <code>${nf(d.totais.validos)}</code> votos válidos ÷ <code>${d.cadeiras}</code> cadeiras = <b>${nf(d.qe)} votos por cadeira</b>.</p>
+        <p class="mt-1 text-sm">Cada partido (ou federação) ganha, de saída, uma cadeira a cada ${nf(d.qe)} votos que somou (<b>QP</b>). As cadeiras que sobram vão para quem tem a maior média. <a class="underline" href="poderes.html#comoEleito">Entenda o cálculo</a>.</p></div>
+        <div class="overflow-x-auto mt-3"><table class="res-tabela"><thead><tr><th>Partido ou federação</th><th class="n">Votos nominais</th><th class="n">Votos de legenda</th><th class="n">Total</th><th class="n">% dos válidos</th><th class="n">QP calculado</th><th class="n">Eleitos por QP</th><th class="n">Eleitos por média (sobras)</th><th class="n">Cadeiras</th></tr></thead><tbody>${linhas}</tbody></table></div>
+        <p class="res-nota mt-1">“Eleitos por QP” e “por média” são os oficiais do TSE; “QP calculado” é a conta votos ÷ QE e pode diferir.</p></div>`;
+}
+function blocoCandidatos(d) {
+    const partidos = [...new Set((S.det.unidades.length ? S.det.unidades.map((u) => u.id) : [...new Set(d.candidatos.map((c) => c.unidade))]))];
+    const linhas = d.candidatos.map((c) => `<tr data-sq="${esc(c.id)}"><td><b>${esc(c.nome)}</b></td><td>${esc(c.numero)}</td><td>${esc(c.partido)}${c.unidade !== c.partido ? ` <small>(${esc(c.unidade)})</small>` : ''}</td><td class="n">${nf(c.votos)}</td><td class="n">${pc(c.pct, 2)}</td><td>${esc(SIT(c.situacao))}</td></tr>`).join('');
+    return `<div><h3 class="font-bold text-lg">Votos de cada candidato</h3>
+        <div class="res-controles mt-2"><label>Buscar candidato ou número<input id="bq" class="res-input" type="search" value="${esc(S.q)}" placeholder="Nome ou número" maxlength="60"></label>
+        ${d.cargo.proporcional ? `<label>Partido ou federação<select id="bp"><option value="">Todos</option>${partidos.map((p) => `<option ${p === S.partido ? 'selected' : ''}>${esc(p)}</option>`).join('')}</select></label>` : ''}</div>
+        <p class="res-nota mt-2">${nf(d.total_candidatos)} candidato(s)${S.q || S.partido ? ' neste filtro' : ''}. Clique em um candidato para ver os votos município a município.</p>
+        <div class="overflow-x-auto mt-2"><table class="res-tabela"><thead><tr><th>Candidato</th><th>Nº</th><th>Partido</th><th class="n">Votos</th><th class="n">% dos válidos</th><th>Situação</th></tr></thead><tbody id="tbCand">${linhas}</tbody></table></div>
+        <div class="text-center mt-2"><button id="maisCand" type="button" class="px-4 py-2 border text-sm font-semibold ${d.candidatos.length < d.total_candidatos ? '' : 'hidden'}">Ver mais candidatos</button></div></div>`;
+}
+function blocoMunicipios(d) {
+    const prop = d.cargo.proporcional;
+    const linhas = Object.entries(S.muni).sort((a, b) => b[1].validos - a[1].validos).slice(0, 15).map(([cod, m]) => `<tr><td><b>${esc(m.nome)}</b></td><td class="n">${nf(m.validos)}</td>${prop ? `<td>${m.lider ? esc(m.lider.unidade) : '—'}</td><td class="n">${m.lider ? pc(m.lider.pct) : '—'}</td>` : ''}</tr>`).join('');
+    return `<div><h3 class="font-bold text-lg">Os maiores municípios (${nf(Object.keys(S.muni).length)} no total)</h3>
+        <div class="res-controles mt-2"><label>Escolher um município<select id="sm"><option value="">Selecione…</option>${Object.entries(S.muni).sort((a, b) => a[1].nome.localeCompare(b[1].nome, 'pt-BR')).map(([cod, m]) => `<option value="${esc(cod)}">${esc(m.nome)}</option>`).join('')}</select></label></div>
+        <div id="detMuni" class="mt-3"></div>
+        <div class="overflow-x-auto mt-3"><table class="res-tabela"><thead><tr><th>Município</th><th class="n">Votos válidos</th>${prop ? '<th>Mais votado(a)</th><th class="n">% dos válidos</th>' : ''}</tr></thead><tbody>${linhas}</tbody></table></div></div>`;
+}
+function desenharUf() {
+    const d = S.det;
+    $('corpoUf').innerHTML = cartasTotais(d) + blocoQuociente(d) + blocoCandidatos(d) + blocoMunicipios(d);
+    const bq = $('bq');
+    bq.addEventListener('input', debounce(async () => { S.q = bq.value.trim(); await recarregaCand(); }, 300));
+    const bp = $('bp');
+    if (bp) bp.addEventListener('change', async () => { S.partido = bp.value; await recarregaCand(); });
+    $('maisCand').addEventListener('click', async () => {
+        const mais = await carregaUf(S.det.candidatos.length);
+        S.det.candidatos = S.det.candidatos.concat(mais.candidatos);
+        $('tbCand').insertAdjacentHTML('beforeend', mais.candidatos.map(linhaCand).join(''));
+        $('maisCand').classList.toggle('hidden', S.det.candidatos.length >= mais.total_candidatos);
+    });
+    $('sm').addEventListener('change', () => detalheMunicipio($('sm').value));
+}
+const linhaCand = (c) => `<tr data-sq="${esc(c.id)}"><td><b>${esc(c.nome)}</b></td><td>${esc(c.numero)}</td><td>${esc(c.partido)}${c.unidade !== c.partido ? ` <small>(${esc(c.unidade)})</small>` : ''}</td><td class="n">${nf(c.votos)}</td><td class="n">${pc(c.pct, 2)}</td><td>${esc(SIT(c.situacao))}</td></tr>`;
+async function recarregaCand() {
+    const d = await carregaUf(0);
+    S.det.candidatos = d.candidatos; S.det.total_candidatos = d.total_candidatos;
+    $('tbCand').innerHTML = d.candidatos.map(linhaCand).join('');
+    $('maisCand').classList.toggle('hidden', d.candidatos.length >= d.total_candidatos);
+    const p = $('tbCand').closest('div').parentElement.querySelector('.res-nota');
+    if (p) p.textContent = `${nf(d.total_candidatos)} candidato(s)${S.q || S.partido ? ' neste filtro' : ''}. Clique em um candidato para ver os votos município a município.`;
+}
+function detalheMunicipio(cod) {
+    const alvo = $('detMuni');
+    if (!cod) { alvo.innerHTML = ''; return; }
+    const m = S.muni[cod];
+    if (!S.det.cargo.proporcional) { alvo.innerHTML = `<p class="text-sm"><b>${esc(m.nome)}</b>: ${nf(m.validos)} votos válidos.</p>`; return; }
+    const un = Object.entries(m.u || {}).sort((a, b) => b[1] - a[1]);
+    const total = m.validos || 1;
+    alvo.innerHTML = `<p class="font-bold">${esc(m.nome)}: ${nf(m.validos)} votos válidos</p><p class="res-nota">Votos nominais mais votos de legenda de cada partido ou federação neste município.</p>
+        <table class="res-tabela mt-2"><thead><tr><th>Partido ou federação</th><th class="n">Votos</th><th class="n">% dos válidos</th></tr></thead><tbody>${un.slice(0, 12).map(([id, v]) => `<tr><td>${esc(id)}</td><td class="n">${nf(v)}</td><td class="n">${pc(100 * v / total)}</td></tr>`).join('')}</tbody></table>`;
+}
+async function detalheCandidato(sq) {
+    const g = $('gaveta');
+    g.innerHTML = '<p class="text-sm">Carregando…</p>';
+    try {
+        const r = await api(`/api/eleicoes/candidato?ano=${S.ano}&cargo=${encodeURIComponent(S.cargo)}&uf=${S.uf}&sq=${encodeURIComponent(sq)}`);
+        const c = r.candidato;
+        const max = r.municipios && r.municipios.length ? r.municipios[0].votos : 1;
+        g.innerHTML = `<button type="button" id="fechaGaveta" class="underline text-xs font-bold float-right">fechar</button>
+            <p class="res-nota" style="margin-top:1.4rem">${esc(SIT(c.situacao))} · ${esc(c.partido)}</p><h3 class="font-bold text-xl">${esc(c.nome)}</h3>
+            <p class="text-sm">Nº ${esc(c.numero)} · <b>${nf(c.votos)}</b> votos em ${esc(S.mapa.ufs[S.uf].nome)}</p>
+            ${r.sem_detalhe ? `<p class="text-sm mt-3">O detalhe por município está disponível para os eleitos e para quem teve ao menos ${nf(r.limite_detalhe)} votos. Este candidato tem só o total do estado.</p>`
+                : `<p class="font-bold mt-3 text-sm">Votos por município (${nf(r.municipios.length)})</p><ul class="mt-1">${r.municipios.slice(0, 80).map((m) => `<li class="text-sm" style="padding:.25rem 0;border-bottom:1px solid var(--line)"><span class="float-right">${nf(m.votos)}${m.validos ? ` · ${pc(100 * m.votos / m.validos)}` : ''}</span>${esc(m.nome)}<span class="res-barra"><i style="width:${Math.max(1, 100 * m.votos / max)}%"></i></span></li>`).join('')}</ul>
+                ${r.municipios.length > 80 ? `<p class="res-nota mt-2">Mostrando os 80 municípios com mais votos.</p>` : ''}<p class="res-nota mt-2">A porcentagem é sobre os votos válidos do município.</p>`}`;
+    } catch (e) { g.innerHTML = `<button type="button" id="fechaGaveta" class="underline text-xs font-bold float-right">fechar</button>${mensagemErro(e)}`; }
+}
+
+/* ---------- eventos e início ---------- */
+document.addEventListener('click', (ev) => {
+    const p = ev.target.closest && ev.target.closest('path[data-uf]');
+    if (p) { abrirUf(p.dataset.uf); return; }
+    const tr = ev.target.closest && ev.target.closest('tr[data-sq]');
+    if (tr) { detalheCandidato(tr.dataset.sq); return; }
+    if (ev.target.closest && ev.target.closest('#fechaGaveta')) $('gaveta').innerHTML = '';
+});
+document.addEventListener('keydown', (ev) => {
+    if (ev.key === 'Escape') $('gaveta').innerHTML = '';
+    if ((ev.key === 'Enter' || ev.key === ' ') && ev.target.matches && ev.target.matches('path[data-uf]')) { ev.preventDefault(); abrirUf(ev.target.dataset.uf); }
+});
+async function carregarMapa() {
+    $('estado').innerHTML = '';
+    try {
+        S.mapa = await api(`/api/eleicoes/mapa?ano=${S.ano}&cargo=${encodeURIComponent(S.cargo)}`);
+        desenharControles(); desenharMapa(); resumoNacional();
+        $('secUf').classList.add('hidden'); S.uf = null; $('gaveta').innerHTML = '';
+    } catch (e) { $('estado').innerHTML = mensagemErro(e); }
+}
+$('selAno').addEventListener('change', () => { S.ano = Number($('selAno').value); const cs = S.indice.anos.find((a) => a.ano === S.ano).cargos; if (!cs.some((c) => c.id === S.cargo)) S.cargo = cs[0].id; carregarMapa(); });
+$('selCargo').addEventListener('change', () => { S.cargo = $('selCargo').value; carregarMapa(); });
+$('selMetrica').addEventListener('change', () => { S.metrica = $('selMetrica').value; desenharMapa(); });
+(async function iniciar() {
+    try {
+        const [indice, geo] = await Promise.all([api('/api/eleicoes/indice'), fetch('assets/uf.geojson').then((r) => r.json())]);
+        S.indice = indice; S.geo = geo; S.ano = indice.anos[0].ano;
+        const cargos = indice.anos[0].cargos;
+        S.cargo = (cargos.find((c) => c.id === '6-1') || cargos[0]).id;
+        desenharControles();
+        await carregarMapa();
+    } catch (e) { $('estado').innerHTML = mensagemErro(e); }
+})();
+</script>
+</body>
+</html>
