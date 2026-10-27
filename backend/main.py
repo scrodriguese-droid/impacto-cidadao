@@ -43,6 +43,7 @@ import servicos
 import economia
 import eleicoes
 import equipamentos
+import historico_divida
 import macro
 import maturidade
 import normas
@@ -886,6 +887,14 @@ def macro_financiamento() -> dict:
 def macro_reservas() -> dict:
     try:
         return macro.reservas()
+    except Exception as exc:  # noqa: BLE001
+        raise _fonte_macro_indisponivel(exc) from exc
+
+
+@router.get("/macro/historico-divida", tags=["macro"])
+def macro_historico_divida() -> dict:
+    try:
+        return historico_divida.historico()
     except Exception as exc:  # noqa: BLE001
         raise _fonte_macro_indisponivel(exc) from exc
 
