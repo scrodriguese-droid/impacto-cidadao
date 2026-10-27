@@ -28,6 +28,12 @@
     <h1 id="h1" class="text-2xl font-extrabold tracking-tight">Entrada e saída de dinheiro</h1>
     <p id="sub" class="text-sm text-slate-500 dark:text-slate-400 mt-1">De onde vem o dinheiro da sua cidade (ou estado, ou do país) e para onde ele vai. Dados oficiais do Tesouro Nacional (SICONFI).</p>
 
+    <!-- Epígrafe: só na aba “Saúde fiscal” -->
+    <figure id="epigrafe" class="hidden mt-4 pl-4 border-l-4 border-brand-600">
+        <blockquote class="text-lg sm:text-xl font-bold italic text-slate-800 dark:text-slate-100">“Ninguém come PIB. Come alimentos!”</blockquote>
+        <figcaption class="text-xs text-slate-500 dark:text-slate-400 mt-1">— Maria da Conceição Tavares, economista</figcaption>
+    </figure>
+
     <!-- Cidade -->
     <div class="sticky top-16 z-30 -mx-4 sm:mx-0 px-4 sm:px-0 py-2 mt-3 bg-slate-50/90 dark:bg-slate-900/90 backdrop-blur">
         <div class="flex flex-wrap items-center gap-x-2 gap-y-2 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 shadow-sm text-sm">
@@ -110,6 +116,7 @@ const ABA_FISCAL = new URLSearchParams(location.search).get('aba') === 'fiscal';
 renderLayout(ABA_FISCAL ? 'fiscal' : 'economia');
 if (ABA_FISCAL) {
     document.title = 'Saúde fiscal e tributos — ImpactoCidadão';
+    $('epigrafe').classList.remove('hidden');
     $('h1').textContent = 'Saúde fiscal e tributos';
     $('sub').textContent = 'As contas estão em dia? Dívida, limite da folha de pessoal e resultado primário, e um guia de quem cobra cada tributo. Dados oficiais do Tesouro Nacional (SICONFI).';
 }
