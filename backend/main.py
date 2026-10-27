@@ -68,6 +68,10 @@ def _aquecer_cache() -> None:
         macro.resumo()
     except Exception as exc:  # noqa: BLE001 — é só otimização; a primeira consulta refaz o trabalho
         log.info("Aquecimento do cache macro não concluído: %s", exc)
+    try:
+        economia.painel_economia(1)   # contas da União: a 1ª consulta a frio leva ~20 s e a tela ficava "Consultando…"
+    except Exception as exc:  # noqa: BLE001
+        log.info("Aquecimento do painel da União não concluído: %s", exc)
 
 
 @asynccontextmanager

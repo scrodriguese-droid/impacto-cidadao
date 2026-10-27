@@ -674,9 +674,12 @@ function nivel1(d) {
     const n = d.nivel1, p = n.lrf_pessoal, sf = d.situacao_fiscal, prim = d.deficits && d.deficits.primario;
     const div = sf && sf.estoque.itens[0];
     const tend = sf && { alta: 'Em crescimento', queda: 'Em queda', estavel: 'Estável' }[sf.estoque.tendencia];
+    const divFed = !div && d.esfera === 'uniao' && d.estoque_federal && d.estoque_federal.itens.find((i) => i.id === 'bruta');
     const cDivida = div
         ? cartaz(`Dívida${gl('DIVIDA_CONSOLIDADA')}`, div.pct != null ? pct(div.pct) : brlCurto(div.valor_rs),
             esc((div.rotulo_pct || 'da receita corrente líquida').replace(/^%\s*/, '')), [div.valor_rs != null && div.pct != null ? brlCurto(div.valor_rs) : '', tend].filter(Boolean).join(' · '))
+        : divFed
+        ? cartaz(`Dívida${gl('DIVIDA_CONSOLIDADA')}`, brlCurto(divFed.valor_rs), 'dívida consolidada bruta do Governo Federal', 'Tesouro Nacional (SICONFI, RREO Anexo 06). A proporção do PIB depende do Banco Central, que não respondeu agora.')
         : cartaz('Dívida', '—', 'Sem dado neste período.', '');
     const cLrf = p
         ? cartaz(`Folha de pessoal${gl('LRF')}`, pct(p.pct_rcl), `da receita · limite de alerta ${pct(p.limite_alerta)} · limite legal ${pct(p.limite_maximo)}`,
@@ -802,11 +805,13 @@ async function carregar() {
         return;
     }
     $('estado').innerHTML = '<p class="text-sm text-slate-500" aria-live="polite"><i class="fa-solid fa-spinner fa-spin mr-1.5" aria-hidden="true"></i>Consultando o Tesouro Nacional…</p>';
+    const aviso = setTimeout(() => { $('estado').querySelector('p')?.insertAdjacentHTML('beforeend', ' <span class="text-xs">A primeira consulta pode levar até 30 segundos; as próximas são rápidas.</span>'); }, 5000);
     try {
         E.dados = await api('/api/economia/' + encodeURIComponent(ente));
+        clearTimeout(aviso);
         $('estado').innerHTML = '';
         desenhar();
-    } catch (e) { $('estado').innerHTML = mensagemErro(e); }
+    } catch (e) { clearTimeout(aviso); $('estado').innerHTML = mensagemErro(e); }
 }
 /* ---------- calculadora: para onde vai o meu imposto ---------- */
 const carregando = (t) => `<p class="text-sm text-slate-500"><i class="fa-solid fa-spinner fa-spin mr-1.5" aria-hidden="true"></i>${esc(t)}</p>`;
