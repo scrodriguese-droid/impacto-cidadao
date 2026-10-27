@@ -926,6 +926,21 @@ button.norma-todas[aria-pressed="true"] { background: var(--fg) !important; colo
 .sf-gaveta .radar-item-valor small { font: 600 .72rem/1 var(--fonte-texto); letter-spacing: 0; }
 .escudo { border: 2px solid var(--line); border-left: 8px solid var(--vermelho); padding: .85rem 1.1rem; margin-bottom: 1.1rem; font-size: .9rem; line-height: 1.5; max-width: 76ch; }
 .escudo-rot { font: 700 .72rem/1.2 var(--fonte-texto); letter-spacing: .08em; text-transform: uppercase; color: var(--vermelho); margin-bottom: .3rem; }
+/* conceitos explicados (o que é / para que serve) e esquema do fluxo */
+details.conceito { border-top: 1px solid var(--line); max-width: 76ch; }
+details.conceito:last-of-type { border-bottom: 1px solid var(--line); }
+details.conceito > summary { padding: .6rem 0 !important; cursor: pointer; font: 700 .92rem/1.3 var(--fonte-texto); text-decoration: none !important; }
+details.conceito p { font-size: .86rem; line-height: 1.55; margin: 0 0 .5rem; }
+details.conceito h5 { font: 800 .7rem/1.3 var(--fonte-texto); letter-spacing: .1em; text-transform: uppercase; margin: .9rem 0 .3rem; }
+.conceito-lista { list-style: none; padding: 0; margin: 0 0 .8rem; display: grid; gap: .45rem; font-size: .84rem; line-height: 1.5; }
+.conceito-passos { margin: .4rem 0 0 1.2rem; padding: 0; display: grid; gap: .45rem; font-size: .86rem; line-height: 1.5; max-width: 76ch; }
+.esq { display: flex; flex-wrap: wrap; align-items: stretch; gap: .5rem; margin-top: .5rem; }
+.esq-no { border: 2px solid var(--line); padding: .55rem .8rem; display: grid; gap: .1rem; text-align: center; font-size: .8rem; flex: 1 1 9rem; }
+.esq-no span { font-size: .7rem; color: var(--muted); }
+.esq-no--fim { background: var(--vermelho); color: #fff; border-color: var(--vermelho); }
+.esq-no--fim span { color: #fff; }
+.esq-seta { align-self: center; font-weight: 800; }
+@media (max-width: 640px) { .esq-seta { flex: 1 0 100%; text-align: center; transform: rotate(90deg); } }
 .notas-tec { margin-top: 1.4rem; border: 1px solid var(--line); padding: .2rem .9rem; }
 .notas-tec > summary { padding: .6rem 0 !important; cursor: pointer; font: 700 .8rem/1.3 var(--fonte-texto); letter-spacing: .02em; text-transform: none; }
 .notas-tec ul { list-style: none; padding: 0 0 .9rem; display: grid; gap: .6rem; font-size: .8rem; line-height: 1.5; color: var(--muted); max-width: 80ch; }

@@ -309,6 +309,59 @@ const fluxoXEstoque = `<details class="mt-3"><summary class="text-sm">Entenda a 
         <p><b>Estoque: o tamanho acumulado da dívida.</b> É o “saldo devedor do financiamento da sua casa”. Mesmo que tenha sobrado dinheiro no mês, o financiamento continua existindo e rendendo juros.</p>
         <p>O déficit aumenta o estoque da dívida, mas o estoque também cresce sozinho por causa dos juros e, na parcela atrelada ao câmbio, da variação do dólar.</p></div></details>`;
 
+/* ----- “Entenda cada conceito”: o que é e para que serve, termo a termo ----- */
+const conceito = (nome, oQue, paraQue, extra = '') => `<details class="conceito"><summary>${nome}</summary>
+    <p><b>O que é:</b> ${oQue}</p><p><b>Para que serve:</b> ${paraQue}</p>${extra}</details>`;
+const lista = (itens) => `<ul class="conceito-lista">${itens.map(([t, d]) => `<li><b>${t}.</b> ${d}</li>`).join('')}</ul>`;
+const OPERACOES_CREDITO = lista([
+    ['Emissão de títulos públicos', 'o governo vende títulos (Tesouro Selic, Tesouro IPCA, prefixados) a pessoas, fundos, bancos e investidores estrangeiros. O dinheiro que entra é dívida nova, não imposto.'],
+    ['Empréstimos de organismos internacionais', 'recursos do Banco Mundial (BIRD), do BID ou da CAF, em geral para infraestrutura e saneamento.'],
+    ['Refinanciamento (rolagem da dívida)', 'emitir dívida nova para pagar os títulos que vencem no mês, empurrando o principal para anos à frente.'],
+    ['Antecipação de Receita Orçamentária (ARO)', 'empréstimo de curto prazo, comum em estados e municípios, para cobrir falta temporária de caixa até a entrada dos impostos previstos.'],
+]);
+const OPERACOES_ATIVAS = lista([
+    ['Rendimento do caixa', 'o Tesouro mantém reservas aplicadas na Conta Única junto ao Banco Central, e os juros dessas disponibilidades são receita financeira.'],
+    ['Retorno de empréstimos concedidos', 'quando BNDES, Caixa ou Banco do Brasil devolvem ao Tesouro o principal e os juros de recursos que ele lhes emprestou.'],
+    ['Reservas internacionais', 'compra, venda e remuneração de títulos estrangeiros e moedas. São ativos do Banco Central, não do orçamento.'],
+    ['Venda de participações e ativos financeiros', 'ações de estatais ou cotas de fundos. O valor apurado é financeiro e não entra na conta primária.'],
+]);
+const ESQUEMA_FLUXO = `<div class="esq" role="img" aria-label="Receitas primárias menos despesas primárias dão o resultado primário; somando os juros chega-se ao déficit nominal, que alimenta a dívida bruta e a líquida">
+    <div class="esq-no"><b>Receitas primárias</b><span>menos</span><b>Despesas primárias</b></div><span class="esq-seta" aria-hidden="true">→</span>
+    <div class="esq-no"><b>Resultado primário</b><span>mais</span><b>Juros (JLD)</b></div><span class="esq-seta" aria-hidden="true">→</span>
+    <div class="esq-no"><b>Déficit nominal</b><span>necessidade de financiamento</span></div><span class="esq-seta" aria-hidden="true">→</span>
+    <div class="esq-no esq-no--fim"><b>Estoque da dívida</b><span>bruta (DCB) e líquida (DCL)</span></div></div>`;
+function conceitosFluxo() {
+    return `<h4 class="sf-gaveta-sub">Entenda cada conceito</h4>
+        ${conceito('Receita primária', 'tudo o que o governo arrecada e que não vem de operação financeira ou de crédito: tributos, contribuições sociais, taxas e venda de bens e serviços.',
+            'mostra a capacidade de arrecadação que nasce da atividade econômica real da sociedade, sem contar dívida nova.')}
+        ${conceito('Operações financeiras e de crédito', 'movimentações em que o governo capta recursos no mercado, mexe no caixa, gere ativos ou concede financiamentos. Não são dinheiro novo vindo de imposto ou de produção: são movimentos de dívida, capital ou patrimônio financeiro, e por isso ficam fora da conta primária.',
+            'separar o que o governo arrecada do que ele toma emprestado ou aplica. Elas têm duas pontas:',
+            `<h5>1. Crédito: o governo como devedor</h5>${OPERACOES_CREDITO}<h5>2. Operações ativas: o governo como credor ou investidor</h5>${OPERACOES_ATIVAS}`)}
+        ${conceito('Despesa primária', 'todos os gastos para manter a máquina pública e prestar serviços: saúde, educação, segurança, salários, aposentadorias, benefícios sociais e obras.',
+            'mostra quanto custam a administração e as políticas públicas antes de contar os juros da dívida.')}
+        ${conceito('Déficit (ou superávit) primário', 'quando a despesa primária supera a receita primária no período: receitas menos gastos correntes, sem juros. Se a receita for maior, é superávit.',
+            'mede a saúde básica do orçamento. Um déficit primário indica que o governo não arrecadou nem o suficiente para pagar o próprio funcionamento e precisou emitir dívida para isso.')}
+        ${conceito('Juros da dívida (JLD)', 'o total de juros apropriados sobre o estoque da dívida no período. Aqui, é o déficit nominal menos o primário.',
+            'revela o custo de carregar e rolar a dívida. Mostra o peso direto que a taxa básica de juros (Selic) e a inflação têm sobre as contas públicas.')}
+        ${conceito('Déficit nominal', 'o resultado total das contas: déficit primário somado aos juros da dívida.',
+            'indica a necessidade de financiamento do setor público (NFSP): o quanto precisa ser coberto com dívida nova ou com o caixa para honrar todas as obrigações do período.')}
+        <p class="ficha-nota mt-3"><b>Como o dinheiro corre:</b></p>${ESQUEMA_FLUXO}
+        <p class="ficha-nota mt-3"><b>Como ler, em três passos</b></p>
+        <ol class="conceito-passos">
+            <li><b>Sustentabilidade do dia a dia.</b> Compare a receita primária com a despesa primária. Se o resultado for deficitário, a máquina gera um rombo operacional por si só.</li>
+            <li><b>Peso do encargo financeiro.</b> Some os juros ao resultado primário para chegar ao déficit nominal. Isso mostra se o endividamento vem de gastos correntes com a população ou da despesa com juros de dívidas antigas.</li>
+            <li><b>Trajetória da dívida.</b> O déficit nominal é somado ao estoque da dívida. Se a dívida cresce mais rápido que o PIB, o caminho fica insustentável: é preciso cortar gasto, aumentar receita ou aceitar juros mais altos para vender títulos.</li>
+        </ol>`;
+}
+function conceitosEstoque() {
+    return `<h4 class="sf-gaveta-sub">Entenda cada conceito</h4>
+        ${conceito('Dívida bruta (Dívida Consolidada Bruta, DCB)', 'a soma de todos os compromissos, títulos emitidos e empréstimos do governo ainda em aberto, sem descontar nenhum caixa ou haver.',
+            'mede a exposição total do setor público a credores e investidores. É a medida mais acompanhada pelo mercado e pelas agências de classificação de risco, em geral em proporção do PIB.')}
+        ${conceito('Dívida líquida (Dívida Consolidada Líquida, DCL; no Banco Central, DLSP)', 'a dívida bruta menos os haveres e o caixa do Estado, como as reservas cambiais e os depósitos no Banco Central.',
+            'mostra o passivo líquido do setor público: quanto restaria a pagar se o governo usasse todos os seus ativos financeiros para quitar dívidas.')}
+        <p class="ficha-nota mt-3">O déficit nominal do ano alimenta o estoque da dívida bruta e da líquida. Veja o esquema completo na gaveta “Fluxo do ano”.</p>`;
+}
+
 function gaveta(id, num, titulo, resumo, corpo) {
     return `<details class="sf-gaveta" data-gaveta="${id}" ${E.gavetas[id] ? 'open' : ''}>
         <summary><span class="sf-gaveta-num">${num}</span><span class="sf-gaveta-tit">${titulo}</span><span class="sf-gaveta-res">${resumo}</span></summary>
@@ -335,14 +388,15 @@ function fluxoFederal(d) {
         <div class="mt-5">${caixasDeficits(d)}</div>
         ${peso ? `<h4 class="sf-gaveta-sub">Peso na economia · último exercício fechado</h4>${peso}` : ''}
         ${areas ? `<h4 class="sf-gaveta-sub">Para onde vai a despesa</h4>${areas}` : ''}
-        ${significa('Mesmo sem contar os juros, o governo pode gastar mais do que arrecada (déficit primário); com os juros da dívida, o buraco costuma aumentar (déficit nominal).')}`;
+        ${significa('Mesmo sem contar os juros, o governo pode gastar mais do que arrecada (déficit primário); com os juros da dívida, o buraco costuma aumentar (déficit nominal).')}
+        ${conceitosFluxo()}`;
 }
 function estoqueFederal(d) {
     const e = d.estoque_federal;
     if (!e) return vazioDet('O Tesouro Nacional não trouxe o saldo da dívida neste período.');
     return `${listaDet(e.itens.map((i) => itemDet(esc(i.nome), brlCurto(i.valor_rs), esc(i.nota || ''))))}
         <p class="radar-legenda">${esc(e.periodo.charAt(0).toUpperCase() + e.periodo.slice(1))}.</p>${significa(SIG_ESTOQUE)}
-        <p class="ficha-nota mt-2"><a class="underline" href="financiamento.html">Ver a Dívida Pública Federal em detalhe: títulos, vencimentos e custo →</a></p>${fluxoXEstoque}`;
+        <p class="ficha-nota mt-2"><a class="underline" href="financiamento.html">Ver a Dívida Pública Federal em detalhe: títulos, vencimentos e custo →</a></p>${fluxoXEstoque}${conceitosEstoque()}`;
 }
 
 /* ----- séries do Banco Central (consolidado) e do próprio ente (estados e municípios): a mesma forma {fluxo, estoque, custo} ----- */
@@ -357,7 +411,8 @@ function fluxoDeSerie(x, d) {
     const areas = d ? listaDet([fatia(d.nivel1.saude, 'Saúde'), fatia(d.nivel1.educacao, 'Educação')].filter(Boolean)) : '';
     return `${listaDet(fl)}${cu.length ? `<h4 class="sf-gaveta-sub">A carga dos juros</h4>${listaDet(cu)}` : ''}${extra}
         ${areas ? `<h4 class="sf-gaveta-sub">Para onde vai a despesa</h4>${areas}` : ''}
-        ${significa(esc(x.fluxo.leitura || 'Compara o que entrou e o que saiu no período.'))}${significa(esc(x.custo.leitura || ''))}`;
+        ${significa(esc(x.fluxo.leitura || 'Compara o que entrou e o que saiu no período.'))}${significa(esc(x.custo.leitura || ''))}
+        ${conceitosFluxo()}`;
 }
 function estoqueDeSerie(x) {
     if (!x.estoque.itens.length) return vazioDet('Sem saldo da dívida neste período.');
@@ -367,7 +422,7 @@ function estoqueDeSerie(x) {
         [i.valor_rs != null && i.pct != null ? brlCurto(i.valor_rs) : '',
          i.variacao_pp != null ? `${i.variacao_pp >= 0 ? '+' : '−'}${pc(Math.abs(i.variacao_pp), 1)} p.p. em 12 meses` : '',
          i.variacao_pct != null ? `${i.variacao_pct >= 0 ? '+' : '−'}${pc(Math.abs(i.variacao_pct), 1)}% desde 31/12` : ''].filter(Boolean).join(' · ')));
-    return `${listaDet(it)}${seta ? `<p class="text-sm font-semibold mt-3">${seta}</p>` : ''}${significa(SIG_ESTOQUE)}${fluxoXEstoque}`;
+    return `${listaDet(it)}${seta ? `<p class="text-sm font-semibold mt-3">${seta}</p>` : ''}${significa(SIG_ESTOQUE)}${fluxoXEstoque}${conceitosEstoque()}`;
 }
 
 /* ----- reservas internacionais (Banco Central): ficam nas duas visões, com a fonte própria nas notas técnicas ----- */
