@@ -47,7 +47,7 @@ const PLANOS_VISIVEIS = false;
 const NAVEGACAO = [
     { id: 'inicio', paginas: ['inicio'], href: 'index.html', icone: 'fa-house', rotulo: 'Início' },
     { id: 'quem', paginas: ['servicos', 'quem'], href: 'servicos.html', icone: 'fa-magnifying-glass-location', rotulo: 'Quem resolve o quê?' },
-    { id: 'orcamento', paginas: ['economia', 'fiscal', 'orcamento', 'tesouro', 'tributos', 'simuladores', 'macro', 'financiamento', 'ciclo'], href: 'economia.html', icone: 'fa-coins', rotulo: 'Orçamento e contas públicas' },
+    { id: 'orcamento', paginas: ['economia', 'fiscal', 'orcamento', 'tesouro', 'tributos', 'simuladores', 'macro', 'divida-historico', 'financiamento', 'ciclo'], href: 'economia.html', icone: 'fa-coins', rotulo: 'Orçamento e contas públicas' },
     { id: 'politicas', paginas: ['politicas'], href: 'politicas.html', icone: 'fa-landmark', rotulo: 'Leis e projetos' },
     { id: 'poderes', paginas: ['executivo', 'bancadas', 'judiciario', 'controle'], href: 'poderes.html', icone: 'fa-building-columns', rotulo: 'Conheça os três poderes' },
     { id: 'planos', paginas: ['planos', 'analise-planos', 'resultados'], href: PLANOS_VISIVEIS ? 'planos.html' : 'resultados.html', icone: 'fa-flag', rotulo: 'Partidos e cadeiras' },
@@ -84,6 +84,7 @@ const APROFUNDAR = {
         { id: 'tributos', pai: 'economia', href: 'tributos.html', rotulo: 'Inventário de tributos' },
         { id: 'simuladores', pai: 'economia', href: 'simuladores.html', rotulo: 'Simuladores de IR e MEI' },
         { id: 'macro', pai: 'fiscal', href: 'macro.html', rotulo: 'Indicadores' },
+        { id: 'divida-historico', pai: 'fiscal', href: 'divida-historico.html', rotulo: 'História da dívida' },
         { id: 'financiamento', pai: 'fiscal', href: 'financiamento.html', rotulo: 'Dívida e títulos' },
         { id: 'ciclo', pai: 'fiscal', href: 'ciclo.html', rotulo: 'Ciclo econômico' },
     ],

@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>História da dívida pública — ImpactoCidadão</title>
+    <meta name="description" content="A trajetória da dívida pública brasileira desde 2001, com dados oficiais do Banco Central e do Tesouro Nacional e os marcos que explicam as altas e as quedas.">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="assets/tailwind-config.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <style>
+        body { font-family: 'Inter', system-ui, sans-serif; }
+        :focus-visible { outline: 2px solid #A92823; outline-offset: 2px; }
+        .grafico { position: relative; height: 380px; }
+        @media (max-width: 640px) { .grafico { height: 320px; } }
+        .filtro[aria-pressed="true"] { background: var(--ativo); color: var(--ativo-fg); }
+        .tipo-queda { --cor-marco: #0f766e; }
+        .tipo-alta { --cor-marco: #A92823; }
+        .tipo-pico { --cor-marco: #111111; }
+        .marco-btn { border-left: 6px solid var(--cor-marco); text-align: left; }
+        .marco-btn[aria-pressed="true"] { background: var(--ativo); color: var(--ativo-fg); }
+    </style>
+    <link rel="stylesheet" href="assets/brutalista.css">
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-full flex flex-col transition-colors duration-200">
+
+<a href="#conteudo" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-white focus:text-slate-900 focus:p-3">Ir para o conteúdo</a>
+<div id="cabecalho"></div>
+
+<main id="conteudo" class="max-w-6xl mx-auto px-4 sm:px-6 pt-6 pb-10 flex-grow w-full space-y-8">
+    <header>
+        <h1 class="text-2xl font-extrabold tracking-tight">História da dívida pública do Brasil</h1>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1" style="max-width:70ch">A dívida subiu e desceu por motivos diferentes ao longo dos anos. Aqui estão as séries oficiais de longo prazo e, no gráfico, os marcos que ajudam a entender cada virada. Os números vêm direto do Banco Central e do Tesouro Nacional.</p>
+    </header>
+
+    <div id="estado" aria-live="polite"></div>
+
+    <section id="painel" class="hidden space-y-5" aria-labelledby="h-grafico">
+        <h2 id="h-grafico" class="sr-only">Gráfico da dívida pública</h2>
+        <p id="resumo" class="text-sm" style="max-width:75ch"></p>
+
+        <div class="flex flex-wrap items-center gap-x-6 gap-y-3">
+            <div role="group" aria-label="Período mostrado" class="flex flex-wrap gap-1.5" id="filtros"></div>
+            <div class="flex items-center gap-2 text-sm">
+                <label for="de" class="font-semibold">De</label><input id="de" type="month" class="border border-slate-300 dark:border-slate-600 rounded-lg px-2 py-1 bg-white dark:bg-slate-800">
+                <label for="ate" class="font-semibold">até</label><input id="ate" type="month" class="border border-slate-300 dark:border-slate-600 rounded-lg px-2 py-1 bg-white dark:bg-slate-800">
+            </div>
+        </div>
+        <fieldset class="flex flex-wrap gap-x-5 gap-y-2 text-sm">
+            <legend class="sr-only">Séries no gráfico</legend>
+            <div id="seletorSeries" class="flex flex-wrap gap-x-5 gap-y-2"></div>
+        </fieldset>
+
+        <div id="faixaNumeros" class="grid grid-cols-1 sm:grid-cols-3 gap-3"></div>
+
+        <div class="grafico"><canvas id="grafico" role="img" aria-label="Gráfico da dívida pública brasileira ao longo do tempo, com marcos históricos clicáveis"></canvas></div>
+        <p class="text-xs text-slate-500">As faixas coloridas mostram os períodos explicados abaixo: <span class="font-semibold" style="color:#A92823">vermelho</span> = a dívida subiu, <span class="font-semibold" style="color:#0f766e">verde</span> = caiu, <span class="font-semibold">preto</span> = pico. Clique nos losangos do gráfico ou nos botões abaixo.</p>
+
+        <div id="marcoDetalhe" class="hidden border-2 border-slate-900 dark:border-slate-200 bg-white dark:bg-slate-800 p-5" role="region" aria-live="polite" aria-label="Detalhe do marco"></div>
+    </section>
+
+    <section id="secMarcos" class="hidden" aria-labelledby="h-marcos">
+        <h2 id="h-marcos" class="text-xl font-bold">Por que a dívida subiu e caiu</h2>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1" style="max-width:70ch">Cada período abaixo leva o gráfico para o intervalo certo e mostra o que mudou nos números. O texto explica as causas mais citadas; os números ao lado vêm da série oficial.</p>
+        <div id="listaMarcos" class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+    </section>
+
+    <section id="secComoLer" class="hidden" aria-labelledby="h-ler">
+        <h2 id="h-ler" class="text-xl font-bold">Três jeitos de medir a dívida</h2>
+        <div id="indicadores" class="mt-3 grid grid-cols-1 md:grid-cols-3 gap-3"></div>
+        <ul id="notas" class="mt-4 text-xs text-slate-600 dark:text-slate-400 space-y-1 list-disc pl-5" style="max-width:80ch"></ul>
+        <details class="sanfona mt-4"><summary>Ver os números em tabela (fim de cada ano)</summary><div id="tabela" class="mt-3 overflow-x-auto"></div></details>
+        <p id="fonte" class="text-[11px] text-slate-400 mt-4"></p>
+    </section>
+</main>
+
+<div id="rodape"></div>
+
+<script src="assets/comum.js"></script>
+<script>
+renderLayout('divida-historico');
+
+const H = { dados: null, ini: 0, fim: 0, grafico: null, series: { dbgg: true, dlsp: true, dpf: false }, marco: null, filtro: 'tudo' };
+const mesNum = (m) => Number(m.slice(0, 4)) * 12 + Number(m.slice(5, 7)) - 1;      // AAAA-MM -> número contínuo
+const numMes = (n) => `${Math.floor(n / 12)}-${String(n % 12 + 1).padStart(2, '0')}`;
+const MESES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+const rotMes = (m) => `${MESES[Number(m.slice(5, 7)) - 1]}/${m.slice(0, 4)}`;
+const pc = (v) => `${Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`;
+const pp = (v) => `${v > 0 ? '+' : v < 0 ? '−' : ''}${Math.abs(v).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} p.p.`;
+const ESTILO = {
+    dbgg: { rotulo: 'Dívida bruta (% do PIB)', eixo: 'y', cor: () => (ehEscuro() ? '#EDEBE6' : '#000000'), largura: 3 },
+    dlsp: { rotulo: 'Dívida líquida (% do PIB)', eixo: 'y', cor: () => '#A92823', largura: 3 },
+    dpf: { rotulo: 'Dívida Pública Federal (R$ bilhões, eixo à direita)', eixo: 'y1', cor: () => '#7a7a72', largura: 2, tracejado: [6, 4] },
+};
+const COR_MARCO = { queda: '#0f766e', alta: '#A92823', pico: '#111111' };
+const ehEscuro = () => document.documentElement.classList.contains('dark');
+const corTexto = () => (ehEscuro() ? '#cbd5e1' : '#33332F');
+const corGrade = () => (ehEscuro() ? 'rgba(148,163,184,.2)' : 'rgba(0,0,0,.12)');
+const serie = (id) => (H.dados.series[id] || []);
+const valorEm = (id, mes) => { const p = serie(id).find((q) => q.mes === mes); return p ? p.valor : null; };
+
+/* Onde fica o losango de cada marco: o pico no mês mais alto; os demais, no fim do período. */
+function ancora(m) {
+    const id = m.id === 'reservas' ? 'dlsp' : 'dbgg';
+    const med = m.medidas.find((x) => x.serie === id) || m.medidas[0];
+    if (!med) return null;
+    const mes = m.tipo === 'pico' ? med.maximo.mes : med.ate.mes;
+    return { serie: id, mes, valor: valorEm(id, mes) ?? med.ate.valor };
+}
+
+/* ---------- período e filtros ---------- */
+const FILTROS = [['tudo', 'Tudo'], ['20', '20 anos'], ['10', '10 anos'], ['5', '5 anos']];
+function limitesDados() {
+    const ids = Object.keys(H.series).filter((k) => H.series[k] && serie(k).length);
+    const todos = (ids.length ? ids : ['dbgg']).flatMap((k) => serie(k));
+    return [Math.min(...todos.map((p) => mesNum(p.mes))), Math.max(...todos.map((p) => mesNum(p.mes)))];
+}
+function aplicarFiltro(f) {
+    H.filtro = f; H.marco = null;
+    const [min, max] = [Math.min(...['dbgg', 'dlsp'].map((k) => mesNum(serie(k)[0].mes))), mesNum(H.dados.ultimo_mes)];
+    H.fim = max;
+    H.ini = f === 'tudo' ? min : Math.max(min, max - Number(f) * 12);
+    desenhar();
+}
+function desenharFiltros() {
+    $('filtros').innerHTML = FILTROS.map(([id, r]) => `<button type="button" data-f="${id}" aria-pressed="${H.filtro === id}"
+        class="filtro px-3.5 py-2 rounded-xl text-sm font-semibold border border-slate-300 dark:border-slate-600">${r}</button>`).join('');
+    $('de').value = numMes(H.ini); $('ate').value = numMes(H.fim);
+}
+$('filtros').addEventListener('click', (ev) => { const b = ev.target.closest('[data-f]'); if (b) aplicarFiltro(b.dataset.f); });
+function lerPersonalizado() {
+    const a = $('de').value, b = $('ate').value;
+    if (!a || !b) return;
+    let [i, f] = [mesNum(a), mesNum(b)];
+    if (i > f) [i, f] = [f, i];
+    H.ini = i; H.fim = f; H.filtro = 'personalizado'; H.marco = null; desenhar();
+}
+$('de').addEventListener('change', lerPersonalizado); $('ate').addEventListener('change', lerPersonalizado);
+
+function desenharSeletor() {
+    const ids = ['dbgg', 'dlsp', ...(serie('dpf').length ? ['dpf'] : [])];
+    $('seletorSeries').innerHTML = ids.map((id) => `<label class="inline-flex items-center gap-2 cursor-pointer">
+        <input type="checkbox" data-s="${id}" ${H.series[id] ? 'checked' : ''} class="w-4 h-4">
+        <span class="inline-block w-5 h-1.5" style="background:${ESTILO[id].cor()}${ESTILO[id].tracejado ? ';opacity:.7' : ''}"></span><span>${esc(ESTILO[id].rotulo)}</span></label>`).join('');
+}
+$('seletorSeries').addEventListener('change', (ev) => {
+    const c = ev.target.closest('[data-s]'); if (!c) return;
+    H.series[c.dataset.s] = c.checked;
+    if (!Object.values(H.series).some(Boolean)) { H.series[c.dataset.s] = true; c.checked = true; }
+    desenhar();
+});
+
+/* ---------- gráfico ---------- */
+const plugins = {
+    id: 'faixasMarcos',
+    beforeDatasetsDraw(chart) {
+        const { ctx, chartArea: a, scales: { x } } = chart;
+        if (!a || !H.dados) return;
+        ctx.save();
+        for (const m of H.dados.marcos) {
+            const x0 = Math.max(a.left, x.getPixelForValue(mesNum(m.inicio))), x1 = Math.min(a.right, x.getPixelForValue(mesNum(m.fim)));
+            if (x1 <= x0) continue;
+            const ativo = H.marco === m.id;
+            ctx.fillStyle = COR_MARCO[m.tipo] + (ativo ? '38' : '17');
+            ctx.fillRect(x0, a.top, x1 - x0, a.bottom - a.top);
+        }
+        ctx.restore();
+    },
+};
+function datasets() {
+    const dentro = (p) => mesNum(p.mes) >= H.ini && mesNum(p.mes) <= H.fim;
+    const ds = [];
+    for (const id of ['dbgg', 'dlsp', 'dpf']) {
+        if (!H.series[id] || !serie(id).length) continue;
+        const e = ESTILO[id];
+        ds.push({ label: e.rotulo, data: serie(id).filter(dentro).map((p) => ({ x: mesNum(p.mes), y: p.valor })), yAxisID: e.eixo,
+            borderColor: e.cor(), backgroundColor: e.cor(), borderWidth: e.largura, borderDash: e.tracejado || [], pointRadius: 0, pointHitRadius: 6, tension: 0, parsing: false, order: 2 });
+    }
+    const alvo = ['dbgg', 'dlsp'].find((k) => H.series[k]);
+    const pts = H.dados.marcos.map((m) => {
+        const a = ancora(m); if (!a) return null;
+        const id = H.series[a.serie] ? a.serie : alvo; if (!id) return null;
+        const v = valorEm(id, a.mes); const n = mesNum(a.mes);
+        return v == null || n < H.ini || n > H.fim ? null : { x: n, y: v, marco: m };
+    }).filter(Boolean);
+    ds.push({ label: 'Marcos históricos', data: pts, yAxisID: 'y', showLine: false, pointStyle: 'rectRot', pointRadius: 10, pointHoverRadius: 13, borderWidth: 2,
+        borderColor: ehEscuro() ? '#0E0E0D' : '#FFFFFF', backgroundColor: pts.map((p) => COR_MARCO[p.marco.tipo]), parsing: false, order: 1, marcos: true });
+    return ds;
+}
+function textoTooltipMarco(m) {
+    const med = m.medidas[0];
+    return [m.rotulo, `${rotMes(m.inicio)} a ${rotMes(m.fim)}`, ...(med ? [`${med.nome}: ${pc(med.de.valor)} → ${pc(med.ate.valor)} (${pp(med.variacao_pp)})`] : []), 'Clique para ler a explicação'];
+}
+function desenharGrafico() {
+    const ds = datasets();
+    const temDpf = H.series.dpf && serie('dpf').length;
+    const span = H.fim - H.ini, passo = span > 240 ? 60 : span > 120 ? 24 : span > 60 ? 12 : span > 24 ? 6 : 3;
+    const opcoes = {
+        responsive: true, maintainAspectRatio: false, animation: false, layout: { padding: { right: 14, top: 8 } }, interaction: { mode: 'nearest', axis: 'x', intersect: false },
+        scales: {
+            x: { type: 'linear', min: H.ini, max: H.fim, ticks: { stepSize: passo, color: corTexto(), maxRotation: 0,
+                callback: (v) => (passo >= 12 ? Math.floor(v / 12) : rotMes(numMes(v))) }, grid: { color: corGrade() } },
+            y: { position: 'left', title: { display: true, text: '% do PIB', color: corTexto() }, ticks: { color: corTexto(), callback: (v) => `${v}%` }, grid: { color: corGrade() } },
+            ...(temDpf ? { y1: { position: 'right', title: { display: true, text: 'R$ bilhões', color: corTexto() }, ticks: { color: corTexto(), callback: (v) => v.toLocaleString('pt-BR') }, grid: { drawOnChartArea: false } } } : {}),
+        },
+        plugins: {
+            legend: { display: false },
+            tooltip: { callbacks: {
+                title: (it) => (it[0] ? rotMes(numMes(Math.round(it[0].parsed.x))) : ''),
+                label: (c) => (c.dataset.marcos ? textoTooltipMarco(c.raw.marco)
+                    : `${c.dataset.label.replace(/ \(.*\)/, '')}: ${c.dataset.yAxisID === 'y1' ? `R$ ${c.parsed.y.toLocaleString('pt-BR')} bi` : pc(c.parsed.y)}`),
+            } },
+        },
+        onClick: (ev, _el, chart) => {
+            const hit = chart.getElementsAtEventForMode(ev, 'nearest', { intersect: true }, true).find((e) => chart.data.datasets[e.datasetIndex].marcos);
+            if (hit) abrirMarco(chart.data.datasets[hit.datasetIndex].data[hit.index].marco.id, false);
+        },
+        onHover: (ev, el, chart) => {
+            const sobre = chart.getElementsAtEventForMode(ev, 'nearest', { intersect: true }, true).some((e) => chart.data.datasets[e.datasetIndex].marcos);
+            ev.native.target.style.cursor = sobre ? 'pointer' : 'default';
+        },
+    };
+    if (H.grafico) { H.grafico.destroy(); }
+    H.grafico = new Chart($('grafico'), { type: 'line', data: { datasets: ds }, options: opcoes, plugins: [plugins] });
+}
+
+/* ---------- números do período e marcos ---------- */
+function faixaNumeros() {
+    const id = H.series.dbgg ? 'dbgg' : 'dlsp';
+    const pts = serie(id).filter((p) => mesNum(p.mes) >= H.ini && mesNum(p.mes) <= H.fim);
+    if (pts.length < 2) { $('faixaNumeros').innerHTML = ''; return; }
+    const a = pts[0], b = pts[pts.length - 1], mx = pts.reduce((r, p) => (p.valor > r.valor ? p : r)), mn = pts.reduce((r, p) => (p.valor < r.valor ? p : r));
+    const nome = id === 'dbgg' ? 'Dívida bruta' : 'Dívida líquida';
+    const caixa = (t, v, s) => `<div class="border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 p-4"><p class="text-xs font-bold uppercase tracking-wide">${esc(t)}</p><p class="text-2xl font-black mt-1">${esc(v)}</p><p class="text-xs text-slate-500 mt-1">${esc(s)}</p></div>`;
+    $('faixaNumeros').innerHTML = caixa(`${nome} no fim do período`, pc(b.valor), `${rotMes(b.mes)} · do PIB`)
+        + caixa('Variação no período mostrado', pp(b.valor - a.valor), `de ${pc(a.valor)} (${rotMes(a.mes)}) a ${pc(b.valor)} (${rotMes(b.mes)})`)
+        + caixa('Ponto mais alto e mais baixo', `${pc(mx.valor)} e ${pc(mn.valor)}`, `${rotMes(mx.mes)} e ${rotMes(mn.mes)}`);
+}
+function medidasHtml(m) {
+    return m.medidas.map((x) => `<li><b>${esc(x.nome)}:</b> ${esc(pc(x.de.valor))} em ${esc(rotMes(x.de.mes))} → ${esc(pc(x.ate.valor))} em ${esc(rotMes(x.ate.mes))} <b>(${esc(pp(x.variacao_pp))})</b>${m.tipo === 'pico' && x.serie === 'dbgg' ? `; máximo de ${esc(pc(x.maximo.valor))} em ${esc(rotMes(x.maximo.mes))}` : ''}</li>`).join('');
+}
+function abrirMarco(id, zoom) {
+    const m = H.dados.marcos.find((q) => q.id === id); if (!m) return;
+    H.marco = id;
+    if (zoom) {
+        const folga = 12;
+        H.ini = Math.max(mesNum(serie('dlsp')[0].mes), mesNum(m.inicio) - folga); H.fim = Math.min(mesNum(H.dados.ultimo_mes), mesNum(m.fim) + folga); H.filtro = 'personalizado';
+    }
+    desenhar();
+    const box = $('marcoDetalhe');
+    box.className = `border-2 border-slate-900 dark:border-slate-200 bg-white dark:bg-slate-800 p-5 tipo-${m.tipo}`;
+    box.style.borderLeft = `10px solid ${COR_MARCO[m.tipo]}`;
+    box.innerHTML = `<p class="text-xs font-bold uppercase tracking-wide" style="color:${COR_MARCO[m.tipo]}">${esc(rotMes(m.inicio))} a ${esc(rotMes(m.fim))}</p>
+        <h3 class="text-lg font-extrabold mt-1">${esc(m.rotulo)}</h3>
+        <p class="text-sm mt-2" style="max-width:75ch">${esc(m.o_que_houve)}</p>
+        <p class="text-sm mt-2" style="max-width:75ch"><b>Para não ler errado:</b> ${esc(m.ressalva)}</p>
+        <p class="text-xs font-bold uppercase tracking-wide mt-3">O que os números mostram</p>
+        <ul class="text-sm mt-1 space-y-1 list-disc pl-5">${medidasHtml(m)}</ul>
+        <div class="mt-3 flex flex-wrap gap-2">${zoom ? '' : `<button type="button" id="verPeriodo" class="px-3.5 py-2 text-sm font-semibold border border-slate-900 dark:border-slate-200">Ver só este período</button>`}
+        <button type="button" id="fecharMarco" class="px-3.5 py-2 text-sm font-semibold border border-slate-300 dark:border-slate-600">Fechar</button></div>`;
+    $('verPeriodo')?.addEventListener('click', () => abrirMarco(id, true));
+    $('fecharMarco').addEventListener('click', () => { H.marco = null; box.classList.add('hidden'); desenhar(); });
+    if (!zoom) box.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+}
+function desenharMarcos() {
+    $('listaMarcos').innerHTML = H.dados.marcos.map((m) => {
+        const med = m.medidas[0];
+        return `<button type="button" data-m="${esc(m.id)}" aria-pressed="${H.marco === m.id}" class="marco-btn tipo-${esc(m.tipo)} border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 p-4 block w-full">
+            <span class="block text-xs font-bold uppercase tracking-wide">${esc(rotMes(m.inicio))} a ${esc(rotMes(m.fim))}</span>
+            <span class="block font-extrabold mt-0.5">${esc(m.rotulo)}</span>
+            ${med ? `<span class="block text-sm mt-1">${esc(med.nome)}: ${esc(pp(med.variacao_pp))}</span>` : ''}</button>`;
+    }).join('');
+}
+$('listaMarcos').addEventListener('click', (ev) => { const b = ev.target.closest('[data-m]'); if (b) { abrirMarco(b.dataset.m, true); $('h-grafico').scrollIntoView({ behavior: 'smooth' }); } });
+
+function desenhar() {
+    desenharFiltros(); desenharSeletor(); faixaNumeros(); desenharGrafico(); desenharMarcos();
+}
+
+function desenharExplicacoes() {
+    $('indicadores').innerHTML = H.dados.indicadores.map((i) => `<div class="border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 p-4">
+        <p class="font-extrabold">${esc(i.nome)}</p>
+        <p class="text-sm mt-1">${esc(i.o_que_mede)}</p>
+        <p class="text-xs text-slate-500 mt-2">${esc(i.unidade)} · mensal · dados desde ${esc(rotMes(i.inicio))}${i.codigo_sgs ? ` · SGS ${i.codigo_sgs}` : ' · Tesouro Nacional'}</p></div>`).join('');
+    $('notas').innerHTML = H.dados.notas.map((n) => `<li>${esc(n)}</li>`).join('')
+        + (H.dados.erros || []).map((n) => `<li>${esc(n)}</li>`).join('');
+    const anos = []; const ultimo = H.dados.ultimo_mes;
+    for (let a = Number(serie('dlsp')[0].mes.slice(0, 4)); a <= Number(ultimo.slice(0, 4)); a++) anos.push(a === Number(ultimo.slice(0, 4)) ? ultimo : `${a}-12`);
+    const cel = (v, f) => `<td class="py-1.5 pr-6 text-right">${v == null ? '—' : esc(f(v))}</td>`;
+    $('tabela').innerHTML = `<table class="text-sm"><thead><tr class="text-left border-b border-slate-300 dark:border-slate-600"><th class="py-1.5 pr-6">Mês</th><th class="py-1.5 pr-6 text-right">Bruta (% do PIB)</th><th class="py-1.5 pr-6 text-right">Líquida (% do PIB)</th>${serie('dpf').length ? '<th class="py-1.5 pr-6 text-right">DPF (R$ bi)</th>' : ''}</tr></thead>
+        <tbody>${anos.map((m) => `<tr class="border-b border-slate-200 dark:border-slate-700"><td class="py-1.5 pr-6 font-semibold">${esc(rotMes(m))}</td>${cel(valorEm('dbgg', m), pc)}${cel(valorEm('dlsp', m), pc)}${serie('dpf').length ? cel(valorEm('dpf', m), (v) => v.toLocaleString('pt-BR')) : ''}</tr>`).join('')}</tbody></table>`;
+    const f = H.dados.fonte;
+    $('fonte').innerHTML = `Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(f.url))}">${esc(f.nome)}</a>. Consultado em ${esc(fmtDataHora(H.dados.consultado_em))}. A explicação dos marcos é nossa leitura de contexto; as medidas ao lado dela são da série oficial.`;
+}
+
+(async function iniciar() {
+    $('estado').innerHTML = '<p class="text-sm text-slate-500" aria-live="polite"><i class="fa-solid fa-spinner fa-spin mr-1.5" aria-hidden="true"></i>Consultando o Banco Central e o Tesouro Nacional… a primeira consulta pode levar até 30 segundos.</p>';
+    try {
+        H.dados = await api('/api/macro/historico-divida');
+        $('estado').innerHTML = '';
+        $('resumo').textContent = H.dados.resumo;
+        ['painel', 'secMarcos', 'secComoLer'].forEach((id) => $(id).classList.remove('hidden'));
+        desenharExplicacoes();
+        aplicarFiltro('tudo');
+        document.getElementById('btnTema')?.addEventListener('click', () => setTimeout(desenhar, 50));
+        document.getElementById('btnTemaMovel')?.addEventListener('click', () => setTimeout(desenhar, 50));
+    } catch (e) { $('estado').innerHTML = mensagemErro(e); }
+})();
+</script>
+</body>
+</html>
