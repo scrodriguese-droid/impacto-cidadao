@@ -91,6 +91,47 @@ function blocoPresidente(c) {
             <p class="text-sm font-bold"><a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(p.url))}">${esc(p.nome)}</a>${sigla ? ` <span class="font-medium text-slate-500">(${esc(sigla)})</span>` : ''}</p></div></div>`;
 }
 
+// Como a presidência é escolhida, quem compõe a Mesa e o que o presidente faz (regras fixas da Constituição e dos regimentos).
+function blocoMesa(c) {
+    const cam = c.id === 'camara';
+    const eleitores = cam ? '513 deputados' : '81 senadores';
+    const quem = cam ? 'deputados' : 'senadores';
+    const card = 'rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4';
+    return `<details class="mt-4 ${card}">
+        <summary class="cursor-pointer font-semibold">Como a presidência ${cam ? 'da Câmara' : 'do Senado'} é escolhida e o que a Mesa faz</summary>
+        <div class="mt-4 grid md:grid-cols-3 gap-4 text-sm">
+            <div>
+                <p class="text-xs font-semibold text-slate-500 uppercase">Como é a eleição</p>
+                <ul class="mt-1 list-disc pl-5 space-y-1 text-slate-600 dark:text-slate-400">
+                    <li><b>Mandato de 2 anos.</b> O presidente e a Mesa Diretora são eleitos para um biênio.</li>
+                    <li><b>Quando:</b> em 1º de fevereiro, no início da legislatura (ano seguinte à eleição geral) e de novo dois anos depois, para o segundo biênio. A próxima é em 1º de fevereiro de 2027.</li>
+                    <li><b>Quem vota:</b> só os próprios parlamentares (${eleitores}), em votação secreta e presencial. O eleitor comum não vota.</li>
+                    <li><b>Reeleição:</b> a Constituição veda a recondução ao mesmo cargo na eleição imediatamente seguinte, dentro da mesma legislatura.</li>
+                </ul>
+            </div>
+            <div>
+                <p class="text-xs font-semibold text-slate-500 uppercase">Quem compõe a Mesa Diretora (11 cargos)</p>
+                <ul class="mt-1 list-disc pl-5 space-y-1 text-slate-600 dark:text-slate-400">
+                    <li>1 Presidente</li>
+                    <li>1º e 2º Vice-Presidentes</li>
+                    <li>1º, 2º, 3º e 4º Secretários</li>
+                    <li>4 Suplentes de Secretário</li>
+                </ul>
+                <p class="mt-2 text-xs text-slate-500">Todos são ${quem} em exercício, escolhidos pelos colegas. A Mesa dirige os trabalhos e a administração da Casa.</p>
+            </div>
+            <div>
+                <p class="text-xs font-semibold text-slate-500 uppercase">O que faz o presidente</p>
+                <ul class="mt-1 list-disc pl-5 space-y-1 text-slate-600 dark:text-slate-400">
+                    <li>Define a pauta e a ordem dos projetos a serem votados.</li>
+                    <li>Lidera as sessões no plenário.</li>
+                    <li>Substitui o Presidente da República na linha de sucessão constitucional.</li>
+                    <li>Representa o Poder Legislativo perante os demais poderes.</li>
+                </ul>
+            </div>
+        </div>
+    </details>`;
+}
+
 function blocoCasa(c) {
     const lim = c.limiares.map((l) => `
         <div class="rounded-xl border border-slate-200 dark:border-slate-700 p-3" data-lim="${esc(c.id)}:${esc(l.id)}">
@@ -113,6 +154,7 @@ function blocoCasa(c) {
         <p class="text-sm text-slate-500 dark:text-slate-400">${num(c.cadeiras_ocupadas)} parlamentares em exercício, em ${num(c.n_partidos)} partidos${c.cadeiras_sem_titular ? `; ${num(c.cadeiras_sem_titular)} cadeira(s) sem titular` : ''}.
             Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(c.fonte.url_pagina))}">${esc(c.fonte.nome)}</a>.</p>
         ${blocoPresidente(c)}
+        ${blocoMesa(c)}
         <div class="mt-5 grid sm:grid-cols-3 gap-4">${lim}</div>
         <div class="mt-6">
             <p class="text-sm font-semibold">Some partidos e veja quanto falta</p>
