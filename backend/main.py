@@ -43,6 +43,7 @@ import servicos
 import economia
 import eleicoes
 import equipamentos
+import analise_dimensoes
 import historico_divida
 import macro
 import maturidade
@@ -895,6 +896,14 @@ def macro_reservas() -> dict:
 def macro_historico_divida() -> dict:
     try:
         return historico_divida.historico()
+    except Exception as exc:  # noqa: BLE001
+        raise _fonte_macro_indisponivel(exc) from exc
+
+
+@router.get("/macro/dimensoes", tags=["macro"])
+def macro_dimensoes() -> dict:
+    try:
+        return analise_dimensoes.dimensoes()
     except Exception as exc:  # noqa: BLE001
         raise _fonte_macro_indisponivel(exc) from exc
 
