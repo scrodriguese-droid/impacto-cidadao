@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Democracia — ImpactoCidadão</title>
+    <meta name="description" content="Como especialistas do projeto V-Dem avaliam a democracia brasileira desde 1945: eleições, separação de poderes, liberdades, corrupção e igualdade.">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="assets/tailwind-config.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Inter', system-ui, sans-serif; }
+        :focus-visible { outline: 2px solid #A92823; outline-offset: 2px; }
+        #conteudo a.sem-sublinhado { text-decoration: none !important; }
+        details.info > summary { list-style: none; cursor: pointer; text-transform: none; letter-spacing: normal; font-size: inherit; font-weight: 600; }
+        details.info > summary::-webkit-details-marker { display: none; }
+        details.info > summary::before, details.info[open] > summary::before { content: none; }
+        .graf svg { display: block; touch-action: pan-y; }
+        .graf .cursor { stroke: currentColor; stroke-width: 1; opacity: 0; pointer-events: none; }
+        .faixa-fixa { position: sticky; top: 0; z-index: 20; }
+    </style>
+    <link rel="stylesheet" href="assets/brutalista.css">
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-full flex flex-col transition-colors duration-200">
+
+<a href="#conteudo" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-white focus:text-slate-900 focus:p-3">Ir para o conteúdo</a>
+<div id="cabecalho"></div>
+
+<main id="conteudo" class="max-w-5xl mx-auto px-4 sm:px-6 pt-6 pb-10 flex-grow w-full">
+    <h1 class="text-2xl font-extrabold tracking-tight">Democracia</h1>
+    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Como especialistas avaliam a democracia no Brasil, ano a ano desde 1945, segundo o projeto <b>V-Dem (Varieties of Democracy)</b>, da Universidade de Gotemburgo (Suécia).</p>
+
+    <details class="info mt-4 rounded-2xl border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/40 p-4 text-sm">
+        <summary><i class="fa-solid fa-circle-info mr-2" aria-hidden="true"></i>Como ler: o que estes números são e o que não são</summary>
+        <ul class="mt-3 list-disc pl-5 space-y-1.5 text-slate-700 dark:text-slate-300">
+            <li><b>São avaliações de especialistas, não contagens.</b> O V-Dem reúne mais de 4 mil pesquisadores no mundo, geralmente cinco ou mais por país e ano, e combina as respostas num modelo estatístico. Por isso há uma <b>faixa de incerteza</b> em volta da linha: quando duas faixas se sobrepõem, a diferença pode ser ruído.</li>
+            <li><b>Cada ano vale para o ano inteiro</b> e descreve o país, não um partido ou uma pessoa. As faixas cinzas do fundo mostram quem presidia, só como referência de tempo. Elas <b>não provam</b> que o governo causou a mudança.</li>
+            <li><b>Duas escalas.</b> Os <i>índices</i> vão de 0 a 1. Os <i>indicadores</i> individuais vão de 0 a 4, e cada card diz o que significam o 0 e o 4.</li>
+            <li><b>Atenção à direção.</b> Na maioria dos cards, valor maior é melhor para a democracia. Em corrupção e polarização política, valor maior é pior. Cada card traz a etiqueta “maior = melhor” ou “maior = pior”.</li>
+            <li><b>O ranking compara com 179 países no último ano</b>, e 1º lugar é o melhor resultado. Diferenças de poucas posições costumam estar dentro da margem de erro.</li>
+            <li>Os dados antigos (antes de 1990) dependem de reconstrução histórica e são menos precisos. Em redes sociais e desinformação, a série só começa em 2000.</li>
+            <li>O ImpactoCidadão não classifica partidos nem candidatos. Esta página só mostra o que o V-Dem publica, com o código da variável original para quem quiser conferir.</li>
+        </ul>
+    </details>
+
+    <section class="mt-6" aria-labelledby="tGeral">
+        <h2 id="tGeral" class="text-lg font-bold"><i class="fa-solid fa-scale-balanced mr-2 text-brand-600" aria-hidden="true"></i>Visão geral</h2>
+        <div id="regime" class="mt-3"></div>
+        <div id="cardsGeral" class="mt-4 grid gap-4 md:grid-cols-2"></div>
+    </section>
+
+    <section class="mt-8" aria-labelledby="tComp">
+        <h2 id="tComp" class="text-lg font-bold"><i class="fa-solid fa-earth-americas mr-2 text-brand-600" aria-hidden="true"></i>Brasil, vizinhos e o mundo</h2>
+        <p class="text-xs text-slate-500 mt-1">A linha grossa é o Brasil. A média mundial é a média simples de todos os países com dado em cada ano.</p>
+        <div id="chipsComp" class="mt-3 flex flex-wrap gap-1.5" role="group" aria-label="Escolher o índice da comparação"></div>
+        <div class="mt-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-2 sm:p-3">
+            <div class="overflow-x-auto"><div id="grafComp" class="graf min-w-[640px]"></div></div>
+            <p id="roComp" class="text-xs text-slate-600 dark:text-slate-300 mt-2 min-h-[2.5rem]" aria-live="polite">Passe o mouse (ou o dedo) sobre o gráfico para ver os valores de cada ano.</p>
+            <div id="legComp" class="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-[11px]"></div>
+        </div>
+    </section>
+
+    <section class="mt-8" aria-labelledby="tEixos">
+        <h2 id="tEixos" class="text-lg font-bold"><i class="fa-solid fa-sitemap mr-2 text-brand-600" aria-hidden="true"></i>Os eixos da democracia brasileira</h2>
+        <div class="faixa-fixa -mx-4 sm:-mx-6 px-4 sm:px-6 py-2 mt-3 bg-slate-50/95 dark:bg-slate-900/95 backdrop-blur border-b border-slate-200 dark:border-slate-700">
+            <div id="chipsEixo" class="flex gap-1.5 overflow-x-auto md:flex-wrap pb-1" role="group" aria-label="Escolher o eixo"></div>
+            <div class="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-slate-500">
+                <span class="font-semibold">Período:</span>
+                <span id="chipsPeriodo" class="flex flex-wrap gap-1.5" role="group" aria-label="Escolher o período"></span>
+            </div>
+        </div>
+        <p id="descEixo" class="text-sm text-slate-600 dark:text-slate-300 mt-3"></p>
+        <div id="cardsEixo" class="mt-3 grid gap-4 md:grid-cols-2"></div>
+        <p class="mt-3 text-[11px] text-slate-500">Linhas tracejadas: <span id="legEventos"></span>.</p>
+    </section>
+
+    <section class="mt-8 text-xs text-slate-500" aria-labelledby="tFontes">
+        <h2 id="tFontes" class="text-sm font-bold text-slate-700 dark:text-slate-300">Fonte e método</h2>
+        <ul class="mt-1 list-disc pl-5 space-y-1">
+            <li id="citacao"></li>
+            <li><a class="sem-sublinhado font-semibold text-brand-700 dark:text-brand-400 hover:underline" target="_blank" rel="noopener" href="https://v-dem.net/data/the-v-dem-dataset/">Conjunto de dados V-Dem (download aberto)</a> · <a class="sem-sublinhado font-semibold text-brand-700 dark:text-brand-400 hover:underline" target="_blank" rel="noopener" href="https://v-dem.net/documents/">Livro de códigos e metodologia</a> · <a class="sem-sublinhado font-semibold text-brand-700 dark:text-brand-400 hover:underline" target="_blank" rel="noopener" href="https://github.com/vdeminstitute/vdemdata">Pacote vdemdata (R)</a></li>
+            <li>O V-Dem não tem API de consulta. Os dados vêm do arquivo CSV “Country-Year: V-Dem Full+Others”, processado pelo script <code>scripts/gerar_vdem.py</code>, que gera <code>assets/vdem.json</code> a cada nova versão (normalmente em março).</li>
+            <li>Os índices de 0 a 1 são as estimativas centrais do V-Dem; os indicadores de 0 a 4 usam a versão “_osp”, que converte o resultado do modelo de volta à escala original das perguntas. As faixas de incerteza são o intervalo de credibilidade de 68% publicado pelo V-Dem (“codelow” e “codehigh”).</li>
+        </ul>
+    </section>
+</main>
+
+<div id="rodape"></div>
+
+<script src="assets/comum.js"></script>
+<script>
+renderLayout('democracia');
+
+const D = { v: null, gov: [], eixo: 'poderes', ini: 1945, comp: 'v2x_polyarchy' };
+const CH = {};          // gráficos desenhados, para a leitura ao passar o mouse
+const PERIODOS = [[1945, 'Desde 1945'], [1985, 'Desde a redemocratização (1985)'], [2010, 'Desde 2010']];
+// marcos factuais, só como referência de tempo
+const EVENTOS = [[1964, 'golpe militar (1964)'], [1985, 'fim da ditadura (1985)'], [1988, 'Constituição (1988)'], [2016, 'impeachment de Dilma Rousseff (2016)'], [2023, '8 de janeiro (2023)']];
+const CURTO = { dutra: 'Dutra', vargas3: 'Vargas', jk: 'JK', jango: 'Jango', castelo: 'Castelo', costa: 'Costa e Silva', medici: 'Médici', geisel: 'Geisel', figueiredo: 'Figueiredo', sarney: 'Sarney', collor: 'Collor', itamar: 'Itamar', fhc: 'FHC', lula1: 'Lula', dilma: 'Dilma', temer: 'Temer', bolsonaro: 'Bolsonaro', lula2: 'Lula' };
+const COR_REGIME = { 0: '#1e293b', 1: '#64748b', 2: '#7dd3fc', 3: '#0369a1' };
+const CORES = { 'Brasil': '#A92823', 'Argentina': '#2563eb', 'Chile': '#0891b2', 'Colômbia': '#ca8a04', 'México': '#7c3aed', 'Uruguai': '#059669', 'Estados Unidos': '#64748b', 'Média mundial': '#0f172a' };
+
+const num = (x, d = 2) => x == null ? '—' : x.toLocaleString('pt-BR', { minimumFractionDigits: d, maximumFractionDigits: d });
+const fmt = (ind, x) => num(x, ind.tipo === 'idx' ? 2 : 1);
+const ano0 = (s) => +s.slice(0, 4);
+
+/* ---------- gráfico de linhas em SVG ---------- */
+// series: [{nome, pts:[[ano,valor,baixo,alto]], cor, grosso, tracejado}]
+function grafico(id, series, { escala, x0, x1, W = 600, Hh = 210, gov = false, rotulos = false, fmtv }) {
+    const ML = 34, MR = 10, MT = rotulos ? 20 : 8, MB = 22, PW = W - ML - MR, PH = Hh - MT - MB;
+    const X = (a) => ML + (a - x0) / (x1 - x0) * PW;
+    const Y = (v) => MT + (1 - (v - escala[0]) / (escala[1] - escala[0])) * PH;
+    let s = `<svg viewBox="0 0 ${W} ${Hh}" class="w-full h-auto" role="img" font-family="Inter, system-ui, sans-serif" aria-label="Gráfico de linhas de ${x0} a ${x1}">`;
+    // governos (faixas alternadas)
+    D.gov.forEach((p, i) => {
+        const a = Math.max(ano0(p.ini) + 0, x0), b = Math.min(p.fim ? ano0(p.fim) + (+p.fim.slice(5, 7) > 6 ? 1 : 0) : x1, x1);
+        if (b <= a) return;
+        s += `<rect x="${X(a)}" y="${MT}" width="${X(b) - X(a)}" height="${PH}" fill="#64748b" opacity="${i % 2 ? .05 : .12}"><title>${esc(p.nome)} (${ano0(p.ini)}–${p.fim ? ano0(p.fim) : 'hoje'})</title></rect>`;
+        if (rotulos && X(b) - X(a) > 40) s += `<text x="${(X(a) + X(b)) / 2}" y="${MT - 7}" text-anchor="middle" font-size="9" fill="currentColor" opacity=".7">${esc(CURTO[p.id] || '')}</text>`;
+    });
+    // grade horizontal e eixo Y
+    const passos = escala[1] === 1 ? [0, .5, 1] : [0, 1, 2, 3, 4];
+    passos.forEach((v) => {
+        s += `<line x1="${ML}" x2="${W - MR}" y1="${Y(v)}" y2="${Y(v)}" stroke="currentColor" opacity=".12"/>
+            <text x="${ML - 5}" y="${Y(v) + 3}" text-anchor="end" font-size="9" fill="currentColor" opacity=".7">${String(v).replace('.', ',')}</text>`;
+    });
+    // eixo X
+    const passoAno = x1 - x0 > 50 ? 10 : x1 - x0 > 25 ? 5 : 2;
+    for (let a = Math.ceil(x0 / passoAno) * passoAno; a <= x1; a += passoAno) {
+        s += `<line x1="${X(a)}" x2="${X(a)}" y1="${MT + PH}" y2="${MT + PH + 3}" stroke="currentColor" opacity=".4"/>
+            <text x="${X(a)}" y="${Hh - 6}" text-anchor="middle" font-size="9" fill="currentColor" opacity=".7">${a}</text>`;
+    }
+    // marcos
+    EVENTOS.forEach(([a, t]) => {
+        if (a < x0 || a > x1) return;
+        s += `<line x1="${X(a)}" x2="${X(a)}" y1="${MT}" y2="${MT + PH}" stroke="#A92823" stroke-width="1" stroke-dasharray="3 3" opacity=".55"><title>${esc(t)}</title></line>`;
+    });
+    // faixa de incerteza (só da série em destaque) e linhas
+    series.forEach((se) => {
+        const pts = se.pts.filter((p) => p[0] >= x0 && p[0] <= x1);
+        if (!pts.length) return;
+        if (se.banda && pts[0][2] != null) {
+            const topo = pts.map((p) => `${X(p[0])},${Y(p[3])}`), base = pts.slice().reverse().map((p) => `${X(p[0])},${Y(p[2])}`);
+            s += `<polygon points="${topo.concat(base).join(' ')}" fill="${se.cor}" opacity=".18"/>`;
+        }
+        s += `<polyline fill="none" stroke="${se.cor}" stroke-width="${se.grosso ? 2.6 : 1.4}" ${se.tracejado ? 'stroke-dasharray="5 3"' : ''} stroke-linejoin="round" points="${pts.map((p) => `${X(p[0])},${Y(p[1])}`).join(' ')}"/>`;
+    });
+    s += `<line class="cursor" y1="${MT}" y2="${MT + PH}"/></svg>`;
+    CH[id] = { series, x0, x1, W, ML, PW, fmtv };
+    return s;
+}
+
+function leitura(id, ano) {
+    const c = CH[id];
+    const partes = c.series.map((se) => {
+        const p = se.pts.find((q) => q[0] === ano);
+        if (!p) return null;
+        const ic = se.banda && p[2] != null ? ` <span class="opacity-70">(entre ${c.fmtv(p[2])} e ${c.fmtv(p[3])})</span>` : '';
+        return `<span class="whitespace-nowrap"><span class="inline-block w-2 h-2 rounded-full align-middle" style="background:${se.cor}"></span> ${esc(se.nome)}: <b>${c.fmtv(p[1])}</b>${ic}</span>`;
+    }).filter(Boolean);
+    return partes.length ? `<b>${ano}</b> · ${partes.join(' · ')}` : `<b>${ano}</b> · sem dado neste ano`;
+}
+
+// um único ouvinte para todos os gráficos
+function aoMover(ev) {
+    const alvo = ev.target.closest && ev.target.closest('[data-g]');
+    if (!alvo) return;
+    const c = CH[alvo.dataset.g], svg = alvo.querySelector('svg');
+    if (!c || !svg) return;
+    const r = svg.getBoundingClientRect();
+    const xs = (ev.clientX - r.left) / r.width * c.W;
+    const ano = Math.min(c.x1, Math.max(c.x0, Math.round(c.x0 + (xs - c.ML) / c.PW * (c.x1 - c.x0))));
+    const cur = svg.querySelector('.cursor'), px = c.ML + (ano - c.x0) / (c.x1 - c.x0) * c.PW;
+    cur.setAttribute('x1', px); cur.setAttribute('x2', px); cur.style.opacity = .6;
+    const ro = document.getElementById(alvo.dataset.ro);
+    if (ro) ro.innerHTML = leitura(alvo.dataset.g, ano);
+}
+document.addEventListener('pointermove', aoMover);
+document.addEventListener('pointerdown', aoMover);
+
+/* ---------- regime ---------- */
+function desenharRegime() {
+    const v = D.v, a0 = v.ano_ini, a1 = v.ano_fim, W = 1000, ML = 6, PW = W - 2 * ML, w = PW / (a1 - a0 + 1);
+    let s = `<svg viewBox="0 0 ${W} 58" class="w-full h-auto" role="img" aria-label="Tipo de regime do Brasil, ano a ano, de ${a0} a ${a1}" font-family="Inter, system-ui, sans-serif">`;
+    v.regime_serie.forEach(([a, r]) => { s += `<rect x="${ML + (a - a0) * w}" y="6" width="${w + .4}" height="26" fill="${COR_REGIME[r]}"><title>${a}: ${esc(v.regimes[r])}</title></rect>`; });
+    for (let a = 1950; a <= a1; a += 10) s += `<text x="${ML + (a - a0 + .5) * w}" y="48" text-anchor="middle" font-size="10" fill="currentColor" opacity=".7">${a}</text>`;
+    s += '</svg>';
+    const ult = v.regime_serie[v.regime_serie.length - 1];
+    const trocas = []; let ant = null;
+    v.regime_serie.forEach(([a, r]) => { if (r !== ant) trocas.push([a, r]); ant = r; });
+    const resumo = trocas.map(([a, r], i) => `${a}${i < trocas.length - 1 ? '–' + (trocas[i + 1][0] - 1) : ' em diante'}: ${v.regimes[r].toLowerCase()}`).join('; ');
+    $('regime').innerHTML = `<div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-3 sm:p-4">
+        <p class="text-sm"><b>Tipo de regime:</b> em ${ult[0]} o V-Dem classifica o Brasil como <b>${esc(v.regimes[ult[1]].toLowerCase())}</b>.</p>
+        <div class="mt-2 overflow-x-auto"><div class="min-w-[560px]">${s}</div></div>
+        <div class="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-[11px]">${Object.entries(v.regimes).map(([k, n]) => `<span class="inline-flex items-center gap-1.5"><span class="inline-block w-3 h-3 rounded" style="background:${COR_REGIME[k]}"></span>${esc(n)}</span>`).join('')}</div>
+        <details class="info mt-2 text-xs text-slate-600 dark:text-slate-300"><summary class="text-brand-700 dark:text-brand-400">Ver os períodos em texto</summary>
+            <p class="mt-1.5">${esc(resumo)}. Autocracia eleitoral = há eleições, mas sem competição livre; democracia eleitoral = eleições limpas e competitivas; democracia liberal = além disso, direitos individuais e limites ao poder bem protegidos (variável <code>v2x_regime</code>).</p></details></div>`;
+}
+
+/* ---------- cards de indicadores ---------- */
+function card(ind, gid, x0) {
+    const sr = ind.serie, ult = sr[sr.length - 1], ini = Math.max(x0, sr[0][0]);
+    const melhor = ind.alto === 'bom';
+    const tag = melhor
+        ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-200 dark:bg-slate-700">maior = melhor</span>'
+        : '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-200 text-amber-900 dark:bg-amber-900 dark:text-amber-100">maior = pior</span>';
+    const rk = ind.ranking;
+    const posTxt = rk.pos ? `${rk.pos}º entre ${rk.de} países em ${rk.ano}` : '';
+    const f = (x) => fmt(ind, x);
+    const g = grafico(gid, [{ nome: 'Brasil', pts: sr, cor: CORES.Brasil, grosso: true, banda: true }], { escala: ind.escala, x0: ini, x1: D.v.ano_fim, gov: true, fmtv: f });
+    const escalaTxt = ind.tipo === 'idx' ? 'Índice de 0 a 1' : 'Escala de 0 a 4';
+    const anc = ind.ancoras ? `<li><b>0</b> = ${esc(ind.ancoras[0].toLowerCase())}</li><li><b>4</b> = ${esc(ind.ancoras[1].toLowerCase())}</li>` : '';
+    return `<article class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 flex flex-col">
+        <div class="flex items-start justify-between gap-2"><h3 class="text-sm font-extrabold leading-snug">${esc(ind.nome)}</h3>${tag}</div>
+        <p class="text-xs text-slate-600 dark:text-slate-300 mt-1.5">${esc(ind.mede)}</p>
+        <p class="mt-2 flex flex-wrap items-baseline gap-x-2"><span class="text-3xl font-black tabular-nums">${f(ult[1])}</span><span class="text-xs text-slate-500">em ${ult[0]}${ind.tipo === 'osp' ? ' (de 0 a 4)' : ' (de 0 a 1)'}</span></p>
+        <p class="text-[11px] text-slate-500">${esc(posTxt)}${posTxt ? ' · 1º = melhor resultado' : ''}</p>
+        <div class="graf mt-2" data-g="${gid}" data-ro="ro-${gid}">${g}</div>
+        <p id="ro-${gid}" class="text-[11px] text-slate-600 dark:text-slate-300 mt-1 min-h-[2.25rem]" aria-live="polite">Toque ou passe o mouse no gráfico para ver cada ano. Faixa vermelha clara = incerteza.</p>
+        <details class="info mt-1 text-[11px] text-slate-600 dark:text-slate-300"><summary class="text-brand-700 dark:text-brand-400">Como ler esta escala</summary>
+            <ul class="mt-1 list-disc pl-4 space-y-0.5"><li>${escalaTxt}${ind.tipo === 'idx' ? ': 0 é o pior cenário possível e 1 o melhor' + (melhor ? '' : ' (aqui, ao contrário: 1 = mais corrupção)') : ''}.</li>${anc}
+            <li>Código no V-Dem: <code>${esc(ind.var)}</code>${ind.tipo === 'osp' ? ' (versão <code>_osp</code>)' : ''}.</li>${sr[0][0] > 1945 ? `<li>Série disponível a partir de ${sr[0][0]}.</li>` : ''}</ul></details>
+    </article>`;
+}
+
+function desenharGeral() {
+    const e = D.v.eixos.find((x) => x.id === 'geral');
+    $('cardsGeral').innerHTML = e.indicadores.map((ind, i) => card(ind, 'geral' + i, D.ini)).join('');
+}
+
+function desenharEixos() {
+    const eixos = D.v.eixos.filter((x) => x.id !== 'geral');
+    $('chipsEixo').innerHTML = eixos.map((e) => {
+        const on = e.id === D.eixo;
+        return `<button type="button" data-eixo="${esc(e.id)}" aria-pressed="${on}" class="shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold border ${on ? 'bg-brand-600 text-white border-brand-600' : 'border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700'}"><i class="fa-solid ${esc(e.icone)} mr-1.5" aria-hidden="true"></i>${esc(e.nome)}</button>`;
+    }).join('');
+    $('chipsPeriodo').innerHTML = PERIODOS.map(([a, t]) => {
+        const on = a === D.ini;
+        return `<button type="button" data-ini="${a}" aria-pressed="${on}" class="px-2.5 py-1 rounded-full text-[11px] font-semibold border ${on ? 'bg-slate-800 text-white border-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:border-slate-100' : 'border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700'}">${esc(t)}</button>`;
+    }).join('');
+    const e = eixos.find((x) => x.id === D.eixo);
+    $('descEixo').textContent = DESC[e.id] || '';
+    $('cardsEixo').innerHTML = e.indicadores.map((ind, i) => card(ind, 'e-' + e.id + i, D.ini)).join('');
+}
+
+const DESC = {
+    poderes: 'Mede o equilíbrio entre Planalto, Congresso e Judiciário: se o Legislativo fiscaliza, se a Justiça decide com independência e se o Executivo respeita a Constituição.',
+    eleicoes: 'Mede a qualidade do processo eleitoral e do sistema partidário, e o quanto as divergências políticas tensionam a convivência na sociedade.',
+    liberdades: 'Mede a liberdade de expressão, a imprensa, a sociedade civil organizada e o uso de desinformação nas redes por governos e partidos.',
+    corrupcao: 'Mede a corrupção percebida por especialistas e se os servidores públicos aplicam a lei de modo técnico e impessoal. Atenção: nos índices de corrupção, valor maior é pior.',
+    igualdade: 'Mede se direitos, recursos e poder político chegam de modo parecido a todos os grupos sociais, de gênero e de renda.',
+};
+
+/* ---------- comparação ---------- */
+function desenharComparacao() {
+    const v = D.v, nomes = { v2x_polyarchy: 'Democracia eleitoral', v2x_libdem: 'Democracia liberal' };
+    $('chipsComp').innerHTML = Object.keys(nomes).map((k) => {
+        const on = k === D.comp;
+        return `<button type="button" data-comp="${k}" aria-pressed="${on}" class="px-3 py-1.5 rounded-full text-xs font-semibold border ${on ? 'bg-brand-600 text-white border-brand-600' : 'border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700'}">${nomes[k]}</button>`;
+    }).join('');
+    const dados = v.comparacao.indices[D.comp];
+    const series = Object.entries(dados).map(([n, pts]) => ({
+        nome: n, pts: pts.map((p) => [p[0], p[1]]), cor: CORES[n] || '#888',
+        grosso: n === 'Brasil', tracejado: n === 'Média mundial',
+    }));
+    series.sort((a, b) => (a.grosso ? 1 : 0) - (b.grosso ? 1 : 0));
+    $('grafComp').innerHTML = grafico('comp', series, { escala: [0, 1], x0: v.ano_ini, x1: v.ano_fim, W: 1000, Hh: 340, gov: true, rotulos: true, fmtv: (x) => num(x, 2) });
+    $('grafComp').dataset.g = 'comp'; $('grafComp').dataset.ro = 'roComp';
+    $('roComp').innerHTML = leitura('comp', v.ano_fim);
+    $('legComp').innerHTML = series.slice().reverse().map((s) => `<span class="inline-flex items-center gap-1.5"><span class="inline-block w-4 h-0.5" style="background:${s.cor};${s.grosso ? 'height:3px' : ''}"></span>${esc(s.nome)}</span>`).join('');
+}
+
+document.addEventListener('click', (ev) => {
+    const b = ev.target.closest && ev.target.closest('[data-eixo],[data-ini],[data-comp]');
+    if (!b) return;
+    if (b.dataset.eixo) D.eixo = b.dataset.eixo;
+    if (b.dataset.ini) { D.ini = +b.dataset.ini; desenharGeral(); }
+    if (b.dataset.comp) { D.comp = b.dataset.comp; desenharComparacao(); return; }
+    desenharEixos();
+});
+
+(async () => {
+    try {
+        const [rv, rh] = await Promise.all([fetch('assets/vdem.json'), fetch('assets/historia.json')]);
+        if (!rv.ok) throw new Error('HTTP ' + rv.status);
+        D.v = await rv.json();
+        D.gov = rh.ok ? (await rh.json()).presidentes.filter((p) => !p.fim || ano0(p.fim) >= D.v.ano_ini) : [];
+        $('legEventos').textContent = EVENTOS.map(([a, t]) => t).join(' · ');
+        $('citacao').innerHTML = `Dados: V-Dem ${esc(D.v.versao)}, último ano ${D.v.ano_fim}. Coppedge et al., <i>V-Dem Country-Year Dataset</i>; Pemstein et al., <i>V-Dem Working Paper</i> (modelo de medição). Licença Creative Commons, uso com citação.`;
+        desenharRegime(); desenharGeral(); desenharComparacao(); desenharEixos();
+    } catch (e) {
+        $('regime').innerHTML = '<p class="text-sm text-rose-700">Não foi possível carregar os dados do V-Dem agora.</p>';
+    }
+})();
+</script>
+</body>
+</html>

@@ -52,6 +52,7 @@ const NAVEGACAO = [
     { id: 'poderes', paginas: ['executivo', 'bancadas', 'judiciario', 'controle'], href: 'poderes.html', icone: 'fa-building-columns', rotulo: 'Conheça os três poderes' },
     { id: 'planos', paginas: ['planos', 'analise-planos', 'resultados'], href: PLANOS_VISIVEIS ? 'planos.html' : 'resultados.html', icone: 'fa-flag', rotulo: 'Partidos e cadeiras' },
     { id: 'historia', paginas: ['historia'], href: 'historia.html', icone: 'fa-timeline', rotulo: 'História política do Brasil' },
+    { id: 'democracia', paginas: ['democracia'], href: 'democracia.html', icone: 'fa-check-to-slot', rotulo: 'Democracia' },
 ];
 const NAV_GLOSSARIO = { id: 'glossario', paginas: ['glossario'], href: 'glossario.html', icone: 'fa-book', rotulo: 'Glossário' };
 // Subnavegação: cada área do menu tem telas focadas, escolhidas por abas no topo da página.
