@@ -945,3 +945,22 @@ details.conceito h5 { font: 800 .7rem/1.3 var(--fonte-texto); letter-spacing: .1
 .notas-tec > summary { padding: .6rem 0 !important; cursor: pointer; font: 700 .8rem/1.3 var(--fonte-texto); letter-spacing: .02em; text-transform: none; }
 .notas-tec ul { list-style: none; padding: 0 0 .9rem; display: grid; gap: .6rem; font-size: .8rem; line-height: 1.5; color: var(--muted); max-width: 80ch; }
 .notas-tec li b { color: var(--fg); }
+
+/* ---------- análise das dimensões (ciclo e tendência estrutural) ---------- */
+.dim-passos { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--line); }
+.dim-passo { position: relative; padding: .9rem .9rem 1rem; border-left: 1px solid var(--line); border-top: 6px solid var(--cor); display: flex; flex-direction: column; gap: .35rem; font-size: .82rem; line-height: 1.45; }
+.dim-passo:first-child { border-left: 0; }
+.dim-passo b { font: 400 1.15rem/1.1 var(--fonte-titulo); text-transform: uppercase; }
+.dim-num { font: 800 .7rem/1 var(--fonte-texto); letter-spacing: .14em; color: var(--cor); }
+.dim-txt { color: var(--muted); }
+.dim-atual { background: var(--ativo); color: var(--ativo-fg); }
+.dim-atual .dim-txt { color: var(--ativo-fg); opacity: .85; }
+.dim-selo { margin-top: auto; align-self: flex-start; font: 800 .62rem/1 var(--fonte-texto); letter-spacing: .12em; text-transform: uppercase; background: var(--cor); color: #fff; padding: .35rem .5rem; }
+.dim-onde { border: 2px solid var(--line); padding: 1rem 1.1rem; }
+.dim-tl { display: flex; flex-wrap: wrap; gap: 3px; }
+.dim-q { width: 18px; height: 18px; display: inline-block; }
+.dim-card { border: 1px solid var(--line); padding: 1.1rem; border-top: 6px solid #9a9a92; }
+.dim-card.dim-sim { border-top-color: var(--vermelho); }
+.dim-status { font: 800 .64rem/1 var(--fonte-texto); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.dim-sim .dim-status { color: var(--vermelho); }
+@media (max-width: 760px) { .dim-passos { grid-template-columns: 1fr; } .dim-passo { border-left: 0; border-top-width: 6px; } }

@@ -57,6 +57,11 @@
 
     <div id="estado" class="mt-4"></div>
     <div id="painel" class="hidden mt-4 space-y-8"></div>
+    <section id="secDimensoes" class="hidden mt-12" aria-labelledby="tDim">
+        <h2 id="tDim">Análise das dimensões: ciclo e tendência</h2>
+        <p class="text-sm text-slate-500 mt-2" style="max-width:70ch">A mesma economia pode ir bem no trimestre e mal em duas décadas, ou o contrário. Por isso se olha para duas dimensões: o ciclo, de curto e médio prazo, e a tendência estrutural, de longo prazo.</p>
+        <div id="dimensoes" class="mt-4"></div>
+    </section>
     <section id="secMaisFundo" class="hidden mt-12" aria-labelledby="tFundo">
         <h2 id="tFundo">Ir mais fundo</h2>
         <details class="sanfona mt-3"><summary>Ferramentas e telas complementares</summary>
@@ -105,7 +110,9 @@
 
 <div id="rodape"></div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="assets/comum.js"></script>
+<script src="assets/dimensoes.js"></script>
 <script>
 // Duas telas no mesmo arquivo: “Entrada e saída” (padrão) e “Saúde fiscal e dívida” (?aba=fiscal).
 const ABA_FISCAL = new URLSearchParams(location.search).get('aba') === 'fiscal';
@@ -831,6 +838,8 @@ function nivel4(d) {
 function desenhar() {
     const d = E.dados;
     $('secMaisFundo').classList.toggle('hidden', !ABA_FISCAL);
+    $('secDimensoes').classList.toggle('hidden', !ABA_FISCAL);
+    if (ABA_FISCAL && !window.__dimensoes) { window.__dimensoes = true; montarDimensoes('dimensoes'); }
     $('periodoRotulo').textContent = d ? `${d.instituicao || ''}${d.populacao ? ' · ' + Number(d.populacao).toLocaleString('pt-BR') + ' habitantes' : ''} · ${d.periodo.rotulo}` : '';
     const painel = $('painel');
     painel.classList.toggle('hidden', !d);
