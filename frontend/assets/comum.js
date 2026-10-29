@@ -47,7 +47,7 @@ const PLANOS_VISIVEIS = false;
 const NAVEGACAO = [
     { id: 'inicio', paginas: ['inicio'], href: 'index.html', icone: 'fa-house', rotulo: 'Início' },
     { id: 'quem', paginas: ['servicos', 'quem'], href: 'servicos.html', icone: 'fa-magnifying-glass-location', rotulo: 'Quem resolve o quê?' },
-    { id: 'orcamento', paginas: ['economia', 'fiscal', 'orcamento', 'tesouro', 'tributos', 'simuladores', 'macro', 'divida-historico', 'financiamento', 'ciclo'], href: 'economia.html', icone: 'fa-coins', rotulo: 'Orçamento e contas públicas' },
+    { id: 'orcamento', paginas: ['economia', 'fiscal', 'orcamento', 'tesouro', 'guia-tributos', 'tributos', 'simuladores', 'macro', 'divida-historico', 'financiamento', 'ciclo'], href: 'economia.html', icone: 'fa-coins', rotulo: 'Orçamento e contas públicas' },
     { id: 'politicas', paginas: ['politicas'], href: 'politicas.html', icone: 'fa-landmark', rotulo: 'Leis e projetos' },
     { id: 'poderes', paginas: ['executivo', 'bancadas', 'judiciario', 'controle'], href: 'poderes.html', icone: 'fa-building-columns', rotulo: 'Conheça os três poderes' },
     { id: 'planos', paginas: ['planos', 'analise-planos', 'resultados'], href: PLANOS_VISIVEIS ? 'planos.html' : 'resultados.html', icone: 'fa-flag', rotulo: 'Partidos e cadeiras' },
@@ -74,8 +74,9 @@ const SUBNAVEGACAO = {
     orcamento: [
         { id: 'economia', href: 'economia.html', rotulo: '1 · De onde vem e vai' },
         { id: 'orcamento', href: 'orcamento.html', rotulo: '2 · Ciclo e leis' },
-        { id: 'fiscal', href: 'economia.html?aba=fiscal', rotulo: '3 · Saúde fiscal e tributos' },
-        { id: 'tesouro', href: 'tesourometro.html', rotulo: '4 · Tesourômetro' },
+        { id: 'fiscal', href: 'economia.html?aba=fiscal', rotulo: '3 · Saúde fiscal' },
+        { id: 'guia-tributos', href: 'guia-tributos.html', rotulo: '4 · Guia de tributos' },
+        { id: 'tesouro', href: 'tesourometro.html', rotulo: '5 · Tesourômetro' },
     ],
 };
 // Telas de aprofundamento da mesma área: ficam numa linha secundária e acendem a aba a que pertencem.
