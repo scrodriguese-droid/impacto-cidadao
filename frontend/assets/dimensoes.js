@@ -72,9 +72,9 @@ async function montarDimensoes(idDestino) {
     try {
         DIM.dados = await api('/api/macro/dimensoes');
         const d = DIM.dados;
-        alvo.innerHTML = (d.ciclo ? dimCiclo(d.ciclo) : '') + (d.estrutura ? dimEstrutura(d.estrutura) : '')
+        alvo.innerHTML = (d.ciclo ? dimCiclo(d.ciclo) : '') + (d.estrutura ? dimEstrutura(d.estrutura) : '') + (d.periodos ? dimPeriodos(d.periodos) : '')
             + (d.erros.length ? `<ul class="ficha-nota mt-4">${d.erros.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>` : '')
-            + `<p class="text-[11px] text-slate-400 mt-6">Fontes: ${[d.ciclo && d.ciclo.fonte, d.estrutura && d.estrutura.fonte].filter(Boolean).map((f) => `<a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(f.url))}">${esc(f.nome)}</a>`).join(' · ')}. Consultado em ${esc(fmtDataHora(d.consultado_em))}.</p>`;
+            + `<p class="text-[11px] text-slate-400 mt-6">Fontes: ${[d.ciclo && d.ciclo.fonte, d.estrutura && d.estrutura.fonte, d.periodos && d.periodos.fonte].filter(Boolean).map((f) => `<a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(f.url))}">${esc(f.nome)}</a>`).join(' · ')}. Consultado em ${esc(fmtDataHora(d.consultado_em))}.</p>`;
         if (d.estrutura) dimGrafico(d.estrutura);
     } catch (e) { alvo.innerHTML = mensagemErro(e); }
 }
