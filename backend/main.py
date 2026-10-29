@@ -46,6 +46,7 @@ import equipamentos
 import analise_dimensoes
 import historico_divida
 import macro
+import radiografia_periodos
 import maturidade
 import normas
 import orcamento
@@ -903,7 +904,13 @@ def macro_historico_divida() -> dict:
 @router.get("/macro/dimensoes", tags=["macro"])
 def macro_dimensoes() -> dict:
     try:
-        return analise_dimensoes.dimensoes()
+        saida = analise_dimensoes.dimensoes()
+        try:   # a radiografia por período é um complemento: se falhar, o resto da análise continua
+            saida["periodos"] = radiografia_periodos.periodos()
+        except Exception as exc:  # noqa: BLE001
+            log.warning("Radiografia por período indisponível: %s", exc)
+            saida["periodos"] = None
+        return saida
     except Exception as exc:  # noqa: BLE001
         raise _fonte_macro_indisponivel(exc) from exc
 
