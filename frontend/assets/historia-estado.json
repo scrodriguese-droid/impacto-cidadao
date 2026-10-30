@@ -468,8 +468,8 @@
     }
   ],
   "interesses": {
-    "deodoro": "Consolidar a República e dar ao Exército papel político. Dissolveu o Congresso em 1891 e renunciou. Sem equivalente na escala de hoje: reunia liberais, positivistas e civis.",
-    "floriano": "Defender a República contra os monarquistas, com centralização do poder e apoio de militares e setores urbanos. Nacionalismo militar autoritário, que a escala esquerda–direita não descreve.",
+    "deodoro": "Consolidar a República de cima para baixo, dando ao Exército papel político (positivismo centralizador). Dissolveu o Congresso em 1891 e renunciou. Autoritário; no centro do eixo econômico.",
+    "floriano": "Defender a República contra os monarquistas, com centralização do poder e apoio de militares e setores urbanos. Autoritário; no centro do eixo econômico.",
     "prudente": "Interesses dos cafeicultores paulistas e pacificação do país (Canudos, 1897). Liberalismo oligárquico, sem lugar na escala atual.",
     "campos": "Austeridade fiscal e acordo com credores (Funding Loan, 1898), que favoreciam exportadores de café e credores externos. Criou a “política dos governadores”.",
     "rodrigues": "Cafeicultores paulistas, capital estrangeiro e modernização urbana (saneamento do Rio, reforma do porto).",
@@ -482,17 +482,17 @@
     "bernardes": "Ordem oligárquica, com estado de sítio em quase todo o mandato e repressão ao tenentismo. Conservadorismo autoritário na prática.",
     "washington": "Cafeicultores paulistas, rodoviarismo (“governar é abrir estradas”) e estabilidade cambial. Rompeu o revezamento com Minas ao apoiar Júlio Prestes.",
     "junta30": "Transição de poucos dias, sem programa próprio, até a entrega do poder a Vargas.",
-    "vargas1": "Centralização do poder, industrialização e legislação trabalhista, com sindicatos sob tutela do Estado. Nacional-desenvolvimentismo corporativo, que não cabe na escala esquerda–direita.",
+    "vargas1": "Centralização do poder, industrialização e legislação trabalhista, com sindicatos sob tutela do Estado.",
     "vargas2": "Estado Novo: ditadura com censura, repressão a comunistas e integralistas, estatais (CSN, Vale) e a CLT. Corporativismo autoritário.",
     "linhares": "Presidente do STF, assumiu interinamente e conduziu a eleição de 1945.",
-    "vargas3": "Nacionalismo econômico (Petrobras, 1953) e trabalhismo (reajuste do salário mínimo em 1954), contra a oposição da UDN. Varguismo não cabe bem na escala de hoje.",
+    "vargas3": "Nacionalismo econômico (Petrobras, 1953) e trabalhismo (reajuste do salário mínimo em 1954), contra a oposição da UDN.",
     "luz": "Presidente da Câmara, assumiu por três dias e foi afastado por intervenção militar em defesa da posse de JK.",
     "nereu": "Presidente do Senado, assumiu interinamente e garantiu a posse de JK. Postura legalista.",
-    "janio": "Moralização administrativa (a “vassoura”), austeridade cambial e política externa independente, incluindo aproximação com Cuba. Personalismo difícil de enquadrar na escala.",
+    "janio": "Moralização administrativa (a “vassoura”), austeridade cambial e política externa independente, incluindo aproximação com Cuba.",
     "p1": "Sem Congresso: decisões por decreto até a Constituinte de 1890.",
-    "p2": "Bancadas estaduais ligadas às oligarquias, alinhadas à “política dos governadores” e à comissão que reconhecia os eleitos.",
+    "p2": "Manter a “política dos governadores” e o controle das elites agrárias. Direita autoritária e oligárquica: poder regional, voto aberto e fraude.",
     "p3": "Congresso fechado: decisões por decreto do governo.",
-    "p4": "Bancadas estaduais e representação classista (profissional), pela Constituição de 1934.",
+    "p4": "Bancadas estaduais e representação classista (profissional), pela Constituição de 1934. Centro, com regime intermediário.",
     "p5": "Congresso fechado no Estado Novo: governo por decreto."
   }
 }
