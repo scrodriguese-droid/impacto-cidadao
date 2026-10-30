@@ -49,10 +49,11 @@
         <ul class="mt-3 list-disc pl-5 space-y-1.5 text-slate-700 dark:text-slate-300">
             <li><b>Quem governou, datas, partido e como chegou ao cargo</b> são fatos registrados.</li>
             <li><b>A orientação (esquerda, centro, direita) é uma classificação</b> feita pelo ImpactoCidadão a partir da literatura de história e ciência política. Não é um dado oficial e historiadores discordam em vários casos. Os casos mais discutidos levam a marca <span class="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-[11px] font-bold">debatido</span>.</li>
-            <li><b>Antes de 1945 a escala esquerda–direita quase não se aplica</b>: a política girava em torno de oligarquias estaduais, de militares e de Vargas. Por isso esses períodos aparecem como “fora do eixo”, em vez de receber um rótulo forçado. O mesmo vale para o terceiro governo de Vargas (1951–54): o varguismo, de matriz corporativa e nacional-desenvolvimentista, não cabe bem na escala atual, e chamá-lo de centro-esquerda seria anacrônico.</li>
+            <li><b>Cada governo recebe duas marcas</b>: a posição no <b>eixo econômico</b> (esquerda ↔ direita) e a posição no <b>eixo político</b> (autoritário ↔ libertário). O eixo político mede o regime, não a pessoa: <b>autoritário</b> = sem eleições livres, com Congresso fechado ou sob controle, ou repressão a direitos políticos; <b>intermediário</b> = eleições regulares, mas com voto restrito, fraude ou partidos proibidos; <b>libertário</b> = democracia com voto amplo, partidos livres e direitos políticos garantidos (aqui “libertário” é o oposto de autoritário, não o libertarianismo econômico).</li>
+            <li><b>Antes de 1945 o eixo econômico é uma aproximação</b>: a disputa da época era entre militares positivistas, oligarquias federalistas e o varguismo, não entre socialismo e capitalismo. Esses casos levam a marca <span class="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-[11px] font-bold">debatido</span> e o campo “por que esta classificação” explica o critério.</li>
             <li><b>“Maioria do Congresso”</b> descreve o campo que sustentava ou limitava o governo, não o resultado de uma votação. Na ditadura militar o Congresso funcionava sob cassações e fechamentos.</li>
             <li><b>O rótulo é do governo ou da base no período, não de cada pessoa.</b> Não mede se foi um bom ou mau governo.</li>
-            <li><b>A “relação entre os dois” é calculada automaticamente</b> pela distância entre os dois rótulos na escala esquerda–direita (mesmo rótulo = alinhado; um passo = parcialmente; dois ou mais = em tensão). Descreve o encaixe ideológico, não a capacidade de aprovar leis.</li>
+            <li><b>A “relação entre os dois” é calculada automaticamente</b> pela maior distância entre os dois rótulos, no eixo econômico ou no político (mesma posição = alinhado; um passo = parcialmente; dois ou mais = em tensão). Descreve o encaixe ideológico, não a capacidade de aprovar leis. Sem Congresso funcionando, não há comparação.</li>
             <li>Ainda não há aqui a contagem de cadeiras por partido em cada legislatura. Fica como próximo passo, com dados do TSE e da Câmara.</li>
         </ul>
     </details>
@@ -80,7 +81,7 @@
         <p class="text-xs text-slate-500 mt-1">Cada linha é uma posição na escala esquerda–direita. Em cada uma, o bloco de cima é o <b>Executivo</b> e o de baixo é a <b>maioria do Congresso</b>: quando os dois estão na mesma linha, estavam alinhados. Clique em um bloco do Executivo para ir ao cartão do governo.</p>
         <div class="mt-3 overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-2 sm:p-3">
             <div id="grafico" class="min-w-[720px]"></div></div>
-        <p class="mt-2 text-[11px] text-slate-500">A linha “Esquerda” está vazia porque nenhum governo nem maioria do Congresso foi classificado assim; o ponto mais à esquerda usado é o centro-esquerda. A linha “Fora da escala” reúne os períodos em que esquerda e direita não descrevem a política (oligarquias, Vargas, interinos) e os anos sem Congresso.</p>
+        <p class="mt-2 text-[11px] text-slate-500">A linha “Esquerda” está vazia porque nenhum governo nem maioria do Congresso foi classificado assim; o ponto mais à esquerda usado é o centro-esquerda. A linha “Sem Congresso” reúne os anos em que o Congresso estava fechado ou não existia. Passe o mouse sobre um bloco para ver também a posição no eixo político (autoritário, intermediário ou libertário). Antes de 1945, a posição no eixo econômico é uma aproximação.</p>
         <div id="resumoAlinha" class="mt-3"></div>
     </section>
 
@@ -97,7 +98,8 @@
 renderLayout('historia');
 
 const H = { dados: null, fase: '' };
-const ORDEM = ['E', 'CE', 'C', 'CD', 'D', 'FORA', 'SEM'];
+const ORDEM = ['E', 'CE', 'C', 'CD', 'D', 'SEM'];
+const SOC = { A: 0, M: 1, L: 2 };
 const POS = { E: 0, CE: 1, C: 2, CD: 3, D: 4 };
 const dt = (s) => new Date(s + 'T00:00:00Z').getTime();
 const fim = (x) => (x.fim ? dt(x.fim) : Date.now());
@@ -113,9 +115,9 @@ const ALINHA = {
     tensao: ['Em tensão', 'bg-rose-100 text-rose-900 dark:bg-rose-950 dark:text-rose-200'],
     na: ['Não se aplica', 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200'],
 };
-function alinhamento(exec, parl) {
-    if (!(exec in POS) || !(parl in POS)) return 'na';
-    const d = Math.abs(POS[exec] - POS[parl]);
+function alinhamento(a, b) {
+    if (!(a.eixo in POS) || !(b.eixo in POS)) return 'na';
+    const d = Math.max(Math.abs(POS[a.eixo] - POS[b.eixo]), Math.abs(SOC[a.social] - SOC[b.social]));
     return d === 0 ? 'alinhado' : d === 1 ? 'parcial' : 'tensao';
 }
 const sobreposicao = (p, x) => Math.min(fim(p), fim(x)) - Math.max(dt(p.ini), dt(x.ini));
@@ -124,22 +126,24 @@ function parlamentoDe(p) {
 }
 
 const GRADE = 'md:grid md:grid-cols-[5.5rem_minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.1fr)_1rem] md:items-center md:gap-x-3';
-const CURTO = { FORA: 'Fora do eixo', SEM: 'Sem Congresso' };
+const CURTO = { SEM: 'Sem Congresso' };
+const SOCCLS = { A: 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900', M: 'bg-slate-300 text-slate-900 dark:bg-slate-600 dark:text-white', L: 'bg-white text-slate-900 dark:bg-slate-800 dark:text-slate-100 ring-1 ring-slate-400' };
+const pilSoc = (x) => { const D = H.dados || E.hist; return x && x.social && D ? `<span class="pil ${SOCCLS[x.social]}" title="Eixo político: ${esc(D.social_desc[x.social])}">${esc(D.social[x.social])}</span>` : ''; };
 const pilula = (eixo, texto, deb) => `<span class="pil eixo-${esc(eixo)}" title="${esc(texto)}${deb ? ' (classificação debatida entre historiadores)' : ''}">${esc(CURTO[eixo] || texto)}${deb ? ' *' : ''}</span>`;
 
 function linha(p) {
     const D = H.dados, parl = parlamentoDe(p), dom = parl[0], outros = parl.slice(1);
-    const al = dom ? alinhamento(p.eixo, dom.eixo) : 'na';
+    const al = dom ? alinhamento(p, dom) : 'na';
     const [alNome, alCls] = ALINHA[al];
     const frase = dom && al !== 'na'
-        ? `Executivo de ${D.eixos[p.eixo].toLowerCase()} e maioria do Congresso de ${D.eixos[dom.eixo].toLowerCase()}.`
-        : 'A comparação não se aplica: pelo menos um dos lados não cabe na escala esquerda–direita ou o Congresso não funcionava.';
+        ? `Executivo de ${D.eixos[p.eixo].toLowerCase()} (${D.social[p.social].toLowerCase()}) e maioria do Congresso de ${D.eixos[dom.eixo].toLowerCase()} (${D.social[dom.social].toLowerCase()}).`
+        : 'A comparação não se aplica: o Congresso não estava funcionando.';
     return `<details class="linha border-b border-slate-200 dark:border-slate-700" id="gov-${esc(p.id)}">
         <summary class="px-3 py-2.5 flex flex-wrap items-center gap-x-3 gap-y-1.5 ${GRADE} hover:bg-slate-100 dark:hover:bg-slate-800/60" aria-label="${esc(p.nome)}, ${esc(anos(p))}: abrir detalhes">
             <span class="text-xs font-bold text-brand-700 dark:text-brand-400 tabular-nums">${esc(anos(p))}</span>
             <span class="min-w-0 basis-full md:basis-auto text-sm"><b class="font-extrabold">${esc(p.nome)}</b> <span class="text-xs text-slate-500">${esc(p.partido)}</span></span>
-            <span>${pilula(p.eixo, D.eixos[p.eixo], p.debatido)}</span>
-            <span>${dom ? pilula(dom.eixo, D.eixos[dom.eixo], dom.debatido) : '<span class="text-xs text-slate-500">Sem dados</span>'}</span>
+            <span>${pilula(p.eixo, D.eixos[p.eixo], p.debatido)} ${pilSoc(p)}</span>
+            <span>${dom ? pilula(dom.eixo, D.eixos[dom.eixo], dom.debatido) + ' ' + pilSoc(dom) : '<span class="text-xs text-slate-500">Sem dados</span>'}</span>
             <span><span class="pil ${alCls}">${esc(alNome)}</span></span>
             <i class="seta fa-solid fa-chevron-right text-[10px] text-slate-400 ml-auto transition-transform" aria-hidden="true"></i></summary>
         <div class="px-3 pb-4 pt-1 text-sm grid gap-3 md:grid-cols-2">
@@ -187,11 +191,11 @@ document.addEventListener('click', (ev) => {
 
 /* ---------- gráfico: Executivo × Congresso na escala esquerda–direita ---------- */
 const COR = { E: '#6d28d9', CE: '#c4b5fd', C: '#cbd5e1', CD: '#99f6e4', D: '#0f766e' };
-const LINHAS = ['D', 'CD', 'C', 'CE', 'E', 'FORA'];
+const LINHAS = ['D', 'CD', 'C', 'CE', 'E', 'SEM'];
 function desenharGrafico() {
     const D = H.dados, W = 1000, ML = 118, MR = 12, MT = 34, LH = 56, PW = W - ML - MR, H_ = MT + LH * LINHAS.length + 26;
     const t0 = dt(D.presidentes[0].ini), t1 = Date.now(), X = (t) => ML + (Math.min(Math.max(t, t0), t1) - t0) / (t1 - t0) * PW;
-    const linha = (e) => { const i = LINHAS.indexOf(e in POS ? e : 'FORA'); return i; };
+    const linha = (e) => LINHAS.indexOf(e);
     let svg = `<svg viewBox="0 0 ${W} ${H_}" class="w-full h-auto" role="img" aria-label="Orientação do Executivo e da maioria do Congresso ao longo do tempo, de 1889 a hoje" font-family="Inter, system-ui, sans-serif">
         <defs><pattern id="hach" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="#f1f5f9"/><rect width="3" height="6" fill="#cbd5e1"/></pattern></defs>`;
     // faixas das eras
@@ -205,7 +209,7 @@ function desenharGrafico() {
     LINHAS.forEach((k, i) => {
         const y = MT + i * LH;
         svg += `<line x1="${ML}" x2="${W - MR}" y1="${y}" y2="${y}" stroke="currentColor" opacity=".15"/>
-            <text x="${ML - 8}" y="${y + LH / 2 + 3}" text-anchor="end" font-size="11" font-weight="600" fill="currentColor">${esc(k === 'FORA' ? 'Fora da escala' : D.eixos[k])}</text>`;
+            <text x="${ML - 8}" y="${y + LH / 2 + 3}" text-anchor="end" font-size="11" font-weight="600" fill="currentColor">${esc(k === 'SEM' ? 'Sem Congresso' : D.eixos[k])}</text>`;
     });
     svg += `<line x1="${ML}" x2="${W - MR}" y1="${MT + LH * LINHAS.length}" y2="${MT + LH * LINHAS.length}" stroke="currentColor" opacity=".15"/>`;
     // anos
@@ -216,14 +220,14 @@ function desenharGrafico() {
     });
     const bloco = (x, eixo, faixaTopo, titulo, extra) => {
         const a = X(dt(x.ini)), b = X(fim(x)), i = linha(eixo), y = MT + i * LH + faixaTopo;
-        const fill = eixo in COR ? COR[eixo] : eixo === 'FORA' ? 'url(#hach)' : '#fff';
+        const fill = eixo in COR ? COR[eixo] : eixo === 'SEM' ? 'url(#hach)' : '#fff';
         return `<rect ${extra} x="${a}" y="${y}" width="${Math.max(b - a - .6, 1.5)}" height="20" rx="2" fill="${fill}" stroke="#334155" stroke-width=".7"><title>${esc(titulo)}</title></rect>`;
     };
     D.parlamento.forEach((x) => {
-        svg += bloco(x, x.eixo === 'SEM' ? 'FORA' : x.eixo, 30, `Congresso · ${x.nome} (${anos(x)}): ${D.eixos[x.eixo]}`, '');
+        svg += bloco(x, x.eixo, 30, `Congresso · ${x.nome} (${anos(x)}): ${D.eixos[x.eixo]}, ${D.social[x.social].toLowerCase()}`, '');
     });
     D.presidentes.forEach((p) => {
-        svg += bloco(p, p.eixo, 6, `${p.nome} (${anos(p)}): ${D.eixos[p.eixo]}`, `data-gov="${esc(p.id)}" style="cursor:pointer"`);
+        svg += bloco(p, p.eixo, 6, `${p.nome} (${anos(p)}): ${D.eixos[p.eixo]}, ${D.social[p.social].toLowerCase()}`, `data-gov="${esc(p.id)}" style="cursor:pointer"`);
     });
     svg += '</svg>';
     $('grafico').innerHTML = svg;
@@ -242,7 +246,7 @@ function desenharGrafico() {
 function resumoAlinhamento() {
     const D = H.dados, ms = { alinhado: 0, parcial: 0, tensao: 0 };
     D.presidentes.forEach((p) => D.parlamento.forEach((x) => {
-        const o = sobreposicao(p, x), al = alinhamento(p.eixo, x.eixo);
+        const o = sobreposicao(p, x), al = alinhamento(p, x);
         if (o > 0 && al !== 'na') ms[al] += o;
     }));
     const tot = ms.alinhado + ms.parcial + ms.tensao;
@@ -288,14 +292,14 @@ function blocoGoverno(id, varios) {
     const p = E.hist.presidentes.find((x) => x.id === id);
     if (!p) return '';
     const X = E.dados.interesses, ex = E.hist.eixos, parl = parlOf(p), dom = parl[0];
-    const al = dom ? alinhamento(p.eixo, dom.eixo) : 'na', [alNome, alCls] = ALINHA[al];
+    const al = dom ? alinhamento(p, dom) : 'na', [alNome, alCls] = ALINHA[al];
     const linhaX = (t, c) => `<p class="flex flex-wrap items-start gap-x-1.5 gap-y-0.5"><b class="w-full text-[10px] uppercase tracking-wide text-slate-500">${esc(t)}</b>${c}</p>`;
     return `<div class="text-xs space-y-1.5 border-t border-slate-200 dark:border-slate-700 pt-2">
         ${varios ? `<p class="font-bold">${esc(p.nome)}</p>` : ''}
         <p class="text-slate-500"><b>Partido:</b> ${esc(p.partido)}</p>
-        ${linhaX('Orientação do Executivo', `${pilula(p.eixo, ex[p.eixo], p.debatido)} <span>${esc(X[p.id] || p.rotulo)}</span>`)}
-        ${linhaX('Maioria do Congresso', dom ? `${pilula(dom.eixo, ex[dom.eixo], dom.debatido)} <span>${esc(X[dom.id] || dom.maioria)}</span>` : '<span class="text-slate-500">Sem dados.</span>')}
-        ${linhaX('Alinhamento', al === 'na' ? '<span class="pil bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200">Fora da escala</span> <span class="text-slate-500">Os interesses acima situam cada lado.</span>' : `<span class="pil ${alCls}">${esc(alNome)}</span>`)}
+        ${linhaX('Orientação do Executivo', `${pilula(p.eixo, ex[p.eixo], p.debatido)} ${pilSoc(p)} <span>${esc(X[p.id] || p.rotulo)}</span>`)}
+        ${linhaX('Maioria do Congresso', dom ? `${pilula(dom.eixo, ex[dom.eixo], dom.debatido)} ${pilSoc(dom)} <span>${esc(X[dom.id] || dom.maioria)}</span>` : '<span class="text-slate-500">Sem dados.</span>')}
+        ${linhaX('Alinhamento', al === 'na' ? '<span class="pil bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200">Sem comparação</span> <span class="text-slate-500">O Congresso não estava funcionando.</span>' : `<span class="pil ${alCls}">${esc(alNome)}</span>`)}
         <details><summary class="cursor-pointer font-semibold text-slate-600 dark:text-slate-300">Por que esta classificação</summary>
             <p class="mt-1"><b>Executivo:</b> ${esc(p.porque)}</p>${parl.map((x) => `<p class="mt-1"><b>Congresso (${esc(x.nome)}, ${esc(anos(x))}):</b> ${esc(x.porque)}</p>`).join('')}</details></div>`;
 }
@@ -345,6 +349,7 @@ document.addEventListener('click', (ev) => {
         if (!r.ok) throw new Error('HTTP ' + r.status);
         H.dados = await r.json();
         desenharChips(); desenharLista(); desenharGrafico();
+        $('legenda').insertAdjacentHTML('afterend', `<div class="mt-1.5 flex flex-wrap gap-x-3 gap-y-1.5 text-[11px]"><span class="font-bold">Eixo político:</span>${['A', 'M', 'L'].map((k) => `<span class="inline-flex items-center gap-1.5"><span class="pil ${SOCCLS[k]}">${esc(H.dados.social[k])}</span>${esc(H.dados.social_desc[k])}</span>`).join('')}</div>`);
         $('legenda').innerHTML = ORDEM.map((k) => `<span class="inline-flex items-center gap-1.5"><span class="eixo-${k} inline-block w-4 h-4 rounded"></span>${esc(H.dados.eixos[k])}</span>`).join('');
         $('fontes').innerHTML = H.dados.fontes.map((f) => `<li><a class="sem-sublinhado font-semibold text-brand-700 dark:text-brand-400 hover:underline" target="_blank" rel="noopener" href="${esc(urlSegura(f.url))}">${esc(f.nome)}</a></li>`).join('');
     } catch (e) {
