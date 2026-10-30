@@ -114,7 +114,35 @@ def _nome_sigla(nome: str) -> tuple[str, str]:
     return n, n
 
 
+ARQ_TSE = RAIZ / "dados" / "partidos" / "tse_partidos.json"
+
+
 def _ler_tse() -> dict:
+    """Lê a página do TSE (2 tentativas). A última leitura bem-sucedida fica salva em dados/partidos: se o TSE estiver fora
+    do ar ou bloquear a consulta, usamos essa cópia e a tela avisa a data dela."""
+    ultimo: Exception | None = None
+    for _ in range(2):
+        try:
+            f = _ler_tse_ao_vivo()
+            f["lido_em"] = _agora()
+            try:
+                ARQ_TSE.parent.mkdir(parents=True, exist_ok=True)
+                ARQ_TSE.write_text(json.dumps(f, ensure_ascii=False, indent=1), encoding="utf-8")
+            except OSError as exc:
+                log.warning("Não foi possível salvar a cópia local do TSE: %s", exc)
+            return f
+        except Exception as exc:  # noqa: BLE001
+            ultimo = exc
+            log.warning("Página do TSE indisponível (%s: %s)", type(exc).__name__, exc)
+    try:
+        f = json.loads(ARQ_TSE.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        raise ErroFonte("Página do TSE indisponível e sem cópia local.") from ultimo or exc
+    f["copia_local"] = True
+    return f
+
+
+def _ler_tse_ao_vivo() -> dict:
     r = _http.get(URL_TSE)
     pagina = r.content.decode("utf-8", errors="replace")
     registrados, fusoes, incorporacoes, mudancas = [], [], [], []
@@ -264,7 +292,7 @@ def evolucao() -> dict:
             fams.append({"ids": ids_o, "rotulo": " / ".join(n["nomes"][-1]["sigla"] for n in vivos)})
         fams.sort(key=lambda x: x["rotulo"].casefold())
         return {"nos": g["nos"], "arestas": g["arestas"], "familias": fams, "conferencia": g["conferencia"],
-                "n_registrados": len(f["registrados"])}
+                "n_registrados": len(f["registrados"]), "copia_local": bool(f.get("copia_local")), "lido_em": f.get("lido_em")}
     base = _memo("evolucao", produzir)
     return {
         "consultado_em": _agora(), **base,
