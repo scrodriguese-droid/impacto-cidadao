@@ -72,14 +72,20 @@ def _ano(ano: int, pasta: Path) -> dict | None:
     # 1) votações em que o Governo orientou Sim ou Não
     gov: dict[str, str] = {}
     for r in _linhas(arq_o):
-        if r["siglaBancada"] == "Governo" and r["orientacao"] in ("Sim", "Não"):
-            gov[r["idVotacao"]] = r["orientacao"]
+        # anos antigos rotulam a bancada como "GOV." e variam a caixa do texto
+        if r["siglaBancada"].strip().casefold() in ("governo", "gov.") and r["orientacao"].strip().casefold() in ("sim", "não"):
+            gov[r["idVotacao"]] = "Sim" if r["orientacao"].strip().casefold() == "sim" else "Não"
     # 2) votos Sim/Não de cada partido, por votação
     cont: dict[tuple[str, str], list[int]] = defaultdict(lambda: [0, 0])  # (votação, partido) -> [sim, não]
+    todas: dict[tuple[str, str], list[int]] = defaultdict(lambda: [0, 0])  # idem, em TODAS as votações nominais
     for r in _linhas(arq_v):
-        if r["idVotacao"] not in gov or r["voto"] not in ("Sim", "Não"):
+        voto = r["voto"].strip().casefold()
+        if voto not in ("sim", "não"):
             continue
-        cont[(r["idVotacao"], (r["deputado_siglaPartido"] or "").strip() or "Sem partido")][0 if r["voto"] == "Sim" else 1] += 1
+        chave = (r["idVotacao"], (r["deputado_siglaPartido"] or "").strip() or "Sem partido")
+        todas[chave][0 if voto == "sim" else 1] += 1
+        if r["idVotacao"] in gov:
+            cont[chave][0 if voto == "sim" else 1] += 1
     # 3) agregação
     partidos: dict[str, dict] = defaultdict(lambda: {"gov_ok": 0, "gov_n": 0, "rice_soma": 0.0, "rice_n": 0})
     maioria: dict[str, dict[str, int]] = defaultdict(dict)  # votação -> partido -> +1 (sim) / -1 (não)
@@ -100,7 +106,19 @@ def _ano(ano: int, pasta: Path) -> dict | None:
             x = pares[f"{a}|{b}"]
             x[1] += 1
             x[0] += m[a] == m[b]
-    return {"votacoes": len(votacoes_validas), "partidos": partidos, "pares": pares}
+    # afinidade em todas as votações nominais (independe de o Governo ter orientado) — alimenta o mapa de afinidade
+    maioria_t: dict[str, dict[str, int]] = defaultdict(dict)
+    for (v, p), (sim, nao) in todas.items():
+        if sim + nao >= MIN_VOTOS and sim != nao:
+            maioria_t[v][p] = 1 if sim > nao else -1
+    pares_t: dict[str, list[int]] = defaultdict(lambda: [0, 0])
+    for v, m in maioria_t.items():
+        for a, b in itertools.combinations(sorted(m), 2):
+            x = pares_t[f"{a}|{b}"]
+            x[1] += 1
+            x[0] += m[a] == m[b]
+    return {"votacoes": len(votacoes_validas), "partidos": partidos, "pares": pares,
+            "votacoes_todas": len(maioria_t), "pares_todas": pares_t}
 
 
 def coletar(desde: int, ate: int) -> dict:
@@ -108,13 +126,14 @@ def coletar(desde: int, ate: int) -> dict:
     with tempfile.TemporaryDirectory(prefix="votacoes_") as tmp:
         for ano in range(desde, ate + 1):
             r = _ano(ano, Path(tmp))
-            if r and r["votacoes"]:
+            if r and (r["votacoes"] or r["votacoes_todas"]):
                 anos[ano] = r
                 log.info("%s: %d votações, %d partidos", ano, r["votacoes"], len(r["partidos"]))
     return {
         "gerado_em": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "min_votos": MIN_VOTOS,
-        "anos": {str(a): {"votacoes": r["votacoes"], "partidos": r["partidos"], "pares": r["pares"]} for a, r in anos.items()},
+        "anos": {str(a): {"votacoes": r["votacoes"], "partidos": r["partidos"], "pares": r["pares"],
+                        "votacoes_todas": r["votacoes_todas"], "pares_todas": r["pares_todas"]} for a, r in anos.items()},
     }
 
 
@@ -122,12 +141,13 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--desde", type=int, default=2023, help="primeiro ano (padrão: início da legislatura atual)")
     ap.add_argument("--ate", type=int, default=date.today().year)
+    ap.add_argument("--saida", type=Path, default=SAIDA, help="arquivo de saída (padrão: alinhamento_camara.json)")
     a = ap.parse_args()
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
     dados = coletar(a.desde, a.ate)
-    SAIDA.parent.mkdir(parents=True, exist_ok=True)
-    SAIDA.write_text(json.dumps(dados, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
-    log.info("Gravado %s (anos: %s)", SAIDA, ", ".join(dados["anos"]))
+    a.saida.parent.mkdir(parents=True, exist_ok=True)
+    a.saida.write_text(json.dumps(dados, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+    log.info("Gravado %s (anos: %s)", a.saida, ", ".join(dados["anos"]))
     return 0
 
 

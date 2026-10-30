@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evolução e afinidade dos partidos — ImpactoCidadão</title>
+    <meta name="description" content="Linha do tempo dos partidos registrados no TSE (fusões, incorporações e mudanças de nome) e mapa de afinidade de votação na Câmara, com fontes e método.">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="assets/tailwind-config.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Inter', system-ui, sans-serif; }
+        :focus-visible { outline: 2px solid #A92823; outline-offset: 2px; }
+        .ponto { transition: transform .6s ease, opacity .4s ease; cursor: pointer; }
+        .ponto:focus-visible { outline: none; }
+        .ponto:focus-visible circle.alvo, .ponto:hover circle.alvo { stroke: #A92823; stroke-width: 3; }
+        .barra-no { cursor: pointer; }
+        .rolagem-x { overflow-x: auto; }
+        @media (prefers-reduced-motion: reduce) { .ponto { transition: none; } }
+    </style>
+    <link rel="stylesheet" href="assets/brutalista.css">
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-full flex flex-col transition-colors duration-200">
+
+<a href="#conteudo" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-white focus:text-slate-900 focus:p-3">Ir para o conteúdo</a>
+<div id="cabecalho"></div>
+
+<main id="conteudo" class="max-w-6xl mx-auto px-4 sm:px-6 pt-6 pb-10 flex-grow w-full space-y-12">
+    <header>
+        <h1 class="text-2xl font-extrabold tracking-tight">Partidos: evolução e afinidade de votação</h1>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Dois olhares sobre os partidos do Brasil. O primeiro mostra o que está no registro oficial do TSE: quando cada partido foi registrado e como se fundiram, se incorporaram ou mudaram de nome. O segundo mostra como os partidos votaram na Câmara. Sem avaliação política e sem ranking; ordem alfabética onde não há eixo próprio.</p>
+        <nav class="mt-3 flex flex-wrap gap-2 text-sm" aria-label="Seções desta página">
+            <a href="#evolucao" class="px-3 py-1.5 rounded-full border border-slate-300 dark:border-slate-600 hover:bg-white dark:hover:bg-slate-800">1 · Evolução histórica (TSE)</a>
+            <a href="#escala" class="px-3 py-1.5 rounded-full border border-slate-300 dark:border-slate-600 hover:bg-white dark:hover:bg-slate-800">2 · Mapa de afinidade de votação</a>
+        </nav>
+    </header>
+
+    <!-- ================= MÓDULO 1 ================= -->
+    <section id="evolucao" aria-labelledby="h-evo" class="scroll-mt-24">
+        <h2 id="h-evo" class="text-xl font-bold">1 · Evolução histórica dos partidos registrados no TSE</h2>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Cada barra é um registro de partido. Quando muda de nome ou sigla, a barra continua e o novo nome é marcado. Linhas verticais ligam barras que se fundiram ou foram incorporadas, na data da decisão do TSE. Clique numa barra ou numa ligação para ver processo e datas.</p>
+        <p id="evoConsulta" class="text-[11px] text-slate-400 mt-2"></p>
+        <div id="evoEstado" role="status" class="mt-3"><p class="text-sm text-slate-500">Lendo a página oficial do TSE…</p></div>
+        <div id="evoControles" class="mt-3 hidden flex flex-wrap items-center gap-4 text-sm">
+            <label class="inline-flex items-center gap-2"><input type="checkbox" id="soLigados"> Só famílias com fusão, incorporação ou mudança de nome</label>
+            <span class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-600 dark:text-slate-400" aria-label="Legenda">
+                <span><svg width="26" height="10" aria-hidden="true"><rect x="0" y="1" width="26" height="8" rx="2" class="fill-slate-500"/></svg> registro com data conhecida</span>
+                <span><svg width="26" height="10" aria-hidden="true"><rect x="1" y="1" width="24" height="8" rx="2" fill="none" stroke-dasharray="3 2" class="stroke-slate-500"/></svg> início fora da fonte (sem data)</span>
+                <span><svg width="12" height="12" aria-hidden="true"><circle cx="6" cy="6" r="5" fill="#A92823"/></svg> fusão</span>
+                <span><svg width="12" height="12" aria-hidden="true"><rect x="1" y="1" width="10" height="10" class="fill-slate-800 dark:fill-slate-100"/></svg> incorporação</span>
+            </span>
+        </div>
+        <div id="evoGrafico" class="rolagem-x mt-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"></div>
+        <div id="evoDetalhe" class="mt-3 text-sm" aria-live="polite"></div>
+        <div id="evoLacunas" class="mt-5 rounded-2xl border border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/30 p-4 text-sm hidden">
+            <h3 class="font-bold"><i class="fa-solid fa-triangle-exclamation mr-1.5" aria-hidden="true"></i>O que esta linha do tempo não tem</h3>
+            <ul id="evoLacunasLista" class="mt-2 list-disc pl-5 space-y-1 text-slate-700 dark:text-slate-300"></ul>
+        </div>
+        <p id="evoFonte" class="text-xs text-slate-500 mt-3"></p>
+    </section>
+
+    <!-- ================= MÓDULO 2 ================= -->
+    <section id="escala" aria-labelledby="h-esc" class="scroll-mt-24">
+        <h2 id="h-esc" class="text-xl font-bold">2 · Mapa de afinidade de votação na Câmara</h2>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Partidos que votam parecido ficam perto; partidos que votam diferente ficam longe. Calculado só a partir das votações nominais abertas da Câmara. <b>Não é uma escala esquerda–direita</b>: o TSE não define ideologia e a Câmara também não. Use a barra de tempo para ver como o mapa mudou.</p>
+        <div id="escEstado" role="status" class="mt-3"><p class="text-sm text-slate-500">Carregando votações…</p></div>
+        <div id="escCorpo" class="hidden mt-4">
+            <div class="flex flex-wrap items-center gap-3">
+                <button id="btnPlay" type="button" class="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 text-sm font-semibold hover:bg-white dark:hover:bg-slate-800" aria-label="Reproduzir a evolução ao longo dos anos"><i class="fa-solid fa-play" aria-hidden="true"></i> <span>Reproduzir</span></button>
+                <label for="ano" class="text-sm font-semibold">Ano: <output id="anoRotulo" class="font-extrabold text-lg tabular-nums">—</output></label>
+                <input id="ano" type="range" min="0" max="0" value="0" step="1" class="flex-1 min-w-[10rem] accent-[#A92823]">
+                <label class="inline-flex items-center gap-2 text-sm">Zoom <select id="zoom" class="border border-slate-300 dark:border-slate-600 rounded bg-transparent px-1 py-0.5"><option value="1">1× (tudo)</option><option value="2" selected>2×</option><option value="3">3×</option></select></label>
+                <label class="inline-flex items-center gap-2 text-sm"><input type="checkbox" id="trilha" checked> Mostrar trajetória do partido escolhido</label>
+            </div>
+            <p id="escAno" class="text-xs text-slate-500 mt-1"></p>
+
+            <div class="grid xl:grid-cols-[minmax(0,1fr)_20rem] gap-4 mt-3">
+                <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-2">
+                    <svg id="mapa" viewBox="0 0 700 560" class="w-full h-auto" role="img" aria-label="Mapa de afinidade de votação dos partidos no ano escolhido"></svg>
+                </div>
+                <aside id="cartao" class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 text-sm" aria-live="polite">
+                    <p class="text-slate-500">Clique num partido do mapa (ou na lista abaixo) para ver os detalhes.</p>
+                </aside>
+            </div>
+
+            <h3 class="font-bold mt-6">Partidos no ano (ordem alfabética)</h3>
+            <div id="listaAno" class="mt-2 flex flex-wrap gap-1.5"></div>
+
+            <div class="grid md:grid-cols-2 gap-4 mt-6">
+                <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
+                    <h3 class="font-bold">Método</h3>
+                    <ul id="escMetodo" class="mt-2 text-sm text-slate-600 dark:text-slate-400 list-disc pl-5 space-y-1.5"></ul>
+                </div>
+                <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
+                    <h3 class="font-bold">Limitações</h3>
+                    <ul id="escLimites" class="mt-2 text-sm text-slate-600 dark:text-slate-400 list-disc pl-5 space-y-1.5"></ul>
+                </div>
+            </div>
+            <div class="mt-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 text-sm">
+                <h3 class="font-bold">Círculo de Pragmatismo: qual é o critério</h3>
+                <p id="escCriterio" class="mt-2 text-slate-600 dark:text-slate-400"></p>
+                <p class="mt-2 text-xs text-slate-500">Partidos dentro do círculo estão agrupados ali por esse critério; sua posição dentro dele <b>não</b> é a posição calculada. Partidos com menos de 3 governos de dados (por exemplo, criados ou fundidos há pouco) não podem ser avaliados e ficam no lugar calculado.</p>
+            </div>
+            <div class="mt-4 rounded-2xl border border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/30 p-4 text-sm">
+                <h3 class="font-bold"><i class="fa-solid fa-triangle-exclamation mr-1.5" aria-hidden="true"></i>Fontes que não usamos, e por quê</h3>
+                <ul id="escLacunas" class="mt-2 list-disc pl-5 space-y-1 text-slate-700 dark:text-slate-300"></ul>
+            </div>
+            <p id="escFonte" class="text-xs text-slate-500 mt-3"></p>
+        </div>
+    </section>
+</main>
+
+<div id="rodape"></div>
+
+<script src="assets/comum.js"></script>
+<script>
+renderLayout('partidos');
+
+const MESES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+const dataBr = (iso) => (iso ? fmtData(iso) : 'sem data na fonte');
+const frac = (iso) => { const d = new Date(iso + 'T00:00:00'); return d.getFullYear() + (d.getMonth() + (d.getDate() - 1) / 31) / 12; };
+const svgEl = (tag, attrs, filhos) => {
+    const e = document.createElementNS('http://www.w3.org/2000/svg', tag);
+    for (const [k, v] of Object.entries(attrs || {})) e.setAttribute(k, v);
+    if (filhos != null) e.textContent = filhos;
+    return e;
+};
+
+/* ====================== MÓDULO 1 ====================== */
+let EVO = null;
+
+function desenharEvolucao() {
+    const d = EVO;
+    const porId = Object.fromEntries(d.nos.map((n) => [n.id, n]));
+    const so = $('soLigados').checked;
+    const idsLigados = new Set();
+    d.arestas.forEach((a) => { idsLigados.add(a.de); idsLigados.add(a.para); });
+    const fams = d.familias.filter((f) => !so || f.ids.length > 1 || f.ids.some((i) => porId[i].nomes.length > 1));
+    const ANO0 = 1981, ANO1 = new Date().getFullYear() + 1;
+    const ML = 12, MR = 24, W = 1000, LH = 24, CAB = 22, GAP = 22;
+    const x = (iso) => ML + (frac(iso) - ANO0) / (ANO1 - ANO0) * (W - ML - MR);
+    const X0 = x('1995-01-01');
+    const hoje = new Date().toISOString().slice(0, 10);
+    let y = CAB;
+    const linha = {}, partes = [], rotulosFam = [];
+    fams.forEach((f) => {
+        rotulosFam.push({ y: y + 10, texto: f.rotulo });
+        y += 16;
+        f.ids.forEach((id) => { linha[id] = y; y += LH; });
+        y += GAP - 12;
+    });
+    const H = y + 6;
+    const svg = svgEl('svg', { viewBox: `0 0 ${W} ${H}`, width: '100%', role: 'img', 'aria-label': 'Linha do tempo dos partidos registrados no TSE' });
+    svg.style.minWidth = '760px'; svg.style.height = 'auto';
+    for (let a = 1985; a <= 2025; a += 5) {
+        svg.appendChild(svgEl('line', { x1: x(a + '-01-01'), x2: x(a + '-01-01'), y1: CAB - 6, y2: H, class: 'stroke-slate-200 dark:stroke-slate-700' }));
+        svg.appendChild(svgEl('text', { x: x(a + '-01-01'), y: 12, 'text-anchor': 'middle', 'font-size': 10, class: 'fill-slate-500' }, a));
+    }
+    rotulosFam.forEach((r) => svg.appendChild(svgEl('text', { x: ML, y: r.y, 'font-size': 10, 'font-weight': 700, class: 'fill-slate-400', 'letter-spacing': '.04em' }, r.texto.toUpperCase())));
+
+    const nosPorId = {};
+    fams.forEach((f) => f.ids.forEach((id) => {
+        const n = porId[id], yy = linha[id];
+        const ini = n.inicio ? n.inicio.data : null;
+        const fim = n.fim ? n.fim.data : hoje;
+        const g = svgEl('g', { class: 'barra-no', tabindex: 0, role: 'button', 'data-id': id, 'aria-label': `${n.nomes[n.nomes.length - 1].sigla}: ver detalhes` });
+        const xi = ini ? x(ini) : X0, xf = Math.max(x(fim), xi + 3);
+        if (ini) g.appendChild(svgEl('rect', { x: xi, y: yy, width: xf - xi, height: 16, rx: 3, class: n.vivo ? 'fill-slate-600 dark:fill-slate-400' : 'fill-slate-400 dark:fill-slate-600' }));
+        else {
+            const primeiro = n.nomes[1] && n.nomes[1].desde ? x(n.nomes[1].desde) : xf;
+            g.appendChild(svgEl('rect', { x: xi + .5, y: yy + .5, width: Math.max(xf - xi - 1, 2), height: 15, rx: 3, fill: 'none', 'stroke-dasharray': '4 3', class: 'stroke-slate-500' }));
+        }
+        // nomes ao longo do tempo (recortados dentro da barra)
+        n.nomes.forEach((nm, i) => {
+            const a0 = nm.desde ? x(nm.desde) : xi;
+            const a1 = n.nomes[i + 1] && n.nomes[i + 1].desde ? x(n.nomes[i + 1].desde) : xf;
+            const cid = `c-${id}-${i}`;
+            const cp = svgEl('clipPath', { id: cid });
+            cp.appendChild(svgEl('rect', { x: a0, y: yy, width: Math.max(a1 - a0, 0), height: 16 }));
+            g.appendChild(cp);
+            g.appendChild(svgEl('text', { x: a0 + 4, y: yy + 12, 'font-size': 10, 'font-weight': 600, 'clip-path': `url(#${cid})`,
+                class: ini ? 'fill-white dark:fill-slate-900' : 'fill-slate-700 dark:fill-slate-200' }, nm.sigla));
+            if (i > 0) g.appendChild(svgEl('line', { x1: a0, x2: a0, y1: yy - 2, y2: yy + 18, class: 'stroke-brand-600', 'stroke-width': 2 }));
+        });
+        if (n.vivo) g.appendChild(svgEl('path', { d: `M${xf} ${yy} l8 8 l-8 8 z`, class: 'fill-slate-600 dark:fill-slate-400' }));
+        const t = svgEl('title', {}, `${n.nomes.map((m) => m.sigla).join(' → ')}${n.vivo ? ' (em atividade)' : ' (extinto)'}`);
+        g.appendChild(t);
+        g.addEventListener('click', () => detalheNo(id));
+        g.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); detalheNo(id); } });
+        nosPorId[id] = g;
+        partes.push(g);
+    }));
+    d.arestas.forEach((a) => {
+        if (!(a.de in linha) || !(a.para in linha)) return;
+        const xx = x(a.data), y1 = linha[a.de] + 8, y2 = linha[a.para] + 8;
+        const g = svgEl('g', { class: 'barra-no', tabindex: 0, role: 'button', 'aria-label': `${a.tipo === 'fusao' ? 'Fusão' : 'Incorporação'} de ${dataBr(a.data)}: ver detalhes` });
+        g.appendChild(svgEl('line', { x1: xx, x2: xx, y1, y2, 'stroke-width': 2, class: a.tipo === 'fusao' ? 'stroke-brand-600' : 'stroke-slate-800 dark:stroke-slate-100' }));
+        g.appendChild(svgEl('line', { x1: xx, x2: xx, y1, y2, 'stroke-width': 12, stroke: 'transparent' }));
+        const mk = a.tipo === 'fusao' ? svgEl('circle', { cx: xx, cy: y2, r: 4.5, fill: '#A92823' }) : svgEl('rect', { x: xx - 4, y: y2 - 4, width: 8, height: 8, class: 'fill-slate-800 dark:fill-slate-100' });
+        g.appendChild(mk);
+        g.appendChild(svgEl('title', {}, `${a.tipo === 'fusao' ? 'Fusão' : 'Incorporação'} — ${dataBr(a.data)}`));
+        const abrir = () => detalheAresta(a);
+        g.addEventListener('click', abrir);
+        g.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); abrir(); } });
+        partes.push(g);
+    });
+    partes.forEach((p) => svg.appendChild(p));
+    $('evoGrafico').replaceChildren(svg);
+}
+
+const nomeNo = (n) => n.nomes[n.nomes.length - 1];
+function detalheNo(id) {
+    const n = EVO.nos.find((x) => x.id === id);
+    const hist = n.nomes.map((m) => `<li><b>${esc(m.sigla)}</b> — ${esc(m.nome)}${m.desde ? `, desde ${esc(dataBr(m.desde))}` : ''}${m.processo ? ` <span class="text-xs text-slate-500">(processo ${esc(m.processo)})</span>` : ''}</li>`).join('');
+    const ini = n.inicio ? `${n.inicio.tipo === 'fusao' ? 'Registrado por fusão em ' : 'Registro deferido em '}${esc(dataBr(n.inicio.data))}` : 'Data de registro não consta na fonte do TSE';
+    const fim = n.fim ? `${n.fim.tipo === 'fusao' ? 'Extinto por fusão' : 'Extinto por incorporação'} em ${esc(dataBr(n.fim.data))} (processo ${esc(n.fim.processo)})` : 'Em atividade';
+    const liga = EVO.arestas.filter((a) => a.de === n.id || a.para === n.id).map((a) => {
+        const de = EVO.nos.find((x) => x.id === a.de), para = EVO.nos.find((x) => x.id === a.para);
+        return `<li>${a.tipo === 'fusao' ? 'Fusão' : 'Incorporação'}: ${esc(nomeNo(de).sigla)} → ${esc(nomeNo(para).sigla)}, em ${esc(dataBr(a.data))}</li>`;
+    }).join('');
+    $('evoDetalhe').innerHTML = `<div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
+        <h3 class="font-bold">${esc(nomeNo(n).sigla)} <span class="font-normal text-slate-500">· ${esc(nomeNo(n).nome)}</span></h3>
+        <p class="mt-1">${ini}. ${fim}.</p>
+        <p class="mt-2 text-xs font-semibold text-slate-500">Nomes e siglas ao longo do tempo</p><ul class="list-disc pl-5">${hist}</ul>
+        ${liga ? `<p class="mt-2 text-xs font-semibold text-slate-500">Ligações</p><ul class="list-disc pl-5">${liga}</ul>` : ''}
+        <p class="mt-2 text-xs text-slate-500">Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(EVO.fonte.url))}">TSE — partidos registrados</a>.</p></div>`;
+}
+function detalheAresta(a) {
+    const de = EVO.nos.find((x) => x.id === a.de), para = EVO.nos.find((x) => x.id === a.para);
+    $('evoDetalhe').innerHTML = `<div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
+        <h3 class="font-bold">${a.tipo === 'fusao' ? 'Fusão' : 'Incorporação'} · ${esc(dataBr(a.data))}</h3>
+        <p class="mt-1">${esc(nomeNo(de).sigla)} (${esc(nomeNo(de).nome)}) ${a.tipo === 'fusao' ? 'fundiu-se, dando origem a' : 'foi incorporado por'} <b>${esc(nomeNo(para).sigla)}</b> (${esc(nomeNo(para).nome)}).</p>
+        <p class="mt-1 text-xs text-slate-500">Processo no TSE: ${esc(a.processo)}</p></div>`;
+}
+
+async function iniciarEvolucao() {
+    try {
+        EVO = await api('/api/partidos/evolucao');
+        $('evoEstado').innerHTML = '';
+        $('evoControles').classList.remove('hidden');
+        $('evoConsulta').textContent = `Consultado em ${fmtDataHora(EVO.consultado_em)} · ${EVO.n_registrados} partidos registrados hoje no TSE`;
+        $('evoLacunasLista').innerHTML = EVO.lacunas.concat(EVO.notas).map((t) => `<li>${esc(t)}</li>`).join('');
+        $('evoLacunas').classList.remove('hidden');
+        const conf = EVO.conferencia.every((c) => c.confere);
+        $('evoFonte').innerHTML = `Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(EVO.fonte.url))}">${esc(EVO.fonte.nome)}</a>. Conferência interna: a data de registro de ${EVO.conferencia.map((c) => esc(c.sigla)).join(', ')} na lista oficial ${conf ? 'coincide' : 'NÃO coincide em algum caso com'} a data da fusão na tabela de fusões.`;
+        $('soLigados').addEventListener('change', desenharEvolucao);
+        desenharEvolucao();
+    } catch (e) {
+        $('evoEstado').innerHTML = mensagemErro(e);
+    }
+}
+
+/* ====================== MÓDULO 2 ====================== */
+let ESC = null, IDX = 0, SEL = null, TIMER = null;
+const LM = 70, LT = 30, LW = 560, LH2 = 480;          // área do gráfico no viewBox
+let ZOOM = 2;                                           // 1 = quadro inteiro; maior = amplia o centro
+const px = (v) => LM + (v * ZOOM + 1.05) / 2.1 * LW;
+const py = (v) => LT + (1.05 - v * ZOOM) / 2.1 * LH2;
+const CX = px(0), CY = py(0), RC = 62;                  // círculo de pragmatismo
+
+function quadro() { return ESC.quadros[IDX]; }
+function posicao(p, i, total) {
+    if (!p.pragmatico) return [px(p.x), py(p.y)];
+    // dentro do círculo: arranjo em anéis, ordem alfabética (não é a posição calculada)
+    const anel1 = Math.min(total, 6);
+    if (i < anel1) { const a = (2 * Math.PI * i) / anel1 - Math.PI / 2; return [CX + Math.cos(a) * (total > 1 ? RC * .62 : 0), CY + Math.sin(a) * (total > 1 ? RC * .62 : 0)]; }
+    const rest = total - anel1, j = i - anel1;
+    const a = (2 * Math.PI * j) / Math.max(rest, 1);
+    return [CX + Math.cos(a) * RC * .3, CY + Math.sin(a) * RC * .3];
+}
+
+function montarMapa() {
+    const svg = $('mapa');
+    svg.replaceChildren();
+    const eixo = 'stroke-slate-200 dark:stroke-slate-700';
+    svg.appendChild(svgEl('rect', { x: LM, y: LT, width: LW, height: LH2, fill: 'none', class: eixo }));
+    svg.appendChild(svgEl('line', { x1: px(0), x2: px(0), y1: LT, y2: LT + LH2, class: eixo, 'stroke-dasharray': '3 4' }));
+    svg.appendChild(svgEl('line', { x1: LM, x2: LM + LW, y1: py(0), y2: py(0), class: eixo, 'stroke-dasharray': '3 4' }));
+    svg.appendChild(svgEl('text', { x: LM + LW / 2, y: LT + LH2 + 28, 'text-anchor': 'middle', 'font-size': 11, class: 'fill-slate-500' }, 'Dimensão 1 — padrão de voto dominante (PT à esquerda, por convenção)'));
+    const t2 = svgEl('text', { x: 16, y: LT + LH2 / 2, 'text-anchor': 'middle', 'font-size': 11, class: 'fill-slate-500', transform: `rotate(-90 16 ${LT + LH2 / 2})` }, 'Dimensão 2 — segundo padrão (sem nome)');
+    svg.appendChild(t2);
+    svg.appendChild(svgEl('circle', { id: 'circPrag', cx: CX, cy: CY, r: RC, class: 'fill-amber-100/60 dark:fill-amber-900/20 stroke-amber-500', 'stroke-width': 1.5, 'stroke-dasharray': '5 3' }));
+    svg.appendChild(svgEl('text', { x: CX, y: CY - RC - 6, 'text-anchor': 'middle', 'font-size': 11, 'font-weight': 700, class: 'fill-amber-700 dark:fill-amber-400' }, 'Círculo de Pragmatismo'));
+    const defs = svgEl('defs'); const cpq = svgEl('clipPath', { id: 'recorte' });
+    cpq.appendChild(svgEl('rect', { x: LM, y: LT, width: LW, height: LH2 })); defs.appendChild(cpq); svg.appendChild(defs);
+    svg.appendChild(svgEl('g', { id: 'trilhaG', 'clip-path': 'url(#recorte)' }));
+    const g = svgEl('g', { id: 'pontosG', 'clip-path': 'url(#recorte)' });
+    svg.appendChild(g);
+    const ents = new Map();
+    ESC.quadros.forEach((q) => q.partidos.forEach((p) => ents.set(p.entidade, p.sigla)));
+    ents.forEach((sigla, ent) => {
+        const e = svgEl('g', { class: 'ponto', tabindex: 0, role: 'button', 'data-ent': ent, style: 'opacity:0' });
+        e.appendChild(svgEl('circle', { class: 'alvo fill-slate-600 dark:fill-slate-300 stroke-white dark:stroke-slate-800', r: 6, 'stroke-width': 1.5 }));
+        e.appendChild(svgEl('text', { x: 9, y: 4, 'font-size': 11, 'font-weight': 600, class: 'rot fill-slate-800 dark:fill-slate-100', 'paint-order': 'stroke', stroke: 'var(--halo, #fff)', 'stroke-width': 3 }, sigla));
+        e.addEventListener('click', () => escolher(ent));
+        e.addEventListener('keydown', (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); escolher(ent); } });
+        g.appendChild(e);
+    });
+}
+
+function atualizarMapa() {
+    const q = quadro();
+    $('anoRotulo').textContent = q.ano;
+    const fora = q.partidos.filter((p) => !p.pragmatico && (Math.abs(p.x * ZOOM) > 1.05 || Math.abs(p.y * ZOOM) > 1.05)).map((p) => p.sigla);
+    $('escAno').textContent = `${q.votacoes} votações nominais no ano${q.ano === new Date().getFullYear() ? ' (ano em andamento)' : ''} · ${q.partidos.length} partidos no mapa${fora.length ? ` · fora do quadro com este zoom: ${fora.join(', ')}` : ''}`;
+    const prag = q.partidos.filter((p) => p.pragmatico);
+    const pos = new Map();
+    prag.forEach((p, i) => pos.set(p.entidade, posicao(p, i, prag.length)));
+    q.partidos.filter((p) => !p.pragmatico).forEach((p) => pos.set(p.entidade, posicao(p)));
+    const presentes = new Set(q.partidos.map((p) => p.entidade));
+    document.querySelectorAll('#pontosG .ponto').forEach((el) => {
+        const ent = el.dataset.ent, p = pos.get(ent);
+        const sel = ent === SEL;
+        if (p) {
+            el.style.transform = `translate(${p[0]}px, ${p[1]}px)`;
+            el.style.opacity = SEL && !sel ? .55 : 1;
+            const dado = q.partidos.find((x) => x.entidade === ent);
+            el.setAttribute('aria-label', `${dado.sigla}, ver detalhes`);
+            el.querySelector('.rot').textContent = dado.sigla;
+            el.querySelector('title')?.remove();
+            el.appendChild(svgEl('title', {}, `${dado.sigla}${dado.pragmatico ? ' — perfil pragmático (no círculo)' : ''}`));
+        } else { el.style.opacity = 0; el.style.pointerEvents = 'none'; }
+        if (p) el.style.pointerEvents = 'auto';
+        const c = el.querySelector('circle');
+        c.setAttribute('r', sel ? 9 : 6);
+        c.classList.toggle('fill-brand-600', sel); c.classList.toggle('fill-slate-600', !sel);
+        if (sel) el.parentNode.appendChild(el);
+    });
+    // trilha do partido escolhido
+    const tg = $('trilhaG'); tg.replaceChildren();
+    if (SEL && $('trilha').checked) {
+        const pts = [];
+        ESC.quadros.slice(0, IDX + 1).forEach((qq) => { const p = qq.partidos.find((x) => x.entidade === SEL); if (p && !p.pragmatico) pts.push([px(p.x), py(p.y), qq.ano]); });
+        if (pts.length > 1) tg.appendChild(svgEl('polyline', { points: pts.map((a) => a[0] + ',' + a[1]).join(' '), fill: 'none', stroke: '#A92823', 'stroke-width': 1.5, 'stroke-opacity': .6, 'stroke-dasharray': '4 3' }));
+        pts.forEach((a) => { tg.appendChild(svgEl('circle', { cx: a[0], cy: a[1], r: 2.5, fill: '#A92823', 'fill-opacity': .7 })); tg.appendChild(svgEl('text', { x: a[0] + 4, y: a[1] - 4, 'font-size': 8, class: 'fill-slate-500' }, a[2])); });
+    }
+    $('listaAno').innerHTML = q.partidos.map((p) => `<button type="button" data-ent="${esc(p.entidade)}" class="px-2.5 py-1 rounded-full border text-xs font-semibold ${p.entidade === SEL ? 'bg-brand-600 text-white border-brand-600' : 'border-slate-300 dark:border-slate-600 hover:bg-white dark:hover:bg-slate-800'}">${esc(p.sigla)}${p.pragmatico ? ' ◌' : ''}</button>`).join('');
+    $('listaAno').querySelectorAll('button').forEach((b) => b.addEventListener('click', () => escolher(b.dataset.ent)));
+    cartao();
+}
+
+function cartao() {
+    const el = $('cartao');
+    if (!SEL) return;
+    const q = quadro();
+    const p = q.partidos.find((x) => x.entidade === SEL);
+    const ult = [...ESC.quadros].reverse().find((qq) => qq.partidos.some((x) => x.entidade === SEL));
+    const sigla = (p || ult.partidos.find((x) => x.entidade === SEL)).sigla;
+    const ev = ESC.pragmatismo.partidos[ESC.quadros.flatMap((qq) => qq.partidos).filter((x) => x.entidade === SEL).slice(-1)[0].sigla];
+    let corpo = '';
+    if (!p) corpo += `<p class="mt-2 text-slate-500">Sem posição em ${q.ano}: o partido não tinha votações suficientes neste ano (ou ainda/já não existia sob essa sigla).</p>`;
+    else corpo += `<p class="mt-2">Em ${q.ano}, votou de acordo com a orientação do Governo em <b>${p.alinhamento_governo == null ? '—' : String(p.alinhamento_governo).replace('.', ',') + '%'}</b> dos votos${p.alinhamento_governo == null ? ' (poucos votos em votações com orientação do Governo)' : ''}.</p>`;
+    if (ev && ev.pragmatico) corpo = `<p class="mt-2 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-800">${esc(ESC.pragmatismo.texto_card)}</p>
+        <p class="mt-2 text-xs text-slate-500">Por que está no círculo: acompanhou a orientação do Governo em ao menos ${ESC.pragmatismo.criterio.match(/(\d+)% dos votos/)?.[1] ?? '60'}% dos votos em ${ev.anos_acima} de ${ev.anos_avaliados} anos avaliados, sob ${ev.governos.length} governos (${ev.governos.map(esc).join(', ')}). Mínimo anual: ${String(ev.minimo).replace('.', ',')}%.</p>` + corpo;
+    else if (ev) corpo += `<p class="mt-2 text-xs text-slate-500">${ev.governos.length < 3 ? `Dados sob apenas ${ev.governos.length} governo(s): insuficiente para o critério de pragmatismo.` : `Não atende ao critério de pragmatismo (acompanhou o Governo em ≥ 60% dos votos em ${ev.anos_acima} de ${ev.anos_avaliados} anos avaliados).`} Isto descreve o padrão de votação, não uma opinião sobre o partido.</p>`;
+    el.innerHTML = `<h3 class="text-lg font-extrabold">${esc(sigla)}</h3>${corpo}
+        <p class="mt-3 text-xs"><a class="underline" href="#evolucao" data-hist="${esc(SEL)}">Ver na linha do tempo do TSE</a></p>`;
+    el.querySelector('[data-hist]').addEventListener('click', () => { if (EVO && EVO.nos.some((n) => n.id === SEL)) detalheNo(SEL); });
+}
+
+function escolher(ent) { SEL = SEL === ent ? null : ent; if (!SEL) $('cartao').innerHTML = '<p class="text-slate-500">Clique num partido do mapa (ou na lista abaixo) para ver os detalhes.</p>'; atualizarMapa(); }
+
+async function iniciarEscala() {
+    try {
+        ESC = await api('/api/partidos/escala');
+        $('escEstado').innerHTML = '';
+        $('escCorpo').classList.remove('hidden');
+        const sl = $('ano');
+        sl.max = ESC.quadros.length - 1; IDX = ESC.quadros.length - 1; sl.value = IDX;
+        $('escMetodo').innerHTML = ESC.metodo.map((t) => `<li>${esc(t)}</li>`).join('');
+        $('escLimites').innerHTML = ESC.limitacoes.map((t) => `<li>${esc(t)}</li>`).join('');
+        $('escLacunas').innerHTML = ESC.lacunas.map((t) => `<li>${esc(t)}</li>`).join('');
+        $('escCriterio').textContent = ESC.pragmatismo.criterio;
+        $('escFonte').innerHTML = `Fonte dos votos: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(ESC.fonte.url))}">${esc(ESC.fonte.nome)}</a>. Anos ${esc(ESC.anos[0])}–${esc(ESC.anos[ESC.anos.length - 1])}.`;
+        montarMapa();
+        sl.addEventListener('input', () => { IDX = +sl.value; atualizarMapa(); });
+        $('trilha').addEventListener('change', atualizarMapa);
+        $('zoom').addEventListener('change', () => { ZOOM = +$('zoom').value; atualizarMapa(); });
+        $('btnPlay').addEventListener('click', () => {
+            if (TIMER) { clearInterval(TIMER); TIMER = null; $('btnPlay').querySelector('span').textContent = 'Reproduzir'; $('btnPlay').querySelector('i').className = 'fa-solid fa-play'; return; }
+            if (IDX >= ESC.quadros.length - 1) { IDX = 0; sl.value = 0; atualizarMapa(); }
+            $('btnPlay').querySelector('span').textContent = 'Pausar'; $('btnPlay').querySelector('i').className = 'fa-solid fa-pause';
+            TIMER = setInterval(() => {
+                if (IDX >= ESC.quadros.length - 1) { $('btnPlay').click(); return; }
+                IDX += 1; sl.value = IDX; atualizarMapa();
+            }, 1100);
+        });
+        atualizarMapa();
+    } catch (e) {
+        $('escEstado').innerHTML = mensagemErro(e);
+    }
+}
+
+iniciarEvolucao();
+iniciarEscala();
+</script>
+</body>
+</html>
