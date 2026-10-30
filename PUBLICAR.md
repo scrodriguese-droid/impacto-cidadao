@@ -64,7 +64,7 @@ login.
 
 `dados/orcamento/`, `dados/autoria/` e `dados/votacoes/` agora vão para o repositório (o servidor gratuito não
 tem disco permanente e não aguenta os coletores pesados). Quando recoletar no seu PC
-(`python backend\coletor_orgaos.py`, `coletor_autoria.py`, `coletor_votacoes.py`), faça commit dos arquivos novos
+(`python backend\coletor_orgaos.py`, `coletor_autoria.py`, `coletor_votacoes.py`, `coletor_governismo.py`), faça commit dos arquivos novos
 e o Render publica de novo sozinho.
 
 ## 6. Atualização automática dos dados (GitHub Actions, gratuito)
