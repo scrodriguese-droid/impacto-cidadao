@@ -34,6 +34,7 @@ from pydantic import BaseModel, Field, field_validator
 import apontamentos
 import autoria
 import bancadas
+import agenda_presidente
 import governismo
 import partidos
 import capitulos
@@ -620,6 +621,15 @@ def governismo_dinamica() -> dict:
     except Exception as exc:  # noqa: BLE001
         log.warning("Federações e blocos indisponíveis: %s", exc)
         raise HTTPException(status_code=503, detail="A lista oficial de blocos e federações está indisponível no momento.") from exc
+
+
+@router.get("/governismo/agenda-presidente", tags=["governismo"])
+def governismo_agenda_presidente() -> dict:
+    try:
+        return agenda_presidente.agenda()
+    except Exception as exc:  # noqa: BLE001
+        log.warning("Agenda do Presidente indisponível: %s", exc)
+        raise HTTPException(status_code=503, detail="A agenda oficial do Presidente está indisponível no momento.") from exc
 
 
 @router.get("/governismo/projeto", tags=["governismo"])
