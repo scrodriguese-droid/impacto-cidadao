@@ -34,6 +34,7 @@ from pydantic import BaseModel, Field, field_validator
 import apontamentos
 import autoria
 import bancadas
+import governismo
 import partidos
 import capitulos
 import db
@@ -567,6 +568,53 @@ def bancadas_alinhamento(desde: Annotated[int | None, Query(ge=2000, le=2100)] =
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     except Exception as exc:  # noqa: BLE001
         log.warning("Alinhamento indisponível: %s", exc)
+        raise HTTPException(status_code=503, detail="Os dados de votação ainda não estão disponíveis.") from exc
+
+
+# --------------------------------------------------------------------------- #
+# De olho no governo: pauta do Congresso, governismo, fidelidade e presença
+# --------------------------------------------------------------------------- #
+@router.get("/governismo", tags=["governismo"])
+def governismo_resumo(desde: Annotated[int | None, Query(ge=2000, le=2100)] = None,
+                      ate: Annotated[int | None, Query(ge=2000, le=2100)] = None) -> dict:
+    try:
+        return governismo.resumo(desde, ate)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except Exception as exc:  # noqa: BLE001
+        log.warning("Governismo indisponível: %s", exc)
+        raise HTTPException(status_code=503, detail="Os dados de votação ainda não estão disponíveis.") from exc
+
+
+@router.get("/governismo/pautas", tags=["governismo"])
+def governismo_pautas() -> dict:
+    try:
+        return governismo.pautas()
+    except Exception as exc:  # noqa: BLE001
+        log.warning("Pautas quentes indisponíveis: %s", exc)
+        raise HTTPException(status_code=503, detail="Os dados de votação ainda não estão disponíveis.") from exc
+
+
+@router.get("/governismo/agenda", tags=["governismo"])
+def governismo_agenda() -> dict:
+    try:
+        return governismo.agenda()
+    except Exception as exc:  # noqa: BLE001
+        log.warning("Agenda do Congresso indisponível: %s", exc)
+        raise HTTPException(status_code=503, detail="As agendas oficiais da Câmara e do Senado estão indisponíveis no momento.") from exc
+
+
+@router.get("/governismo/deputados/{dep_id}", tags=["governismo"])
+def governismo_deputado(dep_id: int, desde: Annotated[int | None, Query(ge=2000, le=2100)] = None,
+                        ate: Annotated[int | None, Query(ge=2000, le=2100)] = None) -> dict:
+    try:
+        return governismo.deputado(dep_id, desde, ate)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail="Deputado(a) não encontrado(a) nos dados de votação.") from exc
+    except Exception as exc:  # noqa: BLE001
+        log.warning("Perfil de governismo indisponível: %s", exc)
         raise HTTPException(status_code=503, detail="Os dados de votação ainda não estão disponíveis.") from exc
 
 

@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>De olho no governo — ImpactoCidadão</title>
+    <meta name="description" content="O que está na pauta do Congresso e como cada deputado e partido votou em relação ao Governo: governismo, fidelidade ao partido e presença, com dados abertos oficiais.">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="assets/tailwind-config.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Inter', system-ui, sans-serif; }
+        :focus-visible { outline: 2px solid #A92823; outline-offset: 2px; }
+    </style>
+    <link rel="stylesheet" href="assets/brutalista.css">
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-full flex flex-col transition-colors duration-200">
+
+<a href="#conteudo" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-white focus:text-slate-900 focus:p-3">Ir para o conteúdo</a>
+<div id="cabecalho"></div>
+
+<main id="conteudo" class="max-w-6xl mx-auto px-4 sm:px-6 pt-6 pb-10 flex-grow w-full space-y-10">
+    <header>
+        <h1 class="text-2xl font-extrabold tracking-tight"><i class="fa-solid fa-eye mr-2 text-brand-700 dark:text-brand-400" aria-hidden="true"></i>De olho no governo</h1>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">O que o Congresso vai votar e como cada deputado e partido votou em relação ao Governo. Os números saem das votações nominais oficiais (as que registram o voto de cada um no painel); as regras de cálculo estão à vista e não há nota de bom ou ruim: votar com ou contra o Governo não é virtude nem defeito por si.</p>
+        <p id="consulta" class="text-[11px] text-slate-400 mt-2"></p>
+    </header>
+
+    <!-- 1. O que está na mesa -->
+    <section aria-labelledby="h-agenda">
+        <h2 id="h-agenda" class="text-xl font-bold"><i class="fa-solid fa-calendar-days mr-2 text-slate-400" aria-hidden="true"></i>O que está na mesa</h2>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Pauta do Plenário da Câmara e do Senado nos próximos dias. Só projetos de peso (PEC, PLP, PL, MPV e PDL): requerimentos, homenagens e sessões solenes ficam de fora.</p>
+        <div id="agenda" class="mt-4" role="status"><p class="text-sm text-slate-500">Carregando a agenda oficial…</p></div>
+    </section>
+
+    <!-- 2. Termômetro e quem é quem -->
+    <section aria-labelledby="h-termo">
+        <h2 id="h-termo" class="text-xl font-bold"><i class="fa-solid fa-gauge-high mr-2 text-slate-400" aria-hidden="true"></i>O termômetro da Câmara</h2>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Quão difícil tem sido para o Governo aprovar o que quer: em que fração dos votos nominais os deputados seguiram a orientação do Governo, contando abstenção, obstrução e falta contra.</p>
+        <div id="termoEstado" class="mt-3" role="status"><p class="text-sm text-slate-500">Carregando votações…</p></div>
+        <div id="termo"></div>
+    </section>
+
+    <!-- 3. Deputado -->
+    <section aria-labelledby="h-dep">
+        <h2 id="h-dep" class="text-xl font-bold"><i class="fa-solid fa-user-check mr-2 text-slate-400" aria-hidden="true"></i>E o seu deputado?</h2>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Procure por nome, partido ou estado (ex.: “SP”) para ver o governismo, a fidelidade ao partido, a presença e as últimas votações importantes.</p>
+        <div class="mt-3 relative max-w-xl">
+            <label for="buscaDep" class="sr-only">Buscar deputado</label>
+            <input id="buscaDep" type="search" autocomplete="off" placeholder="Nome, partido ou estado…" class="w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-4 py-2.5 text-sm" aria-controls="resultadosDep">
+        </div>
+        <div id="resultadosDep" class="mt-3 flex flex-wrap gap-2" role="list"></div>
+        <div id="perfil" class="mt-4" aria-live="polite"></div>
+    </section>
+
+    <!-- 4. Pautas quentes -->
+    <section aria-labelledby="h-pautas">
+        <h2 id="h-pautas" class="text-xl font-bold"><i class="fa-solid fa-fire mr-2 text-slate-400" aria-hidden="true"></i>Pautas quentes: como cada partido votou</h2>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Votações recentes de projetos de peso em que o Governo orientou “Sim” ou “Não”. Em cada uma, a barra mostra a parcela dos votos “Sim” e “Não” de cada partido.</p>
+        <div id="pautas" class="mt-4 space-y-4" role="status"><p class="text-sm text-slate-500">Carregando votações…</p></div>
+    </section>
+
+    <section aria-labelledby="h-notas" class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5">
+        <h2 id="h-notas" class="font-bold">Como ler estes números</h2>
+        <ul id="notas" class="mt-2 text-sm text-slate-600 dark:text-slate-400 list-disc pl-5 space-y-1.5"></ul>
+    </section>
+</main>
+
+<div id="rodape"></div>
+
+<script src="assets/comum.js"></script>
+<script>
+renderLayout('de-olho');
+
+const num = (n) => Number(n).toLocaleString('pt-BR');
+const pc = (v) => (v == null ? '—' : Number(v).toLocaleString('pt-BR', { maximumFractionDigits: 0 }) + '%');
+const COR_GOV = '#A92823', COR_FID = '#0d9488', COR_PRES = '#475569';
+const barra = (v, cor) => `<div class="h-2 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden" aria-hidden="true"><div class="h-full" style="width:${Math.max(1, v || 0)}%;background:${cor}"></div></div>`;
+const cartao = 'rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800';
+const FAIXA = {
+    alto: { rot: 'Apoia com frequência', cls: 'text-brand-700 dark:text-brand-400' },
+    medio: { rot: 'Apoio parcial', cls: 'text-slate-600 dark:text-slate-300' },
+    baixo: { rot: 'Raramente apoia', cls: 'text-slate-500 dark:text-slate-400' },
+};
+const rotFaixa = (f) => (f && FAIXA[f] ? FAIXA[f].rot : '');
+const hora = (iso) => (iso || '').slice(11, 16).replace(':', 'h');
+const diaSemana = (iso) => { const d = new Date(iso.slice(0, 10) + 'T00:00:00'); return d.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit' }); };
+const corta = (t, n) => { t = String(t || '').trim(); return t.length > n ? t.slice(0, n).replace(/\s+\S*$/, '') + '…' : t; };
+
+let RES = null, PAUTAS = null;
+
+// ---------------------------------------------------------------- agenda
+function itemPauta(i) {
+    const nome = i.apelido ? `<b>${esc(i.apelido)}</b> <span class="text-slate-500">· ${esc(i.proposicao)}</span>` : `<b>${esc(i.proposicao)}</b>`;
+    return `<li class="py-2 border-t border-slate-100 dark:border-slate-700 first:border-0">
+        <p class="text-sm">${nome}</p>
+        <p class="text-xs text-slate-600 dark:text-slate-400 mt-0.5">${esc(corta(i.ementa, 260))}</p>
+        ${i.apreciacao ? `<p class="text-[11px] text-slate-500 mt-0.5">${esc(i.apreciacao)}</p>` : ''}
+        ${i.regime ? `<p class="text-[11px] text-slate-500 mt-0.5">${esc(i.regime)}${i.situacao ? ' · ' + esc(corta(i.situacao, 90)) : ''}</p>` : ''}</li>`;
+}
+
+function blocoCamara(c) {
+    if (!c) return '<p class="text-sm text-slate-500">Agenda da Câmara indisponível no momento.</p>';
+    const comPauta = c.sessoes.filter((s) => s.itens.length);
+    let corpo = '';
+    if (comPauta.length) {
+        corpo = comPauta.map((s) => `<div class="mt-3"><p class="text-xs font-semibold text-slate-500 uppercase">${esc(diaSemana(s.inicio))}, ${esc(hora(s.inicio))} · ${esc(s.tipo)}</p><ul>${s.itens.map(itemPauta).join('')}</ul></div>`).join('');
+    } else {
+        const outras = c.sessoes.length ? `<p class="text-xs text-slate-500 mt-1">Há ${c.sessoes.length} ${c.sessoes.length > 1 ? 'sessões marcadas' : 'sessão marcada'} (${[...new Set(c.sessoes.map((s) => s.tipo))].map(esc).join(', ')}), sem projetos de peso na pauta.</p>` : '';
+        corpo = `<p class="mt-2 text-sm">Nenhuma sessão deliberativa com projetos de peso marcada para os próximos 14 dias.</p>${outras}`;
+        if (c.ultima_deliberativa) {
+            const u = c.ultima_deliberativa;
+            corpo += `<div class="mt-3"><p class="text-xs font-semibold text-slate-500 uppercase">Última pauta deliberativa · ${esc(fmtData(u.inicio))} (já passou)</p><ul>${u.itens.slice(0, 5).map(itemPauta).join('')}</ul></div>`;
+        }
+    }
+    return corpo;
+}
+
+function blocoSenado(s) {
+    if (!s) return '<p class="text-sm text-slate-500">Agenda do Senado indisponível no momento.</p>';
+    const sess = s.sessoes.filter((x) => x.situacao !== 'Cancelada');
+    let corpo = sess.length ? sess.map((x) => `<div class="mt-3"><p class="text-xs font-semibold text-slate-500 uppercase">${esc(diaSemana(x.data))}, ${esc((x.hora || '').replace(':', 'h'))} · ${esc(x.tipo)}${x.pauta_confirmada ? '' : ' · pauta ainda não confirmada'}</p>
+        ${x.materias.length ? `<ul>${x.materias.map(itemPauta).join('')}</ul>` : '<p class="text-xs text-slate-500 mt-1">Sem projetos de peso na pauta até agora.</p>'}</div>`).join('')
+        : '<p class="mt-2 text-sm">Nenhuma sessão marcada para os próximos dias.</p>';
+    if (s.ultimas_votacoes.length) {
+        corpo += `<div class="mt-4"><p class="text-xs font-semibold text-slate-500 uppercase">Últimas votações nominais abertas</p><ul>${s.ultimas_votacoes.map((v) => `<li class="py-2 border-t border-slate-100 dark:border-slate-700 first:border-0">
+            <p class="text-sm"><b>${esc(v.proposicao)}</b> <span class="text-slate-500">· ${esc(fmtData(v.data))} · ${esc(v.resultado || '')} (${num(v.sim)} sim × ${num(v.nao)} não)</span></p>
+            <p class="text-xs text-slate-600 dark:text-slate-400 mt-0.5">${esc(corta(v.ementa, 220))}</p></li>`).join('')}</ul></div>`;
+    }
+    return corpo;
+}
+
+async function carregarAgenda() {
+    try {
+        const a = await api('/api/governismo/agenda');
+        const erro = a.erros.length ? `<p class="mb-3 text-xs text-amber-700 dark:text-amber-300"><i class="fa-solid fa-triangle-exclamation mr-1" aria-hidden="true"></i>${a.erros.map((e) => esc(e.id === 'camara' ? 'Câmara' : 'Senado')).join(' e ')}: fonte oficial indisponível no momento.</p>` : '';
+        $('agenda').innerHTML = `${erro}<div class="grid md:grid-cols-2 gap-4">
+            <article class="${cartao} p-4"><h3 class="font-bold"><i class="fa-solid fa-landmark mr-2 text-slate-400" aria-hidden="true"></i>Câmara dos Deputados</h3>${blocoCamara(a.camara)}
+                ${a.camara ? `<p class="mt-3 text-[11px] text-slate-400">Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(a.camara.fonte.url))}">${esc(a.camara.fonte.nome)}</a></p>` : ''}</article>
+            <article class="${cartao} p-4"><h3 class="font-bold"><i class="fa-solid fa-landmark-dome mr-2 text-slate-400" aria-hidden="true"></i>Senado Federal</h3>${blocoSenado(a.senado)}
+                ${a.senado ? `<p class="mt-3 text-[11px] text-slate-400">Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(a.senado.fonte.url))}">${esc(a.senado.fonte.nome)}</a></p>` : ''}</article></div>
+            <p class="mt-2 text-xs text-slate-500">${esc(a.nota)} Consultado em ${esc(fmtDataHora(a.consultado_em))}.</p>`;
+    } catch (e) {
+        $('agenda').innerHTML = mensagemErro(e);
+    }
+}
+
+// ---------------------------------------------------------------- termômetro
+function quadroGlobal() {
+    const g = RES.global;
+    const seg = (v, cls, rot) => `<div class="${cls}" style="width:${v || 0}%" title="${rot}: ${pc(v)}"></div>`;
+    return `<div class="${cartao} p-5">
+        <div class="grid sm:grid-cols-4 gap-4">
+            <div class="sm:col-span-2"><p class="text-xs font-semibold text-slate-500">Taxa de governismo da Câmara</p>
+                <p class="text-4xl font-extrabold text-brand-700 dark:text-brand-400">${pc(g.governismo)}</p>
+                <p class="text-xs text-slate-500">dos votos seguiram a orientação do Governo · ${esc(rotFaixa(g.faixa))}</p></div>
+            <div><p class="text-xs font-semibold text-slate-500">Fidelidade média ao partido</p><p class="text-2xl font-extrabold">${pc(g.fidelidade)}</p></div>
+            <div><p class="text-xs font-semibold text-slate-500">Presença nas votações</p><p class="text-2xl font-extrabold">${pc(g.presenca)}</p></div>
+        </div>
+        <div class="mt-4 flex h-3 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-700" role="img" aria-label="Composição dos votos: ${pc(g.governismo)} com o Governo, ${pc(g.contra)} contra, ${pc(g.abstencao)} abstenção ou obstrução, ${pc(g.ausente)} ausência">
+            ${seg(g.governismo, 'bg-brand-700', 'Com o Governo')}${seg(g.contra, 'bg-slate-500', 'Contra')}${seg(g.abstencao, 'bg-amber-500', 'Abstenção/obstrução')}${seg(g.ausente, 'bg-slate-300 dark:bg-slate-600', 'Ausente')}</div>
+        <p class="mt-2 text-xs text-slate-500 flex flex-wrap gap-x-4 gap-y-1">
+            <span><span class="inline-block w-2.5 h-2.5 rounded-sm bg-brand-700 align-middle"></span> Com o Governo ${pc(g.governismo)}</span>
+            <span><span class="inline-block w-2.5 h-2.5 rounded-sm bg-slate-500 align-middle"></span> Contra ${pc(g.contra)}</span>
+            <span><span class="inline-block w-2.5 h-2.5 rounded-sm bg-amber-500 align-middle"></span> Abstenção/obstrução ${pc(g.abstencao)}</span>
+            <span><span class="inline-block w-2.5 h-2.5 rounded-sm bg-slate-300 dark:bg-slate-600 align-middle"></span> Ausente ${pc(g.ausente)}</span></p>
+        <p class="mt-3 text-xs text-slate-500">Senado: o Senado não publica a orientação do Governo nos dados abertos de votação, então não há taxa de governismo do Senado. Mostramos a agenda e as votações abertas acima.</p></div>`;
+}
+
+function tabelaPartidos() {
+    const L = RES.limiares;
+    const grupos = [['alto', `${L.alto}% ou mais`], ['medio', `${L.baixo}% a ${L.alto - 1}%`], ['baixo', `menos de ${L.baixo}%`]];
+    const linha = (p) => `<tr class="border-t border-slate-100 dark:border-slate-700 align-top">
+        <td class="py-2 pr-3 font-semibold whitespace-nowrap"><button type="button" data-partido="${esc(p.sigla)}" class="underline decoration-dotted hover:text-brand-700" title="Ver os deputados do ${esc(p.sigla)}">${esc(p.sigla)}</button>
+            <span class="block text-[11px] font-normal text-slate-500">${num(p.ativos)} em exercício</span></td>
+        <td class="py-2 pr-4 min-w-[8rem]"><b>${pc(p.governismo)}</b>${barra(p.governismo, COR_GOV)}</td>
+        <td class="py-2 pr-4 min-w-[7rem]"><b>${pc(p.fidelidade)}</b>${barra(p.fidelidade, COR_FID)}</td>
+        <td class="py-2 pr-4 min-w-[7rem]"><b>${pc(p.coesao)}</b>${barra(p.coesao, COR_FID)}</td>
+        <td class="py-2 min-w-[7rem]"><b>${pc(p.presenca)}</b>${barra(p.presenca, COR_PRES)}</td></tr>`;
+    return grupos.map(([f, faixa]) => {
+        const ps = RES.partidos.filter((p) => p.faixa === f);
+        if (!ps.length) return '';
+        return `<div class="${cartao} p-4 mt-4 overflow-x-auto"><h3 class="font-bold ${FAIXA[f].cls}">${esc(FAIXA[f].rot)} <span class="text-xs font-medium text-slate-500">· taxa de governismo de ${esc(faixa)}</span></h3>
+            <table class="w-full text-sm mt-2"><thead><tr class="text-left text-xs text-slate-500">
+                <th class="pb-2 pr-3">Partido</th><th class="pb-2 pr-4">Governismo</th><th class="pb-2 pr-4" title="Votos do deputado iguais ao da maioria do próprio partido">Fidelidade ao partido</th><th class="pb-2 pr-4" title="Quão unida é a bancada: 100% = todos votam igual">Coesão da bancada</th><th class="pb-2">Presença</th></tr></thead>
+                <tbody>${ps.map(linha).join('')}</tbody></table></div>`;
+    }).join('');
+}
+
+async function carregarResumo(desde, ate) {
+    try {
+        const q = new URLSearchParams();
+        if (desde) q.set('desde', desde);
+        if (ate) q.set('ate', ate);
+        RES = await api('/api/governismo?' + q);
+        const an = RES.periodo.anos_disponiveis;
+        const sel = (id, v) => `<select id="${id}" class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1">${an.map((a) => `<option ${a === v ? 'selected' : ''}>${a}</option>`).join('')}</select>`;
+        $('termoEstado').innerHTML = '';
+        $('termo').innerHTML = `<p class="mt-3 text-sm flex flex-wrap items-center gap-2"><label for="grDe">De</label>${sel('grDe', RES.periodo.desde)}<label for="grAte">até</label>${sel('grAte', RES.periodo.ate)}
+            <span class="text-xs text-slate-500">· ${num(RES.votacoes_com_orientacao)} votações em que o Governo orientou “Sim” ou “Não” (de ${num(RES.votacoes_nominais)} nominais no Plenário)</span></p>
+            <div class="mt-3">${quadroGlobal()}</div>
+            <h3 class="text-lg font-bold mt-8">Quem é quem na Câmara</h3>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Partidos agrupados pela fatia dos votos que seguiu a orientação do Governo. A faixa descreve o número, não julga o partido. Clique na sigla para ver os deputados.</p>
+            ${tabelaPartidos()}`;
+        $('consulta').textContent = `Votações até ${fmtData(RES.ate_data)} · dados coletados em ${fmtDataHora(RES.gerado_em)}.`;
+        $('notas').innerHTML = RES.notas.map((n) => `<li>${esc(n)}</li>`).join('') +
+            `<li>Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(RES.fonte.url))}">${esc(RES.fonte.nome)}</a>.</li>`;
+        const troca = () => carregarResumo(Number($('grDe').value), Number($('grAte').value));
+        $('grDe').addEventListener('change', troca); $('grAte').addEventListener('change', troca);
+        buscar();
+    } catch (e) {
+        RES = null;
+        $('termoEstado').innerHTML = mensagemErro(e);
+        $('termo').innerHTML = '';
+    }
+}
+
+// ---------------------------------------------------------------- deputado
+const norm = (s) => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+let selecionado = null;
+
+function buscar() {
+    const alvo = $('resultadosDep');
+    const q = norm($('buscaDep').value.trim());
+    if (!RES || q.length < 2) { alvo.innerHTML = ''; return; }
+    const achados = RES.deputados.filter((d) => norm(d.nome).includes(q) || norm(d.partido) === q || norm(d.uf) === q)
+        .sort((a, b) => (b.ativo - a.ativo) || a.nome.localeCompare(b.nome, 'pt-BR'));
+    alvo.innerHTML = achados.length ? achados.slice(0, 24).map((d) => `<button type="button" role="listitem" data-dep="${d.id}" class="px-3 py-1.5 rounded-lg border ${selecionado === d.id ? 'border-brand-700 bg-brand-50 dark:bg-slate-700' : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800'} text-sm text-left hover:bg-slate-100 dark:hover:bg-slate-700">
+        <b>${esc(d.nome)}</b> <span class="text-xs text-slate-500">${esc(d.partido)}-${esc(d.uf)}${d.ativo ? '' : ' · fora do exercício'}</span></button>`).join('')
+        + (achados.length > 24 ? `<p class="w-full text-xs text-slate-500">Mostrando 24 de ${num(achados.length)}: refine a busca.</p>` : '')
+        : '<p class="text-sm text-slate-500">Nenhum deputado encontrado nesse período.</p>';
+}
+
+const VOTO_ICONE = { 'Sim': 'fa-check', 'Não': 'fa-xmark', 'Abstenção': 'fa-minus', 'Obstrução': 'fa-hand', 'Presidiu a sessão': 'fa-gavel', 'Não votou': 'fa-ban' };
+
+async function abrirPerfil(id) {
+    selecionado = id;
+    buscar();
+    $('perfil').innerHTML = '<p class="text-sm text-slate-500">Carregando…</p>';
+    try {
+        const q = new URLSearchParams();
+        if (RES) { q.set('desde', RES.periodo.desde); q.set('ate', RES.periodo.ate); }
+        const d = await api(`/api/governismo/deputados/${id}?` + q);
+        const det = d.detalhe, tot = d.votacoes || 1;
+        const foto = d.foto ? `<img src="${esc(urlSegura(d.foto))}" alt="Foto de ${esc(d.nome)}" class="w-20 h-24 rounded-lg object-cover bg-slate-200" loading="lazy">`
+            : '<span class="w-20 h-24 rounded-lg bg-slate-200 dark:bg-slate-700 flex items-center justify-center" aria-hidden="true"><i class="fa-solid fa-user text-slate-400 text-2xl"></i></span>';
+        const metrica = (rot, v, cor, dica) => `<div title="${esc(dica)}"><p class="text-xs font-semibold text-slate-500">${rot}</p><p class="text-2xl font-extrabold">${pc(v)}</p>${barra(v, cor)}</div>`;
+        const seg = (n, cls, rot) => `<div class="${cls}" style="width:${100 * n / tot}%" title="${rot}: ${num(n)}"></div>`;
+        $('perfil').innerHTML = `<article class="${cartao} p-5">
+            <div class="flex gap-4 items-start">${foto}
+                <div class="min-w-0"><h3 class="text-lg font-extrabold">${esc(d.nome)}</h3>
+                    <p class="text-sm text-slate-600 dark:text-slate-400">Deputado(a) federal · ${esc(d.partido)}-${esc(d.uf)}${d.ativo ? '' : ' · fora do exercício'}</p>
+                    <p class="text-xs text-slate-500 mt-1">Votos registrados de ${esc(fmtData(d.primeiro_voto))} a ${esc(fmtData(d.ultimo_voto))} · <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(d.url))}">página oficial</a></p></div></div>
+            <div class="mt-4 grid sm:grid-cols-3 gap-4">
+                ${metrica('Taxa de governismo', d.governismo, COR_GOV, `Votou como o Governo orientou em ${num(det.alinhado)} de ${num(d.votacoes)} votações`)}
+                ${metrica('Fidelidade ao partido', d.fidelidade, COR_FID, 'Votos iguais ao da maioria do próprio partido')}
+                ${metrica('Presença', d.presenca, COR_PRES, 'Votações em que registrou voto')}
+            </div>
+            <p class="mt-1 text-xs text-slate-500">${esc(rotFaixa(d.faixa))} · em ${num(d.votacoes)} votações com orientação do Governo, no período ${d.periodo.desde}–${d.periodo.ate}.</p>
+            <div class="mt-3 flex h-3 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-700" role="img" aria-label="Com o Governo ${num(det.alinhado)}, contra ${num(det.contra)}, abstenção ou obstrução ${num(det.abstencao)}, ausente ${num(det.ausente)}">
+                ${seg(det.alinhado, 'bg-brand-700', 'Com o Governo')}${seg(det.contra, 'bg-slate-500', 'Contra')}${seg(det.abstencao, 'bg-amber-500', 'Abstenção/obstrução')}${seg(det.ausente, 'bg-slate-300 dark:bg-slate-600', 'Ausente')}</div>
+            <p class="mt-2 text-xs text-slate-500 flex flex-wrap gap-x-4 gap-y-1">
+                <span><span class="inline-block w-2.5 h-2.5 rounded-sm bg-brand-700 align-middle"></span> Com o Governo ${num(det.alinhado)}</span>
+                <span><span class="inline-block w-2.5 h-2.5 rounded-sm bg-slate-500 align-middle"></span> Contra ${num(det.contra)}</span>
+                <span><span class="inline-block w-2.5 h-2.5 rounded-sm bg-amber-500 align-middle"></span> Abstenção/obstrução ${num(det.abstencao)}</span>
+                <span><span class="inline-block w-2.5 h-2.5 rounded-sm bg-slate-300 dark:bg-slate-600 align-middle"></span> Ausente ${num(det.ausente)}</span></p>
+            ${d.por_ano.length > 1 ? `<p class="mt-3 text-xs text-slate-600 dark:text-slate-400"><b>Governismo por ano:</b> ${d.por_ano.map((a) => `${a.ano}: ${pc(a.governismo)}`).join(' · ')}</p>` : ''}
+            <h4 class="mt-5 font-bold text-sm">Como votou nas últimas pautas quentes</h4>
+            <ul class="mt-1 text-sm">${d.pautas.map((p) => `<li class="py-2 border-t border-slate-100 dark:border-slate-700 first:border-0 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+                <span class="min-w-0"><b>${esc(p.apelido || p.proposicao)}</b> <span class="text-xs text-slate-500">${p.apelido ? esc(p.proposicao) + ' · ' : ''}${esc(fmtData(p.data))}</span>
+                    <span class="block text-xs text-slate-500">Governo orientou “${esc(p.orientacao_governo)}”</span></span>
+                <span class="whitespace-nowrap font-semibold"><i class="fa-solid ${VOTO_ICONE[p.voto] || 'fa-minus'} mr-1" aria-hidden="true"></i>${esc(p.voto)}
+                    <span class="text-xs font-normal text-slate-500">${p.alinhado === true ? '· com o Governo' : p.alinhado === false ? '· contra o Governo' : ''}</span></span></li>`).join('')}</ul>
+        </article>`;
+    } catch (e) {
+        $('perfil').innerHTML = mensagemErro(e);
+    }
+}
+
+$('buscaDep').addEventListener('input', debounce(buscar, 120));
+document.addEventListener('click', (ev) => {
+    const d = ev.target.closest && ev.target.closest('[data-dep]');
+    if (d) { abrirPerfil(Number(d.dataset.dep)); return; }
+    const p = ev.target.closest && ev.target.closest('[data-partido]');
+    if (p) { $('buscaDep').value = p.dataset.partido; buscar(); $('h-dep').scrollIntoView({ behavior: 'smooth' }); }
+});
+
+// ---------------------------------------------------------------- pautas quentes
+function cartaoPauta(p, aberta) {
+    const titulo = p.apelido || p.proposicao;
+    const chips = p.partidos.map((x) => `<div class="min-w-[7.5rem]"><p class="text-xs font-semibold">${esc(x.sigla)} <span class="font-normal text-slate-500">${pc(x.pct_sim)} sim</span></p>
+        <div class="flex h-2 rounded-full overflow-hidden bg-slate-300 dark:bg-slate-600" role="img" aria-label="${esc(x.sigla)}: ${num(x.sim)} sim, ${num(x.nao)} não"><div style="width:${x.pct_sim}%;background:${COR_FID}"></div></div></div>`).join('');
+    return `<details class="${cartao} p-4" ${aberta ? 'open' : ''}>
+        <summary class="cursor-pointer">
+            <span class="font-bold">${esc(titulo)}</span> <span class="text-xs text-slate-500">${p.apelido ? esc(p.proposicao) + ' · ' : ''}${esc(fmtData(p.data))}</span>
+            <span class="block text-sm text-slate-600 dark:text-slate-400 mt-0.5">${esc(corta(p.ementa || p.descricao, 230))}</span>
+            <span class="block text-xs mt-1"><b>Governo orientou:</b> ${esc(p.orientacao_governo)} · <b>${p.aprovada ? 'Aprovada' : 'Rejeitada'}</b> (${num(p.sim)} sim × ${num(p.nao)} não)</span></summary>
+        <p class="mt-3 text-xs font-semibold text-slate-500 uppercase">Parcela de votos “Sim” por partido <span class="normal-case font-normal">(verde-azulado = sim; cinza = não)</span></p>
+        <div class="mt-2 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">${chips}</div></details>`;
+}
+
+async function carregarPautas() {
+    try {
+        PAUTAS = await api('/api/governismo/pautas');
+        $('pautas').innerHTML = PAUTAS.pautas.map((p, i) => cartaoPauta(p, i === 0)).join('') +
+            `<p class="text-xs text-slate-500">${esc(PAUTAS.nota)}</p>`;
+    } catch (e) {
+        $('pautas').innerHTML = mensagemErro(e);
+    }
+}
+
+carregarAgenda();
+carregarResumo();
+carregarPautas();
+</script>
+</body>
+</html>
