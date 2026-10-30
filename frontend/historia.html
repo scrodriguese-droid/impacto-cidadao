@@ -57,23 +57,31 @@
         </ul>
     </details>
 
-    <section class="mt-5" aria-labelledby="tGrafico">
-        <h2 id="tGrafico" class="text-lg font-bold"><i class="fa-solid fa-chart-line mr-2 text-brand-600" aria-hidden="true"></i>Executivo e Congresso no tempo</h2>
-        <p class="text-xs text-slate-500 mt-1">Cada linha é uma posição na escala esquerda–direita. Em cada uma, o bloco de cima é o <b>Executivo</b> e o de baixo é a <b>maioria do Congresso</b>: quando os dois estão na mesma linha, estavam alinhados. Clique em um bloco do Executivo para ir ao cartão do governo.</p>
-        <div class="mt-3 overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-2 sm:p-3">
-            <div id="grafico" class="min-w-[720px]"></div></div>
-        <p class="mt-2 text-[11px] text-slate-500">A linha “Esquerda” está vazia porque nenhum governo nem maioria do Congresso foi classificado assim; o ponto mais à esquerda usado é o centro-esquerda. A linha “Fora da escala” reúne os períodos em que esquerda e direita não descrevem a política (oligarquias, Vargas, interinos) e os anos sem Congresso.</p>
-        <div id="resumoAlinha" class="mt-3"></div>
-    </section>
+    <section class="mt-5" aria-labelledby="tEstado">
+        <h2 id="tEstado" class="text-lg font-bold"><i class="fa-solid fa-landmark mr-2 text-brand-600" aria-hidden="true"></i>A evolução do Estado e do poder</h2>
+        <p class="text-xs text-slate-500 mt-1">Escolha uma era para cruzar quatro eixos: a Constituição, a máquina pública, o contexto mundial e a cadeira presidencial. A divisão em eras é uma síntese editorial da literatura de história e administração pública.</p>
+        <div id="eras" class="mt-3 flex gap-1.5 overflow-x-auto pb-1" role="group" aria-label="Escolher a era"></div>
+        <div id="eraPainel" class="mt-3" aria-live="polite"></div>
+        <details class="mt-3 text-[11px] text-slate-500"><summary class="cursor-pointer font-semibold">Fontes desta linha do tempo</summary><ul id="fontesEstado" class="mt-1 list-disc pl-5 space-y-1"></ul></details>
 
-    <section class="mt-8" aria-labelledby="tLista">
-        <h2 id="tLista" class="text-lg font-bold"><i class="fa-solid fa-timeline mr-2 text-brand-600" aria-hidden="true"></i>Quem governou e a maioria do Congresso</h2>
+    <div class="mt-8" role="region" aria-labelledby="tLista">
+        <h3 id="tLista" class="text-base font-bold"><i class="fa-solid fa-timeline mr-2 text-brand-600" aria-hidden="true"></i>Quem governou e a maioria do Congresso</h3>
         <div class="faixa-fixa -mx-4 sm:-mx-6 px-4 sm:px-6 py-2 mt-3 bg-slate-50/95 dark:bg-slate-900/95 backdrop-blur border-b border-slate-200 dark:border-slate-700">
             <div id="chipsFase" class="flex gap-1.5 overflow-x-auto md:flex-wrap pb-1" role="group" aria-label="Filtrar por período histórico"></div>
             <div id="cabColunas" class="hidden md:grid mt-2 px-3 text-[10px] font-bold uppercase tracking-wide text-slate-500" aria-hidden="true"></div>
         </div>
         <div id="legenda" class="mt-3 flex flex-wrap gap-x-3 gap-y-1.5 text-[11px]"></div>
         <div id="lista" class="mt-3 space-y-5"></div>
+    </div>
+    </section>
+
+    <section class="mt-8" aria-labelledby="tGrafico">
+        <h2 id="tGrafico" class="text-lg font-bold"><i class="fa-solid fa-chart-line mr-2 text-brand-600" aria-hidden="true"></i>Executivo e Congresso no tempo</h2>
+        <p class="text-xs text-slate-500 mt-1">Cada linha é uma posição na escala esquerda–direita. Em cada uma, o bloco de cima é o <b>Executivo</b> e o de baixo é a <b>maioria do Congresso</b>: quando os dois estão na mesma linha, estavam alinhados. Clique em um bloco do Executivo para ir ao cartão do governo.</p>
+        <div class="mt-3 overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-2 sm:p-3">
+            <div id="grafico" class="min-w-[720px]"></div></div>
+        <p class="mt-2 text-[11px] text-slate-500">A linha “Esquerda” está vazia porque nenhum governo nem maioria do Congresso foi classificado assim; o ponto mais à esquerda usado é o centro-esquerda. A linha “Fora da escala” reúne os períodos em que esquerda e direita não descrevem a política (oligarquias, Vargas, interinos) e os anos sem Congresso.</p>
+        <div id="resumoAlinha" class="mt-3"></div>
     </section>
 
     <section class="mt-8 text-xs text-slate-500" aria-labelledby="tFontes">
@@ -246,6 +254,67 @@ function resumoAlinhamento() {
         <div class="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-[11px]">
             ${itens.map(([k, c]) => `<span class="inline-flex items-center gap-1.5"><span class="inline-block w-3 h-3 rounded ${c}"></span>${esc(ALINHA[k][0])}: ${Math.round(100 * ms[k] / tot)}% (${anosDe(ms[k])} anos)</span>`).join('')}</div>`;
 }
+
+/* ---------- linha do tempo institucional: era a era ---------- */
+const E = { dados: null, era: '' };
+const STATUS_CLS = {
+    ok: ['fa-check', 'bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200'],
+    int: ['fa-triangle-exclamation', 'bg-rose-100 text-rose-900 dark:bg-rose-950 dark:text-rose-200'],
+    vice: ['fa-user-clock', 'bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200'],
+    ind: ['fa-people-group', 'bg-slate-200 text-slate-800 dark:bg-slate-700 dark:text-slate-100'],
+    curso: ['fa-hourglass-half', 'bg-sky-100 text-sky-900 dark:bg-sky-950 dark:text-sky-200'],
+};
+const anosEra = (e) => `${e.ini}–${e.fim || 'hoje'}`;
+
+function desenharEras() {
+    $('eras').innerHTML = E.dados.eras.map((e) => {
+        const on = e.id === E.era;
+        return `<button type="button" data-era="${esc(e.id)}" aria-pressed="${on}" class="shrink-0 text-left px-3 py-2 rounded-xl border text-xs ${on ? 'bg-brand-600 text-white border-brand-600' : 'border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700'} ${e.sub ? 'border-dashed' : ''}">
+            <span class="block font-extrabold tabular-nums">${esc(anosEra(e))}</span><span class="block">${esc(e.curto)}</span></button>`;
+    }).join('');
+}
+
+function cartao(icone, rotulo, titulo, corpo) {
+    return `<div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
+        <p class="text-[10px] font-bold uppercase tracking-wide text-slate-500"><i class="fa-solid ${icone} mr-1.5" aria-hidden="true"></i>${esc(rotulo)}</p>
+        <p class="mt-1 text-sm font-extrabold">${esc(titulo)}</p>${corpo}</div>`;
+}
+
+function desenharEraPainel() {
+    const e = E.dados.eras.find((x) => x.id === E.era), S = E.dados.status;
+    const pres = e.cadeira.presidentes.map(([nome, anosP, st, nota]) => {
+        const [ic, cls] = STATUS_CLS[st];
+        return `<li class="flex flex-wrap items-baseline gap-x-2 gap-y-0.5"><span class="pil ${cls}" title="${esc(S[st])}"><i class="fa-solid ${ic} mr-1" aria-hidden="true"></i>${esc(S[st])}</span>
+            <span class="text-sm"><b>${esc(nome)}</b> <span class="text-xs text-slate-500 tabular-nums">${esc(anosP)}</span></span>${nota ? `<span class="text-xs text-slate-600 dark:text-slate-400">· ${esc(nota)}</span>` : ''}</li>`;
+    }).join('');
+    $('eraPainel').innerHTML = `<div class="mb-3"><h3 class="text-base font-extrabold">${esc(e.nome)} <span class="font-semibold text-slate-500">${esc(anosEra(e))}</span>${e.sub ? ' <span class="pil bg-slate-200 dark:bg-slate-700">subperíodo da Nova República</span>' : ''}</h3>
+        <p class="text-sm text-slate-600 dark:text-slate-300 mt-0.5">${esc(e.resumo)} <b>Estado:</b> ${esc(e.estado)}.</p></div>
+        <div class="grid gap-3 md:grid-cols-2">
+        ${cartao('fa-scroll', 'Marco constitucional', e.constituicao.titulo, `<ul class="mt-1.5 list-disc pl-5 space-y-1 text-sm text-slate-700 dark:text-slate-300">${e.constituicao.itens.map((i) => `<li>${esc(i)}</li>`).join('')}</ul>`)}
+        ${cartao('fa-gears', 'A máquina pública', e.maquina.titulo, `<p class="mt-1.5 text-sm text-slate-700 dark:text-slate-300">${esc(e.maquina.texto)}</p>`)}
+        ${cartao('fa-earth-americas', 'Contexto mundial', e.mundo.titulo, `<p class="mt-1.5 text-sm text-slate-700 dark:text-slate-300">${esc(e.mundo.texto)}</p>`)}
+        ${cartao('fa-user-tie', 'A cadeira presidencial', e.cadeira.titulo, `<p class="mt-1.5 text-sm text-slate-700 dark:text-slate-300">${esc(e.cadeira.texto)}</p><ul class="mt-2 space-y-1.5">${pres}</ul>`)}
+        </div>
+        <p class="mt-3 text-xs rounded border-l-2 border-brand-600 pl-2"><i class="fa-solid fa-lightbulb mr-1" aria-hidden="true"></i><b>Leitura:</b> ${esc(e.leitura)}</p>`;
+}
+
+document.addEventListener('click', (ev) => {
+    const b = ev.target.closest && ev.target.closest('[data-era]');
+    if (b) { E.era = b.dataset.era; desenharEras(); desenharEraPainel(); }
+});
+
+(async () => {
+    try {
+        const r = await fetch('assets/historia-estado.json');
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        E.dados = await r.json();
+        E.era = E.dados.eras[E.dados.eras.length - 1].id;
+        desenharEras(); desenharEraPainel();
+        $('fontesEstado').innerHTML = E.dados.fontes.map((f) => `<li><a class="sem-sublinhado font-semibold text-brand-700 dark:text-brand-400 hover:underline" target="_blank" rel="noopener" href="${esc(urlSegura(f.url))}">${esc(f.nome)}</a></li>`).join('');
+    } catch (e) {
+        $('eraPainel').innerHTML = '<p class="text-sm text-rose-700">Não foi possível carregar a linha do tempo institucional agora.</p>';
+    }
+})();
 
 (async () => {
     try {

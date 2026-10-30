@@ -1,0 +1,218 @@
+{
+  "status": {
+    "ok": "Mandato completo",
+    "int": "Mandato interrompido",
+    "vice": "Assumiu como vice ou interino",
+    "ind": "Escolhido por eleição indireta ou por junta",
+    "curso": "Em curso"
+  },
+  "eras": [
+    {
+      "id": "oligarquica",
+      "nome": "Gênese e República oligárquica",
+      "curto": "Oligarquias",
+      "ini": 1822,
+      "fim": 1930,
+      "estado": "Patrimonialista",
+      "resumo": "Formação do país e transição do Império para a República, sob o poder das elites agrárias.",
+      "constituicao": {
+        "titulo": "Constituições de 1824 e 1891",
+        "itens": [
+          "1824 (Império): centralizadora, com o Poder Moderador nas mãos do imperador e voto censitário (por renda).",
+          "1891 (1ª República): federalismo, presidencialismo inspirado no modelo dos EUA e voto aberto, sem sigilo."
+        ]
+      },
+      "maquina": {
+        "titulo": "Modelo patrimonialista",
+        "texto": "Sem separação clara entre o bem público e o privado. Cargos eram distribuídos como favores (clientelismo). Aparecem os primeiros ministérios e o Banco do Brasil."
+      },
+      "mundo": {
+        "titulo": "1ª onda de democratização (1828–1926)",
+        "texto": "Expansão lenta do direito de voto no Ocidente, segundo a periodização de Samuel Huntington."
+      },
+      "cadeira": {
+        "titulo": "República da Espada e política do café com leite",
+        "texto": "Revezamento de elites estaduais, sobretudo paulistas e mineiras, e eleições marcadas por fraude e pelo “voto de cabresto”.",
+        "presidentes": [
+          ["Deodoro da Fonseca", "1889–1891", "int", "renunciou"],
+          ["Floriano Peixoto", "1891–1894", "vice", "vice que assumiu"],
+          ["Prudente de Morais", "1894–1898", "ok", ""],
+          ["Campos Sales", "1898–1902", "ok", ""],
+          ["Rodrigues Alves", "1902–1906", "ok", ""],
+          ["Afonso Pena", "1906–1909", "int", "morreu no cargo"],
+          ["Nilo Peçanha", "1909–1910", "vice", "vice que assumiu"],
+          ["Hermes da Fonseca", "1910–1914", "ok", ""],
+          ["Venceslau Brás", "1914–1918", "ok", ""],
+          ["Delfim Moreira", "1918–1919", "vice", "vice que assumiu; Rodrigues Alves, eleito de novo, morreu antes da posse"],
+          ["Epitácio Pessoa", "1919–1922", "ok", "eleito em eleição extraordinária"],
+          ["Artur Bernardes", "1922–1926", "ok", ""],
+          ["Washington Luís", "1926–1930", "int", "deposto na Revolução de 1930"],
+          ["Júlio Prestes", "—", "int", "eleito em 1930, impedido de tomar posse"]
+        ]
+      },
+      "leitura": "O voto excluía mulheres e analfabetos, e o poder circulava entre elites estaduais. A escala esquerda–direita quase não descreve esse período."
+    },
+    {
+      "id": "vargas",
+      "nome": "Era Vargas e democracia de massas",
+      "curto": "Vargas e massas",
+      "ini": 1930,
+      "fim": 1964,
+      "estado": "Burocrático",
+      "resumo": "O Estado vira indutor da industrialização e regulador do trabalho, em meio a forte instabilidade política.",
+      "constituicao": {
+        "titulo": "Constituições de 1934, 1937 e 1946",
+        "itens": [
+          "1934: inspirada na Constituição alemã de Weimar; direitos trabalhistas e sociais, voto feminino e voto secreto.",
+          "1937 (“Polaca”): outorgada por Vargas no Estado Novo; autoritária, sem Legislativo em funcionamento.",
+          "1946: redemocratização após a guerra, multipartidarismo e restauração dos direitos civis."
+        ]
+      },
+      "maquina": {
+        "titulo": "1ª grande reforma: burocrática (1936–1938)",
+        "texto": "Criação do DASP (Departamento Administrativo do Serviço Público). Objetivo: combater o patrimonialismo com concurso público, centralização de compras e padronização contábil."
+      },
+      "mundo": {
+        "titulo": "1º refluxo (1922–1942) e 2ª onda (1943–1962)",
+        "texto": "Ascensão do fascismo e do nazismo e Crise de 1929; depois, a derrota do Eixo e a redemocratização em vários países."
+      },
+      "cadeira": {
+        "titulo": "Extrema instabilidade",
+        "texto": "Vargas governa de 1930 a 1945 (governo provisório, constitucional e Estado Novo). Em 1961–1963 vigora o parlamentarismo.",
+        "presidentes": [
+          ["Getúlio Vargas", "1930–1945", "int", "deposto por militares em 1945"],
+          ["José Linhares", "1945–1946", "vice", "presidente do STF que assumiu interinamente"],
+          ["Eurico Gaspar Dutra", "1946–1951", "ok", ""],
+          ["Getúlio Vargas", "1951–1954", "int", "suicídio em 1954"],
+          ["Café Filho", "1954–1955", "vice", "vice que assumiu; afastado por doença"],
+          ["Carlos Luz", "1955", "vice", "afastado dias depois por intervenção militar"],
+          ["Nereu Ramos", "1955–1956", "vice", "assumiu interinamente"],
+          ["Juscelino Kubitschek", "1956–1961", "ok", ""],
+          ["Jânio Quadros", "1961", "int", "renunciou"],
+          ["João Goulart", "1961–1964", "int", "deposto pelo golpe de 1964"]
+        ]
+      },
+      "leitura": "Só Dutra e Juscelino concluíram o mandato para o qual foram eleitos. Vargas, Jânio e Goulart não terminaram os seus."
+    },
+    {
+      "id": "militar",
+      "nome": "Regime militar e Estado empreendedor",
+      "curto": "Regime militar",
+      "ini": 1964,
+      "fim": 1985,
+      "estado": "Descentralização autárquica",
+      "resumo": "Regime autoritário com expansão da infraestrutura e do papel das empresas estatais.",
+      "constituicao": {
+        "titulo": "Constituição de 1967 e Atos Institucionais",
+        "itens": [
+          "1967: institucionaliza o regime e reforça o Poder Executivo.",
+          "AI-5 (1968): suspendeu garantias constitucionais e permitiu fechar o Congresso e cassar mandatos.",
+          "Emenda Constitucional nº 1 (1969): reescreveu boa parte do texto de 1967."
+        ]
+      },
+      "maquina": {
+        "titulo": "2ª grande reforma: Decreto-Lei 200/1967",
+        "texto": "Divide o Estado em administração direta (ministérios) e indireta (autarquias, fundações, empresas públicas e sociedades de economia mista). Período de grandes estatais e obras, como Itaipu e a Telebrás."
+      },
+      "mundo": {
+        "titulo": "2º refluxo (1958–1975)",
+        "texto": "Auge da Guerra Fria e multiplicação de ditaduras militares na América Latina."
+      },
+      "cadeira": {
+        "titulo": "Presidentes militares",
+        "texto": "Todos escolhidos de forma indireta, sem eleição direta para presidente.",
+        "presidentes": [
+          ["Humberto Castelo Branco", "1964–1967", "ind", ""],
+          ["Artur da Costa e Silva", "1967–1969", "ind", "afastado por doença"],
+          ["Junta Militar", "1969", "ind", "governou por semanas, até a posse de Médici"],
+          ["Emílio Garrastazu Médici", "1969–1974", "ind", ""],
+          ["Ernesto Geisel", "1974–1979", "ind", ""],
+          ["João Figueiredo", "1979–1985", "ind", ""]
+        ]
+      },
+      "leitura": "O Congresso funcionou sob cassações e fechamentos temporários. Sem eleição direta para presidente por 21 anos."
+    },
+    {
+      "id": "nova-republica",
+      "nome": "Nova República e Estado gerencial",
+      "curto": "Nova República",
+      "ini": 1985,
+      "fim": 2018,
+      "estado": "Gerencial",
+      "resumo": "Retomada civil, amplo pacto de direitos sociais na Constituição de 1988 e depois a busca por eficiência na máquina pública.",
+      "constituicao": {
+        "titulo": "Constituição de 1988",
+        "itens": [
+          "Ampla carta de direitos sociais e individuais, criação do SUS e descentralização de recursos para estados e municípios.",
+          "Concurso público como regra de ingresso na administração (art. 37).",
+          "Eleição direta para presidente restabelecida; a primeira foi em 1989."
+        ]
+      },
+      "maquina": {
+        "titulo": "3ª grande reforma: gerencial (1995)",
+        "texto": "Plano Diretor da Reforma do Aparelho do Estado, conduzido por Bresser-Pereira no MARE. Foco em resultados e metas, repasse de serviços sociais a organizações sociais (OS) e OSCIPs, e ciclo de privatizações (telecomunicações, mineração). Parte da reforma entrou na Constituição pela Emenda 19/1998."
+      },
+      "mundo": {
+        "titulo": "3ª onda de democratização (1974 em diante)",
+        "texto": "Começa com a Revolução dos Cravos, em Portugal. No Brasil, a abertura foi gradual: anistia de 1979, campanha das Diretas Já em 1984 e eleição indireta de Tancredo Neves."
+      },
+      "cadeira": {
+        "titulo": "Presidentes da redemocratização",
+        "texto": "Dois impeachments no período: Collor (1992) e Dilma Rousseff (2016). FHC e Lula completaram dois mandatos cada.",
+        "presidentes": [
+          ["Tancredo Neves", "1985", "ind", "eleito indiretamente, morreu antes da posse"],
+          ["José Sarney", "1985–1990", "vice", "vice que assumiu"],
+          ["Fernando Collor", "1990–1992", "int", "impeachment em 1992"],
+          ["Itamar Franco", "1992–1994", "vice", "vice que assumiu"],
+          ["Fernando Henrique Cardoso", "1995–2002", "ok", "dois mandatos"],
+          ["Luiz Inácio Lula da Silva", "2003–2010", "ok", "dois mandatos"],
+          ["Dilma Rousseff", "2011–2016", "int", "primeiro mandato completo; impeachment no segundo"],
+          ["Michel Temer", "2016–2018", "vice", "vice que assumiu"]
+        ]
+      },
+      "leitura": "A instabilidade se concentra nas pontas do período: a transição de 1985 e os impeachments de 1992 e 2016."
+    },
+    {
+      "id": "digital",
+      "nome": "Estado digital, polarização e novo equilíbrio de forças",
+      "curto": "2019 – hoje",
+      "ini": 2019,
+      "fim": null,
+      "sub": true,
+      "estado": "Digital, com orçamento compartilhado",
+      "resumo": "Subperíodo da Nova República: governo digital, mais peso do Congresso sobre o orçamento e protagonismo do Judiciário.",
+      "constituicao": {
+        "titulo": "A CF/88 segue em vigor, com emendas estruturais",
+        "itens": [
+          "Reforma da Previdência (EC 103/2019).",
+          "Emendas do período da pandemia, com regime fiscal extraordinário (EC 106/2020).",
+          "Reforma Tributária sobre o consumo (EC 132/2023).",
+          "O STF teve papel central em crises políticas e na decisão sobre o chamado “orçamento secreto” (2022)."
+        ]
+      },
+      "maquina": {
+        "titulo": "Governo digital e poder sobre o orçamento",
+        "texto": "O Estado ganhou rapidez na ponta com Pix, Gov.br e serviços digitais unificados. Em paralelo, o Congresso passou a controlar fatias bilionárias do orçamento por emendas de execução obrigatória, incluindo as transferências especiais (“emendas Pix”)."
+      },
+      "mundo": {
+        "titulo": "Pós-pandemia e multipolaridade",
+        "texto": "Inflação pós-Covid, guerras (Ucrânia, Oriente Médio), transição energética e rivalidade entre blocos (EUA e China, BRICS)."
+      },
+      "cadeira": {
+        "titulo": "Eleições muito disputadas",
+        "texto": "As eleições presidenciais de 2018 e 2022 foram decididas em segundo turno.",
+        "presidentes": [
+          ["Jair Bolsonaro", "2019–2022", "ok", "mandato completo; gestão da pandemia de covid-19"],
+          ["Luiz Inácio Lula da Silva", "2023–hoje", "curso", "mandato vai até 01/01/2027"]
+        ]
+      },
+      "leitura": "A Presidência negocia mais com os comandos da Câmara e do Senado, sob escrutínio do STF e de um eleitorado muito ativo nas redes. É uma leitura de conjuntura, ainda sem a distância que a história exige."
+    }
+  ],
+  "fontes": [
+    { "nome": "Planalto — Constituições do Brasil", "url": "https://www.planalto.gov.br/ccivil_03/constituicao/principal.htm" },
+    { "nome": "Planalto — Emenda Constitucional 19/1998 (reforma administrativa)", "url": "https://www.planalto.gov.br/ccivil_03/constituicao/emendas/emc/emc19.htm" },
+    { "nome": "Planalto — Decreto-Lei 200/1967", "url": "https://www.planalto.gov.br/ccivil_03/decreto-lei/del0200.htm" },
+    { "nome": "Palácio do Planalto — Galeria de presidentes", "url": "https://www.gov.br/planalto/pt-br/conheca-a-presidencia/acervo/galeria-de-presidentes" }
+  ]
+}
