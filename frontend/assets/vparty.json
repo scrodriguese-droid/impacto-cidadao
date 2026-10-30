@@ -1,0 +1,555 @@
+{
+ "fonte": "V-Party v2 (V-Dem Institute, Universidade de Gotemburgo, fev/2022)",
+ "doi": "https://doi.org/10.23696/vpartydsv2",
+ "anos": {
+  "2002": [
+   {
+    "sigla": "PDT",
+    "nome_en": "Democratic Labour Party",
+    "eco": 1.9,
+    "eco_sd": 0.25,
+    "lgbt": 2.71,
+    "culsup": 2.56,
+    "relig": 3.85,
+    "cultura": 3.04,
+    "votos": 5.1
+   },
+   {
+    "sigla": "PFL",
+    "nome_en": "Liberal Front / Democrats",
+    "eco": 4.52,
+    "eco_sd": 0.23,
+    "lgbt": 1.76,
+    "culsup": 2.05,
+    "relig": 3.57,
+    "cultura": 2.46,
+    "votos": 13.3
+   },
+   {
+    "sigla": "PL",
+    "nome_en": "Liberal Party",
+    "eco": 4.28,
+    "eco_sd": 0.24,
+    "lgbt": 1.52,
+    "culsup": 2.07,
+    "relig": 3.43,
+    "cultura": 2.34,
+    "votos": 4.3
+   },
+   {
+    "sigla": "PMDB",
+    "nome_en": "Partido do Movimento Democrático Brasileiro",
+    "eco": 3.46,
+    "eco_sd": 0.27,
+    "lgbt": 2.17,
+    "culsup": 2.5,
+    "relig": 3.41,
+    "cultura": 2.69,
+    "votos": 13.2
+   },
+   {
+    "sigla": "PPB",
+    "nome_en": "Progressive Party / Brazilian Progressive Party (PPB)",
+    "eco": 4.78,
+    "eco_sd": 0.21,
+    "lgbt": 1.55,
+    "culsup": 1.98,
+    "relig": 3.18,
+    "cultura": 2.23,
+    "votos": 7.7
+   },
+   {
+    "sigla": "PSB",
+    "nome_en": "Brazilian Socialist Party",
+    "eco": 1.56,
+    "eco_sd": 0.22,
+    "lgbt": 2.8,
+    "culsup": 2.59,
+    "relig": 3.74,
+    "cultura": 3.04,
+    "votos": 5.3
+   },
+   {
+    "sigla": "PSDB",
+    "nome_en": "Brazilian Social Democracy Party",
+    "eco": 3.73,
+    "eco_sd": 0.26,
+    "lgbt": 2.3,
+    "culsup": 2.52,
+    "relig": 3.74,
+    "cultura": 2.85,
+    "votos": 14.1
+   },
+   {
+    "sigla": "PT",
+    "nome_en": "Workers' Party",
+    "eco": 1.7,
+    "eco_sd": 0.24,
+    "lgbt": 3.58,
+    "culsup": 3.06,
+    "relig": 3.94,
+    "cultura": 3.53,
+    "votos": 18.2
+   },
+   {
+    "sigla": "PTB",
+    "nome_en": "Brazilian Labour Party",
+    "eco": 3.57,
+    "eco_sd": 0.27,
+    "lgbt": 1.87,
+    "culsup": 2.3,
+    "relig": 3.55,
+    "cultura": 2.57,
+    "votos": 4.6
+   }
+  ],
+  "2006": [
+   {
+    "sigla": "PDT",
+    "nome_en": "Democratic Labour Party",
+    "eco": 1.9,
+    "eco_sd": 0.25,
+    "lgbt": 2.98,
+    "culsup": 2.64,
+    "relig": 3.85,
+    "cultura": 3.16,
+    "votos": 5.2
+   },
+   {
+    "sigla": "PFL",
+    "nome_en": "Liberal Front / Democrats",
+    "eco": 4.52,
+    "eco_sd": 0.23,
+    "lgbt": 1.65,
+    "culsup": 2.05,
+    "relig": 3.57,
+    "cultura": 2.43,
+    "votos": 10.9
+   },
+   {
+    "sigla": "PMDB",
+    "nome_en": "Partido do Movimento Democrático Brasileiro",
+    "eco": 3.24,
+    "eco_sd": 0.28,
+    "lgbt": 2.17,
+    "culsup": 2.5,
+    "relig": 3.41,
+    "cultura": 2.69,
+    "votos": 14.6
+   },
+   {
+    "sigla": "PPB",
+    "nome_en": "Progressive Party / Brazilian Progressive Party (PPB)",
+    "eco": 4.68,
+    "eco_sd": 0.22,
+    "lgbt": 1.54,
+    "culsup": 1.98,
+    "relig": 3.18,
+    "cultura": 2.23,
+    "votos": 7.1
+   },
+   {
+    "sigla": "PPS",
+    "nome_en": "Socialist People's Party",
+    "eco": 2.55,
+    "eco_sd": 0.27,
+    "lgbt": 2.49,
+    "culsup": 2.5,
+    "relig": 3.94,
+    "cultura": 2.98,
+    "votos": 4.4
+   },
+   {
+    "sigla": "PSB",
+    "nome_en": "Brazilian Socialist Party",
+    "eco": 1.7,
+    "eco_sd": 0.24,
+    "lgbt": 2.8,
+    "culsup": 2.52,
+    "relig": 3.94,
+    "cultura": 3.09,
+    "votos": 6.2
+   },
+   {
+    "sigla": "PSDB",
+    "nome_en": "Brazilian Social Democracy Party",
+    "eco": 3.92,
+    "eco_sd": 0.26,
+    "lgbt": 2.37,
+    "culsup": 2.52,
+    "relig": 3.6,
+    "cultura": 2.83,
+    "votos": 13.6
+   },
+   {
+    "sigla": "PT",
+    "nome_en": "Workers' Party",
+    "eco": 1.7,
+    "eco_sd": 0.24,
+    "lgbt": 3.67,
+    "culsup": 3.37,
+    "relig": 3.94,
+    "cultura": 3.66,
+    "votos": 15.0
+   },
+   {
+    "sigla": "PTB",
+    "nome_en": "Brazilian Labour Party",
+    "eco": 3.77,
+    "eco_sd": 0.27,
+    "lgbt": 1.87,
+    "culsup": 2.3,
+    "relig": 3.55,
+    "cultura": 2.57,
+    "votos": 4.7
+   }
+  ],
+  "2010": [
+   {
+    "sigla": "PDT",
+    "nome_en": "Democratic Labour Party",
+    "eco": 1.9,
+    "eco_sd": 0.25,
+    "lgbt": 3.1,
+    "culsup": 2.64,
+    "relig": 3.85,
+    "cultura": 3.2,
+    "votos": 5.0
+   },
+   {
+    "sigla": "PFL",
+    "nome_en": "Liberal Front / Democrats",
+    "eco": 4.73,
+    "eco_sd": 0.22,
+    "lgbt": 1.65,
+    "culsup": 2.07,
+    "relig": 3.57,
+    "cultura": 2.43,
+    "votos": 7.6
+   },
+   {
+    "sigla": "PMDB",
+    "nome_en": "Partido do Movimento Democrático Brasileiro",
+    "eco": 3.34,
+    "eco_sd": 0.27,
+    "lgbt": 2.22,
+    "culsup": 2.5,
+    "relig": 3.41,
+    "cultura": 2.71,
+    "votos": 13.0
+   },
+   {
+    "sigla": "PPB",
+    "nome_en": "Progressive Party / Brazilian Progressive Party (PPB)",
+    "eco": 4.68,
+    "eco_sd": 0.22,
+    "lgbt": 1.41,
+    "culsup": 1.98,
+    "relig": 3.18,
+    "cultura": 2.19,
+    "votos": 6.6
+   },
+   {
+    "sigla": "PR / PL",
+    "nome_en": "Party of the Republic / Liberal Party",
+    "eco": 4.1,
+    "eco_sd": 0.25,
+    "lgbt": 1.41,
+    "culsup": 2.05,
+    "relig": 3.28,
+    "cultura": 2.25,
+    "votos": 7.6
+   },
+   {
+    "sigla": "PSB",
+    "nome_en": "Brazilian Socialist Party",
+    "eco": 1.7,
+    "eco_sd": 0.24,
+    "lgbt": 2.92,
+    "culsup": 2.52,
+    "relig": 3.94,
+    "cultura": 3.13,
+    "votos": 7.1
+   },
+   {
+    "sigla": "PSDB",
+    "nome_en": "Brazilian Social Democracy Party",
+    "eco": 3.92,
+    "eco_sd": 0.26,
+    "lgbt": 2.36,
+    "culsup": 2.52,
+    "relig": 3.6,
+    "cultura": 2.82,
+    "votos": 11.9
+   },
+   {
+    "sigla": "PT",
+    "nome_en": "Workers' Party",
+    "eco": 1.82,
+    "eco_sd": 0.24,
+    "lgbt": 3.67,
+    "culsup": 3.37,
+    "relig": 3.94,
+    "cultura": 3.66,
+    "votos": 16.9
+   },
+   {
+    "sigla": "PTB",
+    "nome_en": "Brazilian Labour Party",
+    "eco": 3.88,
+    "eco_sd": 0.26,
+    "lgbt": 1.93,
+    "culsup": 2.3,
+    "relig": 3.55,
+    "cultura": 2.59,
+    "votos": 4.2
+   }
+  ],
+  "2014": [
+   {
+    "sigla": "PDT",
+    "nome_en": "Democratic Labour Party",
+    "eco": 1.9,
+    "eco_sd": 0.25,
+    "lgbt": 3.21,
+    "culsup": 2.64,
+    "relig": 3.85,
+    "cultura": 3.23,
+    "votos": 3.6
+   },
+   {
+    "sigla": "PFL",
+    "nome_en": "Liberal Front / Democrats",
+    "eco": 4.83,
+    "eco_sd": 0.22,
+    "lgbt": 1.65,
+    "culsup": 2.07,
+    "relig": 3.57,
+    "cultura": 2.43,
+    "votos": 4.2
+   },
+   {
+    "sigla": "PMDB",
+    "nome_en": "Partido do Movimento Democrático Brasileiro",
+    "eco": 3.56,
+    "eco_sd": 0.27,
+    "lgbt": 2.22,
+    "culsup": 2.5,
+    "relig": 3.41,
+    "cultura": 2.71,
+    "votos": 11.1
+   },
+   {
+    "sigla": "PPB",
+    "nome_en": "Progressive Party / Brazilian Progressive Party (PPB)",
+    "eco": 4.79,
+    "eco_sd": 0.21,
+    "lgbt": 1.41,
+    "culsup": 1.98,
+    "relig": 3.18,
+    "cultura": 2.19,
+    "votos": 6.6
+   },
+   {
+    "sigla": "PR / PL",
+    "nome_en": "Party of the Republic / Liberal Party",
+    "eco": 4.45,
+    "eco_sd": 0.24,
+    "lgbt": 1.44,
+    "culsup": 2.05,
+    "relig": 3.35,
+    "cultura": 2.28,
+    "votos": 5.8
+   },
+   {
+    "sigla": "PRB",
+    "nome_en": "Brazilian Republican Party",
+    "eco": 4.33,
+    "eco_sd": 0.24,
+    "lgbt": 0.48,
+    "culsup": 1.26,
+    "relig": 0.54,
+    "cultura": 0.76,
+    "votos": 4.6
+   },
+   {
+    "sigla": "PSB",
+    "nome_en": "Brazilian Socialist Party",
+    "eco": 1.94,
+    "eco_sd": 0.25,
+    "lgbt": 2.92,
+    "culsup": 2.63,
+    "relig": 3.84,
+    "cultura": 3.13,
+    "votos": 6.4
+   },
+   {
+    "sigla": "PSD",
+    "nome_en": "Social Democratic Party",
+    "eco": 4.08,
+    "eco_sd": 0.25,
+    "lgbt": 1.9,
+    "culsup": 2.02,
+    "relig": 3.41,
+    "cultura": 2.44,
+    "votos": 6.1
+   },
+   {
+    "sigla": "PSDB",
+    "nome_en": "Brazilian Social Democracy Party",
+    "eco": 4.27,
+    "eco_sd": 0.24,
+    "lgbt": 2.22,
+    "culsup": 2.41,
+    "relig": 3.54,
+    "cultura": 2.72,
+    "votos": 11.4
+   },
+   {
+    "sigla": "PT",
+    "nome_en": "Workers' Party",
+    "eco": 1.7,
+    "eco_sd": 0.23,
+    "lgbt": 3.75,
+    "culsup": 3.37,
+    "relig": 3.94,
+    "cultura": 3.69,
+    "votos": 13.9
+   },
+   {
+    "sigla": "PTB",
+    "nome_en": "Brazilian Labour Party",
+    "eco": 3.88,
+    "eco_sd": 0.26,
+    "lgbt": 1.93,
+    "culsup": 2.3,
+    "relig": 3.55,
+    "cultura": 2.59,
+    "votos": 4.0
+   }
+  ],
+  "2018": [
+   {
+    "sigla": "PDT",
+    "nome_en": "Democratic Labour Party",
+    "eco": 1.92,
+    "eco_sd": 0.26,
+    "lgbt": 3.29,
+    "culsup": 2.64,
+    "relig": 3.85,
+    "cultura": 3.26,
+    "votos": 4.6
+   },
+   {
+    "sigla": "PFL",
+    "nome_en": "Liberal Front / Democrats",
+    "eco": 4.59,
+    "eco_sd": 0.22,
+    "lgbt": 1.65,
+    "culsup": 2.07,
+    "relig": 3.57,
+    "cultura": 2.43,
+    "votos": 4.7
+   },
+   {
+    "sigla": "PMDB",
+    "nome_en": "Partido do Movimento Democrático Brasileiro",
+    "eco": 3.66,
+    "eco_sd": 0.27,
+    "lgbt": 2.22,
+    "culsup": 2.5,
+    "relig": 3.41,
+    "cultura": 2.71,
+    "votos": null
+   },
+   {
+    "sigla": "PPB",
+    "nome_en": "Progressive Party / Brazilian Progressive Party (PPB)",
+    "eco": 4.79,
+    "eco_sd": 0.22,
+    "lgbt": 1.41,
+    "culsup": 1.98,
+    "relig": 3.18,
+    "cultura": 2.19,
+    "votos": 5.6
+   },
+   {
+    "sigla": "PR / PL",
+    "nome_en": "Party of the Republic / Liberal Party",
+    "eco": 4.44,
+    "eco_sd": 0.24,
+    "lgbt": 1.5,
+    "culsup": 2.05,
+    "relig": 3.34,
+    "cultura": 2.3,
+    "votos": 5.3
+   },
+   {
+    "sigla": "PRB",
+    "nome_en": "Brazilian Republican Party",
+    "eco": 4.52,
+    "eco_sd": 0.22,
+    "lgbt": 0.37,
+    "culsup": 1.26,
+    "relig": 0.54,
+    "cultura": 0.72,
+    "votos": 5.1
+   },
+   {
+    "sigla": "PSB",
+    "nome_en": "Brazilian Socialist Party",
+    "eco": 1.83,
+    "eco_sd": 0.25,
+    "lgbt": 3.02,
+    "culsup": 2.63,
+    "relig": 3.94,
+    "cultura": 3.2,
+    "votos": 5.5
+   },
+   {
+    "sigla": "PSD",
+    "nome_en": "Social Democratic Party",
+    "eco": 4.18,
+    "eco_sd": 0.25,
+    "lgbt": 1.9,
+    "culsup": 2.02,
+    "relig": 3.51,
+    "cultura": 2.48,
+    "votos": 5.9
+   },
+   {
+    "sigla": "PSDB",
+    "nome_en": "Brazilian Social Democracy Party",
+    "eco": 4.2,
+    "eco_sd": 0.25,
+    "lgbt": 2.11,
+    "culsup": 2.41,
+    "relig": 3.52,
+    "cultura": 2.68,
+    "votos": 6.0
+   },
+   {
+    "sigla": "PSL",
+    "nome_en": "Social Liberal Party",
+    "eco": 5.37,
+    "eco_sd": 0.18,
+    "lgbt": 0.6,
+    "culsup": 0.65,
+    "relig": 0.54,
+    "cultura": 0.6,
+    "votos": 11.7
+   },
+   {
+    "sigla": "PT",
+    "nome_en": "Workers' Party",
+    "eco": 1.39,
+    "eco_sd": 0.22,
+    "lgbt": 3.75,
+    "culsup": 3.37,
+    "relig": 3.94,
+    "cultura": 3.69,
+    "votos": 10.3
+   }
+  ]
+ }
+}

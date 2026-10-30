@@ -549,3 +549,56 @@ def escala() -> dict:
             "Antes de 2010 as votações nominais não foram coletadas nesta versão.",
         ],
     }
+
+
+# --------------------------------------------------------------------------- #
+# Bússola: posição segundo especialistas (V-Party, V-Dem)
+# --------------------------------------------------------------------------- #
+ARQ_VPARTY = RAIZ / "frontend" / "assets" / "vparty.json"
+
+
+def bussola() -> dict:
+    """Posições dos partidos em 2 eixos, da pesquisa de especialistas V-Party. Quem tem perfil pragmático (critério de
+    votação) vem marcado: a tela o coloca no Círculo de Pragmatismo e mostra a posição dos especialistas só no card."""
+    try:
+        v = json.loads(ARQ_VPARTY.read_text(encoding="utf-8"))
+    except OSError as exc:
+        raise ErroFonte("Dados do V-Party ainda não gerados (rode scripts/gerar_vparty.py).") from exc
+    resolver = _resolvedor()
+    prag = _pragmaticos(_anos_votacao(), resolver)
+    try:
+        nos = {n["id"]: n for n in evolucao()["nos"]}
+    except Exception:  # noqa: BLE001
+        nos = {}
+    quadros, cobertos = [], set()
+    for ano, lista in sorted(v["anos"].items(), key=lambda kv: int(kv[0])):
+        itens = []
+        for p in lista:
+            ent = next((resolver(t.strip(), int(ano)) for t in reversed(p["sigla"].split("/")) if _chave(t) and
+                        resolver(t.strip(), int(ano)) in nos), None) or resolver(p["sigla"].split("/")[-1].strip(), int(ano))
+            cobertos.add(ent)
+            sigla = nos[ent]["nomes"][-1]["sigla"] if ent in nos else p["sigla"]
+            itens.append({"entidade": ent, "sigla": sigla, "sigla_fonte": p["sigla"], "eco": p["eco"], "eco_sd": p["eco_sd"],
+                          "lgbt": p["lgbt"], "culsup": p["culsup"], "relig": p["relig"], "cultura": p["cultura"],
+                          "pragmatico": prag.get(ent, {}).get("pragmatico", False)})
+        quadros.append({"ano": int(ano), "partidos": sorted(itens, key=lambda x: x["sigla"].casefold())})
+    sem = sorted((n["nomes"][-1]["sigla"] for n in nos.values() if n["vivo"] and n["id"] not in cobertos), key=str.casefold)
+    return {
+        "consultado_em": _agora(), "quadros": quadros, "sem_cobertura": sem,
+        "pragmatismo": {"texto_card": ("Partido de perfil pragmático. Sua posição no espectro varia de acordo com alianças regionais e participação "
+                                       "no governo federal, priorizando o controle de recursos públicos em vez de pautas ideológicas rígidas."),
+                        "classificados": sorted({p["sigla"] for q in quadros[-1:] for p in q["partidos"] if p["pragmatico"]}, key=str.casefold)},
+        "fonte": {"nome": v["fonte"], "url": v["doi"]},
+        "metodo": [
+            "Fonte: V-Party v2 (V-Dem), pesquisa em que especialistas em cada país avaliam a posição de cada partido na eleição; os valores são uma agregação estatística dessas avaliações, não uma opinião do ImpactoCidadão.",
+            "Eixo horizontal (economia): escala oficial do V-Party de 0 (extrema-esquerda) a 6 (extrema-direita), onde esquerda = mais papel do Estado na economia (impostos, regulação, gasto, bem-estar) e direita = menos.",
+            "Eixo vertical (costumes e identidade): média simples de três perguntas do V-Party, cada uma de 0 a 4 — igualdade social LGBT, rejeição à superioridade cultural de um grupo ou da nação, e não invocar religião para justificar posições. Perto de 0: perfil de tradição/identidade; perto de 4: perfil de liberdades individuais e secularismo. O ponto neutro é 2. Esta média é nossa composição; cada item aparece no card do partido.",
+            "Cada posição vale para a eleição indicada (2002–2018). Mude o ano para ver a migração.",
+        ],
+        "limitacoes": [
+            "A pesquisa cobre até a eleição de 2018 (versão 2 de fev/2022): partidos criados ou fundidos depois, e partidos pequenos que a pesquisa não codificou, aparecem em “Sem posição na fonte”.",
+            "São percepções de especialistas sobre o partido como organização, não o voto de cada parlamentar nem o que o partido diz de si.",
+            "Os valores têm margem de incerteza (desvio no card). Diferenças pequenas entre partidos próximos não são significativas.",
+            "Siglas mudam: aparece a sigla mais recente do mesmo registro no TSE (ex.: PFL → DEM) e, no card, a sigla usada pela fonte.",
+        ],
+    }
