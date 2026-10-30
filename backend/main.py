@@ -613,6 +613,15 @@ def governismo_liderancas() -> dict:
         raise HTTPException(status_code=503, detail="A lista oficial de lideranças está indisponível no momento.") from exc
 
 
+@router.get("/governismo/dinamica", tags=["governismo"])
+def governismo_dinamica() -> dict:
+    try:
+        return governismo.dinamica()
+    except Exception as exc:  # noqa: BLE001
+        log.warning("Federações e blocos indisponíveis: %s", exc)
+        raise HTTPException(status_code=503, detail="A lista oficial de blocos e federações está indisponível no momento.") from exc
+
+
 @router.get("/governismo/projeto", tags=["governismo"])
 def governismo_projeto(proposicao: Annotated[str, Query(min_length=5, max_length=20, description="ex.: PEC 221/2019")]) -> dict:
     try:
