@@ -542,9 +542,28 @@ def escala() -> dict:
             ultima[p["entidade"]] = p["sigla"]
     detalhe = {ultima[e]: dict(v, entidade=e) for e, v in prag.items() if e in ultima}
     siglas_prag = sorted((s for s, v in detalhe.items() if v["pragmatico"]), key=str.casefold)
+    gov_ano = {**GOVERNO_DO_ANO, **{a: "Lula" for a in anos if a >= 2023}}
+    governismo = []
+    for ano in sorted(anos):
+        por_ent: dict[str, dict] = {}
+        for s, t in anos[ano]["partidos"].items():
+            if s.upper() in ("S.PART.", "SEM PARTIDO"):
+                continue
+            ent = resolver(s, ano)
+            e = por_ent.setdefault(ent, {"ok": 0, "n": 0, "maior": (0, s)})
+            e["ok"] += t["gov_ok"]
+            e["n"] += t["gov_n"]
+            e["maior"] = max(e["maior"], (t["gov_n"], s))
+        itens = [{"entidade": ent, "sigla": e["maior"][1], "alinhamento": round(100 * e["ok"] / e["n"], 1), "votos": e["n"],
+                  "pragmatico": prag.get(ent, {}).get("pragmatico", False)}
+                 for ent, e in por_ent.items() if e["n"] >= MIN_VOTOS_MAPA]
+        if itens:
+            governismo.append({"ano": ano, "governo": gov_ano.get(ano), "votacoes": anos[ano]["votacoes"],
+                               "partidos": sorted(itens, key=lambda x: x["sigla"].casefold())})
     return {
         "consultado_em": _agora(),
         "anos": [q["ano"] for q in quadros], "quadros": quadros,
+        "governismo": {"limiar": LIMIAR_ALINHA, "min_votos": MIN_VOTOS_MAPA, "anos": governismo},
         "pragmatismo": {
             "criterio": (f"Perfil pragmático = nos anos em que o partido teve ao menos {MIN_VOTOS_MAPA} votos válidos em votações "
                          f"com orientação do Governo, votou de acordo com essa orientação em pelo menos {LIMIAR_ALINHA:.0f}% dos votos em "
