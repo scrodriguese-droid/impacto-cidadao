@@ -50,6 +50,9 @@ jobs:
       - name: Votações da Câmara
         if: always()
         run: python backend/coletor_votacoes.py
+      - name: Governismo, fidelidade e presença dos deputados
+        if: always()
+        run: python backend/coletor_governismo.py        
 
       - name: Autoria dos projetos (mensal ou sob demanda)
         if: always() && (github.event.schedule == '0 8 1 * *' || github.event.inputs.autoria == 'true')
