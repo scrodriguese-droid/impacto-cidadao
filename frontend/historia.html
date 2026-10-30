@@ -61,19 +61,11 @@
     <section class="mt-5" aria-labelledby="tEstado">
         <h2 id="tEstado" class="text-lg font-bold"><i class="fa-solid fa-landmark mr-2 text-brand-600" aria-hidden="true"></i>A evolução do Estado e do poder</h2>
         <p class="text-xs text-slate-500 mt-1">Escolha uma era para cruzar quatro eixos: a Constituição, a máquina pública, o contexto mundial e a cadeira presidencial. A divisão em eras é uma síntese editorial da literatura de história e administração pública.</p>
+        <div id="legenda" class="mt-3 flex flex-wrap gap-x-3 gap-y-1.5 text-[11px]"></div>
         <div id="eras" class="mt-3 flex gap-1.5 overflow-x-auto pb-1" role="group" aria-label="Escolher a era"></div>
         <div id="eraPainel" class="mt-3" aria-live="polite"></div>
         <details class="mt-3 text-[11px] text-slate-500"><summary class="cursor-pointer font-semibold">Fontes desta linha do tempo</summary><ul id="fontesEstado" class="mt-1 list-disc pl-5 space-y-1"></ul></details>
 
-    <div class="mt-8" role="region" aria-labelledby="tLista">
-        <h3 id="tLista" class="text-base font-bold"><i class="fa-solid fa-timeline mr-2 text-brand-600" aria-hidden="true"></i>Quem governou e a maioria do Congresso</h3>
-        <div class="faixa-fixa -mx-4 sm:-mx-6 px-4 sm:px-6 py-2 mt-3 bg-slate-50/95 dark:bg-slate-900/95 backdrop-blur border-b border-slate-200 dark:border-slate-700">
-            <div id="chipsFase" class="flex gap-1.5 overflow-x-auto md:flex-wrap pb-1" role="group" aria-label="Filtrar por período histórico"></div>
-            <div id="cabColunas" class="hidden md:grid mt-2 px-3 text-[10px] font-bold uppercase tracking-wide text-slate-500" aria-hidden="true"></div>
-        </div>
-        <div id="legenda" class="mt-3 flex flex-wrap gap-x-3 gap-y-1.5 text-[11px]"></div>
-        <div id="lista" class="mt-3 space-y-5"></div>
-    </div>
     </section>
 
     <section class="mt-8" aria-labelledby="tGrafico">
@@ -97,7 +89,7 @@
 <script>
 renderLayout('historia');
 
-const H = { dados: null, fase: '' };
+const H = { dados: null };
 const ORDEM = ['E', 'CE', 'C', 'CD', 'D', 'SEM'];
 const SOC = { A: 0, M: 1, L: 2 };
 const POS = { E: 0, CE: 1, C: 2, CD: 3, D: 4 };
@@ -121,73 +113,10 @@ function alinhamento(a, b) {
     return d === 0 ? 'alinhado' : d === 1 ? 'parcial' : 'tensao';
 }
 const sobreposicao = (p, x) => Math.min(fim(p), fim(x)) - Math.max(dt(p.ini), dt(x.ini));
-function parlamentoDe(p) {
-    return H.dados.parlamento.filter((x) => sobreposicao(p, x) > 0).sort((a, b) => sobreposicao(p, b) - sobreposicao(p, a));
-}
-
-const GRADE = 'md:grid md:grid-cols-[5.5rem_minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.1fr)_1rem] md:items-center md:gap-x-3';
 const CURTO = { SEM: 'Sem Congresso' };
 const SOCCLS = { A: 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900', M: 'bg-slate-300 text-slate-900 dark:bg-slate-600 dark:text-white', L: 'bg-white text-slate-900 dark:bg-slate-800 dark:text-slate-100 ring-1 ring-slate-400' };
 const pilSoc = (x) => { const D = H.dados || E.hist; return x && x.social && D ? `<span class="pil ${SOCCLS[x.social]}" title="Eixo político: ${esc(D.social_desc[x.social])}">${esc(D.social[x.social])}</span>` : ''; };
 const pilula = (eixo, texto, deb) => `<span class="pil eixo-${esc(eixo)}" title="${esc(texto)}${deb ? ' (classificação debatida entre historiadores)' : ''}">${esc(CURTO[eixo] || texto)}${deb ? ' *' : ''}</span>`;
-
-function linha(p) {
-    const D = H.dados, parl = parlamentoDe(p), dom = parl[0], outros = parl.slice(1);
-    const al = dom ? alinhamento(p, dom) : 'na';
-    const [alNome, alCls] = ALINHA[al];
-    const frase = dom && al !== 'na'
-        ? `Executivo de ${D.eixos[p.eixo].toLowerCase()} (${D.social[p.social].toLowerCase()}) e maioria do Congresso de ${D.eixos[dom.eixo].toLowerCase()} (${D.social[dom.social].toLowerCase()}).`
-        : 'A comparação não se aplica: o Congresso não estava funcionando.';
-    return `<details class="linha border-b border-slate-200 dark:border-slate-700" id="gov-${esc(p.id)}">
-        <summary class="px-3 py-2.5 flex flex-wrap items-center gap-x-3 gap-y-1.5 ${GRADE} hover:bg-slate-100 dark:hover:bg-slate-800/60" aria-label="${esc(p.nome)}, ${esc(anos(p))}: abrir detalhes">
-            <span class="text-xs font-bold text-brand-700 dark:text-brand-400 tabular-nums">${esc(anos(p))}</span>
-            <span class="min-w-0 basis-full md:basis-auto text-sm"><b class="font-extrabold">${esc(p.nome)}</b> <span class="text-xs text-slate-500">${esc(p.partido)}</span></span>
-            <span>${pilula(p.eixo, D.eixos[p.eixo], p.debatido)} ${pilSoc(p)}</span>
-            <span>${dom ? pilula(dom.eixo, D.eixos[dom.eixo], dom.debatido) + ' ' + pilSoc(dom) : '<span class="text-xs text-slate-500">Sem dados</span>'}</span>
-            <span><span class="pil ${alCls}">${esc(alNome)}</span></span>
-            <i class="seta fa-solid fa-chevron-right text-[10px] text-slate-400 ml-auto transition-transform" aria-hidden="true"></i></summary>
-        <div class="px-3 pb-4 pt-1 text-sm grid gap-3 md:grid-cols-2">
-            <div>
-                <p class="text-xs text-slate-500">${esc(fmt(p.ini))} a ${esc(fmt(p.fim))} · ${esc(p.chegada)}</p>
-                <p class="mt-2"><b>Executivo:</b> ${esc(p.rotulo)}</p>
-                <p class="mt-1.5"><b>Maioria do Congresso:</b> ${dom ? esc(dom.maioria) : 'Sem dados.'}</p>
-                ${outros.length ? `<p class="text-[11px] text-slate-500 mt-1.5">Também durante o mandato: ${outros.map((x) => `${esc(x.nome)} (${esc(anos(x))}, ${esc(D.eixos[x.eixo].toLowerCase())})`).join('; ')}.</p>` : ''}
-                ${p.nota ? `<p class="text-xs mt-2 rounded border-l-2 border-brand-600 pl-2"><i class="fa-solid fa-lightbulb mr-1" aria-hidden="true"></i>${esc(p.nota)}</p>` : ''}
-                <p class="text-xs text-slate-600 dark:text-slate-400 mt-2"><b>Relação entre os dois:</b> ${esc(alNome)}. ${esc(frase)}</p></div>
-            <div>
-                <p class="text-[10px] font-bold uppercase tracking-wide text-slate-500">Por que esta classificação</p>
-                <p class="mt-1"><b>Executivo:</b> ${esc(p.porque)}</p>
-                ${parl.map((x) => `<p class="mt-1.5"><b>Congresso (${esc(x.nome)}, ${esc(anos(x))}):</b> ${esc(x.porque)}</p>`).join('')}</div>
-        </div></details>`;
-}
-
-function desenharLista() {
-    const D = H.dados;
-    const fases = D.fases.filter((f) => !H.fase || f.id === H.fase);
-    $('cabColunas').className = 'hidden md:grid mt-2 px-3 text-[10px] font-bold uppercase tracking-wide text-slate-500 ' + GRADE.replace('md:grid ', '');
-    $('cabColunas').innerHTML = ['Anos', 'Presidente (partido)', 'Executivo', 'Maioria do Congresso', 'Alinhamento', ''].map((t) => `<span>${esc(t)}</span>`).join('');
-    $('lista').innerHTML = fases.map((f) => {
-        const itens = D.presidentes.filter((p) => p.fase === f.id);
-        return `<section aria-labelledby="fase-${esc(f.id)}">
-            <h3 id="fase-${esc(f.id)}" class="text-sm font-extrabold px-3">${esc(f.nome)} <span class="font-semibold text-slate-500">${esc(f.anos)}</span> <span class="text-xs font-normal text-slate-500">· ${esc(f.regime)}</span></h3>
-            <div class="mt-1 border-t border-slate-200 dark:border-slate-700">${itens.map(linha).join('')}</div></section>`;
-    }).join('');
-}
-
-function desenharChips() {
-    const D = H.dados;
-    const opts = [{ id: '', nome: 'Todos', anos: '' }].concat(D.fases);
-    $('chipsFase').innerHTML = opts.map((f) => {
-        const on = f.id === H.fase;
-        return `<button type="button" data-fase="${esc(f.id)}" aria-pressed="${on}" class="px-3 py-1.5 rounded-full text-xs font-semibold border ${on ? 'bg-brand-600 text-white border-brand-600' : 'border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700'}">${esc(f.nome)}${f.anos ? ` <span class="opacity-75">${esc(f.anos)}</span>` : ''}</button>`;
-    }).join('');
-}
-
-document.addEventListener('click', (ev) => {
-    const b = ev.target.closest && ev.target.closest('[data-fase]');
-    if (b) { H.fase = b.dataset.fase; desenharChips(); desenharLista(); }
-});
-
 
 /* ---------- gráfico: Executivo × Congresso na escala esquerda–direita ---------- */
 const COR = { E: '#6d28d9', CE: '#c4b5fd', C: '#cbd5e1', CD: '#99f6e4', D: '#0f766e' };
@@ -235,9 +164,10 @@ function desenharGrafico() {
         const r = ev.target.closest('[data-gov]');
         if (!r) return;
         const p = D.presidentes.find((x) => x.id === r.dataset.gov);
-        H.fase = p.fase; desenharChips(); desenharLista();
-        const a = $('gov-' + p.id);
-        if (a) { a.open = true; a.scrollIntoView({ behavior: 'smooth', block: 'center' }); a.style.boxShadow = '0 0 0 3px #A92823'; setTimeout(() => { a.style.boxShadow = ''; }, 1800); }
+        const ano = +p.ini.slice(0, 4), era = E.dados.eras.find((e) => ano >= e.ini && (!e.fim || ano < e.fim));
+        if (era) { E.era = era.id; desenharEras(); desenharEraPainel(); }
+        const a = $('gov-' + p.id) || $('eraPainel');
+        a.scrollIntoView({ behavior: 'smooth', block: 'center' }); a.style.boxShadow = '0 0 0 3px #A92823'; setTimeout(() => { a.style.boxShadow = ''; }, 1800);
     };
     resumoAlinhamento();
 }
@@ -294,7 +224,7 @@ function blocoGoverno(id, varios) {
     const X = E.dados.interesses, ex = E.hist.eixos, parl = parlOf(p), dom = parl[0];
     const al = dom ? alinhamento(p, dom) : 'na', [alNome, alCls] = ALINHA[al];
     const linhaX = (t, c) => `<p class="flex flex-wrap items-start gap-x-1.5 gap-y-0.5"><b class="w-full text-[10px] uppercase tracking-wide text-slate-500">${esc(t)}</b>${c}</p>`;
-    return `<div class="text-xs space-y-1.5 border-t border-slate-200 dark:border-slate-700 pt-2">
+    return `<div id="gov-${esc(p.id)}" class="text-xs space-y-1.5 border-t border-slate-200 dark:border-slate-700 pt-2">
         ${varios ? `<p class="font-bold">${esc(p.nome)}</p>` : ''}
         <p class="text-slate-500"><b>Partido:</b> ${esc(p.partido)}</p>
         ${linhaX('Orientação do Executivo', `${pilula(p.eixo, ex[p.eixo], p.debatido)} ${pilSoc(p)} <span>${esc(X[p.id] || p.rotulo)}</span>`)}
@@ -348,12 +278,12 @@ document.addEventListener('click', (ev) => {
         const r = await fetch('assets/historia.json');
         if (!r.ok) throw new Error('HTTP ' + r.status);
         H.dados = await r.json();
-        desenharChips(); desenharLista(); desenharGrafico();
+        desenharGrafico();
         $('legenda').insertAdjacentHTML('afterend', `<div class="mt-1.5 flex flex-wrap gap-x-3 gap-y-1.5 text-[11px]"><span class="font-bold">Eixo político:</span>${['A', 'M', 'L'].map((k) => `<span class="inline-flex items-center gap-1.5"><span class="pil ${SOCCLS[k]}">${esc(H.dados.social[k])}</span>${esc(H.dados.social_desc[k])}</span>`).join('')}</div>`);
         $('legenda').innerHTML = ORDEM.map((k) => `<span class="inline-flex items-center gap-1.5"><span class="eixo-${k} inline-block w-4 h-4 rounded"></span>${esc(H.dados.eixos[k])}</span>`).join('');
         $('fontes').innerHTML = H.dados.fontes.map((f) => `<li><a class="sem-sublinhado font-semibold text-brand-700 dark:text-brand-400 hover:underline" target="_blank" rel="noopener" href="${esc(urlSegura(f.url))}">${esc(f.nome)}</a></li>`).join('');
     } catch (e) {
-        $('lista').innerHTML = '<p class="text-sm text-rose-700">Não foi possível carregar os dados históricos agora.</p>';
+        $('grafico').innerHTML = '<p class="text-sm text-rose-700">Não foi possível carregar os dados históricos agora.</p>';
     }
 })();
 </script>
