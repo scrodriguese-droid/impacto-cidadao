@@ -621,6 +621,7 @@ def bussola() -> dict:
             "Fonte: V-Party v2 (V-Dem), pesquisa em que especialistas em cada país avaliam a posição de cada partido na eleição; os valores são uma agregação estatística dessas avaliações, não uma opinião do ImpactoCidadão.",
             "Eixo horizontal (economia): escala oficial do V-Party de 0 (extrema-esquerda) a 6 (extrema-direita), onde esquerda = mais papel do Estado na economia (impostos, regulação, gasto, bem-estar) e direita = menos.",
             "Eixo vertical (costumes e identidade): média simples de três perguntas do V-Party, cada uma de 0 a 4 — igualdade social LGBT, rejeição à superioridade cultural de um grupo ou da nação, e não invocar religião para justificar posições. Perto de 0: perfil de tradição/identidade; perto de 4: perfil de liberdades individuais e secularismo. O ponto neutro é 2. Esta média é nossa composição; cada item aparece no card do partido.",
+            "Os quatro quadrantes têm nome só como atalho da combinação dos dois eixos (ex.: mais Estado na economia + liberdades individuais). Não são um juízo sobre os partidos, e quem está perto de uma fronteira ou do centro não pertence claramente a nenhum quadrante.",
             "Cada posição vale para a eleição indicada (2002–2018). Mude o ano para ver a migração.",
         ],
         "limitacoes": [

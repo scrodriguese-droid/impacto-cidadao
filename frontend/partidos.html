@@ -449,6 +449,20 @@ function desenharBus() {
     const svg = $('bus');
     svg.replaceChildren();
     const lin = 'stroke-slate-300 dark:stroke-slate-600';
+    // quadrantes pintados e nomeados (o nome é só o atalho para a combinação dos dois eixos)
+    const QUAD = [
+        { x: BM.l, y: BM.t, f: '#fb7185', n: 'ESQUERDA CONSERVADORA', s: 'mais Estado · tradição' },
+        { x: BCX, y: BM.t, f: '#38bdf8', n: 'DIREITA CONSERVADORA', s: 'menos Estado · tradição' },
+        { x: BM.l, y: BCY, f: '#34d399', n: 'ESQUERDA PROGRESSISTA', s: 'mais Estado · liberdades' },
+        { x: BCX, y: BCY, f: '#a78bfa', n: 'DIREITA LIBERAL', s: 'menos Estado · liberdades' },
+    ];
+    QUAD.forEach((qd) => {
+        svg.appendChild(svgEl('rect', { x: qd.x, y: qd.y, width: BM.w / 2, height: BM.h / 2, fill: qd.f, 'fill-opacity': .16 }));
+        const cx = qd.x + BM.w / 4, esq = qd.x < BCX;
+        const ty = qd.y < BCY ? qd.y + 30 : qd.y + BM.h / 2 - 30;
+        svg.appendChild(svgEl('text', { x: cx, y: ty, 'text-anchor': 'middle', 'font-size': 17, 'font-weight': 800, fill: qd.f, 'fill-opacity': .75, 'letter-spacing': '.04em' }, qd.n));
+        svg.appendChild(svgEl('text', { x: cx, y: ty + 15, 'text-anchor': 'middle', 'font-size': 11, class: 'fill-slate-500' }, qd.s));
+    });
     svg.appendChild(svgEl('rect', { x: BM.l, y: BM.t, width: BM.w, height: BM.h, fill: 'none', class: lin }));
     svg.appendChild(svgEl('line', { x1: BCX, x2: BCX, y1: BM.t, y2: BM.t + BM.h, class: lin }));
     svg.appendChild(svgEl('line', { x1: BM.l, x2: BM.l + BM.w, y1: BCY, y2: BCY, class: lin }));
@@ -457,7 +471,7 @@ function desenharBus() {
     t(BM.l + BM.w / 2, BM.t + BM.h + 20, '▼ Liberdades individuais e secularismo', 'middle', { 'font-weight': 600 });
     t(BM.l, BM.t + BM.h + 38, '◄ Mais Estado na economia (esquerda econômica)', 'start', { 'font-weight': 600 });
     t(BM.l + BM.w, BM.t + BM.h + 38, 'Menos Estado na economia (direita econômica) ►', 'end', { 'font-weight': 600 });
-    svg.appendChild(svgEl('circle', { cx: BCX, cy: BCY, r: BRC, class: 'fill-amber-100/60 dark:fill-amber-900/20 stroke-amber-500', 'stroke-width': 1.5, 'stroke-dasharray': '5 3' }));
+    svg.appendChild(svgEl('circle', { cx: BCX, cy: BCY, r: BRC, class: 'fill-white dark:fill-slate-900 stroke-amber-500', 'stroke-width': 3.5 }));
     t(BCX, BCY - BRC - 6, 'Círculo de Pragmatismo', 'middle', { class: 'fill-amber-700 dark:fill-amber-400', 'font-weight': 700 });
     if (BSEL && $('busTrilha').checked) {
         const pts = BUS.quadros.slice(0, BI + 1).map((qq) => ({ a: qq.ano, p: qq.partidos.find((x) => x.entidade === BSEL) })).filter((x) => x.p);
