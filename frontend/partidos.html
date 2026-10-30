@@ -32,13 +32,12 @@
 <main id="conteudo" class="max-w-6xl mx-auto px-4 sm:px-6 pt-6 pb-10 flex-grow w-full space-y-12">
     <header>
         <h1 class="text-2xl font-extrabold tracking-tight">Partidos: evolução e afinidade de votação</h1>
-        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Dois olhares sobre os partidos do Brasil. O primeiro mostra o que está no registro oficial do TSE: quando cada partido foi registrado e como se fundiram, se incorporaram ou mudaram de nome. O segundo mostra como cada partido votou com o Governo, ano a ano. O terceiro mostra onde especialistas situam cada partido em dois eixos. O quarto mostra a afinidade de votação entre partidos. Sem avaliação política e sem ranking; ordem alfabética onde não há eixo próprio.</p>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Três olhares sobre os partidos do Brasil. O primeiro mostra o que está no registro oficial do TSE: quando cada partido foi registrado e como se fundiram, se incorporaram ou mudaram de nome. O segundo mostra como cada partido votou com o Governo, ano a ano. O terceiro mostra a afinidade de votação entre partidos. Sem avaliação política e sem ranking; ordem alfabética onde não há eixo próprio.</p>
         <nav class="mt-3 flex flex-wrap gap-2 text-sm" aria-label="Seções desta página">
             <a href="#evolucao" class="px-3 py-1.5 rounded-full border border-slate-300 dark:border-slate-600 hover:bg-white dark:hover:bg-slate-800">1 · Evolução histórica (TSE)</a>
             <a href="#blocos" class="px-3 py-1.5 rounded-full border border-slate-300 dark:border-slate-600 hover:bg-white dark:hover:bg-slate-800">2 · Blocos e governismo</a>
-            <a href="#bussola" class="px-3 py-1.5 rounded-full border border-slate-300 dark:border-slate-600 hover:bg-white dark:hover:bg-slate-800">3 · Bússola ideológica</a>
             
-            <a href="#escala" class="px-3 py-1.5 rounded-full border border-slate-300 dark:border-slate-600 hover:bg-white dark:hover:bg-slate-800">4 · Mapa de afinidade de votação</a>
+            <a href="#escala" class="px-3 py-1.5 rounded-full border border-slate-300 dark:border-slate-600 hover:bg-white dark:hover:bg-slate-800">3 · Mapa de afinidade de votação</a>
         </nav>
     </header>
 
@@ -95,47 +94,9 @@
         </div>
     </section>
 
-    <!-- ================= BÚSSOLA ================= -->
-    <section id="bussola" aria-labelledby="h-bus" class="scroll-mt-24">
-        <h2 id="h-bus" class="text-xl font-bold">3 · Bússola ideológica: onde os especialistas situam cada partido</h2>
-        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Dois eixos: <b>economia</b> (mais ou menos Estado) e <b>costumes e identidade</b> (tradição ou liberdades individuais). As posições vêm de uma pesquisa acadêmica com especialistas (V-Party, V-Dem), não de opinião do ImpactoCidadão. Partidos de perfil <b>pragmático</b>, que apoiam governos diferentes, ficam no Círculo de Pragmatismo, no centro. Escolha a eleição para ver a migração.</p>
-        <div id="busEstado" role="status" class="mt-3"><p class="text-sm text-slate-500">Carregando…</p></div>
-        <div id="busCorpo" class="hidden mt-4">
-            <div class="flex flex-wrap items-center gap-3">
-                <span class="text-sm font-semibold">Eleição:</span>
-                <div id="busAnos" class="flex flex-wrap gap-1.5" role="group" aria-label="Eleição da pesquisa"></div>
-                <label class="inline-flex items-center gap-2 text-sm"><input type="checkbox" id="busTrilha" checked> Trajetória do partido escolhido</label>
-                <label class="inline-flex items-center gap-2 text-sm"><input type="checkbox" id="busFantasma"> Mostrar os pragmáticos na posição dos especialistas</label>
-            </div>
-            <div class="grid xl:grid-cols-[minmax(0,1fr)_20rem] gap-4 mt-3">
-                <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-2">
-                    <svg id="bus" viewBox="0 0 700 600" class="w-full h-auto" role="img" aria-label="Bússola: partidos por posição econômica e de costumes"></svg>
-                </div>
-                <aside id="busCartao" class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 text-sm" aria-live="polite">
-                    <p class="text-slate-500">Clique num partido para ver a posição e os detalhes.</p>
-                </aside>
-            </div>
-            <h3 class="font-bold mt-6">Partidos na eleição (ordem alfabética)</h3>
-            <div id="busLista" class="mt-2 flex flex-wrap gap-1.5"></div>
-            <p class="mt-3 text-sm"><b>Sem posição na fonte:</b> <span id="busSem" class="text-slate-600 dark:text-slate-400"></span>. Eles não são colocados no mapa porque a pesquisa não os cobre; não inferimos posição.</p>
-            <div class="grid md:grid-cols-2 gap-4 mt-6">
-                <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4"><h3 class="font-bold">Método</h3><ul id="busMetodo" class="mt-2 text-sm text-slate-600 dark:text-slate-400 list-disc pl-5 space-y-1.5"></ul></div>
-                <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4"><h3 class="font-bold">Limitações</h3><ul id="busLimites" class="mt-2 text-sm text-slate-600 dark:text-slate-400 list-disc pl-5 space-y-1.5"></ul></div>
-            </div>
-            <p id="busFonte" class="text-xs text-slate-500 mt-3"></p>
-
-            <div class="mt-8 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
-                <h3 class="font-bold">Segunda fonte: o que dizem os programas das candidaturas à Presidência</h3>
-                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">O Manifesto Project lê o texto dos programas e mede quanto deles trata de temas que o próprio projeto classifica como de esquerda ou de direita (índice RILE, de −100 a +100). No Brasil ele codifica <b>programas de candidatura e coalizões</b>, não partidos individuais: cada ponto é o programa da candidatura, com o partido que liderava a coalizão. Por isso não substitui a posição do partido acima.</p>
-                <div id="manCorpo" class="mt-3 overflow-x-auto"></div>
-                <p id="manNota" class="text-xs text-slate-500 mt-2"></p>
-            </div>
-        </div>
-    </section>
-
     <!-- ================= MÓDULO 2 ================= -->
     <section id="escala" aria-labelledby="h-esc" class="scroll-mt-24">
-        <h2 id="h-esc" class="text-xl font-bold">4 · Mapa de afinidade de votação na Câmara</h2>
+        <h2 id="h-esc" class="text-xl font-bold">3 · Mapa de afinidade de votação na Câmara</h2>
         <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Partidos que votam parecido ficam perto; partidos que votam diferente ficam longe. Calculado só a partir das votações nominais abertas da Câmara. <b>Não é uma escala esquerda–direita</b>: o TSE não define ideologia e a Câmara também não. Use a barra de tempo para ver como o mapa mudou.</p>
         <div id="escEstado" role="status" class="mt-3"><p class="text-sm text-slate-500">Carregando votações…</p></div>
         <div id="escCorpo" class="hidden mt-4">
@@ -495,161 +456,8 @@ function iniciarBlocos() {
     desenharBlocos();
 }
 
-/* ====================== BÚSSOLA ====================== */
-let BUS = null, BI = 0, BSEL = null;
-const BM = { l: 60, t: 40, w: 580, h: 500 };
-const bx = (eco) => BM.l + (eco / 6) * BM.w;                 // 0..6, centro 3
-const by = (cult) => BM.t + (cult / 4) * BM.h;               // 0..4 (0 = tradição, no topo), neutro 2
-const BCX = bx(3), BCY = by(2), BRC = 70;
-
-function posBus(p, i, n) {
-    if (!p.pragmatico || $('busFantasma').checked) return [bx(p.eco), by(p.cultura)];
-    const a1 = Math.min(n, 5);
-    if (i < a1) { const a = 2 * Math.PI * i / a1 - Math.PI / 2; return [BCX + Math.cos(a) * BRC * .6, BCY + Math.sin(a) * BRC * .6]; }
-    const a = 2 * Math.PI * (i - a1) / Math.max(n - a1, 1);
-    return [BCX + Math.cos(a) * BRC * .25, BCY + Math.sin(a) * BRC * .25];
-}
-
-function desenharBus() {
-    const q = BUS.quadros[BI];
-    const svg = $('bus');
-    svg.replaceChildren();
-    const lin = 'stroke-slate-300 dark:stroke-slate-600';
-    // quadrantes pintados e nomeados (o nome é só o atalho para a combinação dos dois eixos)
-    const QUAD = [
-        { x: BM.l, y: BM.t, f: '#fb7185', n: 'ESQUERDA CONSERVADORA', s: 'mais Estado · tradição' },
-        { x: BCX, y: BM.t, f: '#38bdf8', n: 'DIREITA CONSERVADORA', s: 'menos Estado · tradição' },
-        { x: BM.l, y: BCY, f: '#34d399', n: 'ESQUERDA PROGRESSISTA', s: 'mais Estado · liberdades' },
-        { x: BCX, y: BCY, f: '#a78bfa', n: 'DIREITA LIBERAL', s: 'menos Estado · liberdades' },
-    ];
-    QUAD.forEach((qd) => {
-        svg.appendChild(svgEl('rect', { x: qd.x, y: qd.y, width: BM.w / 2, height: BM.h / 2, fill: qd.f, 'fill-opacity': .16 }));
-        const cx = qd.x + BM.w / 4, esq = qd.x < BCX;
-        const ty = qd.y < BCY ? qd.y + 30 : qd.y + BM.h / 2 - 30;
-        svg.appendChild(svgEl('text', { x: cx, y: ty, 'text-anchor': 'middle', 'font-size': 17, 'font-weight': 800, fill: qd.f, 'fill-opacity': .75, 'letter-spacing': '.04em' }, qd.n));
-        svg.appendChild(svgEl('text', { x: cx, y: ty + 15, 'text-anchor': 'middle', 'font-size': 11, class: 'fill-slate-500' }, qd.s));
-    });
-    svg.appendChild(svgEl('rect', { x: BM.l, y: BM.t, width: BM.w, height: BM.h, fill: 'none', class: lin }));
-    svg.appendChild(svgEl('line', { x1: BCX, x2: BCX, y1: BM.t, y2: BM.t + BM.h, class: lin }));
-    svg.appendChild(svgEl('line', { x1: BM.l, x2: BM.l + BM.w, y1: BCY, y2: BCY, class: lin }));
-    const t = (x, y, txt, ancora, extra) => svg.appendChild(svgEl('text', Object.assign({ x, y, 'text-anchor': ancora, 'font-size': 11, class: 'fill-slate-500' }, extra || {}), txt));
-    t(BM.l + BM.w / 2, 16, '▲ Tradição e identidade (religião, nação, costumes)', 'middle', { 'font-weight': 600 });
-    t(BM.l + BM.w / 2, BM.t + BM.h + 20, '▼ Liberdades individuais e secularismo', 'middle', { 'font-weight': 600 });
-    t(BM.l, BM.t + BM.h + 38, '◄ Mais Estado na economia (esquerda econômica)', 'start', { 'font-weight': 600 });
-    t(BM.l + BM.w, BM.t + BM.h + 38, 'Menos Estado na economia (direita econômica) ►', 'end', { 'font-weight': 600 });
-    svg.appendChild(svgEl('circle', { cx: BCX, cy: BCY, r: BRC, class: 'fill-white dark:fill-slate-900 stroke-amber-500', 'stroke-width': 3.5 }));
-    t(BCX, BCY - BRC - 6, 'Círculo de Pragmatismo', 'middle', { class: 'fill-amber-700 dark:fill-amber-400', 'font-weight': 700 });
-    if (BSEL && $('busTrilha').checked) {
-        const pts = BUS.quadros.slice(0, BI + 1).map((qq) => ({ a: qq.ano, p: qq.partidos.find((x) => x.entidade === BSEL) })).filter((x) => x.p);
-        if (pts.length > 1) svg.appendChild(svgEl('polyline', { points: pts.map((x) => bx(x.p.eco) + ',' + by(x.p.cultura)).join(' '), fill: 'none', stroke: '#A92823', 'stroke-width': 1.5, 'stroke-dasharray': '4 3', 'stroke-opacity': .7 }));
-        pts.forEach((x) => { svg.appendChild(svgEl('circle', { cx: bx(x.p.eco), cy: by(x.p.cultura), r: 3, fill: '#A92823', 'fill-opacity': .7 })); svg.appendChild(svgEl('text', { x: bx(x.p.eco) + 5, y: by(x.p.cultura) - 5, 'font-size': 8, class: 'fill-slate-500' }, x.a)); });
-    }
-    const prag = q.partidos.filter((p) => p.pragmatico);
-    const posi = new Map();
-    prag.forEach((p, i) => posi.set(p.entidade, posBus(p, i, prag.length)));
-    q.partidos.filter((p) => !p.pragmatico).forEach((p) => posi.set(p.entidade, posBus(p)));
-    q.partidos.forEach((p) => {
-        const [x, y] = posi.get(p.entidade), sel = p.entidade === BSEL;
-        const g = svgEl('g', { class: 'ponto', tabindex: 0, role: 'button', 'aria-label': `${p.sigla}, ver detalhes`, style: `transform:translate(${x}px,${y}px)` });
-        g.appendChild(svgEl('circle', { class: `alvo ${sel ? 'fill-brand-600' : 'fill-slate-600 dark:fill-slate-300'} stroke-white dark:stroke-slate-800`, r: sel ? 9 : 6, 'stroke-width': 1.5 }));
-        g.appendChild(svgEl('text', { x: 9, y: 4, 'font-size': 11, 'font-weight': 600, class: 'fill-slate-800 dark:fill-slate-100', 'paint-order': 'stroke', stroke: 'var(--halo, #fff)', 'stroke-width': 3 }, p.sigla));
-        g.appendChild(svgEl('title', {}, p.sigla + (p.pragmatico ? ' — perfil pragmático' : '')));
-        g.addEventListener('click', () => escolherBus(p.entidade));
-        g.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); escolherBus(p.entidade); } });
-        svg.appendChild(g);
-    });
-    $('busAnos').innerHTML = BUS.quadros.map((qq, i) => `<button type="button" data-i="${i}" aria-pressed="${i === BI}" class="px-3 py-1 rounded-full border text-sm font-semibold ${i === BI ? 'bg-brand-600 text-white border-brand-600' : 'border-slate-300 dark:border-slate-600 hover:bg-white dark:hover:bg-slate-800'}">${esc(qq.ano)}</button>`).join('');
-    $('busAnos').querySelectorAll('button').forEach((b) => b.addEventListener('click', () => { BI = +b.dataset.i; desenharBus(); }));
-    $('busLista').innerHTML = q.partidos.map((p) => `<button type="button" data-ent="${esc(p.entidade)}" class="px-2.5 py-1 rounded-full border text-xs font-semibold ${p.entidade === BSEL ? 'bg-brand-600 text-white border-brand-600' : 'border-slate-300 dark:border-slate-600 hover:bg-white dark:hover:bg-slate-800'}">${esc(p.sigla)}${p.pragmatico ? ' ◌' : ''}</button>`).join('');
-    $('busLista').querySelectorAll('button').forEach((b) => b.addEventListener('click', () => escolherBus(b.dataset.ent)));
-    cartaoBus();
-}
-
-const n1 = (v) => Number(v).toFixed(1).replace('.', ',');
-const rotuloEco = (v) => ['extrema-esquerda', 'esquerda', 'centro-esquerda', 'centro', 'centro-direita', 'direita', 'extrema-direita'][Math.min(6, Math.max(0, Math.round(v)))];
-function cartaoBus() {
-    const el = $('busCartao');
-    if (!BSEL) { el.innerHTML = '<p class="text-slate-500">Clique num partido para ver a posição e os detalhes.</p>'; return; }
-    const q = BUS.quadros[BI];
-    const p = q.partidos.find((x) => x.entidade === BSEL);
-    const qq = [...BUS.quadros].reverse().find((z) => z.partidos.some((x) => x.entidade === BSEL));
-    const base = p || qq.partidos.find((x) => x.entidade === BSEL);
-    let h = `<h3 class="text-lg font-extrabold">${esc(base.sigla)}</h3>`;
-    if (base.pragmatico) h += `<p class="mt-2 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-800">${esc(BUS.pragmatismo.texto_card)}</p>`;
-    if (!p) h += `<p class="mt-2 text-slate-500">Sem posição na pesquisa de ${esc(q.ano)}.</p>`;
-    else {
-        h += `<p class="mt-2 text-xs font-semibold text-slate-500">Posição segundo especialistas (V-Party), eleição de ${esc(q.ano)}${p.sigla_fonte !== p.sigla ? ` — sigla na fonte: ${esc(p.sigla_fonte)}` : ''}</p>
-        <ul class="mt-1 space-y-1">
-        <li><b>Economia:</b> ${n1(p.eco)} de 6 (${esc(rotuloEco(p.eco))}; ±${n1(p.eco_sd)})</li>
-        <li><b>Costumes e identidade:</b> ${n1(p.cultura)} de 4 (média dos itens abaixo; 2 = neutro)</li>
-        <li class="text-xs text-slate-500 pl-3">Igualdade LGBT ${n1(p.lgbt)} · Rejeição à superioridade cultural ${n1(p.culsup)} · Não invocar religião ${n1(p.relig)}</li></ul>`;
-        if (p.pragmatico) h += '<p class="mt-2 text-xs text-slate-500">Mesmo com essa posição na pesquisa, o partido está no círculo porque seu voto no Congresso acompanhou governos diferentes (critério na seção 2).</p>';
-    }
-    h += `<p class="mt-3 text-xs"><a class="underline" href="#evolucao" data-hist="${esc(base.entidade)}">Ver na linha do tempo do TSE</a></p>`;
-    el.innerHTML = h;
-    el.querySelector('[data-hist]').addEventListener('click', () => { if (EVO && EVO.nos.some((n) => n.id === base.entidade)) detalheNo(base.entidade); });
-}
-function escolherBus(ent) { BSEL = BSEL === ent ? null : ent; desenharBus(); }
-
-async function iniciarBussola() {
-    try {
-        BUS = await api('/api/partidos/bussola');
-        $('busEstado').innerHTML = '';
-        $('busCorpo').classList.remove('hidden');
-        BI = BUS.quadros.length - 1;
-        $('busSem').textContent = BUS.sem_cobertura.join(', ');
-        $('busMetodo').innerHTML = BUS.metodo.map((t) => `<li>${esc(t)}</li>`).join('');
-        $('busLimites').innerHTML = BUS.limitacoes.map((t) => `<li>${esc(t)}</li>`).join('');
-        $('busFonte').innerHTML = `Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(BUS.fonte.url))}">${esc(BUS.fonte.nome)}</a>. Dados © V-Dem Institute, usados com citação da fonte.`;
-        $('busTrilha').addEventListener('change', desenharBus);
-        $('busFantasma').addEventListener('change', desenharBus);
-        desenharBus();
-    } catch (e) {
-        $('busEstado').innerHTML = mensagemErro(e);
-    }
-}
-
-/* ====================== MANIFESTO PROJECT (programas de candidatura) ====================== */
-async function iniciarManifesto() {
-    try {
-        const r = await fetch('assets/manifesto.json');
-        if (!r.ok) throw new Error('sem arquivo');
-        const d = await r.json();
-        const anos = [...new Set(d.itens.map((i) => i.eleicao))];
-        const W = 760, ML = 60, MR = 20, LH = 74, H = anos.length * LH + 40;
-        const x = (v) => ML + (v + 60) / 120 * (W - ML - MR);        // eixo recortado em −60…+60 (todos os valores cabem)
-        const svg = svgEl('svg', { viewBox: `0 0 ${W} ${H}`, width: '100%', role: 'img', 'aria-label': 'Índice esquerda–direita dos programas de candidatura à Presidência, por eleição' });
-        svg.style.minWidth = '620px'; svg.style.height = 'auto';
-        [-60, -40, -20, 0, 20, 40, 60].forEach((v) => {
-            svg.appendChild(svgEl('line', { x1: x(v), x2: x(v), y1: 16, y2: H - 24, class: v === 0 ? 'stroke-slate-400' : 'stroke-slate-200 dark:stroke-slate-700' }));
-            svg.appendChild(svgEl('text', { x: x(v), y: H - 8, 'text-anchor': 'middle', 'font-size': 10, class: 'fill-slate-500' }, v > 0 ? '+' + v : v));
-        });
-        svg.appendChild(svgEl('text', { x: x(-60), y: 10, 'font-size': 10, 'font-weight': 600, class: 'fill-slate-500' }, '◄ mais temas classificados como de esquerda'));
-        svg.appendChild(svgEl('text', { x: x(60), y: 10, 'text-anchor': 'end', 'font-size': 10, 'font-weight': 600, class: 'fill-slate-500' }, 'mais temas classificados como de direita ►'));
-        anos.forEach((ano, i) => {
-            const y0 = 24 + i * LH;
-            svg.appendChild(svgEl('text', { x: 4, y: y0 + 28, 'font-size': 13, 'font-weight': 800, class: 'fill-slate-700 dark:fill-slate-200' }, ano));
-            const grupo = d.itens.filter((it) => it.eleicao === ano);
-            grupo.forEach((it, j) => {
-                const cx = x(it.rile), cy = y0 + 22, alto = j % 2 === 0;
-                const g = svgEl('g', {});
-                g.appendChild(svgEl('circle', { cx, cy, r: 6, class: 'fill-slate-600 dark:fill-slate-300 stroke-white dark:stroke-slate-800', 'stroke-width': 1.5 }));
-                g.appendChild(svgEl('text', { x: cx, y: alto ? cy - 11 : cy + 20, 'text-anchor': 'middle', 'font-size': 10, 'font-weight': 600, class: 'fill-slate-800 dark:fill-slate-100' }, `${it.lider || '?'} (${it.candidato.split(' ')[0]})`));
-                g.appendChild(svgEl('title', {}, `${it.eleicao} · ${it.nome_en} · ${it.candidato} · RILE ${String(it.rile).replace('.', ',')} · mercado ${it.markeco} · economia planejada ${it.planeco} · bem-estar ${it.welfare}`));
-                svg.appendChild(g);
-            });
-        });
-        $('manCorpo').replaceChildren(svg);
-        $('manNota').innerHTML = `Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(d.url))}">${esc(d.fonte)}</a>. O índice mede o texto do programa, não o que o partido faz no governo ou no Congresso, e a unidade é a candidatura: partidos que nunca lideraram uma candidatura presidencial (UNIÃO, PRD, NOVO, REDE) não aparecem. Passe o mouse num ponto para ver os valores de mercado, economia planejada e bem-estar.`;
-    } catch (e) {
-        $('manCorpo').innerHTML = '<p class="text-sm text-slate-500">Dados do Manifesto Project indisponíveis.</p>';
-    }
-}
-
 iniciarEvolucao();
 iniciarEscala();
-iniciarBussola();
-iniciarManifesto();
 </script>
 </body>
 </html>
