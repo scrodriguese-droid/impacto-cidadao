@@ -37,7 +37,7 @@ renderLayout('guia-tributos');
 
 async function carregarGuiaTributos() {
     try {
-        const [grupos, cls] = await Promise.all([fetch('assets/tributos.json').then((r) => r.json()), fetch('assets/tributos_classe.json').then((r) => r.json())]);
+        const [grupos, cls, hist] = await Promise.all([fetch('assets/tributos.json').then((r) => r.json()), fetch('assets/tributos_classe.json').then((r) => r.json()), fetch('assets/tributos_historia.json').then((r) => r.json())]);
         const ESFERA_GRUPO = { Federal: 'União', Estadual: 'Estado', Municipal: 'Município', Mista: 'Reforma tributária', 'Estadual e Municipal': 'Estados e municípios', 'Variável': 'Varia' };
         const itens = {};   // sigla -> item completo
         grupos.forEach((g) => g.itens.forEach((i) => { itens[i.sigla] = { ...i, tipo: g.tipo, esfera: ESFERA_GRUPO[g.esfera] || g.esfera, grupo: g.id }; }));
@@ -51,6 +51,36 @@ async function carregarGuiaTributos() {
         const lista = (siglas, extras = {}) => `<ul class="trib-lista">${siglas.map((s) => linha(s, extras[s])).join('')}</ul>`;
         const siglasDe = (fn) => Object.keys(cls.impostos).filter(fn);
         const ordem = (a, b) => ['União', 'Estado', 'Estados e municípios', 'Município'].indexOf(cls.impostos[a].esfera) - ['União', 'Estado', 'Estados e municípios', 'Município'].indexOf(cls.impostos[b].esfera);
+
+        // 0) linha do tempo: como a carga se formou; e a camada do patrimônio
+        const listaTempo = `<ol class="tl">${hist.eras.map((e) => `<li class="tl-era"><div><p class="tl-anos">${esc(e.anos)}</p><p class="tl-nome">${esc(e.nome)}</p></div>
+            <div><p class="tl-frase">${esc(e.frase)}</p>
+            <div class="tl-carga"><span class="tl-barra" role="img" aria-label="${esc(e.carga_nota)}"><i style="width:${Math.round(e.carga / 35 * 100)}%"></i></span><span>Carga: <b>${esc(e.carga_nota)}</b></span></div>
+            <p class="tl-mudanca">${esc(e.mudanca)}</p>
+            <div class="tl-chips">${e.siglas.map((s) => `<b>${esc(s)}</b>`).join('')}</div>
+            <details class="tl-mais"><summary>Quem ficava com o quê</summary>
+                <ul class="tl-pontos">${e.pontos.map(([k, t]) => `<li><b>${esc(k)}</b><span>${esc(t)}</span></li>`).join('')}</ul>
+                <p class="tl-marco">${esc(e.marco)}</p></details></div></li>`).join('')}</ol>`;
+
+        // gráfico interativo: curva da carga, faixas das eras e marcos clicáveis
+        const FAIXAS = [[1889, 1930], [1930, 1964], [1964, 1988], [1988, 2025]];
+        const W = 800, H = 300, ML = 38, MR = 14, MT = 18, MB = 30, X0 = 1889, X1 = 2025, YM = 36;
+        const X = (a) => ML + (a - X0) / (X1 - X0) * (W - ML - MR);
+        const Y = (v) => H - MB - v / YM * (H - MB - MT);
+        const cv = hist.curva;
+        const valorEm = (a) => { for (let k = 1; k < cv.length; k++) if (a <= cv[k][0]) { const [x0, y0] = cv[k - 1], [x1, y1] = cv[k]; return y0 + (y1 - y0) * (a - x0) / (x1 - x0); } return cv[cv.length - 1][1]; };
+        const caminho = cv.map(([a, v], k) => `${k ? 'L' : 'M'}${X(a).toFixed(1)},${Y(v).toFixed(1)}`).join(' ');
+        const area = `${caminho} L${X(cv[cv.length - 1][0]).toFixed(1)},${Y(0)} L${X(cv[0][0]).toFixed(1)},${Y(0)} Z`;
+        const faixas = FAIXAS.map(([a, b], k) => `<g class="tg-faixa" data-era="${k}" tabindex="0" role="button" aria-label="${esc(hist.eras[k].nome)}, ${esc(hist.eras[k].anos)}"><rect x="${X(a)}" y="${MT}" width="${X(b) - X(a)}" height="${H - MB - MT}"/><text x="${(X(a) + X(b)) / 2}" y="${MT + 12}" text-anchor="middle">${k + 1}</text></g>`).join('');
+        const eixoY = [0, 10, 20, 30].map((v) => `<line class="tg-grade" x1="${ML}" x2="${W - MR}" y1="${Y(v)}" y2="${Y(v)}"/><text class="tg-eixo" x="${ML - 6}" y="${Y(v) + 3}" text-anchor="end">${v}%</text>`).join('');
+        const eixoX = [1900, 1930, 1964, 1988, 2023].map((a) => `<text class="tg-eixo" x="${X(a)}" y="${H - 10}" text-anchor="middle">${a}</text>`).join('');
+        const pontos = hist.marcos.map((m, k) => `<g class="tg-marco" data-marco="${k}" tabindex="0" role="button" aria-label="${m.ano}: ${esc(m.titulo)}"><circle cx="${X(m.ano).toFixed(1)}" cy="${Y(valorEm(m.ano)).toFixed(1)}" r="14" class="tg-alvo"/><circle cx="${X(m.ano).toFixed(1)}" cy="${Y(valorEm(m.ano)).toFixed(1)}" r="6" class="tg-ponto"/></g>`).join('');
+        const linhaTempo = `<div class="tg"><svg viewBox="0 0 ${W} ${H}" role="group" aria-label="Carga tributária brasileira em % do PIB, de 1889 a hoje (valores aproximados)">${faixas}${eixoY}${eixoX}<path class="tg-area" d="${area}"/><path class="tg-linha" d="${caminho}"/>${pontos}</svg>
+            <p class="ficha-nota">${esc(hist.curva_nota)}</p>
+            <div id="tgPainel" class="tg-painel" aria-live="polite"></div></div>
+            <details class="sanfona mt-3"><summary>Ver em lista <span class="sanfona-sub">as quatro eras, uma abaixo da outra</span></summary>${listaTempo}</details>`;
+        const r = hist.riqueza;
+        const riqueza = `<p class="text-sm" style="max-width:70ch">${esc(r.intro)}</p><div class="pat">${r.cards.map((c) => `<div class="pat-card${c.fantasma ? ' pat-fantasma' : ''}"><p class="trib-tag">${esc(c.sigla)} ${selo(c.esfera)}</p><span class="pat-quem">${esc(c.nome)}</span><p>${esc(c.texto)}</p>${c.curioso ? `<p class="pat-curioso">${esc(c.curioso)}</p>` : ''}</div>`).join('')}</div><p class="ficha-nota mt-2">${esc(r.fecho)}</p>`;
 
         // 1) as três espécies
         const especies = `<div class="trib-especies">${cls.especies.map((e) => `<div class="trib-especie"><p class="trib-tag">${esc(e.nome)}</p><p>${esc(e.texto)}</p><p class="ficha-nota">${esc(e.base)}</p></div>`).join('')}</div>`;
@@ -95,6 +125,10 @@ async function carregarGuiaTributos() {
             <ul class="trib-lista trib-compacta">${g.itens.map((i) => `<li><div class="trib-sigla"><b>${esc(i.sigla)}</b></div><div><span class="trib-nome">${esc(i.nome)}</span><span class="trib-onde">${esc(i.onde)}</span></div></li>`).join('')}</ul></div>`).join('')}</div></details>` : '';
 
         $('guiaTributos').innerHTML = `
+            <h3 class="trib-h" style="margin-top:0">${esc(hist.titulo)}</h3>
+            <p class="text-sm" style="max-width:70ch">${esc(hist.intro)}</p>${linhaTempo}
+            <h3 class="trib-h">${esc(r.titulo)}</h3>${riqueza}
+            <h3 class="trib-h">Agora, a classificação</h3>
             ${especies}
             <h3 class="trib-h">Impostos: direto ou indireto?</h3>${formas}
             <h3 class="trib-h">Impostos e contribuições: o que é tributado?</h3>${bases}
@@ -105,6 +139,27 @@ async function carregarGuiaTributos() {
             <h3 class="trib-h">Lista completa, por esfera</h3>
             <p class="text-sm mb-2" style="max-width:70ch">Todas as cobranças reunidas, por quem cobra.</p>${completa}${sanfonaOutras}
             <p class="ficha-nota mt-3">Lista de referência. Os valores arrecadados de cada tributo estão no <a class="underline" href="tributos.html">inventário de tributos</a>.</p>`;
+        const painel = $('tgPainel');
+        const marcarSel = (el) => document.querySelectorAll('.tg-faixa,.tg-marco').forEach((n) => n.classList.toggle('sel', n === el));
+        const eraDoAno = (a) => Math.max(0, FAIXAS.findIndex(([x, y]) => a >= x && a < y));
+        const mostrarEra = (k, el) => {
+            const e = hist.eras[k];
+            marcarSel(el);
+            painel.innerHTML = `<p class="tl-anos">${esc(e.anos)}</p><p class="tl-nome">${esc(e.nome)}</p><p class="tl-frase" style="margin-top:.6rem">${esc(e.frase)}</p>
+                <div class="tl-carga"><span class="tl-barra"><i style="width:${Math.round(e.carga / 35 * 100)}%"></i></span><span>Carga: <b>${esc(e.carga_nota)}</b></span></div>
+                <p class="tl-mudanca">${esc(e.mudanca)}</p>
+                <ul class="tl-pontos">${e.pontos.map(([a, t]) => `<li><b>${esc(a)}</b><span>${esc(t)}</span></li>`).join('')}</ul><p class="tl-marco">${esc(e.marco)}</p>
+                <div class="tl-chips">${e.siglas.map((x) => `<b>${esc(x)}</b>`).join('')}</div>`;
+        };
+        const mostrarMarco = (k, el) => {
+            const m = hist.marcos[k], e = hist.eras[eraDoAno(m.ano)];
+            marcarSel(el);
+            painel.innerHTML = `<p class="tl-anos">${m.ano}</p><p class="tl-nome">${esc(e.nome)}</p><p class="tl-frase" style="margin-top:.6rem">${esc(m.titulo)}</p><p class="tl-mudanca">${esc(m.texto)}</p>`;
+        };
+        const ligar = (sel, fn) => document.querySelectorAll(sel).forEach((n) => { const f = () => fn(n); n.addEventListener('click', f); n.addEventListener('keydown', (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); f(); } }); });
+        ligar('.tg-faixa', (n) => mostrarEra(+n.dataset.era, n));
+        ligar('.tg-marco', (n) => mostrarMarco(+n.dataset.marco, n));
+        mostrarEra(0, document.querySelector('.tg-faixa[data-era="0"]'));
     } catch (e) { $('guiaTributos').innerHTML = mensagemErro(e); }
 }
 
