@@ -194,7 +194,7 @@ function renderLayout(paginaAtual) {
         const grupo = NAVEGACAO.find((n) => n.paginas.includes(paginaAtual));
         let abas = grupo && SUBNAVEGACAO[grupo.id];
         // fora da época de eleição, as abas de planos ficam ocultas (quem abrir uma delas direto ainda vê todas, para poder navegar)
-        if (grupo && grupo.id === 'planos' && !PLANOS_VISIVEIS && !['planos', 'analise-planos'].includes(paginaAtual)) abas = abas.filter((t) => t.id === 'resultados');
+        if (grupo && grupo.id === 'planos' && !PLANOS_VISIVEIS && !['planos', 'analise-planos'].includes(paginaAtual)) abas = abas.filter((t) => ['resultados', 'partidos'].includes(t.id));
         if (abas && abas.length < 2) abas = null;   // uma aba só não precisa de linha de abas
         const principal = document.querySelector('main');
         if (abas && principal) {
