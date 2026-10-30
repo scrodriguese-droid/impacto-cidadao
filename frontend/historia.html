@@ -280,14 +280,35 @@ function cartao(icone, rotulo, titulo, corpo) {
         <p class="mt-1 text-sm font-extrabold">${esc(titulo)}</p>${corpo}</div>`;
 }
 
+function parlOf(p) {
+    return E.hist.parlamento.filter((x) => sobreposicao(p, x) > 0).sort((a, b) => sobreposicao(p, b) - sobreposicao(p, a));
+}
+// Orientação do Executivo, maioria do Congresso e alinhamento de um governo (dados de historia.json + interesses editoriais).
+function blocoGoverno(id, varios) {
+    const p = E.hist.presidentes.find((x) => x.id === id);
+    if (!p) return '';
+    const X = E.dados.interesses, ex = E.hist.eixos, parl = parlOf(p), dom = parl[0];
+    const al = dom ? alinhamento(p.eixo, dom.eixo) : 'na', [alNome, alCls] = ALINHA[al];
+    const linhaX = (t, c) => `<p class="flex flex-wrap items-start gap-x-1.5 gap-y-0.5"><b class="w-full text-[10px] uppercase tracking-wide text-slate-500">${esc(t)}</b>${c}</p>`;
+    return `<div class="text-xs space-y-1.5 border-t border-slate-200 dark:border-slate-700 pt-2">
+        ${varios ? `<p class="font-bold">${esc(p.nome)}</p>` : ''}
+        <p class="text-slate-500"><b>Partido:</b> ${esc(p.partido)}</p>
+        ${linhaX('Orientação do Executivo', `${pilula(p.eixo, ex[p.eixo], p.debatido)} <span>${esc(X[p.id] || p.rotulo)}</span>`)}
+        ${linhaX('Maioria do Congresso', dom ? `${pilula(dom.eixo, ex[dom.eixo], dom.debatido)} <span>${esc(X[dom.id] || dom.maioria)}</span>` : '<span class="text-slate-500">Sem dados.</span>')}
+        ${linhaX('Alinhamento', al === 'na' ? '<span class="pil bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200">Fora da escala</span> <span class="text-slate-500">Os interesses acima situam cada lado.</span>' : `<span class="pil ${alCls}">${esc(alNome)}</span>`)}
+        <details><summary class="cursor-pointer font-semibold text-slate-600 dark:text-slate-300">Por que esta classificação</summary>
+            <p class="mt-1"><b>Executivo:</b> ${esc(p.porque)}</p>${parl.map((x) => `<p class="mt-1"><b>Congresso (${esc(x.nome)}, ${esc(anos(x))}):</b> ${esc(x.porque)}</p>`).join('')}</details></div>`;
+}
+
 function desenharEraPainel() {
     const e = E.dados.eras.find((x) => x.id === E.era), S = E.dados.status;
-    const pres = e.cadeira.presidentes.map(([nome, anosP, st, nota]) => {
-        const [ic, cls, borda] = STATUS_CLS[st];
-        return `<li class="rounded-xl border border-slate-200 dark:border-slate-700 border-t-4 ${borda} bg-white dark:bg-slate-800 p-3 flex flex-col gap-1">
+    const pres = e.cadeira.presidentes.map(([nome, anosP, st, nota, govs]) => {
+        const [ic, cls, borda] = STATUS_CLS[st], ids = govs ? govs.split(',') : [];
+        return `<li class="rounded-xl border border-slate-200 dark:border-slate-700 border-t-4 ${borda} bg-white dark:bg-slate-800 p-3 flex flex-col gap-2">
             <span class="inline-flex items-center gap-1 self-start rounded px-1.5 py-0.5 text-[10px] font-bold ${cls}"><i class="fa-solid ${ic}" aria-hidden="true"></i>${esc(S[st])}</span>
-            <b class="text-sm leading-tight">${esc(nome)}</b><span class="text-xs text-slate-500 tabular-nums">${esc(anosP)}</span>
-            ${nota ? `<span class="text-xs text-slate-600 dark:text-slate-400">${esc(nota)}</span>` : ''}</li>`;
+            <div><b class="text-sm leading-tight">${esc(nome)}</b> <span class="text-xs text-slate-500 tabular-nums">${esc(anosP)}</span>
+            ${nota ? `<p class="text-xs text-slate-600 dark:text-slate-400">${esc(nota)}</p>` : ''}</div>
+            ${ids.map((id) => blocoGoverno(id, ids.length > 1)).join('')}</li>`;
     }).join('');
     $('eraPainel').innerHTML = `<div class="mb-3"><h3 class="text-base font-extrabold">${esc(e.nome)} <span class="font-semibold text-slate-500">${esc(anosEra(e))}</span>${e.sub ? ' <span class="pil bg-slate-200 dark:bg-slate-700">subperíodo da Nova República</span>' : ''}</h3>
         <p class="text-sm text-slate-600 dark:text-slate-300 mt-0.5">${esc(e.resumo)} <b>Estado:</b> ${esc(e.estado)}.</p></div>
@@ -296,7 +317,7 @@ function desenharEraPainel() {
         ${cartao('fa-gears', 'A máquina pública', e.maquina.titulo, `<p class="mt-1.5 text-sm text-slate-700 dark:text-slate-300">${esc(e.maquina.texto)}</p>`)}
         ${cartao('fa-earth-americas', 'Contexto mundial', e.mundo.titulo, `<p class="mt-1.5 text-sm text-slate-700 dark:text-slate-300">${esc(e.mundo.texto)}</p>`)}
         </div>
-        <div class="mt-3">${cartao('fa-user-tie', 'A cadeira presidencial', e.cadeira.titulo, `<p class="mt-1.5 text-sm text-slate-700 dark:text-slate-300">${esc(e.cadeira.texto)}</p><ol class="mt-3 grid gap-2 grid-cols-[repeat(auto-fill,minmax(10.5rem,1fr))]" aria-label="Presidentes em ordem cronológica, da esquerda para a direita">${pres}</ol>`)}</div>
+        <div class="mt-3">${cartao('fa-user-tie', 'A cadeira presidencial', e.cadeira.titulo, `<p class="mt-1.5 text-sm text-slate-700 dark:text-slate-300">${esc(e.cadeira.texto)}</p><ol class="mt-3 grid gap-2 grid-cols-[repeat(auto-fill,minmax(15rem,1fr))]" aria-label="Presidentes em ordem cronológica, da esquerda para a direita">${pres}</ol>`)}</div>
         <p class="mt-3 text-xs rounded border-l-2 border-brand-600 pl-2"><i class="fa-solid fa-lightbulb mr-1" aria-hidden="true"></i><b>Leitura:</b> ${esc(e.leitura)}</p>`;
 }
 
@@ -307,9 +328,9 @@ document.addEventListener('click', (ev) => {
 
 (async () => {
     try {
-        const r = await fetch('assets/historia-estado.json');
-        if (!r.ok) throw new Error('HTTP ' + r.status);
-        E.dados = await r.json();
+        const [r, r2] = await Promise.all([fetch('assets/historia-estado.json'), fetch('assets/historia.json')]);
+        if (!r.ok || !r2.ok) throw new Error('HTTP ' + r.status + '/' + r2.status);
+        E.dados = await r.json(); E.hist = await r2.json();
         E.era = E.dados.eras[E.dados.eras.length - 1].id;
         desenharEras(); desenharEraPainel();
         $('fontesEstado').innerHTML = E.dados.fontes.map((f) => `<li><a class="sem-sublinhado font-semibold text-brand-700 dark:text-brand-400 hover:underline" target="_blank" rel="noopener" href="${esc(urlSegura(f.url))}">${esc(f.nome)}</a></li>`).join('');
