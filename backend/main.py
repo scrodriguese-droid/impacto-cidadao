@@ -579,6 +579,15 @@ def partidos_evolucao() -> dict:
         raise HTTPException(status_code=503, detail="A página oficial do TSE com o histórico dos partidos está indisponível no momento.") from exc
 
 
+@router.get("/partidos/bussola", tags=["partidos"])
+def partidos_bussola() -> dict:
+    try:
+        return partidos.bussola()
+    except Exception as exc:  # noqa: BLE001
+        log.warning("Bússola de partidos indisponível: %s", exc)
+        raise HTTPException(status_code=503, detail="Os dados da pesquisa de especialistas (V-Party) não estão disponíveis.") from exc
+
+
 @router.get("/partidos/escala", tags=["partidos"])
 def partidos_escala() -> dict:
     try:
