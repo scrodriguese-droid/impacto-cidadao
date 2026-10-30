@@ -72,6 +72,41 @@
         <div id="lideres" class="mt-4" role="status"><p class="text-sm text-slate-500">Carregando lideranças…</p></div>
     </section>
 
+    <!-- 1c. Dinâmica partidária -->
+    <section aria-labelledby="h-dinamica">
+        <h2 id="h-dinamica" class="text-xl font-bold"><i class="fa-solid fa-people-group mr-2 text-slate-400" aria-hidden="true"></i>Quem está junto com quem</h2>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Na lista de líderes nem todo partido aparece sozinho: muitos atuam em <b>federações</b> ou <b>blocos</b>. Aqui estão os partidos que compõem cada um, com o tamanho na Câmara e no Senado.</p>
+        <div id="dinamica" class="mt-4" role="status"><p class="text-sm text-slate-500">Carregando federações e blocos…</p></div>
+
+        <details class="mt-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
+            <summary class="cursor-pointer font-semibold">Federação, bloco e partido sozinho: qual é a diferença?</summary>
+            <div class="mt-4 grid md:grid-cols-2 gap-5 text-sm text-slate-600 dark:text-slate-400">
+                <div>
+                    <p class="text-xs font-semibold text-slate-500 uppercase">Federação partidária: “casamento” de 4 anos</p>
+                    <ul class="mt-1 list-disc pl-5 space-y-1.5">
+                        <li><b>Origem:</b> criada por lei em 2021, depois do fim das coligações nas eleições para deputado e vereador.</li>
+                        <li><b>Regra:</b> os partidos se unem na eleição e devem atuar como <b>um só partido</b> por pelo menos 4 anos. Na Câmara têm um único líder e votam como grupo.</li>
+                        <li><b>Por que se federam:</b> os votos dos partidos são somados para atingir a <b>cláusula de desempenho</b> (percentual mínimo de votos e de deputados; quem não atinge perde acesso ao fundo partidário e ao tempo gratuito de rádio e TV), para dividir o fundo eleitoral e partidário e para o cálculo das cadeiras. Cada partido mantém nome, número e filiados, ao contrário da fusão, em que o partido deixa de existir.</li>
+                    </ul>
+                </div>
+                <div>
+                    <p class="text-xs font-semibold text-slate-500 uppercase">Bloco parlamentar: aliança dentro da Casa</p>
+                    <ul class="mt-1 list-disc pl-5 space-y-1.5">
+                        <li><b>Objetivo:</b> somar bancadas. O regimento distribui cargos da Mesa Diretora, presidências de comissões e a ordem de fala de forma proporcional ao tamanho da bancada, então juntar partidos aumenta o espaço do grupo.</li>
+                        <li><b>Diferença da federação:</b> o bloco não é união eleitoral. Partidos que disputaram eleições separados podem formar bloco só na Casa, e cada um mantém identidade e líder próprio (o líder do bloco também pode liderar um dos partidos).</li>
+                        <li><b>Prazo:</b> blocos podem ser desfeitos e refeitos durante a legislatura; federações não.</li>
+                    </ul>
+                    <p class="text-xs font-semibold text-slate-500 uppercase mt-4">Por que nem todo partido aparece individualmente?</p>
+                    <ul class="mt-1 list-disc pl-5 space-y-1.5">
+                        <li>Partidos federados têm um líder único: o líder da federação fala por todos.</li>
+                        <li>Vários dos partidos registrados no TSE não elegeram deputado federal nesta legislatura.</li>
+                        <li>Partidos pequenos que não atingem a cláusula de desempenho perdem direitos de funcionamento parlamentar, como estrutura de liderança.</li>
+                    </ul>
+                </div>
+            </div>
+        </details>
+    </section>
+
     <!-- 2. Termômetro e quem é quem -->
     <section aria-labelledby="h-termo">
         <h2 id="h-termo" class="text-xl font-bold"><i class="fa-solid fa-gauge-high mr-2 text-slate-400" aria-hidden="true"></i>O termômetro da Câmara</h2>
@@ -200,7 +235,7 @@ function blocoSenado(s) {
 async function carregarAgenda() {
     try {
         const a = await api('/api/governismo/agenda');
-        const erro = a.erros.length ? `<p class="mb-3 text-xs text-amber-700 dark:text-amber-300"><i class="fa-solid fa-triangle-exclamation mr-1" aria-hidden="true"></i>${a.erros.map((e) => esc(e.id === 'camara' ? 'Câmara' : 'Senado')).join(' e ')}: fonte oficial indisponível no momento.</p>` : '';
+        const erro = a.erros.length ? `<p class="mb-3 text-xs text-amber-700 dark:text-amber-300"><i class="fa-solid fa-triangle-exclamation mr-1" aria-hidden="true"></i>${a.erros.map((e) => esc(e.id === 'camara' ? 'Câmara' : 'Senado')).join(' e ')}: fonte oficial indisponível no momento. <button type="button" onclick="carregarAgenda()" class="underline">Tentar de novo</button></p>` : '';
         $('agenda').innerHTML = `${erro}<div class="grid md:grid-cols-2 gap-4">
             <article class="${cartao} p-4"><h3 class="font-bold"><i class="fa-solid fa-landmark mr-2 text-slate-400" aria-hidden="true"></i>Câmara dos Deputados</h3>${blocoCamara(a.camara)}
                 ${a.camara ? `<p class="mt-3 text-[11px] text-slate-400">Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(a.camara.fonte.url))}">${esc(a.camara.fonte.nome)}</a></p>` : ''}</article>
@@ -416,6 +451,44 @@ async function carregarLideres() {
     }
 }
 
+// ---------------------------------------------------------------- federações e blocos
+function chipsPartidos(ps) {
+    return ps.map((p) => `<span class="px-2 py-0.5 rounded-full border border-slate-300 dark:border-slate-600 text-xs font-semibold">${esc(p)}</span>`).join(' ');
+}
+function cartaoAlianca(x, tipo) {
+    const lider = x.lider ? `<p class="text-xs text-slate-600 dark:text-slate-400 mt-2">Líder: <b>${esc(x.lider.nome)}</b> (${esc([x.lider.partido, x.lider.uf].filter(Boolean).join('-'))})</p>` : '';
+    return `<article class="${cartao} p-4">
+        <p class="text-[11px] font-semibold text-slate-500 uppercase">${tipo}</p>
+        <h3 class="font-bold leading-snug">${esc(x.nome)}</h3>
+        <p class="mt-2 flex flex-wrap gap-1.5">${chipsPartidos(x.partidos)}</p>
+        ${x.cadeiras != null ? `<p class="mt-3 text-2xl font-extrabold">${num(x.cadeiras)} <span class="text-sm font-medium text-slate-500">deputados · ${x.percentual.toLocaleString('pt-BR')}% da Câmara</span></p>${barra(x.percentual, COR_FID)}` : ''}
+        ${lider}</article>`;
+}
+async function carregarDinamica() {
+    try {
+        const d = await api('/api/governismo/dinamica');
+        const solo = d.sem_alianca.length ? `<div class="mt-4 ${cartao} p-4"><h3 class="font-bold">Partidos que atuam sozinhos na Câmara</h3>
+            <p class="mt-2 flex flex-wrap gap-2">${d.sem_alianca.map((p) => `<span class="text-sm"><b>${esc(p.sigla)}</b> <span class="text-xs text-slate-500">${num(p.cadeiras)} dep.</span></span>`).join('<span class="text-slate-300"> · </span>')}</p></div>` : '';
+        const contagem = d.partidos_registrados && d.partidos_com_deputados
+            ? `<p class="mt-3 text-sm text-slate-600 dark:text-slate-400">O TSE tem <b>${num(d.partidos_registrados)} partidos registrados</b>; <b>${num(d.partidos_com_deputados)}</b> têm deputado em exercício hoje.</p>` : '';
+        const senado = d.senado.length ? `<div class="mt-4 ${cartao} p-4"><h3 class="font-bold">Blocos no Senado</h3>
+            <p class="text-xs text-slate-500 mt-0.5">No Senado, os blocos informados pela Casa reúnem os senadores de vários partidos.</p>
+            <ul class="mt-2 divide-y divide-slate-100 dark:divide-slate-700">${d.senado.map((b) => `<li class="py-2 text-sm"><b>${esc(b.nome)}</b> <span class="text-xs text-slate-500">· ${num(b.senadores)} senadores</span>
+                <span class="block mt-1 text-xs text-slate-600 dark:text-slate-400">${b.partidos.map((p) => `${esc(p.sigla)} (${num(p.senadores)})`).join(' · ')}</span></li>`).join('')}</ul></div>` : '';
+        $('dinamica').innerHTML = `<h3 class="text-lg font-bold">Federações <span class="text-xs font-medium text-slate-500">(unidas por 4 anos; falam com um único líder)</span></h3>
+            <div class="mt-3 grid md:grid-cols-3 gap-4">${d.federacoes.map((x) => cartaoAlianca(x, 'Federação')).join('')}</div>
+            <h3 class="text-lg font-bold mt-6">Blocos parlamentares na Câmara <span class="text-xs font-medium text-slate-500">(alianças dentro da Casa)</span></h3>
+            <div class="mt-3 grid md:grid-cols-2 gap-4">${d.blocos.map((x) => cartaoAlianca(x, 'Bloco')).join('')}</div>
+            ${solo}${contagem}${senado}
+            <ul class="mt-3 text-xs text-slate-500 list-disc pl-5 space-y-1">
+                <li>Os blocos do Senado e da Câmara são independentes: o mesmo partido pode estar em blocos diferentes em cada Casa.</li>
+                <li>Quantidade de deputados: em exercício, conforme a Câmara. Os blocos podem mudar durante a legislatura.</li>
+                <li>Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(d.fonte.url))}">${esc(d.fonte.nome)}</a>. Consultado em ${esc(fmtDataHora(d.consultado_em))}.</li></ul>`;
+    } catch (e) {
+        $('dinamica').innerHTML = mensagemErro(e);
+    }
+}
+
 // ---------------------------------------------------------------- aba lateral: um projeto em linguagem simples
 let ultimoFoco = null;
 function fecharGaveta() {
@@ -466,11 +539,18 @@ async function abrirProjeto(rotulo, gatilho) {
     g.innerHTML = '<p class="text-sm text-slate-500">Carregando o projeto…</p>';
     g.classList.add('aberta'); g.setAttribute('aria-hidden', 'false'); g.scrollTop = 0; g.focus();
     try {
-        const p = await api('/api/governismo/projeto?proposicao=' + encodeURIComponent(rotulo));
+        const ctl = new AbortController();
+        const limite = setTimeout(() => ctl.abort(), 50000);
+        const p = await api('/api/governismo/projeto?proposicao=' + encodeURIComponent(rotulo), { signal: ctl.signal }).finally(() => clearTimeout(limite));
         g.innerHTML = htmlProjeto(p, p.apelido || apelido);
         g.scrollTop = 0;
     } catch (e) {
-        g.innerHTML = `<div class="text-right"><button type="button" data-fechar-gaveta class="text-sm">Fechar ✕</button></div>${mensagemErro(e)}`;
+        const demorou = e.name === 'AbortError';
+        g.innerHTML = `<div class="text-right"><button type="button" data-fechar-gaveta class="text-sm">Fechar ✕</button></div>
+            <div class="p-4 rounded-xl border border-rose-300 dark:border-rose-800 bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-200 text-sm">
+                <i class="fa-solid fa-circle-exclamation mr-2" aria-hidden="true"></i>${demorou ? 'A fonte oficial demorou demais para responder.' : esc(e.message || e)}
+                <span class="block text-xs mt-1 opacity-80">O site da Câmara às vezes fica fora do ar por alguns minutos. Tente de novo em instantes.</span></div>
+            <p class="mt-3"><button type="button" data-projeto="${esc(rotulo)}" class="underline text-sm"><i class="fa-solid fa-rotate mr-1" aria-hidden="true"></i>Tentar de novo</button></p>`;
     }
 }
 document.addEventListener('click', (ev) => {
@@ -482,6 +562,7 @@ document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') fecharGa
 
 carregarAgenda();
 carregarLideres();
+carregarDinamica();
 carregarResumo();
 carregarPautas();
 

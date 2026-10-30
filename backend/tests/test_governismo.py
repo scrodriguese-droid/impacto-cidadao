@@ -109,3 +109,14 @@ def test_pessoa_monta_foto_e_perfil_por_casa():
     sen = governismo._pessoa({"nomeParlamentar": "B", "codigoParlamentar": 99})
     assert dep["foto"].endswith("/10.jpg") and dep["url"].endswith("/deputados/10")
     assert sen["foto"].endswith("senador99.jpg") and "senadores/senador" in sen["url"]
+
+
+def test_partidos_do_bloco_usa_a_api_e_cai_para_o_nome(monkeypatch):
+    class Falso:
+        def json(self, url, params=None):
+            return {"dados": [{"sigla": "PT"}, {"sigla": "PCdoB"}]} if url.endswith("/1/partidos") else {"dados": []}
+
+    monkeypatch.setattr(governismo, "_http", Falso())
+    assert governismo._partidos_do_bloco({"id": 1, "nome": "Federação X"}, {}) == ["PT", "PCdoB"]
+    feds = {"Federação PSDB CIDADANIA": ["PSDB", "CIDADANIA"]}
+    assert governismo._partidos_do_bloco({"id": 2, "nome": "AVANTE, Federação PSDB CIDADANIA, PRD"}, feds) == ["AVANTE", "PSDB", "CIDADANIA", "PRD"]

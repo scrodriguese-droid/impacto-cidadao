@@ -33,7 +33,7 @@ TTL_AGENDA_S = 3600
 TIPOS_RELEVANTES = {"PEC", "PLP", "PL", "PLV", "MPV", "PDL"}
 ROTULO_VOTO = {"S": "Sim", "N": "Não", "A": "Abstenção", "O": "Obstrução", "P": "Presidiu a sessão", "-": "Não votou"}
 
-_http = ClienteHTTP(pausa=0.05, timeout=30.0, tentativas=3)
+_http = ClienteHTTP(pausa=0.05, timeout=12.0, tentativas=2)  # a Câmara às vezes responde 504: melhor falhar logo e mostrar o aviso
 _trava = threading.RLock()
 _trava_agenda: dict[str, threading.Lock] = {}
 _cache: dict[str, Any] = {"mtime": None, "dados": None}
@@ -404,15 +404,7 @@ def _liderancas() -> dict:
             saida.append({"tipo": "bloco" if bloco else "partido", "nome": nome, "cadeiras": cadeiras, "lider": _pessoa(x)})
         return sorted(saida, key=lambda g: (-(g["cadeiras"] or 0), g["nome"].casefold()))
 
-    presidentes = {}
-    try:
-        import bancadas
-        for casa in bancadas.bancadas()["casas"]:
-            presidentes[casa["id"]] = casa.get("presidente")
-    except Exception as exc:  # noqa: BLE001  (complementar: se falhar, a página segue sem eles)
-        log.warning("Presidentes das Casas indisponíveis: %s", exc)
     return {
-        "presidentes": presidentes,
         "governo": [x for x in governo if x], "oposicao": [x for x in oposicao if x], "maioria": [x for x in maioria if x],
         "camara": grupos("CD"), "senado": grupos("SF"),
         "fonte": {"nome": "Senado Federal — composição das lideranças (dados abertos; inclui a Câmara)", "url": URL_LIDERANCA},
@@ -425,8 +417,29 @@ def _liderancas() -> dict:
     }
 
 
+def _presidentes() -> dict:
+    """Presidentes da Câmara e do Senado, cada um por conta própria e com prazo: se a Câmara estiver fora do ar,
+    a página mostra o do Senado e as lideranças sem esperar."""
+    import bancadas
+    from concurrent.futures import ThreadPoolExecutor, TimeoutError as Prazo
+    saida: dict[str, dict | None] = {}
+    with ThreadPoolExecutor(max_workers=2) as ex:
+        futuros = {"camara": ex.submit(bancadas._presidente_camara), "senado": ex.submit(bancadas._presidente_senado)}
+        for casa, f in futuros.items():
+            try:
+                saida[casa] = f.result(timeout=20)
+            except (Prazo, Exception) as exc:  # noqa: BLE001
+                log.warning("Presidente (%s) indisponível: %s", casa, exc)
+                saida[casa] = None
+    return saida
+
+
 def liderancas() -> dict:
-    return {"consultado_em": datetime.now().isoformat(timespec="seconds"), **_memo_agenda("liderancas", _liderancas)}
+    lid = _memo_agenda("liderancas", _liderancas)
+    pres = _memo_agenda("presidentes", _presidentes)
+    if not all(pres.values()):  # resultado incompleto: tenta de novo em 2 minutos, não em 1 hora
+        _cache_agenda["presidentes"] = (time.time() - TTL_AGENDA_S + 120, pres)
+    return {"consultado_em": datetime.now().isoformat(timespec="seconds"), "presidentes": pres, **lid}
 
 
 # --------------------------------------------------------------------------- #
@@ -498,3 +511,106 @@ def _projeto(sigla: str, numero: int, ano: int) -> dict:
         "links": {"inteiro_teor": d.get("urlInteiroTeor"),
                   "pagina": f"https://www.camara.leg.br/proposicoesWeb/fichadetramitacao?idProposicao={pid}"},
     }
+
+
+# --------------------------------------------------------------------------- #
+# Dinâmica partidária: federações e blocos (quem está dentro de cada um)
+# --------------------------------------------------------------------------- #
+ARQ_TSE = RAIZ / "dados" / "partidos" / "tse_partidos.json"
+
+
+def _partidos_do_bloco(b: dict, federacoes: dict[str, list[str]]) -> list[str]:
+    """Partidos de um bloco ou federação: da API; se ela vier vazia, do nome ("AVANTE, SOLIDARIEDADE, PRD")."""
+    lista = _http.json(f"{CAMARA}/blocos/{b['id']}/partidos").get("dados") or []
+    siglas = [x["sigla"] for x in lista if x.get("sigla")]
+    if siglas:
+        return siglas
+    saida: list[str] = []
+    for parte in (t.strip() for t in b["nome"].split(",")):
+        saida += federacoes.get(parte) or [parte]
+    return saida
+
+
+def _cadeiras_camara() -> dict[str, int] | None:
+    """Deputados em exercício por partido (a mesma contagem da página Legislativo); None se a Câmara estiver fora."""
+    try:
+        import bancadas
+        cont: dict[str, int] = {}
+        for d in bancadas._memo("deputados", bancadas._deputados):
+            cont[d["partido"]] = cont.get(d["partido"], 0) + 1
+        return cont
+    except Exception as exc:  # noqa: BLE001
+        log.warning("Cadeiras da Câmara indisponíveis: %s", exc)
+        return None
+
+
+def _dinamica() -> dict:
+    leg = (_http.json(f"{CAMARA}/legislaturas", {"itens": 1, "ordem": "DESC", "ordenarPor": "id"}).get("dados") or [{}])[0].get("id")
+    blocos = _http.json(f"{CAMARA}/blocos", {"idLegislatura": leg, "itens": 100}).get("dados") or []
+    if not blocos:
+        raise ErroFonte("A Câmara não retornou blocos e federações.")
+    feds = {b["nome"]: _partidos_do_bloco(b, {}) for b in blocos if b.get("federacao")}
+    outros = {b["nome"]: _partidos_do_bloco(b, feds) for b in blocos if not b.get("federacao") and "," in b["nome"]}
+    cadeiras = _cadeiras_camara()
+    total = 513  # Constituição, art. 45
+
+    def soma(ps: list[str]) -> int | None:
+        return sum(cadeiras.get(p, 0) for p in ps) if cadeiras is not None else None
+
+    lideres = {}
+    try:
+        lid = _memo_agenda("liderancas", _liderancas)
+        lideres = {g["nome"]: g["lider"] for g in lid["camara"] if g["tipo"] == "bloco"}
+    except Exception as exc:  # noqa: BLE001
+        log.warning("Líderes de bloco indisponíveis: %s", exc)
+
+    def item(nome: str, ps: list[str]) -> dict:
+        n = soma(ps)
+        return {"nome": nome, "partidos": ps, "cadeiras": n, "percentual": round(100 * n / total, 1) if n is not None else None,
+                "lider": lideres.get(nome)}
+
+    federacoes = sorted((item(n, ps) for n, ps in feds.items()), key=lambda x: -(x["cadeiras"] or 0))
+    blocos_l = sorted((item(n, ps) for n, ps in outros.items()), key=lambda x: -(x["cadeiras"] or 0))
+    agrupados = {p for x in federacoes + blocos_l for p in x["partidos"]}
+    sozinhos = sorted(((p, n) for p, n in (cadeiras or {}).items() if p not in agrupados and p != "Sem partido"), key=lambda x: -x[1])
+
+    try:
+        tse = json.loads(ARQ_TSE.read_text(encoding="utf-8"))
+        registrados = len(tse["registrados"])
+    except (OSError, ValueError, KeyError):
+        registrados = None
+
+    return {
+        "legislatura": leg, "total_cadeiras": total,
+        "federacoes": federacoes, "blocos": blocos_l,
+        "sem_alianca": [{"sigla": p, "cadeiras": n} for p, n in sozinhos],
+        "partidos_registrados": registrados,
+        "partidos_com_deputados": len(cadeiras) - (1 if cadeiras and "Sem partido" in cadeiras else 0) if cadeiras else None,
+        "senado": _senado_blocos(),
+        "fonte": {"nome": "Câmara dos Deputados (blocos e federações) e Senado Federal (blocos dos senadores) — dados abertos",
+                  "url": f"{CAMARA}/blocos"},
+    }
+
+
+def _senado_blocos() -> list[dict]:
+    r = _http.get(f"{SENADO}/senador/lista/atual", accept="application/json").json()
+    try:
+        lista = _lista(r["ListaParlamentarEmExercicio"]["Parlamentares"]["Parlamentar"])
+    except (KeyError, TypeError):
+        return []
+    blocos: dict[str, dict[str, int]] = {}
+    for p in lista:
+        ident = p.get("IdentificacaoParlamentar") or p
+        nome = (ident.get("Bloco") or {}).get("NomeBloco")
+        if not nome:
+            continue
+        sigla = ident.get("SiglaPartidoParlamentar") or "Sem partido"
+        blocos.setdefault(nome, {})
+        blocos[nome][sigla] = blocos[nome].get(sigla, 0) + 1
+    saida = [{"nome": n, "senadores": sum(c.values()), "partidos": [{"sigla": s, "senadores": k} for s, k in sorted(c.items(), key=lambda x: -x[1])]}
+             for n, c in blocos.items()]
+    return sorted(saida, key=lambda x: -x["senadores"])
+
+
+def dinamica() -> dict:
+    return {"consultado_em": datetime.now().isoformat(timespec="seconds"), **_memo_agenda("dinamica", _dinamica)}
