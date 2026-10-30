@@ -34,20 +34,104 @@
         "titulo": "República da Espada e política do café com leite",
         "texto": "Revezamento de elites estaduais, sobretudo paulistas e mineiras, e eleições marcadas por fraude e pelo “voto de cabresto”.",
         "presidentes": [
-          ["Deodoro da Fonseca", "1889–1891", "int", "renunciou"],
-          ["Floriano Peixoto", "1891–1894", "vice", "vice que assumiu"],
-          ["Prudente de Morais", "1894–1898", "ok", ""],
-          ["Campos Sales", "1898–1902", "ok", ""],
-          ["Rodrigues Alves", "1902–1906", "ok", ""],
-          ["Afonso Pena", "1906–1909", "int", "morreu no cargo"],
-          ["Nilo Peçanha", "1909–1910", "vice", "vice que assumiu"],
-          ["Hermes da Fonseca", "1910–1914", "ok", ""],
-          ["Venceslau Brás", "1914–1918", "ok", ""],
-          ["Delfim Moreira", "1918–1919", "vice", "vice que assumiu; Rodrigues Alves, eleito de novo, morreu antes da posse"],
-          ["Epitácio Pessoa", "1919–1922", "ok", "eleito em eleição extraordinária"],
-          ["Artur Bernardes", "1922–1926", "ok", ""],
-          ["Washington Luís", "1926–1930", "int", "deposto na Revolução de 1930"],
-          ["Júlio Prestes", "—", "int", "eleito em 1930, impedido de tomar posse"]
+          [
+            "Deodoro da Fonseca",
+            "1889–1891",
+            "int",
+            "renunciou",
+            "deodoro"
+          ],
+          [
+            "Floriano Peixoto",
+            "1891–1894",
+            "vice",
+            "vice que assumiu",
+            "floriano"
+          ],
+          [
+            "Prudente de Morais",
+            "1894–1898",
+            "ok",
+            "",
+            "prudente"
+          ],
+          [
+            "Campos Sales",
+            "1898–1902",
+            "ok",
+            "",
+            "campos"
+          ],
+          [
+            "Rodrigues Alves",
+            "1902–1906",
+            "ok",
+            "",
+            "rodrigues"
+          ],
+          [
+            "Afonso Pena",
+            "1906–1909",
+            "int",
+            "morreu no cargo",
+            "pena"
+          ],
+          [
+            "Nilo Peçanha",
+            "1909–1910",
+            "vice",
+            "vice que assumiu",
+            "nilo"
+          ],
+          [
+            "Hermes da Fonseca",
+            "1910–1914",
+            "ok",
+            "",
+            "hermes"
+          ],
+          [
+            "Venceslau Brás",
+            "1914–1918",
+            "ok",
+            "",
+            "venceslau"
+          ],
+          [
+            "Delfim Moreira",
+            "1918–1919",
+            "vice",
+            "vice que assumiu; Rodrigues Alves, eleito de novo, morreu antes da posse",
+            "delfim"
+          ],
+          [
+            "Epitácio Pessoa",
+            "1919–1922",
+            "ok",
+            "eleito em eleição extraordinária",
+            "epitacio"
+          ],
+          [
+            "Artur Bernardes",
+            "1922–1926",
+            "ok",
+            "",
+            "bernardes"
+          ],
+          [
+            "Washington Luís",
+            "1926–1930",
+            "int",
+            "deposto na Revolução de 1930",
+            "washington"
+          ],
+          [
+            "Júlio Prestes",
+            "—",
+            "int",
+            "eleito em 1930, impedido de tomar posse",
+            ""
+          ]
         ]
       },
       "leitura": "O voto excluía mulheres e analfabetos, e o poder circulava entre elites estaduais. A escala esquerda–direita quase não descreve esse período."
@@ -80,16 +164,76 @@
         "titulo": "Extrema instabilidade",
         "texto": "Vargas governa de 1930 a 1945 (governo provisório, constitucional e Estado Novo). Em 1961–1963 vigora o parlamentarismo.",
         "presidentes": [
-          ["Getúlio Vargas", "1930–1945", "int", "deposto por militares em 1945"],
-          ["José Linhares", "1945–1946", "vice", "presidente do STF que assumiu interinamente"],
-          ["Eurico Gaspar Dutra", "1946–1951", "ok", ""],
-          ["Getúlio Vargas", "1951–1954", "int", "suicídio em 1954"],
-          ["Café Filho", "1954–1955", "vice", "vice que assumiu; afastado por doença"],
-          ["Carlos Luz", "1955", "vice", "afastado dias depois por intervenção militar"],
-          ["Nereu Ramos", "1955–1956", "vice", "assumiu interinamente"],
-          ["Juscelino Kubitschek", "1956–1961", "ok", ""],
-          ["Jânio Quadros", "1961", "int", "renunciou"],
-          ["João Goulart", "1961–1964", "int", "deposto pelo golpe de 1964"]
+          [
+            "Getúlio Vargas",
+            "1930–1945",
+            "int",
+            "deposto por militares em 1945",
+            "vargas1,vargas2"
+          ],
+          [
+            "José Linhares",
+            "1945–1946",
+            "vice",
+            "presidente do STF que assumiu interinamente",
+            "linhares"
+          ],
+          [
+            "Eurico Gaspar Dutra",
+            "1946–1951",
+            "ok",
+            "",
+            "dutra"
+          ],
+          [
+            "Getúlio Vargas",
+            "1951–1954",
+            "int",
+            "suicídio em 1954",
+            "vargas3"
+          ],
+          [
+            "Café Filho",
+            "1954–1955",
+            "vice",
+            "vice que assumiu; afastado por doença",
+            "cafe"
+          ],
+          [
+            "Carlos Luz",
+            "1955",
+            "vice",
+            "afastado dias depois por intervenção militar",
+            "luz"
+          ],
+          [
+            "Nereu Ramos",
+            "1955–1956",
+            "vice",
+            "assumiu interinamente",
+            "nereu"
+          ],
+          [
+            "Juscelino Kubitschek",
+            "1956–1961",
+            "ok",
+            "",
+            "jk"
+          ],
+          [
+            "Jânio Quadros",
+            "1961",
+            "int",
+            "renunciou",
+            "janio"
+          ],
+          [
+            "João Goulart",
+            "1961–1964",
+            "int",
+            "deposto pelo golpe de 1964",
+            "jango"
+          ]
         ]
       },
       "leitura": "Só Dutra e Juscelino concluíram o mandato para o qual foram eleitos. Vargas, Jânio e Goulart não terminaram os seus."
@@ -122,12 +266,48 @@
         "titulo": "Presidentes militares",
         "texto": "Todos escolhidos de forma indireta, sem eleição direta para presidente.",
         "presidentes": [
-          ["Humberto Castelo Branco", "1964–1967", "ind", ""],
-          ["Artur da Costa e Silva", "1967–1969", "ind", "afastado por doença"],
-          ["Junta Militar", "1969", "ind", "governou por semanas, até a posse de Médici"],
-          ["Emílio Garrastazu Médici", "1969–1974", "ind", ""],
-          ["Ernesto Geisel", "1974–1979", "ind", ""],
-          ["João Figueiredo", "1979–1985", "ind", ""]
+          [
+            "Humberto Castelo Branco",
+            "1964–1967",
+            "ind",
+            "",
+            "castelo"
+          ],
+          [
+            "Artur da Costa e Silva",
+            "1967–1969",
+            "ind",
+            "afastado por doença",
+            "costa"
+          ],
+          [
+            "Junta Militar",
+            "1969",
+            "ind",
+            "governou por semanas, até a posse de Médici",
+            "junta69"
+          ],
+          [
+            "Emílio Garrastazu Médici",
+            "1969–1974",
+            "ind",
+            "",
+            "medici"
+          ],
+          [
+            "Ernesto Geisel",
+            "1974–1979",
+            "ind",
+            "",
+            "geisel"
+          ],
+          [
+            "João Figueiredo",
+            "1979–1985",
+            "ind",
+            "",
+            "figueiredo"
+          ]
         ]
       },
       "leitura": "O Congresso funcionou sob cassações e fechamentos temporários. Sem eleição direta para presidente por 21 anos."
@@ -160,14 +340,62 @@
         "titulo": "Presidentes da redemocratização",
         "texto": "Dois impeachments no período: Collor (1992) e Dilma Rousseff (2016). FHC e Lula completaram dois mandatos cada.",
         "presidentes": [
-          ["Tancredo Neves", "1985", "ind", "eleito indiretamente, morreu antes da posse"],
-          ["José Sarney", "1985–1990", "vice", "vice que assumiu"],
-          ["Fernando Collor", "1990–1992", "int", "impeachment em 1992"],
-          ["Itamar Franco", "1992–1994", "vice", "vice que assumiu"],
-          ["Fernando Henrique Cardoso", "1995–2002", "ok", "dois mandatos"],
-          ["Luiz Inácio Lula da Silva", "2003–2010", "ok", "dois mandatos"],
-          ["Dilma Rousseff", "2011–2016", "int", "primeiro mandato completo; impeachment no segundo"],
-          ["Michel Temer", "2016–2018", "vice", "vice que assumiu"]
+          [
+            "Tancredo Neves",
+            "1985",
+            "ind",
+            "eleito indiretamente, morreu antes da posse",
+            ""
+          ],
+          [
+            "José Sarney",
+            "1985–1990",
+            "vice",
+            "vice que assumiu",
+            "sarney"
+          ],
+          [
+            "Fernando Collor",
+            "1990–1992",
+            "int",
+            "impeachment em 1992",
+            "collor"
+          ],
+          [
+            "Itamar Franco",
+            "1992–1994",
+            "vice",
+            "vice que assumiu",
+            "itamar"
+          ],
+          [
+            "Fernando Henrique Cardoso",
+            "1995–2002",
+            "ok",
+            "dois mandatos",
+            "fhc"
+          ],
+          [
+            "Luiz Inácio Lula da Silva",
+            "2003–2010",
+            "ok",
+            "dois mandatos",
+            "lula1"
+          ],
+          [
+            "Dilma Rousseff",
+            "2011–2016",
+            "int",
+            "primeiro mandato completo; impeachment no segundo",
+            "dilma"
+          ],
+          [
+            "Michel Temer",
+            "2016–2018",
+            "vice",
+            "vice que assumiu",
+            "temer"
+          ]
         ]
       },
       "leitura": "A instabilidade se concentra nas pontas do período: a transição de 1985 e os impeachments de 1992 e 2016."
@@ -202,17 +430,69 @@
         "titulo": "Eleições muito disputadas",
         "texto": "As eleições presidenciais de 2018 e 2022 foram decididas em segundo turno.",
         "presidentes": [
-          ["Jair Bolsonaro", "2019–2022", "ok", "mandato completo; gestão da pandemia de covid-19"],
-          ["Luiz Inácio Lula da Silva", "2023–hoje", "curso", "mandato vai até 01/01/2027"]
+          [
+            "Jair Bolsonaro",
+            "2019–2022",
+            "ok",
+            "mandato completo; gestão da pandemia de covid-19",
+            "bolsonaro"
+          ],
+          [
+            "Luiz Inácio Lula da Silva",
+            "2023–hoje",
+            "curso",
+            "mandato vai até 01/01/2027",
+            "lula2"
+          ]
         ]
       },
       "leitura": "A Presidência negocia mais com os comandos da Câmara e do Senado, sob escrutínio do STF e de um eleitorado muito ativo nas redes. É uma leitura de conjuntura, ainda sem a distância que a história exige."
     }
   ],
   "fontes": [
-    { "nome": "Planalto — Constituições do Brasil", "url": "https://www.planalto.gov.br/ccivil_03/constituicao/principal.htm" },
-    { "nome": "Planalto — Emenda Constitucional 19/1998 (reforma administrativa)", "url": "https://www.planalto.gov.br/ccivil_03/constituicao/emendas/emc/emc19.htm" },
-    { "nome": "Planalto — Decreto-Lei 200/1967", "url": "https://www.planalto.gov.br/ccivil_03/decreto-lei/del0200.htm" },
-    { "nome": "Palácio do Planalto — Galeria de presidentes", "url": "https://www.gov.br/planalto/pt-br/conheca-a-presidencia/acervo/galeria-de-presidentes" }
-  ]
+    {
+      "nome": "Planalto — Constituições do Brasil",
+      "url": "https://www.planalto.gov.br/ccivil_03/constituicao/principal.htm"
+    },
+    {
+      "nome": "Planalto — Emenda Constitucional 19/1998 (reforma administrativa)",
+      "url": "https://www.planalto.gov.br/ccivil_03/constituicao/emendas/emc/emc19.htm"
+    },
+    {
+      "nome": "Planalto — Decreto-Lei 200/1967",
+      "url": "https://www.planalto.gov.br/ccivil_03/decreto-lei/del0200.htm"
+    },
+    {
+      "nome": "Palácio do Planalto — Galeria de presidentes",
+      "url": "https://www.gov.br/planalto/pt-br/conheca-a-presidencia/acervo/galeria-de-presidentes"
+    }
+  ],
+  "interesses": {
+    "deodoro": "Consolidar a República e dar ao Exército papel político. Dissolveu o Congresso em 1891 e renunciou. Sem equivalente na escala de hoje: reunia liberais, positivistas e civis.",
+    "floriano": "Defender a República contra os monarquistas, com centralização do poder e apoio de militares e setores urbanos. Nacionalismo militar autoritário, que a escala esquerda–direita não descreve.",
+    "prudente": "Interesses dos cafeicultores paulistas e pacificação do país (Canudos, 1897). Liberalismo oligárquico, sem lugar na escala atual.",
+    "campos": "Austeridade fiscal e acordo com credores (Funding Loan, 1898), que favoreciam exportadores de café e credores externos. Criou a “política dos governadores”.",
+    "rodrigues": "Cafeicultores paulistas, capital estrangeiro e modernização urbana (saneamento do Rio, reforma do porto).",
+    "pena": "Valorização do café (Convênio de Taubaté, 1906) e expansão das ferrovias. Interesses de cafeicultores de São Paulo e de Minas.",
+    "nilo": "Fomento a agricultura, indústria e ensino técnico (Ministério da Agricultura, Indústria e Comércio, escolas de aprendizes artífices). Oligarquia fluminense com iniciativas de fomento.",
+    "hermes": "Exército e modernização militar. Praticou a “política das salvações”, com intervenções nos estados contra oligarquias rivais.",
+    "venceslau": "Estabilidade das oligarquias mineira e paulista. Sancionou o Código Civil de 1916 e levou o país à Primeira Guerra (1917).",
+    "delfim": "Interino durante a gripe espanhola. Sem programa próprio: manteve o arranjo das oligarquias até a nova eleição.",
+    "epitacio": "Oligarquias nordestinas (obras contra a seca) e valorização do café. Enfrentou o tenentismo com estado de sítio.",
+    "bernardes": "Ordem oligárquica, com estado de sítio em quase todo o mandato e repressão ao tenentismo. Conservadorismo autoritário na prática.",
+    "washington": "Cafeicultores paulistas, rodoviarismo (“governar é abrir estradas”) e estabilidade cambial. Rompeu o revezamento com Minas ao apoiar Júlio Prestes.",
+    "junta30": "Transição de poucos dias, sem programa próprio, até a entrega do poder a Vargas.",
+    "vargas1": "Centralização do poder, industrialização e legislação trabalhista, com sindicatos sob tutela do Estado. Nacional-desenvolvimentismo corporativo, que não cabe na escala esquerda–direita.",
+    "vargas2": "Estado Novo: ditadura com censura, repressão a comunistas e integralistas, estatais (CSN, Vale) e a CLT. Corporativismo autoritário.",
+    "linhares": "Presidente do STF, assumiu interinamente e conduziu a eleição de 1945.",
+    "vargas3": "Nacionalismo econômico (Petrobras, 1953) e trabalhismo (reajuste do salário mínimo em 1954), contra a oposição da UDN. Varguismo não cabe bem na escala de hoje.",
+    "luz": "Presidente da Câmara, assumiu por três dias e foi afastado por intervenção militar em defesa da posse de JK.",
+    "nereu": "Presidente do Senado, assumiu interinamente e garantiu a posse de JK. Postura legalista.",
+    "janio": "Moralização administrativa (a “vassoura”), austeridade cambial e política externa independente, incluindo aproximação com Cuba. Personalismo difícil de enquadrar na escala.",
+    "p1": "Sem Congresso: decisões por decreto até a Constituinte de 1890.",
+    "p2": "Bancadas estaduais ligadas às oligarquias, alinhadas à “política dos governadores” e à comissão que reconhecia os eleitos.",
+    "p3": "Congresso fechado: decisões por decreto do governo.",
+    "p4": "Bancadas estaduais e representação classista (profissional), pela Constituição de 1934.",
+    "p5": "Congresso fechado no Estado Novo: governo por decreto."
+  }
 }
