@@ -44,16 +44,18 @@ function salvarPrefsParciais(parcial) { guardar('ic_prefs', { ...lerPrefs(), ...
 // Planos de governo (comparar planos e análise do editor) só fazem sentido em época de eleição. Fora dela ficam fora do menu
 // (as páginas continuam existindo, só não são oferecidas). Na próxima campanha, troque para `true`.
 const PLANOS_VISIVEIS = false;
+// Ordem pensada para quem está aprendendo aos poucos: primeiro quem faz o quê e como o poder se divide; depois o contexto
+// (história e democracia); depois os partidos; só então acompanhar o governo hoje, as leis e, por fim, o dinheiro público.
 const NAVEGACAO = [
     { id: 'inicio', paginas: ['inicio'], href: 'index.html', icone: 'fa-house', rotulo: 'Início' },
     { id: 'quem', paginas: ['servicos', 'quem'], href: 'servicos.html', icone: 'fa-magnifying-glass-location', rotulo: 'Quem resolve o quê?' },
-    { id: 'orcamento', paginas: ['economia', 'fiscal', 'orcamento', 'tesouro', 'guia-tributos', 'tributos', 'simuladores', 'macro', 'divida-historico', 'financiamento', 'ciclo'], href: 'economia.html', icone: 'fa-coins', rotulo: 'Orçamento e contas públicas' },
-    { id: 'politicas', paginas: ['politicas'], href: 'politicas.html', icone: 'fa-landmark', rotulo: 'Políticas públicas' },
     { id: 'poderes', paginas: ['executivo', 'bancadas', 'judiciario', 'controle'], href: 'poderes.html', icone: 'fa-building-columns', rotulo: 'Conheça os três poderes' },
-    { id: 'de-olho', paginas: ['de-olho'], href: 'de-olho-no-governo.html', icone: 'fa-eye', rotulo: 'De olho no governo' },
-    { id: 'planos', paginas: ['planos', 'analise-planos', 'resultados', 'partidos'], href: PLANOS_VISIVEIS ? 'planos.html' : 'resultados.html', icone: 'fa-flag', rotulo: 'Partidos e cadeiras' },
     { id: 'historia', paginas: ['historia'], href: 'historia.html', icone: 'fa-timeline', rotulo: 'História política do Brasil' },
     { id: 'democracia', paginas: ['democracia'], href: 'democracia.html', icone: 'fa-check-to-slot', rotulo: 'Democracia' },
+    { id: 'planos', paginas: ['planos', 'analise-planos', 'resultados', 'partidos'], href: PLANOS_VISIVEIS ? 'planos.html' : 'resultados.html', icone: 'fa-flag', rotulo: 'Partidos e cadeiras' },
+    { id: 'de-olho', paginas: ['de-olho'], href: 'de-olho-no-governo.html', icone: 'fa-eye', rotulo: 'De olho no governo' },
+    { id: 'politicas', paginas: ['politicas'], href: 'politicas.html', icone: 'fa-landmark', rotulo: 'Políticas públicas' },
+    { id: 'orcamento', paginas: ['economia', 'fiscal', 'orcamento', 'tesouro', 'guia-tributos', 'tributos', 'simuladores', 'macro', 'divida-historico', 'financiamento', 'ciclo'], href: 'economia.html', icone: 'fa-coins', rotulo: 'Orçamento e contas públicas' },
 ];
 const NAV_GLOSSARIO = { id: 'glossario', paginas: ['glossario'], href: 'glossario.html', icone: 'fa-book', rotulo: 'Glossário' };
 // Subnavegação: cada área do menu tem telas focadas, escolhidas por abas no topo da página.
