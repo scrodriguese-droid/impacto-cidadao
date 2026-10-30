@@ -1,0 +1,90 @@
+{
+  "titulo": "Como chegamos até aqui",
+  "intro": "A carga tributária de hoje não foi desenhada de uma vez. Cada época trocou a fonte do dinheiro, e cada troca mexeu em quem manda e em quem fica com a sobra. Clique nas faixas e nos pontos do gráfico.",
+  "curva": [[1889, 7], [1930, 7], [1964, 16.5], [1975, 25], [1988, 25], [2000, 31], [2023, 32]],
+  "curva_nota": "Valores aproximados, para dar a ordem de grandeza. Não são a série oficial de cada ano.",
+  "marcos": [
+    { "ano": 1892, "titulo": "Imposto de consumo", "texto": "A União cria o primeiro imposto interno importante, sobre fumo e bebidas. Até então vivia do porto." },
+    { "ano": 1922, "titulo": "Nasce o Imposto de Renda", "texto": "Instituído oficialmente, mas arrecadava pouco: os fazendeiros tinham isenções." },
+    { "ano": 1934, "titulo": "Municípios ganham poder de tributar", "texto": "A Constituição dá às prefeituras, pela primeira vez, imposto próprio sobre imóveis urbanos, licenças e serviços." },
+    { "ano": 1965, "titulo": "A grande reforma", "texto": "O IVC cai e entram o ICM (hoje ICMS), o IPI, o ISS e o IOF. Estados e municípios perdem o poder de criar tributos." },
+    { "ano": 1968, "titulo": "Receita Federal e CPF", "texto": "Nasce a máquina de arrecadar: Receita Federal, CPF, CNPJ e Serpro. A cobrança passa a ser feita pelos bancos." },
+    { "ano": 1988, "titulo": "Constituição Cidadã", "texto": "Estados e municípios ficam com quase metade do IR e do IPI (FPE e FPM). A União ganha a conta da Seguridade Social." },
+    { "ano": 1996, "titulo": "As contribuições crescem", "texto": "Além de COFINS e CSLL, vem a CPMF. Contribuição não se divide com estados e municípios." },
+    { "ano": 2023, "titulo": "Reforma do consumo", "texto": "A Emenda 132 prevê trocar PIS, Cofins, IPI, ICMS e ISS por impostos sobre valor agregado, em transição por vários anos." }
+  ],
+  "eras": [
+    {
+      "anos": "1889–1930",
+      "nome": "Café e portos",
+      "frase": "O imposto era cobrado na beira do cais.",
+      "carga": 7,
+      "carga_nota": "cerca de 7% do PIB",
+      "mudanca": "A economia vivia de exportar café e importar quase tudo. Quem controlava o porto controlava o caixa.",
+      "pontos": [
+        ["União", "Vivia do imposto de importação, mais de 60% da receita."],
+        ["Estados", "Cobravam imposto sobre a exportação (máximo de 30%), sobretudo do café de São Paulo e Minas."],
+        ["Municípios", "Sem autonomia: dependiam do que o governo estadual deixava."]
+      ],
+      "marco": "Guerra e crise de 1929 travaram o comércio. A União criou o imposto de consumo (fumo e bebidas) e, em 1922, o Imposto de Renda, que arrecadava pouco por causa das isenções aos fazendeiros.",
+      "siglas": ["II", "IE", "IR"]
+    },
+    {
+      "anos": "1930–1964",
+      "nome": "Fábricas e prefeituras",
+      "frase": "O dinheiro sai do porto e vai para a fábrica e o balcão.",
+      "carga": 16,
+      "carga_nota": "perto de 16% do PIB ao fim do período",
+      "mudanca": "Com a industrialização e o poder concentrado em Brasília, a arrecadação passa a vir da produção e das vendas.",
+      "pontos": [
+        ["Estados", "Transformam a taxa comercial no IVC, que incidia a cada venda. Era imposto sobre imposto (efeito cascata) e virou a mina de ouro dos governadores."],
+        ["Municípios", "A Constituição de 1934 lhes dá, pela primeira vez, poder de tributar: imóveis urbanos (o antepassado do IPTU), licenças e serviços."]
+      ],
+      "marco": "A autonomia municipal foi uma forma de enfraquecer os estados mais poderosos.",
+      "siglas": ["IPTU"]
+    },
+    {
+      "anos": "1964–1988",
+      "nome": "A reforma e a máquina de arrecadar",
+      "frase": "Arrecada-se muito mais, mas as decisões ficam em Brasília.",
+      "carga": 25,
+      "carga_nota": "de 16,5% para 25% do PIB",
+      "mudanca": "A reforma de 1965/66 modernizou o sistema para pagar grandes obras. O consumo passou a carregar boa parte da conta.",
+      "pontos": [
+        ["Novos tributos", "O IVC dá lugar ao ICM (hoje ICMS), que só cobra sobre o valor acrescentado em cada etapa. Nascem também IPI, ISS e IOF."],
+        ["Máquina", "Receita Federal (1968), CPF, CNPJ e Serpro. A cobrança sai do guichê e vai para os bancos."],
+        ["Federação", "Estados e municípios perdem o poder de criar tributos novos. A União reparte parte da receita por meio do FPE e do FPM."]
+      ],
+      "marco": "Prefeituras e governos estaduais ficam dependentes de repasses decididos em Brasília.",
+      "siglas": ["ICMS", "IPI", "ISS", "IOF"]
+    },
+    {
+      "anos": "1988–hoje",
+      "nome": "Constituição Cidadã e o contorno da União",
+      "frase": "A União dividiu os impostos e passou a cobrar por onde não precisa dividir.",
+      "carga": 32,
+      "carga_nota": "acima de 30% do PIB",
+      "mudanca": "A Constituição de 1988 obrigou a União a repassar quase metade do IR e do IPI a estados e municípios, e criou a Seguridade Social (SUS e Previdência), uma conta enorme.",
+      "pontos": [
+        ["O contorno", "A União recorreu às contribuições sociais: COFINS, PIS, CSLL e, por um tempo, a CPMF. Contribuição pertence 100% à União e não entra na divisão."],
+        ["O resultado", "O foco saiu da renda e foi para o faturamento e o consumo. Muita cobrança vem embutida no preço da comida e da energia, sem que a pessoa perceba."]
+      ],
+      "marco": "É esse desenho que torna o sistema pesado e complexo, e que as reformas atuais tentam simplificar.",
+      "siglas": ["COFINS", "PIS", "CSLL"]
+    }
+  ],
+  "riqueza": {
+    "titulo": "E a riqueza? Imóvel, carro, herança e terra",
+    "intro": "Os grandes tributos pegam o consumo e a renda. Há outra camada, menor, sobre patrimônio. Ela mostra bem quem fica com o dinheiro.",
+    "cards": [
+      { "sigla": "IPTU", "esfera": "Município", "nome": "Casa, apartamento e terreno na cidade", "texto": "100% da prefeitura. Paga a rua asfaltada, a praça e a iluminação.", "curioso": "Vem da antiga “décima urbana”, do tempo do Império." },
+      { "sigla": "ITBI", "esfera": "Município", "nome": "Compra e venda de imóvel", "texto": "100% do município. Sem pagá-lo, não se registra a casa no próprio nome." },
+      { "sigla": "IPVA", "esfera": "Estado", "nome": "Posse de veículo", "texto": "É estadual, mas 50% vai para o município onde o veículo está emplacado.", "curioso": "Por isso muitas prefeituras fazem campanha para emplacar o carro na cidade." },
+      { "sigla": "ITCMD", "esfera": "Estado", "nome": "Herança e doação", "texto": "100% dos estados. O teto é de 8%.", "curioso": "Em países europeus e nos EUA, a alíquota máxima passa de 40%." },
+      { "sigla": "ITR", "esfera": "União", "nome": "Propriedade rural", "texto": "Federal, mas o município que fiscaliza e cobra fica com 100%. Pesa mais sobre terra improdutiva." },
+      { "sigla": "CIDE", "esfera": "União", "nome": "Combustíveis (e outros mercados)", "texto": "Contribuição federal embutida no preço do combustível. Parte é repassada para o transporte." },
+      { "sigla": "IGF", "esfera": "União", "nome": "Grandes fortunas", "texto": "Está na Constituição desde 1988, mas nunca foi regulamentado.", "curioso": "É o único imposto constitucional que existe só no papel.", "fantasma": true }
+    ],
+    "fecho": "No conjunto, o Brasil tributa pouco o patrimônio e muito o consumo."
+  }
+}
