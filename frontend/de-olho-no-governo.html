@@ -34,7 +34,42 @@
     <section aria-labelledby="h-agenda">
         <h2 id="h-agenda" class="text-xl font-bold"><i class="fa-solid fa-calendar-days mr-2 text-slate-400" aria-hidden="true"></i>O que está na mesa</h2>
         <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Pauta do Plenário da Câmara e do Senado nos próximos dias. Só projetos de peso (PEC, PLP, PL, MPV e PDL): requerimentos, homenagens e sessões solenes ficam de fora.</p>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Clique no nome de um projeto para ver, numa aba lateral, o que ele faz, quem assina, onde está e por onde já passou.</p>
         <div id="agenda" class="mt-4" role="status"><p class="text-sm text-slate-500">Carregando a agenda oficial…</p></div>
+
+        <details class="mt-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
+            <summary class="cursor-pointer font-semibold">Como a pauta é decidida (e o que cada etiqueta quer dizer)</summary>
+            <div class="mt-4 grid md:grid-cols-2 gap-5 text-sm text-slate-600 dark:text-slate-400">
+                <div>
+                    <p class="text-xs font-semibold text-slate-500 uppercase">Quem decide o que vai a voto</p>
+                    <p class="mt-1">A pauta não é por ordem de chegada. Toda semana, o presidente da Câmara e o do Senado se reúnem com o <b>Colégio de Líderes</b> (os líderes dos partidos e blocos). Ali se negocia quais projetos têm consenso, interesse do Governo ou clamor público para entrar na pauta do Plenário. Veja os nomes em “Quem dá as cartas”, mais abaixo.</p>
+                    <p class="text-xs font-semibold text-slate-500 uppercase mt-4">Etiquetas que aparecem na pauta</p>
+                    <ul class="mt-1 list-disc pl-5 space-y-1.5">
+                        <li><b>Urgência (Art. 155):</b> o “fura-fila”. Os deputados aprovaram um requerimento para o texto pular etapas, como o debate demorado nas comissões, e ir direto à decisão do Plenário.</li>
+                        <li><b>Matéria não apreciada em face do encerramento da Ordem do Dia:</b> o tempo da sessão acabou antes de debater ou votar. O projeto volta à lista de espera para as próximas sessões.</li>
+                        <li><b>Sessão deliberativa:</b> dia de votar. <b>Não deliberativa, solene ou especial:</b> discursos, debates livres e homenagens, sem votação de projetos.</li>
+                    </ul>
+                </div>
+                <div>
+                    <p class="text-xs font-semibold text-slate-500 uppercase">O caminho de um projeto</p>
+                    <ol class="mt-1 list-decimal pl-5 space-y-1.5">
+                        <li><b>Comissões:</b> o projeto é apresentado e analisado por comissões temáticas (ex.: Constituição e Justiça, Saúde).</li>
+                        <li><b>Plenário:</b> aprovado nas comissões, ou com urgência, vai a voto dos 513 deputados ou 81 senadores.</li>
+                        <li><b>Casa revisora:</b> o Congresso tem duas Casas. O que nasce na Câmara é revisto pelo Senado, e vice-versa.</li>
+                        <li><b>Sanção:</b> se as duas aprovarem o mesmo texto, o Presidente sanciona (vira lei) ou veta. Emendas à Constituição são promulgadas pelo próprio Congresso.</li>
+                    </ol>
+                    <p class="text-xs font-semibold text-slate-500 uppercase mt-4">O Congresso só vota projetos?</p>
+                    <p class="mt-1">Não. Aqui mostramos só projetos de peso (PEC, PLP, PL, MPV e PDL), mas as Casas também aprovam o Orçamento da União, abrem CPIs para investigar denúncias e fazem sabatinas de ministros do STF, do presidente do Banco Central e de embaixadores. A Câmara autoriza abrir processo de impeachment contra o Presidente e o Senado o julga.</p>
+                </div>
+            </div>
+        </details>
+    </section>
+
+    <!-- 1b. Quem dá as cartas -->
+    <section aria-labelledby="h-lideres">
+        <h2 id="h-lideres" class="text-xl font-bold"><i class="fa-solid fa-chess mr-2 text-slate-400" aria-hidden="true"></i>Quem dá as cartas?</h2>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Enquanto 513 deputados e 81 senadores votam, são os líderes que negociam o que entra na pauta e orientam como as bancadas devem votar. Nomes e cargos da base oficial, sem comentário político.</p>
+        <div id="lideres" class="mt-4" role="status"><p class="text-sm text-slate-500">Carregando lideranças…</p></div>
     </section>
 
     <!-- 2. Termômetro e quem é quem -->
@@ -70,6 +105,8 @@
     </section>
 </main>
 
+<aside id="gaveta" class="gaveta" aria-hidden="true" aria-label="Detalhes do projeto" tabindex="-1" style="width:min(30rem,94vw)"></aside>
+
 <div id="rodape"></div>
 
 <script src="assets/comum.js"></script>
@@ -94,13 +131,39 @@ const corta = (t, n) => { t = String(t || '').trim(); return t.length > n ? t.sl
 let RES = null, PAUTAS = null;
 
 // ---------------------------------------------------------------- agenda
+// Tradução das etiquetas do regimento para o dia a dia (o texto oficial continua à vista).
+function explicaRegime(t) {
+    t = String(t || '');
+    if (/urgência/i.test(t)) return 'Urgência: o projeto pula etapas, como o debate demorado nas comissões, e vai direto ao Plenário.';
+    if (/prioridade/i.test(t)) return 'Prioridade: tem preferência na fila sobre os projetos de ritmo normal.';
+    if (/ordinária/i.test(t)) return 'Ritmo normal, sem atalhos.';
+    if (/especial/i.test(t)) return 'Rito especial, previsto no regimento para esse tipo de proposta (como emendas à Constituição).';
+    return '';
+}
+function explicaSituacao(t) {
+    t = String(t || '');
+    if (/encerramento da ordem do dia/i.test(t)) return 'Não deu tempo: a sessão acabou antes de votar. Volta à lista de espera.';
+    if (/aprovad/i.test(t)) return 'Foi aprovado nesta sessão.';
+    if (/retirad/i.test(t)) return 'Foi retirado da pauta.';
+    return '';
+}
+function explicaSessao(tipo, deliberativa) {
+    const t = String(tipo || '');
+    if (/não deliberativa|solene|especial/i.test(t)) return 'sem votação de projetos: discursos, debates ou homenagens';
+    if (deliberativa || /deliberativa/i.test(t)) return 'dia de votar';
+    return '';
+}
+const nomeProjeto = (i) => (i.apelido ? `<b>${esc(i.apelido)}</b> <span class="text-slate-500">· ${esc(i.proposicao)}</span>` : `<b>${esc(i.proposicao)}</b>`);
+const botaoProjeto = (rot, html) => `<button type="button" data-projeto="${esc(rot)}" class="text-left underline decoration-dotted underline-offset-2 hover:text-brand-700 dark:hover:text-brand-400" title="Entender este projeto">${html}</button>`;
+
 function itemPauta(i) {
-    const nome = i.apelido ? `<b>${esc(i.apelido)}</b> <span class="text-slate-500">· ${esc(i.proposicao)}</span>` : `<b>${esc(i.proposicao)}</b>`;
+    const reg = explicaRegime(i.regime), sit = explicaSituacao(i.situacao);
     return `<li class="py-2 border-t border-slate-100 dark:border-slate-700 first:border-0">
-        <p class="text-sm">${nome}</p>
+        <p class="text-sm">${botaoProjeto(i.proposicao, nomeProjeto(i))}</p>
         <p class="text-xs text-slate-600 dark:text-slate-400 mt-0.5">${esc(corta(i.ementa, 260))}</p>
         ${i.apreciacao ? `<p class="text-[11px] text-slate-500 mt-0.5">${esc(i.apreciacao)}</p>` : ''}
-        ${i.regime ? `<p class="text-[11px] text-slate-500 mt-0.5">${esc(i.regime)}${i.situacao ? ' · ' + esc(corta(i.situacao, 90)) : ''}</p>` : ''}</li>`;
+        ${i.regime ? `<p class="text-[11px] text-slate-500 mt-0.5">${esc(i.regime)}${reg ? ' — ' + esc(reg) : ''}</p>` : ''}
+        ${i.situacao ? `<p class="text-[11px] text-slate-500 mt-0.5">${esc(corta(i.situacao, 120))}${sit ? ' — ' + esc(sit) : ''}</p>` : ''}</li>`;
 }
 
 function blocoCamara(c) {
@@ -108,7 +171,7 @@ function blocoCamara(c) {
     const comPauta = c.sessoes.filter((s) => s.itens.length);
     let corpo = '';
     if (comPauta.length) {
-        corpo = comPauta.map((s) => `<div class="mt-3"><p class="text-xs font-semibold text-slate-500 uppercase">${esc(diaSemana(s.inicio))}, ${esc(hora(s.inicio))} · ${esc(s.tipo)}</p><ul>${s.itens.map(itemPauta).join('')}</ul></div>`).join('');
+        corpo = comPauta.map((s) => `<div class="mt-3"><p class="text-xs font-semibold text-slate-500 uppercase">${esc(diaSemana(s.inicio))}, ${esc(hora(s.inicio))} · ${esc(s.tipo)}${explicaSessao(s.tipo, s.deliberativa) ? ' (' + esc(explicaSessao(s.tipo, s.deliberativa)) + ')' : ''}</p><ul>${s.itens.map(itemPauta).join('')}</ul></div>`).join('');
     } else {
         const outras = c.sessoes.length ? `<p class="text-xs text-slate-500 mt-1">Há ${c.sessoes.length} ${c.sessoes.length > 1 ? 'sessões marcadas' : 'sessão marcada'} (${[...new Set(c.sessoes.map((s) => s.tipo))].map(esc).join(', ')}), sem projetos de peso na pauta.</p>` : '';
         corpo = `<p class="mt-2 text-sm">Nenhuma sessão deliberativa com projetos de peso marcada para os próximos 14 dias.</p>${outras}`;
@@ -123,12 +186,12 @@ function blocoCamara(c) {
 function blocoSenado(s) {
     if (!s) return '<p class="text-sm text-slate-500">Agenda do Senado indisponível no momento.</p>';
     const sess = s.sessoes.filter((x) => x.situacao !== 'Cancelada');
-    let corpo = sess.length ? sess.map((x) => `<div class="mt-3"><p class="text-xs font-semibold text-slate-500 uppercase">${esc(diaSemana(x.data))}, ${esc((x.hora || '').replace(':', 'h'))} · ${esc(x.tipo)}${x.pauta_confirmada ? '' : ' · pauta ainda não confirmada'}</p>
+    let corpo = sess.length ? sess.map((x) => `<div class="mt-3"><p class="text-xs font-semibold text-slate-500 uppercase">${esc(diaSemana(x.data))}, ${esc((x.hora || '').replace(':', 'h'))} · ${esc(x.tipo)}${explicaSessao(x.tipo) ? ' (' + esc(explicaSessao(x.tipo)) + ')' : ''}${x.pauta_confirmada ? '' : ' · pauta ainda não confirmada'}</p>
         ${x.materias.length ? `<ul>${x.materias.map(itemPauta).join('')}</ul>` : '<p class="text-xs text-slate-500 mt-1">Sem projetos de peso na pauta até agora.</p>'}</div>`).join('')
         : '<p class="mt-2 text-sm">Nenhuma sessão marcada para os próximos dias.</p>';
     if (s.ultimas_votacoes.length) {
         corpo += `<div class="mt-4"><p class="text-xs font-semibold text-slate-500 uppercase">Últimas votações nominais abertas</p><ul>${s.ultimas_votacoes.map((v) => `<li class="py-2 border-t border-slate-100 dark:border-slate-700 first:border-0">
-            <p class="text-sm"><b>${esc(v.proposicao)}</b> <span class="text-slate-500">· ${esc(fmtData(v.data))} · ${esc(v.resultado || '')} (${num(v.sim)} sim × ${num(v.nao)} não)</span></p>
+            <p class="text-sm">${botaoProjeto(v.proposicao, `<b>${esc(v.proposicao)}</b>`)} <span class="text-slate-500">· ${esc(fmtData(v.data))} · ${esc(v.resultado || '')} (${num(v.sim)} sim × ${num(v.nao)} não)</span></p>
             <p class="text-xs text-slate-600 dark:text-slate-400 mt-0.5">${esc(corta(v.ementa, 220))}</p></li>`).join('')}</ul></div>`;
     }
     return corpo;
@@ -271,7 +334,7 @@ async function abrirPerfil(id) {
             ${d.por_ano.length > 1 ? `<p class="mt-3 text-xs text-slate-600 dark:text-slate-400"><b>Governismo por ano:</b> ${d.por_ano.map((a) => `${a.ano}: ${pc(a.governismo)}`).join(' · ')}</p>` : ''}
             <h4 class="mt-5 font-bold text-sm">Como votou nas últimas pautas quentes</h4>
             <ul class="mt-1 text-sm">${d.pautas.map((p) => `<li class="py-2 border-t border-slate-100 dark:border-slate-700 first:border-0 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-                <span class="min-w-0"><b>${esc(p.apelido || p.proposicao)}</b> <span class="text-xs text-slate-500">${p.apelido ? esc(p.proposicao) + ' · ' : ''}${esc(fmtData(p.data))}</span>
+                <span class="min-w-0">${botaoProjeto(p.proposicao, `<b>${esc(p.apelido || p.proposicao)}</b>`)} <span class="text-xs text-slate-500">${p.apelido ? esc(p.proposicao) + ' · ' : ''}${esc(fmtData(p.data))}</span>
                     <span class="block text-xs text-slate-500">Governo orientou “${esc(p.orientacao_governo)}”</span></span>
                 <span class="whitespace-nowrap font-semibold"><i class="fa-solid ${VOTO_ICONE[p.voto] || 'fa-minus'} mr-1" aria-hidden="true"></i>${esc(p.voto)}
                     <span class="text-xs font-normal text-slate-500">${p.alinhado === true ? '· com o Governo' : p.alinhado === false ? '· contra o Governo' : ''}</span></span></li>`).join('')}</ul>
@@ -300,7 +363,8 @@ function cartaoPauta(p, aberta) {
             <span class="block text-sm text-slate-600 dark:text-slate-400 mt-0.5">${esc(corta(p.ementa || p.descricao, 230))}</span>
             <span class="block text-xs mt-1"><b>Governo orientou:</b> ${esc(p.orientacao_governo)} · <b>${p.aprovada ? 'Aprovada' : 'Rejeitada'}</b> (${num(p.sim)} sim × ${num(p.nao)} não)</span></summary>
         <p class="mt-3 text-xs font-semibold text-slate-500 uppercase">Parcela de votos “Sim” por partido <span class="normal-case font-normal">(verde-azulado = sim; cinza = não)</span></p>
-        <div class="mt-2 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">${chips}</div></details>`;
+        <div class="mt-2 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">${chips}</div>
+        <p class="mt-3 text-sm">${botaoProjeto(p.proposicao, '<i class="fa-solid fa-circle-info mr-1" aria-hidden="true"></i>Entender este projeto')}</p></details>`;
 }
 
 async function carregarPautas() {
@@ -313,9 +377,114 @@ async function carregarPautas() {
     }
 }
 
+// ---------------------------------------------------------------- líderes
+function cartaoLider(x) {
+    const foto = x.foto ? `<img src="${esc(urlSegura(x.foto))}" alt="" class="w-12 h-14 rounded-lg object-cover bg-slate-200 shrink-0" loading="lazy" onerror="this.style.visibility='hidden'">`
+        : '<span class="w-12 h-14 rounded-lg bg-slate-200 dark:bg-slate-700 shrink-0" aria-hidden="true"></span>';
+    const sigla = [x.partido, x.uf].filter(Boolean).join('-');
+    const nome = x.url ? `<a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(x.url))}">${esc(x.nome)}</a>` : esc(x.nome);
+    return `<div class="flex gap-3 items-center">${foto}
+        <div class="min-w-0"><p class="text-[11px] font-semibold text-slate-500 uppercase">${esc(x.cargo || '')}</p>
+            <p class="text-sm font-bold">${nome}${sigla ? ` <span class="font-medium text-slate-500">(${esc(sigla)})</span>` : ''}</p>
+            ${x.desde ? `<p class="text-[11px] text-slate-500">no cargo desde ${esc(fmtData(x.desde))}</p>` : ''}</div></div>`;
+}
+function listaGrupos(gs) {
+    return `<ul class="mt-2 divide-y divide-slate-100 dark:divide-slate-700">${gs.map((g) => `<li class="py-2 flex flex-wrap items-baseline justify-between gap-x-4 text-sm">
+        <span class="min-w-0"><b>${esc(g.nome)}</b> <span class="text-xs text-slate-500">${g.tipo === 'bloco' ? 'bloco/federação' : 'partido'}${g.cadeiras != null ? ' · ' + num(g.cadeiras) + ' deputados' : ''}</span></span>
+        <span>${g.lider.url ? `<a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(g.lider.url))}">${esc(g.lider.nome)}</a>` : esc(g.lider.nome)} <span class="text-xs text-slate-500">(${esc([g.lider.partido, g.lider.uf].filter(Boolean).join('-'))})</span></span></li>`).join('')}</ul>`;
+}
+async function carregarLideres() {
+    try {
+        const l = await api('/api/governismo/liderancas');
+        const pres = l.presidentes || {};
+        const donos = [pres.camara && { ...pres.camara, cargo: 'Presidente da Câmara dos Deputados' }, pres.senado && { ...pres.senado, cargo: 'Presidente do Senado Federal' }].filter(Boolean);
+        const bloco = (titulo, sub, itens) => itens.length ? `<article class="${cartao} p-4"><h3 class="font-bold">${titulo}</h3><p class="text-xs text-slate-500 mt-0.5">${sub}</p>
+            <div class="mt-3 space-y-3">${itens.map(cartaoLider).join('')}</div></article>` : '';
+        $('lideres').innerHTML = `<div class="grid md:grid-cols-3 gap-4">
+            ${bloco('No comando das Casas', 'Decidem o que vai a votação e o que fica parado. Sem a aprovação deles, nenhum projeto avança.', donos)}
+            ${bloco('Os articuladores do Governo', 'Negociam com o Congresso os votos para aprovar o que o Presidente quer.', l.governo)}
+            ${bloco('Oposição e minoria', 'Fazem o trabalho inverso: articulam os votos contrários ao Governo.', l.oposicao)}</div>
+            ${l.maioria.length ? `<div class="mt-4 ${cartao} p-4"><h3 class="font-bold">Maioria</h3><div class="mt-3 grid sm:grid-cols-2 gap-3">${l.maioria.map(cartaoLider).join('')}</div></div>` : ''}
+            <details class="mt-4 ${cartao} p-4"><summary class="cursor-pointer font-semibold">Líderes dos partidos e blocos na Câmara (${l.camara.length}) e no Senado (${l.senado.length})</summary>
+                <p class="mt-2 text-xs text-slate-500">São eles que participam da reunião semanal de líderes e emitem a “orientação de bancada”: a indicação aos deputados de votar Sim ou Não. Ordenado pelo tamanho da bancada.</p>
+                <h4 class="mt-3 text-sm font-bold">Câmara dos Deputados</h4>${listaGrupos(l.camara)}
+                <h4 class="mt-4 text-sm font-bold">Senado Federal</h4>${listaGrupos(l.senado)}</details>
+            <ul class="mt-3 text-xs text-slate-500 list-disc pl-5 space-y-1">${l.notas.map((n) => `<li>${esc(n)}</li>`).join('')}
+                <li>Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(l.fonte.url))}">${esc(l.fonte.nome)}</a>. Consultado em ${esc(fmtDataHora(l.consultado_em))}.</li></ul>`;
+    } catch (e) {
+        $('lideres').innerHTML = mensagemErro(e);
+    }
+}
+
+// ---------------------------------------------------------------- aba lateral: um projeto em linguagem simples
+let ultimoFoco = null;
+function fecharGaveta() {
+    const g = $('gaveta');
+    if (!g.classList.contains('aberta')) return;
+    g.classList.remove('aberta'); g.setAttribute('aria-hidden', 'true'); g.innerHTML = '';
+    if (ultimoFoco) { ultimoFoco.focus(); ultimoFoco = null; }
+}
+const secao = (t, corpo) => `<div class="mt-5"><p class="text-xs font-semibold text-slate-500 uppercase">${t}</p><div class="mt-1 text-sm">${corpo}</div></div>`;
+
+function htmlProjeto(p, apelido) {
+    const topo = `<div class="flex items-start justify-between gap-3"><div class="min-w-0">
+            <p class="text-xs font-semibold text-slate-500">${esc(p.proposicao)} · ${esc(p.tipo)}</p>
+            <h3 class="text-xl font-extrabold leading-tight mt-1">${esc(apelido || p.proposicao)}</h3></div>
+        <button type="button" data-fechar-gaveta class="shrink-0 text-sm" aria-label="Fechar">Fechar ✕</button></div>`;
+    const tipo = secao('O que é este tipo de projeto', `<p>${esc(p.tipo_explicacao)}</p>`);
+    if (!p.encontrado) return topo + tipo + secao('Sem dados na Câmara', `<p>${esc(p.aviso)}</p>`);
+    const s = p.situacao;
+    const reg = explicaRegime(s.regime);
+    const aut = p.autoria.principais.length ? esc(p.autoria.principais.join(', ')) + (p.autoria.total > p.autoria.principais.length ? ` e mais ${num(p.autoria.total - p.autoria.principais.length)}` : '') : 'não informada';
+    const pl = p.plenario;
+    const votos = pl ? secao('Como o Plenário votou', `<p>${esc(fmtData(pl.data))}: <b>${pl.aprovada ? 'aprovada' : 'rejeitada'}</b> (${num(pl.sim)} sim × ${num(pl.nao)} não). O Governo orientou “${esc(pl.orientacao_governo)}”.</p>
+        <div class="mt-2 grid grid-cols-2 gap-2">${pl.partidos.map((x) => `<div><p class="text-xs font-semibold">${esc(x.sigla)} <span class="font-normal text-slate-500">${pc(x.pct_sim)} sim</span></p>
+            <div class="h-2 rounded-full bg-slate-300 dark:bg-slate-600 overflow-hidden" role="img" aria-label="${esc(x.sigla)}: ${num(x.sim)} sim, ${num(x.nao)} não"><div class="h-full" style="width:${x.pct_sim}%;background:${COR_FID}"></div></div></div>`).join('')}</div>`) : '';
+    return topo
+        + secao('O que este projeto faz', `<p>${esc(p.ementa)}</p>${p.ementa_detalhada ? `<p class="mt-2 text-slate-600 dark:text-slate-400">${esc(corta(p.ementa_detalhada, 500))}</p>` : ''}
+            <p class="mt-1 text-[11px] text-slate-500">Texto oficial da ementa, o resumo registrado pela Câmara. Para o texto completo, use “Ler na íntegra”.</p>
+            ${p.palavras_chave.length ? `<p class="mt-2 flex flex-wrap gap-1.5">${p.palavras_chave.map((k) => `<span class="px-2 py-0.5 rounded-full border border-slate-300 dark:border-slate-600 text-[11px]">${esc(k)}</span>`).join('')}</p>` : ''}`)
+        + tipo
+        + secao('Autoria', `<p>${aut} · apresentado em ${esc(fmtData(p.apresentado_em))}</p>`)
+        + secao('Onde está agora', `<p><b>${esc(s.descricao || '—')}</b>${s.orgao ? ` · ${esc(s.orgao)}` : ''}${s.data ? ` · desde ${esc(fmtData(s.data))}` : ''}</p>
+            ${s.despacho ? `<p class="mt-1 text-slate-600 dark:text-slate-400">${esc(corta(s.despacho, 300))}</p>` : ''}
+            ${s.regime ? `<p class="mt-1 text-xs text-slate-500">Regime: ${esc(s.regime)}${reg ? ' — ' + esc(reg) : ''}</p>` : ''}`)
+        + votos
+        + secao('Por onde um projeto passa', `<ol class="list-decimal pl-5 space-y-1 text-slate-600 dark:text-slate-400">${p.caminho.map((c) => `<li>${esc(c)}</li>`).join('')}</ol>`)
+        + secao(`Últimas movimentações <span class="normal-case font-normal">(de ${num(p.total_tramitacoes)})</span>`, `<ul class="space-y-2">${p.tramitacoes.map((t) => `<li class="border-l-2 border-slate-300 dark:border-slate-600 pl-3">
+            <p class="text-xs text-slate-500">${esc(fmtData(t.data))}${t.orgao ? ' · ' + esc(t.orgao) : ''}</p><p>${esc(t.descricao || '')}</p>${t.despacho ? `<p class="text-xs text-slate-600 dark:text-slate-400">${esc(corta(t.despacho, 220))}</p>` : ''}</li>`).join('')}</ul>`)
+        + `<p class="mt-5 text-sm flex flex-wrap gap-x-4 gap-y-1">
+            ${p.links.inteiro_teor ? `<a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(p.links.inteiro_teor))}"><i class="fa-solid fa-link mr-1" aria-hidden="true"></i>Ler na íntegra</a>` : ''}
+            <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(p.links.pagina))}">Ficha de tramitação na Câmara</a></p>
+        <p class="mt-3 text-[11px] text-slate-400">Fonte: ${esc(p.fonte.nome)}.</p>`;
+}
+
+async function abrirProjeto(rotulo, gatilho) {
+    const g = $('gaveta');
+    ultimoFoco = gatilho || null;
+    const apelido = (PAUTAS && (PAUTAS.pautas.find((x) => x.proposicao === rotulo) || {}).apelido) || null;
+    g.innerHTML = '<p class="text-sm text-slate-500">Carregando o projeto…</p>';
+    g.classList.add('aberta'); g.setAttribute('aria-hidden', 'false'); g.scrollTop = 0; g.focus();
+    try {
+        const p = await api('/api/governismo/projeto?proposicao=' + encodeURIComponent(rotulo));
+        g.innerHTML = htmlProjeto(p, p.apelido || apelido);
+        g.scrollTop = 0;
+    } catch (e) {
+        g.innerHTML = `<div class="text-right"><button type="button" data-fechar-gaveta class="text-sm">Fechar ✕</button></div>${mensagemErro(e)}`;
+    }
+}
+document.addEventListener('click', (ev) => {
+    const b = ev.target.closest && ev.target.closest('[data-projeto]');
+    if (b) { abrirProjeto(b.dataset.projeto, b); return; }
+    if (ev.target.closest && ev.target.closest('[data-fechar-gaveta]')) fecharGaveta();
+});
+document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') fecharGaveta(); });
+
 carregarAgenda();
+carregarLideres();
 carregarResumo();
 carregarPautas();
+
 </script>
 </body>
 </html>
