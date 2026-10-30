@@ -1,0 +1,422 @@
+{
+ "registrados": [
+  {
+   "sigla": "MDB",
+   "nome": "MOVIMENTO DEMOCRÁTICO BRASILEIRO",
+   "deferimento": "1981-06-30"
+  },
+  {
+   "sigla": "PDT",
+   "nome": "PARTIDO DEMOCRÁTICO TRABALHISTA",
+   "deferimento": "1981-11-10"
+  },
+  {
+   "sigla": "PT",
+   "nome": "PARTIDO DOS TRABALHADORES",
+   "deferimento": "1982-02-11"
+  },
+  {
+   "sigla": "PCdoB",
+   "nome": "PARTIDO COMUNISTA DO BRASIL",
+   "deferimento": "1988-06-23"
+  },
+  {
+   "sigla": "PSB",
+   "nome": "PARTIDO SOCIALISTA BRASILEIRO",
+   "deferimento": "1988-07-01"
+  },
+  {
+   "sigla": "PSDB",
+   "nome": "PARTIDO DA SOCIAL DEMOCRACIA BRASILEIRA",
+   "deferimento": "1989-08-24"
+  },
+  {
+   "sigla": "AGIR",
+   "nome": "AGIR",
+   "deferimento": "1990-02-22"
+  },
+  {
+   "sigla": "MOBILIZA",
+   "nome": "MOBILIZAÇÃO NACIONAL",
+   "deferimento": "1990-10-25"
+  },
+  {
+   "sigla": "CIDADANIA",
+   "nome": "CIDADANIA",
+   "deferimento": "1992-03-19"
+  },
+  {
+   "sigla": "PV",
+   "nome": "PARTIDO VERDE",
+   "deferimento": "1993-09-30"
+  },
+  {
+   "sigla": "AVANTE",
+   "nome": "AVANTE",
+   "deferimento": "1994-10-11"
+  },
+  {
+   "sigla": "PP",
+   "nome": "PROGRESSISTAS",
+   "deferimento": "1995-11-16"
+  },
+  {
+   "sigla": "PSTU",
+   "nome": "PARTIDO SOCIALISTA DOS TRABALHADORES UNIFICADO",
+   "deferimento": "1995-12-19"
+  },
+  {
+   "sigla": "PCB",
+   "nome": "PARTIDO COMUNISTA BRASILEIRO",
+   "deferimento": "1996-05-09"
+  },
+  {
+   "sigla": "PRTB",
+   "nome": "PARTIDO RENOVADOR TRABALHISTA BRASILEIRO",
+   "deferimento": "1997-02-18"
+  },
+  {
+   "sigla": "DC",
+   "nome": "DEMOCRACIA CRISTÃ",
+   "deferimento": "1997-08-05"
+  },
+  {
+   "sigla": "PCO",
+   "nome": "PARTIDO DA CAUSA OPERÁRIA",
+   "deferimento": "1997-09-30"
+  },
+  {
+   "sigla": "PODE",
+   "nome": "PODEMOS",
+   "deferimento": "1997-10-02"
+  },
+  {
+   "sigla": "REPUBLICANOS",
+   "nome": "REPUBLICANOS",
+   "deferimento": "2005-08-25"
+  },
+  {
+   "sigla": "PSOL",
+   "nome": "PARTIDO SOCIALISMO E LIBERDADE",
+   "deferimento": "2005-09-15"
+  },
+  {
+   "sigla": "PL",
+   "nome": "PARTIDO LIBERAL",
+   "deferimento": "2006-12-19"
+  },
+  {
+   "sigla": "PSD",
+   "nome": "PARTIDO SOCIAL DEMOCRÁTICO",
+   "deferimento": "2011-09-27"
+  },
+  {
+   "sigla": "SOLIDARIEDADE",
+   "nome": "SOLIDARIEDADE",
+   "deferimento": "2013-09-24"
+  },
+  {
+   "sigla": "NOVO",
+   "nome": "PARTIDO NOVO",
+   "deferimento": "2015-09-15"
+  },
+  {
+   "sigla": "REDE",
+   "nome": "REDE SUSTENTABILIDADE",
+   "deferimento": "2015-09-22"
+  },
+  {
+   "sigla": "DEMOCRATA",
+   "nome": "DEMOCRATA",
+   "deferimento": "2015-09-29"
+  },
+  {
+   "sigla": "UP",
+   "nome": "UNIDADE POPULAR",
+   "deferimento": "2019-12-10"
+  },
+  {
+   "sigla": "UNIÃO",
+   "nome": "UNIÃO BRASIL",
+   "deferimento": "2022-02-08"
+  },
+  {
+   "sigla": "PRD",
+   "nome": "PARTIDO RENOVAÇÃO DEMOCRÁTICA",
+   "deferimento": "2023-11-09"
+  },
+  {
+   "sigla": "MISSÃO",
+   "nome": "PARTIDO MISSÃO",
+   "deferimento": "2025-11-04"
+  }
+ ],
+ "fusoes": [
+  {
+   "de": [
+    "Partido Progressista Reformador (PPR)",
+    "Partido Progressista (PP)"
+   ],
+   "para": "Partido Progressista Brasileiro (PPB) *",
+   "processo": "RGP nº 277 (312-46.1995.6.00.0000)",
+   "data": "1995-11-16"
+  },
+  {
+   "de": [
+    "Partido da Reedificação da Ordem Nacional (PRONA)",
+    "Partido Liberal (PL)"
+   ],
+   "para": "Partido da República (PR) **",
+   "processo": "RPP nº 305 (29782-39.2006.6.00.0000)",
+   "data": "2006-12-19"
+  },
+  {
+   "de": [
+    "Partido Social Liberal (PSL)",
+    "Democratas (DEM)"
+   ],
+   "para": "União Brasil (UNIÃO)",
+   "processo": "RPP nº 0600641-95.2021.6.00.0000",
+   "data": "2022-02-08"
+  },
+  {
+   "de": [
+    "Partido Trabalhista Brasileiro (PTB)",
+    "Patriota (PATRIOTA)"
+   ],
+   "para": "Partido Renovação Democrática (PRD)",
+   "processo": "RPP nº 0601913-90.2022.6.00.0000",
+   "data": "2023-11-09"
+  }
+ ],
+ "incorporacoes": [
+  {
+   "de": [
+    "Partido Geral dos Trabalhadores (PGT)",
+    "Partido Social Trabalhista (PST)"
+   ],
+   "para": "Partido Liberal (PL)",
+   "processo": "PET nº 1307 (883-36.2003.6.00.0000)",
+   "data": "2003-04-01"
+  },
+  {
+   "de": [
+    "Partido Social Democrático (PSD)"
+   ],
+   "para": "Partido Trabalhista Brasileiro (PTB)",
+   "processo": "PET nº 1304 (413-05.2003.6.00.0000)",
+   "data": "2003-02-20"
+  },
+  {
+   "de": [
+    "Partido dos Aposentados da Nação (PAN)"
+   ],
+   "para": "Partido Trabalhista Brasileiro (PTB)",
+   "processo": "PET nº 2456 (31136-02.2006.6.00.0000)",
+   "data": "2007-03-15"
+  },
+  {
+   "de": [
+    "Partido Republicano Progressista (PRP)"
+   ],
+   "para": "Partido Ecológico Nacional (PEN) **",
+   "processo": "PET nº 0601953-14.2018.6.00.0000",
+   "data": "2019-03-28"
+  },
+  {
+   "de": [
+    "Partido Pátria Livre (PPL)"
+   ],
+   "para": "Partido Comunista do Brasil (PC do B)",
+   "processo": "PET nº 0601972-20.2018.6.00.0000",
+   "data": "2019-05-28"
+  },
+  {
+   "de": [
+    "Partido Humanista da Solidariedade (PHS)"
+   ],
+   "para": "Podemos (PODE)",
+   "processo": "PET nº 0602013-84.2018.6.00.0000",
+   "data": "2019-09-19"
+  },
+  {
+   "de": [
+    "Partido Republicano da Ordem Social (PROS)"
+   ],
+   "para": "SOLIDARIEDADE",
+   "processo": "PetCiv nº 0601967-56.2022.6.00.0000",
+   "data": "2023-02-14"
+  },
+  {
+   "de": [
+    "Partido Social Cristão (PSC)"
+   ],
+   "para": "Podemos (PODE)",
+   "processo": "PetCiv nº 0600013-38.2023.6.00.0000",
+   "data": "2023-06-15"
+  }
+ ],
+ "mudancas": [
+  {
+   "de": [
+    "Partido Solidarista Nacional (PSN)"
+   ],
+   "para": "Partido da Solidariedade Nacional (PSN)",
+   "processo": "PET nº 371 (141-21.1997.6.00.0000)",
+   "data": "1998-02-19"
+  },
+  {
+   "de": [
+    "Partido da Solidariedade Nacional (PSN)"
+   ],
+   "para": "Partido Humanista da Solidariedade (PHS) *",
+   "processo": "PET nº 371 (141-21.1997.6.00.0000)",
+   "data": "2000-05-30"
+  },
+  {
+   "de": [
+    "Partido da Reconstrução Nacional (PRN)"
+   ],
+   "para": "Partido Trabalhista Cristão (PTC)",
+   "processo": "PET nº 341 (1069-69.1997.6.00.0000)",
+   "data": "2001-04-24"
+  },
+  {
+   "de": [
+    "Partido Progressista Brasileiro (PPB)"
+   ],
+   "para": "Partido Progressista (PP)",
+   "processo": "PET nº 104 (1104-63.1996.6.00.0000)",
+   "data": "2003-05-29"
+  },
+  {
+   "de": [
+    "Partido da Frente Liberal (PFL)"
+   ],
+   "para": "Democratas (DEM)",
+   "processo": "PET nº 1826 (29794-53.2006.6.00.0000)",
+   "data": "2007-06-12"
+  },
+  {
+   "de": [
+    "Partido Municipalista Renovador (PMR)"
+   ],
+   "para": "Partido Republicano Brasileiro (PRB)",
+   "processo": "RPP nº 301 (25929-56.2005.6.00.0000)",
+   "data": "2009-09-21"
+  },
+  {
+   "de": [
+    "Partido Trabalhista Nacional (PTN)"
+   ],
+   "para": "Podemos (PODE)",
+   "processo": "PET nº 52 (658-94.1995.6.00.0000)",
+   "data": "2017-05-16"
+  },
+  {
+   "de": [
+    "Partido Trabalhista do Brasil (PT do B)"
+   ],
+   "para": "AVANTE",
+   "processo": "PET nº 115 (6-43.1996.6.00.0000)",
+   "data": "2017-09-12"
+  },
+  {
+   "de": [
+    "Partido do Movimento Democrático Brasileiro (PMDB)"
+   ],
+   "para": "Movimento Democrático Brasileiro (MDB)",
+   "processo": "PET nº 128 (1286-49.1996.6.00.0000)",
+   "data": "2018-05-15"
+  },
+  {
+   "de": [
+    "Partido Ecológico Nacional (PEN)"
+   ],
+   "para": "Patriota (PATRI).",
+   "processo": "RPP nº 1535-72.2011.6.00.0000",
+   "data": "2018-04-26"
+  },
+  {
+   "de": [
+    "Partido Social Democrata Cristão (PSDC)"
+   ],
+   "para": "Democracia Cristã (DC)",
+   "processo": "PET nº 96 (863-89.1996.6.00.0000)",
+   "data": "2018-05-17"
+  },
+  {
+   "de": [
+    "Solidariedade (SD)"
+   ],
+   "para": "SOLIDARIEDADE",
+   "processo": "RPP nº 403-09.2013.6.00.0000",
+   "data": "2018-06-28"
+  },
+  {
+   "de": [
+    "Partido Progressista (PP)"
+   ],
+   "para": "Progressistas (PP)",
+   "processo": "PET nº 104 (1104-63.1996.6.00.0000)",
+   "data": "2018-09-11"
+  },
+  {
+   "de": [
+    "Partido da República (PR)"
+   ],
+   "para": "Partido Liberal (PL)",
+   "processo": "RPP nº 305 (29782-39.2006.6.00.0000)",
+   "data": "2019-02-09"
+  },
+  {
+   "de": [
+    "Patriota (PATRI)."
+   ],
+   "para": "PATRIOTA",
+   "processo": "PET nº 0601953-14.2018.6.00.0000",
+   "data": "2019-03-28"
+  },
+  {
+   "de": [
+    "Partido Republicano Brasileiro (PRB)"
+   ],
+   "para": "REPUBLICANOS",
+   "processo": "RPP nº 301 (25929-56.2005.6.00.0000)",
+   "data": "2019-08-15"
+  },
+  {
+   "de": [
+    "Partido Popular Socialista (PPS)"
+   ],
+   "para": "CIDADANIA",
+   "processo": "PET nº 74 (1782-78.1996.6.00.0000)",
+   "data": "2019-09-19"
+  },
+  {
+   "de": [
+    "Partido Trabalhista Cristão (PTC)"
+   ],
+   "para": "AGIR",
+   "processo": "RPP nº 51-91.1989.6.00.0000",
+   "data": "2022-03-31"
+  },
+  {
+   "de": [
+    "Partido da Mobilização Nacional (PMN)"
+   ],
+   "para": "Mobilização Nacional (MOBILIZA)",
+   "processo": "PetCiv nº 0001624-23.1996.6.00.0000",
+   "data": "2023-12-05"
+  },
+  {
+   "de": [
+    "Partido da Mulher Brasileira (PMB)"
+   ],
+   "para": "Democrata",
+   "processo": "RPP nº 0001554-73.2014.6.00.0000",
+   "data": "2025-12-02"
+  }
+ ],
+ "lido_em": "2026-10-30T13:46:13+00:00"
+}

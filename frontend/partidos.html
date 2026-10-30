@@ -274,7 +274,9 @@ async function iniciarEvolucao() {
         EVO = await api('/api/partidos/evolucao');
         $('evoEstado').innerHTML = '';
         $('evoControles').classList.remove('hidden');
-        $('evoConsulta').textContent = `Consultado em ${fmtDataHora(EVO.consultado_em)} · ${EVO.n_registrados} partidos registrados hoje no TSE`;
+        $('evoConsulta').textContent = EVO.copia_local
+            ? `A página do TSE não respondeu agora. Mostrando a última leitura bem-sucedida, de ${fmtDataHora(EVO.lido_em)} · ${EVO.n_registrados} partidos registrados naquela data`
+            : `Consultado em ${fmtDataHora(EVO.consultado_em)} · ${EVO.n_registrados} partidos registrados hoje no TSE`;
         $('evoLacunasLista').innerHTML = EVO.lacunas.concat(EVO.notas).map((t) => `<li>${esc(t)}</li>`).join('');
         $('evoLacunas').classList.remove('hidden');
         const conf = EVO.conferencia.every((c) => c.confere);
