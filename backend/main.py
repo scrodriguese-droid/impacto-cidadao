@@ -604,6 +604,26 @@ def governismo_agenda() -> dict:
         raise HTTPException(status_code=503, detail="As agendas oficiais da Câmara e do Senado estão indisponíveis no momento.") from exc
 
 
+@router.get("/governismo/liderancas", tags=["governismo"])
+def governismo_liderancas() -> dict:
+    try:
+        return governismo.liderancas()
+    except Exception as exc:  # noqa: BLE001
+        log.warning("Lideranças indisponíveis: %s", exc)
+        raise HTTPException(status_code=503, detail="A lista oficial de lideranças está indisponível no momento.") from exc
+
+
+@router.get("/governismo/projeto", tags=["governismo"])
+def governismo_projeto(proposicao: Annotated[str, Query(min_length=5, max_length=20, description="ex.: PEC 221/2019")]) -> dict:
+    try:
+        return governismo.projeto(proposicao)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except Exception as exc:  # noqa: BLE001
+        log.warning("Projeto indisponível: %s", exc)
+        raise HTTPException(status_code=503, detail="A fonte oficial do projeto está indisponível no momento.") from exc
+
+
 @router.get("/governismo/deputados/{dep_id}", tags=["governismo"])
 def governismo_deputado(dep_id: int, desde: Annotated[int | None, Query(ge=2000, le=2100)] = None,
                         ate: Annotated[int | None, Query(ge=2000, le=2100)] = None) -> dict:

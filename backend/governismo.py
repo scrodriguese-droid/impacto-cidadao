@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 import threading
 import time
 from datetime import date, datetime, timedelta
@@ -34,6 +35,7 @@ ROTULO_VOTO = {"S": "Sim", "N": "Não", "A": "Abstenção", "O": "Obstrução", 
 
 _http = ClienteHTTP(pausa=0.05, timeout=30.0, tentativas=3)
 _trava = threading.RLock()
+_trava_agenda: dict[str, threading.Lock] = {}
 _cache: dict[str, Any] = {"mtime": None, "dados": None}
 _cache_agenda: dict[str, tuple[float, Any]] = {}
 
@@ -77,6 +79,17 @@ def _soma(dep: dict, anos: list[str]) -> list[int]:
         for i, v in enumerate(dep["anos"].get(a, [0] * 8)):
             t[i] += v
     return t
+
+
+ARQ_APELIDOS = RAIZ / "dados" / "votacoes" / "apelidos.json"
+
+
+def _apelidos() -> dict:
+    """Apelidos editoriais das proposições ("PEC 45/2019" → "Reforma Tributária"); lidos a cada uso para valer sem recoletar."""
+    try:
+        return json.loads(ARQ_APELIDOS.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
 
 
 def _ativo(dep: dict, ate_data: str) -> bool:
@@ -159,10 +172,10 @@ def deputado(dep_id: int, desde: int | None = None, ate: int | None = None) -> d
     t = _soma(dep, anos)
     den = sum(t[:4])
     colegas = [x for x in d["deputados"] if x["partido"] == dep["partido"]]
-    pautas = []
+    pautas, ap = [], _apelidos()
     for p, c in zip(d["pautas"], dep.get("pautas", "")):
         orient = "S" if p["orientacao_governo"] == "Sim" else "N"
-        pautas.append({"proposicao": p["proposicao"], "apelido": p["apelido"], "data": p["data"], "ementa": p["ementa"],
+        pautas.append({"proposicao": p["proposicao"], "apelido": ap.get(p["proposicao"]) or p["apelido"], "data": p["data"], "ementa": p["ementa"],
                        "orientacao_governo": p["orientacao_governo"], "voto": ROTULO_VOTO[c],
                        "alinhado": None if c in ("-", "P") else c == orient})
     return {
@@ -181,13 +194,13 @@ def deputado(dep_id: int, desde: int | None = None, ate: int | None = None) -> d
 def pautas() -> dict:
     """As votações recentes de projetos relevantes (com apelido quando há), e como cada partido votou."""
     d = _dados()
-    itens = []
+    itens, ap = [], _apelidos()
     for p in d["pautas"]:
         partidos = [{"sigla": s, "sim": v[0], "nao": v[1], "pct_sim": _pct(v[0], v[0] + v[1])}
                     for s, v in p["partidos"].items() if v[0] + v[1] >= 3]
         partidos.sort(key=lambda x: (-(x["pct_sim"] or 0), x["sigla"]))
-        itens.append({**{k: p[k] for k in ("id", "data", "proposicao", "apelido", "ementa", "descricao",
-                                          "orientacao_governo", "aprovada", "sim", "nao")}, "partidos": partidos})
+        itens.append({**{k: p[k] for k in ("id", "data", "proposicao", "ementa", "descricao",
+                                          "orientacao_governo", "aprovada", "sim", "nao")}, "apelido": ap.get(p["proposicao"]) or p["apelido"], "partidos": partidos})
     return {"ate_data": d["ate_data"], "pautas": itens,
             "nota": "Votações nominais do Plenário em que o Governo orientou “Sim” ou “Não”, de PEC, PLP, PL, MPV e PDL; "
                     "requerimentos ficam de fora. Para cada projeto aparece a votação mais recente. Apelidos vêm de dados/votacoes/apelidos.json "
@@ -201,7 +214,8 @@ def _memo_agenda(chave: str, produzir):  # noqa: ANN001
     agora = time.time()
     if chave in _cache_agenda and agora - _cache_agenda[chave][0] < TTL_AGENDA_S:
         return _cache_agenda[chave][1]
-    with _trava:
+    with _trava_agenda.setdefault(chave, threading.Lock()):  # um cadeado por chave: consulta lenta não trava as outras rotas
+        agora = time.time()
         if chave in _cache_agenda and agora - _cache_agenda[chave][0] < TTL_AGENDA_S:
             return _cache_agenda[chave][1]
         try:
@@ -321,3 +335,166 @@ def agenda() -> dict:
     saida["nota"] = ("Mostramos só projetos de peso (PEC, PLP, PL, MPV e PDL); requerimentos, homenagens e sessões solenes ficam de fora. "
                      "A pauta pode mudar até a hora da sessão.")
     return saida
+
+
+# --------------------------------------------------------------------------- #
+# Quem dá as cartas: líderes (Governo, oposição/minoria, bancadas) e presidentes das Casas
+# --------------------------------------------------------------------------- #
+URL_LIDERANCA = f"{SENADO}/composicao/lideranca"   # lideranças das duas Casas e do Congresso (casa CD, SF, CN)
+FOTO_CAMARA = "https://www.camara.leg.br/internet/deputado/bandep/{}.jpg"
+FOTO_SENADO = "https://www.senado.leg.br/senadores/img/fotos-oficiais/senador{}.jpg"
+PERFIL_CAMARA = "https://www.camara.leg.br/deputados/{}"
+PERFIL_SENADO = "https://www25.senado.leg.br/web/senadores/senador/-/perfil/{}"
+
+
+def _pessoa(x: dict) -> dict:
+    cam = x.get("codigoDeputado")
+    cod = x.get("codigoParlamentar")
+    return {"nome": x.get("nomeParlamentar"), "partido": x.get("siglaPartidoFiliacao"), "uf": x.get("uf"),
+            "desde": x.get("dataDesignacao"),
+            "foto": FOTO_CAMARA.format(cam) if cam else FOTO_SENADO.format(cod) if cod else None,
+            "url": PERFIL_CAMARA.format(cam) if cam else PERFIL_SENADO.format(cod) if cod else None}
+
+
+def _liderancas() -> dict:
+    d = _http.json(URL_LIDERANCA)
+    if not isinstance(d, list) or not d:
+        raise ErroFonte("Formato inesperado na lista de lideranças do Senado.")
+    lideres = [x for x in d if x.get("siglaTipoLideranca") == "L"]
+
+    def achar(casa: str, rotulo: str, unidade: str) -> dict | None:
+        for x in lideres:
+            if x["casa"] == casa and x["descricaoTipoUnidadeLideranca"].startswith(unidade):
+                return {"cargo": rotulo, "casa": casa, **_pessoa(x)}
+        return None
+
+    governo = [achar("CN", "Líder do Governo no Congresso", "Liderança do Governo"),
+               achar("CD", "Líder do Governo na Câmara", "Liderança do Governo"),
+               achar("SF", "Líder do Governo no Senado", "Liderança do Governo")]
+    oposicao = [achar("CN", "Líder da Oposição no Congresso", "Liderança da Oposição"),
+                achar("CD", "Líder da Minoria na Câmara", "Liderança da Minoria na Câmara"),
+                achar("SF", "Líder da Oposição no Senado", "Liderança da Oposição")]
+    maioria = [achar("CD", "Líder da Maioria na Câmara", "Liderança da Maioria na Câmara"),
+               achar("SF", "Líder da Maioria no Senado", "Liderança da Maioria")]
+
+    ativos: dict[str, int] = {}
+    try:
+        dd = _dados()
+        for dep in dd["deputados"]:
+            if _ativo(dep, dd["ate_data"]):
+                ativos[dep["partido"]] = ativos.get(dep["partido"], 0) + 1
+    except ErroFonte:
+        pass
+
+    def grupos(casa: str) -> list[dict]:
+        saida = []
+        for x in lideres:
+            u = x["descricaoTipoUnidadeLideranca"]
+            if x["casa"] != casa or not (u.startswith("Liderança de Partido") or u.startswith("Liderança de Bloco")):
+                continue
+            bloco = u.startswith("Liderança de Bloco")
+            nome = x.get("nomeBloco") or x.get("siglaBloco") or x.get("siglaPartidoFiliacao") or ""
+            cadeiras = None
+            if casa == "CD":  # só soma quando os partidos do bloco vêm escritos no nome (ex.: "UNIÃO, PP, PSD…")
+                if bloco:
+                    partes = [t for t in nome.replace(",", " ").split() if t in ativos]
+                    cadeiras = sum(ativos[t] for t in partes) if partes else None
+                else:
+                    cadeiras = ativos.get(nome)
+            saida.append({"tipo": "bloco" if bloco else "partido", "nome": nome, "cadeiras": cadeiras, "lider": _pessoa(x)})
+        return sorted(saida, key=lambda g: (-(g["cadeiras"] or 0), g["nome"].casefold()))
+
+    presidentes = {}
+    try:
+        import bancadas
+        for casa in bancadas.bancadas()["casas"]:
+            presidentes[casa["id"]] = casa.get("presidente")
+    except Exception as exc:  # noqa: BLE001  (complementar: se falhar, a página segue sem eles)
+        log.warning("Presidentes das Casas indisponíveis: %s", exc)
+    return {
+        "presidentes": presidentes,
+        "governo": [x for x in governo if x], "oposicao": [x for x in oposicao if x], "maioria": [x for x in maioria if x],
+        "camara": grupos("CD"), "senado": grupos("SF"),
+        "fonte": {"nome": "Senado Federal — composição das lideranças (dados abertos; inclui a Câmara)", "url": URL_LIDERANCA},
+        "notas": [
+            "A lista vem direto da base oficial de lideranças; o Governo indica seus líderes e as Casas registram a designação.",
+            "Na Câmara a base oficial usa “Minoria” e “Maioria” em vez de “Oposição”: mostramos o nome oficial do cargo.",
+            "Líderes de bloco e de federação falam por vários partidos; o número de deputados só aparece quando os partidos do bloco constam no nome.",
+            "O presidente da Câmara e o do Senado decidem o que entra na pauta; os líderes negociam com eles na reunião semanal de líderes e orientam o voto das bancadas.",
+        ],
+    }
+
+
+def liderancas() -> dict:
+    return {"consultado_em": datetime.now().isoformat(timespec="seconds"), **_memo_agenda("liderancas", _liderancas)}
+
+
+# --------------------------------------------------------------------------- #
+# Um projeto em linguagem simples (aba lateral)
+# --------------------------------------------------------------------------- #
+TIPOS_EXPLICADOS = {
+    "PEC": ("Proposta de Emenda à Constituição", "Muda o texto da Constituição. Precisa de 3/5 dos votos (308 deputados e 49 senadores), em dois turnos em cada Casa. Não vai à sanção: o Congresso promulga."),
+    "PLP": ("Projeto de Lei Complementar", "Regulamenta pontos que a Constituição manda detalhar em lei complementar. Precisa de maioria absoluta (257 deputados e 41 senadores). Passa pelas duas Casas e vai à sanção do Presidente."),
+    "PL": ("Projeto de Lei", "Lei ordinária. Maioria simples dos presentes. Passa pelas duas Casas e vai à sanção do Presidente, que pode sancionar ou vetar."),
+    "PLV": ("Projeto de Lei de Conversão", "Transforma uma medida provisória em lei, com as alterações do Congresso. Vai à sanção do Presidente."),
+    "MPV": ("Medida Provisória", "O Presidente edita e ela vale como lei na hora. Tem 60 dias, prorrogáveis por mais 60, para a Câmara e o Senado aprovarem; se não votarem, perde a validade."),
+    "PDL": ("Projeto de Decreto Legislativo", "Trata de assuntos só do Congresso (aprovar tratados, sustar atos do Executivo, escolher ministros do TCU). Não vai à sanção."),
+}
+_CAMINHO = [
+    "Apresentação: o autor protocola o projeto e a Mesa o distribui às comissões.",
+    "Comissões: analisam o mérito e a constitucionalidade (o regime de urgência pode pular essa etapa).",
+    "Plenário: todos os deputados (513) ou senadores (81) votam.",
+    "Casa revisora: se nasceu na Câmara, o Senado revisa (e vice-versa). Se mudar o texto, ele volta.",
+    "Sanção ou promulgação: leis vão ao Presidente, que sanciona ou veta; emendas à Constituição são promulgadas pelo Congresso.",
+]
+_RE_ROTULO = re.compile(r"\s*([A-Z]{2,4})\s+(\d{1,5})/(\d{4})\s*")
+
+
+def projeto(rotulo: str) -> dict:
+    """Detalhe de um projeto pelo rótulo ('PEC 221/2019'), com dados da Câmara. Falha de rede vira ErroFonte."""
+    m = _RE_ROTULO.fullmatch(rotulo or "")
+    if not m or m.group(1) not in TIPOS_EXPLICADOS:
+        raise ValueError("Informe o projeto como PEC 221/2019, PLP 93/2023, PL 1/2024…")
+    sigla, numero, ano = m.group(1), int(m.group(2)), int(m.group(3))
+    return _memo_agenda(f"projeto-{sigla}-{numero}-{ano}", lambda: _projeto(sigla, numero, ano))
+
+
+def _projeto(sigla: str, numero: int, ano: int) -> dict:
+    nome_tipo, explicacao = TIPOS_EXPLICADOS[sigla]
+    base = {"proposicao": f"{sigla} {numero}/{ano}", "apelido": _apelidos().get(f"{sigla} {numero}/{ano}"), "tipo": nome_tipo, "tipo_explicacao": explicacao, "caminho": _CAMINHO,
+            "fonte": {"nome": "Câmara dos Deputados — dados abertos", "url": "https://www.camara.leg.br/busca-portal/proposicoes/pesquisa-simplificada"}}
+    achados = _http.json(f"{CAMARA}/proposicoes", {"siglaTipo": sigla, "numero": numero, "ano": ano, "itens": 1}).get("dados") or []
+    if not achados:
+        return {**base, "encontrado": False,
+                "aviso": "Não achamos este projeto na base da Câmara (pode ter nascido no Senado). A página oficial do Senado tem o histórico."}
+    pid = achados[0]["id"]
+    d = _http.json(f"{CAMARA}/proposicoes/{pid}").get("dados") or {}
+    st = d.get("statusProposicao") or {}
+    autores = _http.json(f"{CAMARA}/proposicoes/{pid}/autores").get("dados") or []
+    tram = _http.json(f"{CAMARA}/proposicoes/{pid}/tramitacoes").get("dados") or []
+    tram.sort(key=lambda t: t.get("dataHora") or "")
+    principais = [a for a in autores if a.get("proponente")] or autores[:1]
+    plenario = None
+    try:
+        pauta = next((p for p in _dados()["pautas"] if p["proposicao"] == base["proposicao"]), None)
+        if pauta:
+            plenario = {"data": pauta["data"], "orientacao_governo": pauta["orientacao_governo"], "aprovada": pauta["aprovada"],
+                        "sim": pauta["sim"], "nao": pauta["nao"],
+                        "partidos": [{"sigla": s, "sim": v[0], "nao": v[1], "pct_sim": _pct(v[0], v[0] + v[1])}
+                                     for s, v in sorted(pauta["partidos"].items()) if v[0] + v[1] >= 3]}
+    except ErroFonte:
+        pass
+    return {
+        **base, "encontrado": True, "id": pid, "apresentado_em": (d.get("dataApresentacao") or "")[:10],
+        "ementa": d.get("ementa"), "ementa_detalhada": d.get("ementaDetalhada") or None,
+        "palavras_chave": [k.strip() for k in (d.get("keywords") or "").split(",") if k.strip()][:8],
+        "autoria": {"principais": [a.get("nome") for a in principais], "total": len(autores)},
+        "situacao": {"descricao": st.get("descricaoSituacao"), "orgao": st.get("siglaOrgao"), "regime": st.get("regime"),
+                     "apreciacao": st.get("apreciacao"), "despacho": st.get("despacho"), "data": (st.get("dataHora") or "")[:10]},
+        "tramitacoes": [{"data": (t.get("dataHora") or "")[:10], "orgao": t.get("siglaOrgao"), "descricao": t.get("descricaoTramitacao"),
+                         "despacho": (t.get("despacho") or "")[:260]} for t in reversed(tram[-8:])],
+        "total_tramitacoes": len(tram),
+        "plenario": plenario,
+        "links": {"inteiro_teor": d.get("urlInteiroTeor"),
+                  "pagina": f"https://www.camara.leg.br/proposicoesWeb/fichadetramitacao?idProposicao={pid}"},
+    }

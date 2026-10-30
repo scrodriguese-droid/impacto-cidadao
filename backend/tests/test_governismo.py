@@ -86,3 +86,26 @@ def test_rotulo_proposicao():
 def test_faixas():
     assert governismo.faixa(70) == "alto" and governismo.faixa(69.9) == "medio"
     assert governismo.faixa(30) == "medio" and governismo.faixa(29.9) == "baixo" and governismo.faixa(None) is None
+
+
+def test_projeto_valida_o_rotulo():
+    import pytest
+    for ruim in ("", "221/2019", "XYZ 1/2020", "PEC 221-2019"):
+        with pytest.raises(ValueError):
+            governismo.projeto(ruim)
+
+
+def test_apelidos_sao_lidos_na_hora(tmp_path, monkeypatch):
+    arq = tmp_path / "apelidos.json"
+    arq.write_text('{"PEC 1/2020": "Teste"}', encoding="utf-8")
+    monkeypatch.setattr(governismo, "ARQ_APELIDOS", arq)
+    assert governismo._apelidos() == {"PEC 1/2020": "Teste"}
+    arq.write_text("não é json", encoding="utf-8")
+    assert governismo._apelidos() == {}
+
+
+def test_pessoa_monta_foto_e_perfil_por_casa():
+    dep = governismo._pessoa({"nomeParlamentar": "A", "codigoDeputado": 10, "codigoParlamentar": 99, "siglaPartidoFiliacao": "PT", "uf": "SP"})
+    sen = governismo._pessoa({"nomeParlamentar": "B", "codigoParlamentar": 99})
+    assert dep["foto"].endswith("/10.jpg") and dep["url"].endswith("/deputados/10")
+    assert sen["foto"].endswith("senador99.jpg") and "senadores/senador" in sen["url"]
