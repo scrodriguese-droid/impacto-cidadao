@@ -34,6 +34,7 @@ from pydantic import BaseModel, Field, field_validator
 import apontamentos
 import autoria
 import bancadas
+import partidos
 import capitulos
 import db
 import ciclo
@@ -566,6 +567,24 @@ def bancadas_alinhamento(desde: Annotated[int | None, Query(ge=2000, le=2100)] =
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     except Exception as exc:  # noqa: BLE001
         log.warning("Alinhamento indisponível: %s", exc)
+        raise HTTPException(status_code=503, detail="Os dados de votação ainda não estão disponíveis.") from exc
+
+
+@router.get("/partidos/evolucao", tags=["partidos"])
+def partidos_evolucao() -> dict:
+    try:
+        return partidos.evolucao()
+    except Exception as exc:  # noqa: BLE001
+        log.warning("Histórico de partidos (TSE) indisponível: %s", exc)
+        raise HTTPException(status_code=503, detail="A página oficial do TSE com o histórico dos partidos está indisponível no momento.") from exc
+
+
+@router.get("/partidos/escala", tags=["partidos"])
+def partidos_escala() -> dict:
+    try:
+        return partidos.escala()
+    except Exception as exc:  # noqa: BLE001
+        log.warning("Mapa de afinidade de votação indisponível: %s", exc)
         raise HTTPException(status_code=503, detail="Os dados de votação ainda não estão disponíveis.") from exc
 
 

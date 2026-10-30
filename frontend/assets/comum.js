@@ -50,7 +50,7 @@ const NAVEGACAO = [
     { id: 'orcamento', paginas: ['economia', 'fiscal', 'orcamento', 'tesouro', 'guia-tributos', 'tributos', 'simuladores', 'macro', 'divida-historico', 'financiamento', 'ciclo'], href: 'economia.html', icone: 'fa-coins', rotulo: 'Orçamento e contas públicas' },
     { id: 'politicas', paginas: ['politicas'], href: 'politicas.html', icone: 'fa-landmark', rotulo: 'Leis e projetos' },
     { id: 'poderes', paginas: ['executivo', 'bancadas', 'judiciario', 'controle'], href: 'poderes.html', icone: 'fa-building-columns', rotulo: 'Conheça os três poderes' },
-    { id: 'planos', paginas: ['planos', 'analise-planos', 'resultados'], href: PLANOS_VISIVEIS ? 'planos.html' : 'resultados.html', icone: 'fa-flag', rotulo: 'Partidos e cadeiras' },
+    { id: 'planos', paginas: ['planos', 'analise-planos', 'resultados', 'partidos'], href: PLANOS_VISIVEIS ? 'planos.html' : 'resultados.html', icone: 'fa-flag', rotulo: 'Partidos e cadeiras' },
     { id: 'historia', paginas: ['historia'], href: 'historia.html', icone: 'fa-timeline', rotulo: 'História política do Brasil' },
     { id: 'democracia', paginas: ['democracia'], href: 'democracia.html', icone: 'fa-check-to-slot', rotulo: 'Democracia' },
 ];
@@ -71,6 +71,7 @@ const SUBNAVEGACAO = {
         { id: 'planos', href: 'planos.html', rotulo: 'Comparar planos' },
         { id: 'analise-planos', href: 'analise-planos.html', rotulo: 'Análise do editor' },
         { id: 'resultados', href: 'resultados.html', rotulo: 'Resultados das eleições' },
+        { id: 'partidos', href: 'partidos.html', rotulo: 'Evolução e afinidade dos partidos' },
     ],
     orcamento: [
         { id: 'economia', href: 'economia.html', rotulo: '1 · De onde vem e vai' },
