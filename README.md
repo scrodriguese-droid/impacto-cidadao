@@ -251,7 +251,7 @@ O menu lateral tem seis áreas, cada uma com telas focadas (abas no topo da pág
 | Menu | Telas |
 |------|-------|
 | Início | `index.html`: destaques para o perfil e a cidade (leis recentes, contas da cidade, indicadores, planos) |
-| Leis e projetos | `politicas.html` |
+| Políticas públicas | `politicas.html` |
 | Eleições: planos de governo | `planos.html` |
 | Orçamento e contas públicas | Abas: **Entrada e saída** `economia.html` (fluxo de caixa, execução e calculadora “para onde vai o meu imposto”) · **Leis do orçamento** `orcamento.html` (PPA/LDO/LOA, única linha do tempo) · **Saúde fiscal e dívida** `economia.html?aba=fiscal`. Aprofundar: `tributos.html` (dados em `frontend/assets/tributos.json`) · `simuladores.html` (IR e MEI) · `macro.html` · `financiamento.html` · `ciclo.html` |
 | Bancadas | `bancadas.html` |
