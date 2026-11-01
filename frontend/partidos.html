@@ -44,16 +44,18 @@
     <!-- ================= MÓDULO 1 ================= -->
     <section id="evolucao" aria-labelledby="h-evo" class="scroll-mt-24">
         <h2 id="h-evo" class="text-xl font-bold">1 · Evolução histórica dos partidos registrados no TSE</h2>
-        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Cada barra é um registro de partido. Quando muda de nome ou sigla, a barra continua e o novo nome é marcado. Linhas verticais ligam barras que se fundiram ou foram incorporadas, na data da decisão do TSE. Clique numa barra ou numa ligação para ver processo e datas.</p>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Leia como um mapa de metrô: cada <b>linha</b> é um partido ao longo do tempo. Uma <b>estação</b> (círculo) marca o dia em que o nome ou a sigla mudou. Quando uma linha entra em outra, os partidos se juntaram. A <b>espessura</b> mostra quantos deputados o partido tem hoje; as <b>cores</b> só separam as famílias e não indicam posição política. Clique numa linha ou numa junção para ver processo, datas e contexto.</p>
+        <div id="evoCuradas" class="hidden mt-4"></div>
         <p id="evoConsulta" class="text-[11px] text-slate-400 mt-2"></p>
         <div id="evoEstado" role="status" class="mt-3"><p class="text-sm text-slate-500">Lendo a página oficial do TSE…</p></div>
         <div id="evoControles" class="mt-3 hidden flex flex-wrap items-center gap-4 text-sm">
             <label class="inline-flex items-center gap-2"><input type="checkbox" id="soLigados"> Só famílias com fusão, incorporação ou mudança de nome</label>
             <span class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-600 dark:text-slate-400" aria-label="Legenda">
-                <span><svg width="26" height="10" aria-hidden="true"><rect x="0" y="1" width="26" height="8" rx="2" class="fill-slate-500"/></svg> registro com data conhecida</span>
-                <span><svg width="26" height="10" aria-hidden="true"><rect x="1" y="1" width="24" height="8" rx="2" fill="none" stroke-dasharray="3 2" class="stroke-slate-500"/></svg> início fora da fonte (sem data)</span>
-                <span><svg width="12" height="12" aria-hidden="true"><circle cx="6" cy="6" r="5" fill="#A92823"/></svg> fusão</span>
-                <span><svg width="12" height="12" aria-hidden="true"><rect x="1" y="1" width="10" height="10" class="fill-slate-800 dark:fill-slate-100"/></svg> incorporação</span>
+                <span><svg width="30" height="12" aria-hidden="true"><line x1="3" x2="27" y1="6" y2="6" stroke="#1f6fb2" stroke-width="7" stroke-linecap="round"/></svg> partido (mais grossa = mais deputados hoje)</span>
+                <span><svg width="14" height="14" aria-hidden="true"><circle cx="7" cy="7" r="5" stroke="#1f6fb2" stroke-width="3" class="fill-white dark:fill-slate-800"/></svg> mudou de nome ou sigla</span>
+                <span><svg width="30" height="12" aria-hidden="true"><line x1="3" x2="27" y1="6" y2="6" stroke="#64748b" stroke-width="5" stroke-linecap="round" stroke-dasharray="1 7"/></svg> início fora da fonte (sem data)</span>
+                <span><svg width="16" height="16" aria-hidden="true"><circle cx="8" cy="8" r="6" stroke="#A92823" stroke-width="3" class="fill-white dark:fill-slate-800"/></svg> fusão</span>
+                <span><svg width="16" height="16" aria-hidden="true"><rect x="2" y="2" width="12" height="12" rx="2" stroke-width="3" class="fill-white dark:fill-slate-800 stroke-slate-800 dark:stroke-slate-100"/></svg> incorporação</span>
             </span>
         </div>
         <div id="evoGrafico" class="rolagem-x mt-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"></div>
@@ -164,75 +166,122 @@ const svgEl = (tag, attrs, filhos) => {
 /* ====================== MÓDULO 1 ====================== */
 let EVO = null;
 
+// Cores só separam as famílias de partidos: não significam posição política (o TSE e a Câmara não classificam partidos).
+const PALETA = ['#1f6fb2', '#d95f02', '#1b9e77', '#7570b3', '#c2185b', '#5c8a1e', '#a67c00', '#12879a', '#8c564b', '#6a3d9a', '#c0392b', '#2e7d6b'];
+const corFam = (rot) => { let h = 0; for (const c of String(rot)) h = (h * 31 + c.charCodeAt(0)) >>> 0; return PALETA[h % PALETA.length]; };
+const semAcento = (t) => String(t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toUpperCase();
+let CADEIRAS = {};   // sigla (sem acento) → deputados em exercício hoje; vazio se a Câmara estiver fora do ar
+
+// Coloca rótulos em até 3 andares para que nenhum se sobreponha ao anterior (rótulos nunca são cortados).
+function andares(itens, larg) {
+    const fim = [-1e9, -1e9, -1e9];
+    return itens.map((it) => {
+        const w = larg(it);
+        let a = fim.findIndex((f) => it.x >= f + 4);
+        if (a < 0) a = fim.indexOf(Math.min(...fim));
+        fim[a] = it.x + w;
+        return { ...it, andar: a };
+    });
+}
+
 function desenharEvolucao() {
     const d = EVO;
     const porId = Object.fromEntries(d.nos.map((n) => [n.id, n]));
     const so = $('soLigados').checked;
-    const idsLigados = new Set();
-    d.arestas.forEach((a) => { idsLigados.add(a.de); idsLigados.add(a.para); });
-    const fams = d.familias.filter((f) => !so || f.ids.length > 1 || f.ids.some((i) => porId[i].nomes.length > 1));
-    const ANO0 = 1981, ANO1 = new Date().getFullYear() + 1;
-    const ML = 12, MR = 24, W = 1000, LH = 24, CAB = 22, GAP = 22;
-    const x = (iso) => ML + (frac(iso) - ANO0) / (ANO1 - ANO0) * (W - ML - MR);
-    const X0 = x('1995-01-01');
-    const hoje = new Date().toISOString().slice(0, 10);
-    let y = CAB;
-    const linha = {}, partes = [], rotulosFam = [];
-    fams.forEach((f) => {
-        rotulosFam.push({ y: y + 10, texto: f.rotulo });
-        y += 16;
-        f.ids.forEach((id) => { linha[id] = y; y += LH; });
-        y += GAP - 12;
-    });
-    const H = y + 6;
-    const svg = svgEl('svg', { viewBox: `0 0 ${W} ${H}`, width: '100%', role: 'img', 'aria-label': 'Linha do tempo dos partidos registrados no TSE' });
-    svg.style.minWidth = '760px'; svg.style.height = 'auto';
-    for (let a = 1985; a <= 2025; a += 5) {
-        svg.appendChild(svgEl('line', { x1: x(a + '-01-01'), x2: x(a + '-01-01'), y1: CAB - 6, y2: H, class: 'stroke-slate-200 dark:stroke-slate-700' }));
-        svg.appendChild(svgEl('text', { x: x(a + '-01-01'), y: 12, 'text-anchor': 'middle', 'font-size': 10, class: 'fill-slate-500' }, a));
-    }
-    rotulosFam.forEach((r) => svg.appendChild(svgEl('text', { x: ML, y: r.y, 'font-size': 10, 'font-weight': 700, class: 'fill-slate-400', 'letter-spacing': '.04em' }, r.texto.toUpperCase())));
+    const cadNo = (n) => (n.vivo ? CADEIRAS[semAcento(nomeNo(n).sigla)] || 0 : 0);
+    let fams = d.familias.filter((f) => !so || f.ids.length > 1 || f.ids.some((i) => porId[i].nomes.length > 1))
+        .map((f) => ({ ...f, cad: f.ids.reduce((s, i) => s + cadNo(porId[i]), 0), vivo: f.ids.some((i) => porId[i].vivo) }));
+    // Os maiores primeiro (quem o leitor mais provavelmente conhece); sem número da Câmara, ordem alfabética.
+    fams.sort((a, b) => (b.vivo - a.vivo) || (b.cad - a.cad) || a.rotulo.localeCompare(b.rotulo, 'pt-BR'));
 
-    const nosPorId = {};
-    fams.forEach((f) => f.ids.forEach((id) => {
-        const n = porId[id], yy = linha[id];
-        const ini = n.inicio ? n.inicio.data : null;
-        const fim = n.fim ? n.fim.data : hoje;
-        const g = svgEl('g', { class: 'barra-no', tabindex: 0, role: 'button', 'data-id': id, 'aria-label': `${n.nomes[n.nomes.length - 1].sigla}: ver detalhes` });
-        const xi = ini ? x(ini) : X0, xf = Math.max(x(fim), xi + 3);
-        if (ini) g.appendChild(svgEl('rect', { x: xi, y: yy, width: xf - xi, height: 16, rx: 3, class: n.vivo ? 'fill-slate-600 dark:fill-slate-400' : 'fill-slate-400 dark:fill-slate-600' }));
-        else {
-            const primeiro = n.nomes[1] && n.nomes[1].desde ? x(n.nomes[1].desde) : xf;
-            g.appendChild(svgEl('rect', { x: xi + .5, y: yy + .5, width: Math.max(xf - xi - 1, 2), height: 15, rx: 3, fill: 'none', 'stroke-dasharray': '4 3', class: 'stroke-slate-500' }));
-        }
-        // nomes ao longo do tempo (recortados dentro da barra)
-        n.nomes.forEach((nm, i) => {
-            const a0 = nm.desde ? x(nm.desde) : xi;
-            const a1 = n.nomes[i + 1] && n.nomes[i + 1].desde ? x(n.nomes[i + 1].desde) : xf;
-            const cid = `c-${id}-${i}`;
-            const cp = svgEl('clipPath', { id: cid });
-            cp.appendChild(svgEl('rect', { x: a0, y: yy, width: Math.max(a1 - a0, 0), height: 16 }));
-            g.appendChild(cp);
-            g.appendChild(svgEl('text', { x: a0 + 4, y: yy + 12, 'font-size': 10, 'font-weight': 600, 'clip-path': `url(#${cid})`,
-                class: ini ? 'fill-white dark:fill-slate-900' : 'fill-slate-700 dark:fill-slate-200' }, nm.sigla));
-            if (i > 0) g.appendChild(svgEl('line', { x1: a0, x2: a0, y1: yy - 2, y2: yy + 18, class: 'stroke-brand-600', 'stroke-width': 2 }));
+    const hoje = new Date().toISOString().slice(0, 10);
+    const ANO0 = 1981, ANO1 = frac(hoje) + 0.4;
+    const W = 1000, ML = 16, MR = 140, RH = 62, CAB = 24;
+    const x = (iso) => ML + (frac(iso) - ANO0) / (ANO1 - ANO0) * (W - ML - MR);
+    const X0 = x('1995-01-01'), XH = x(hoje);
+    const larg = (n) => (n.vivo && cadNo(n) ? Math.min(15, 5 + Math.sqrt(cadNo(n)) * 1.05) : n.vivo ? 8 : 5);
+    const ccid = new Set(d.contexto.map((c) => c.no));
+
+    let y = CAB;
+    const linha = {}, cabecalhos = [];
+    fams.forEach((f) => {
+        cabecalhos.push({ y: y + 14, f });
+        y += 26;
+        f.ids.forEach((id) => { linha[id] = y + 30; y += RH; });
+        y += 10;
+    });
+    const H = y + 4;
+    const svg = svgEl('svg', { viewBox: `0 0 ${W} ${H}`, width: '100%', role: 'img', 'aria-label': 'Mapa em linhas de metrô da evolução dos partidos registrados no TSE' });
+    svg.style.minWidth = '900px'; svg.style.height = 'auto';
+
+    for (let a = 1985; a <= 2025; a += 5) {
+        svg.appendChild(svgEl('line', { x1: x(a + '-01-01'), x2: x(a + '-01-01'), y1: CAB - 6, y2: H, class: 'stroke-slate-200 dark:stroke-slate-700', 'stroke-dasharray': '2 4' }));
+        svg.appendChild(svgEl('text', { x: x(a + '-01-01'), y: 12, 'text-anchor': 'middle', 'font-size': 11, class: 'fill-slate-500' }, a));
+    }
+    cabecalhos.forEach(({ y: yy, f }) => {
+        const cor = corFam(f.rotulo);
+        svg.appendChild(svgEl('rect', { x: ML, y: yy - 11, width: 6, height: 14, rx: 2, fill: cor }));
+        const t = svgEl('text', { x: ML + 12, y: yy, 'font-size': 12, 'font-weight': 800, 'letter-spacing': '.04em', class: 'fill-slate-700 dark:fill-slate-200' }, f.rotulo.toUpperCase());
+        svg.appendChild(t);
+        const sub = [f.cad ? `${f.cad.toLocaleString('pt-BR')} ${f.cad === 1 ? 'deputado' : 'deputados'} hoje` : (f.vivo ? '' : 'sem representação: extinto'),
+            f.ids.some((i) => ccid.has(i)) ? 'tem contexto histórico' : ''].filter(Boolean).join(' · ');
+        if (sub) svg.appendChild(svgEl('text', { x: ML + 12 + f.rotulo.length * 8.6 + 12, y: yy, 'font-size': 11, class: 'fill-slate-500' }, sub));
+    });
+
+    const partes = [];
+    fams.forEach((f) => {
+        const cor = corFam(f.rotulo);
+        f.ids.forEach((id) => {
+            const n = porId[id], cy = linha[id], w = larg(n);
+            const ini = n.inicio ? n.inicio.data : null;
+            const fim = n.fim ? n.fim.data : hoje;
+            const xi = ini ? x(ini) : X0, xf = Math.max(x(fim), xi + 3);
+            const g = svgEl('g', { class: 'barra-no', tabindex: 0, role: 'button', 'data-id': id, 'aria-label': `${nomeNo(n).sigla}: ver detalhes` });
+            const op = n.vivo ? 1 : 0.62;
+            // trecho sem data na fonte (partido extinto, anterior à lista): pontilhado
+            const solidoDe = ini ? xi : (n.nomes[1] && n.nomes[1].desde ? x(n.nomes[1].desde) : xf);
+            if (!ini && solidoDe > xi) g.appendChild(svgEl('line', { x1: xi, x2: solidoDe, y1: cy, y2: cy, stroke: cor, 'stroke-width': w, 'stroke-dasharray': '1 8', 'stroke-linecap': 'round', opacity: op }));
+            if (solidoDe < xf) g.appendChild(svgEl('line', { x1: solidoDe, x2: xf, y1: cy, y2: cy, stroke: cor, 'stroke-width': w, 'stroke-linecap': 'round', opacity: op }));
+            g.appendChild(svgEl('line', { x1: xi, x2: xf, y1: cy, y2: cy, 'stroke-width': Math.max(w, 20), stroke: 'transparent' }));
+            if (!n.vivo) g.appendChild(svgEl('line', { x1: xf, x2: xf, y1: cy - w / 2 - 5, y2: cy + w / 2 + 5, stroke: cor, 'stroke-width': 3, opacity: op }));
+            else g.appendChild(svgEl('path', { d: `M${xf + 2} ${cy - w / 2 - 3} l${w / 2 + 7} ${w / 2 + 3} l-${w / 2 + 7} ${w / 2 + 3} z`, fill: cor }));
+
+            // estações: o primeiro nome e cada mudança de nome ou sigla
+            const est = n.nomes.map((nm, i) => ({ nm, i, x: i === 0 ? (ini ? xi : X0) : x(nm.desde || (ini || hoje)), est: i > 0 || !!ini }));
+            const nomesLb = andares(est.map((e) => ({ ...e })), (e) => e.nm.sigla.length * 7.2 + 8);
+            nomesLb.forEach((e) => {
+                if (e.est) g.appendChild(svgEl('circle', { cx: e.x, cy, r: Math.max(w / 2 + 2.5, 6), fill: '#fff', stroke: cor, 'stroke-width': 3, class: 'fill-white dark:fill-slate-800' }));
+                // o nome atual de um partido vivo já aparece à direita da linha: não repete se a estação está colada no fim
+                if (n.vivo && e.i === n.nomes.length - 1 && xf - e.x < 80) return;
+                g.appendChild(svgEl('text', { x: e.x - 2, y: cy - w / 2 - 7 - e.andar * 13, 'font-size': 12, 'font-weight': e.i === n.nomes.length - 1 ? 800 : 600,
+                    class: 'fill-slate-800 dark:fill-slate-100', opacity: n.vivo || e.i < n.nomes.length - 1 ? 1 : 0.85 }, e.nm.sigla));
+            });
+            const anos = andares(est.filter((e) => e.nm.desde || (e.i === 0 && ini)).map((e) => ({ x: e.x, ano: (e.i === 0 ? ini : e.nm.desde).slice(0, 4) })), () => 30);
+            anos.forEach((e) => g.appendChild(svgEl('text', { x: e.x - 2, y: cy + w / 2 + 14 + e.andar * 12, 'font-size': 10.5, class: 'fill-slate-500' }, e.ano)));
+            if (!n.vivo && n.fim) g.appendChild(svgEl('text', { x: xf + 6, y: cy + 4, 'font-size': 10.5, class: 'fill-slate-500' }, `extinto em ${n.fim.data.slice(0, 4)}`));
+            if (n.vivo) {
+                const sg = nomeNo(n).sigla, cad = cadNo(n);
+                g.appendChild(svgEl('text', { x: xf + w / 2 + 14, y: cy + 1, 'font-size': 13, 'font-weight': 800, class: 'fill-slate-800 dark:fill-slate-100' }, sg));
+                if (cad) g.appendChild(svgEl('text', { x: xf + w / 2 + 14, y: cy + 14, 'font-size': 10.5, class: 'fill-slate-500' }, `${cad.toLocaleString('pt-BR')} dep.`));
+            }
+            g.appendChild(svgEl('title', {}, `${n.nomes.map((m) => m.sigla).join(' → ')}${n.vivo ? ' (em atividade)' : ' (extinto)'}`));
+            g.addEventListener('click', () => detalheNo(id));
+            g.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); detalheNo(id); } });
+            partes.push(g);
         });
-        if (n.vivo) g.appendChild(svgEl('path', { d: `M${xf} ${yy} l8 8 l-8 8 z`, class: 'fill-slate-600 dark:fill-slate-400' }));
-        const t = svgEl('title', {}, `${n.nomes.map((m) => m.sigla).join(' → ')}${n.vivo ? ' (em atividade)' : ' (extinto)'}`);
-        g.appendChild(t);
-        g.addEventListener('click', () => detalheNo(id));
-        g.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); detalheNo(id); } });
-        nosPorId[id] = g;
-        partes.push(g);
-    }));
+    });
+    // fusões e incorporações: a linha que termina faz uma curva e entra na linha que continua
     d.arestas.forEach((a) => {
         if (!(a.de in linha) || !(a.para in linha)) return;
-        const xx = x(a.data), y1 = linha[a.de] + 8, y2 = linha[a.para] + 8;
+        const de = porId[a.de], cor = corFam(fams.find((f) => f.ids.includes(a.de)).rotulo);
+        const xx = x(a.data), y1 = linha[a.de], y2 = linha[a.para], w = larg(de);
         const g = svgEl('g', { class: 'barra-no', tabindex: 0, role: 'button', 'aria-label': `${a.tipo === 'fusao' ? 'Fusão' : 'Incorporação'} de ${dataBr(a.data)}: ver detalhes` });
-        g.appendChild(svgEl('line', { x1: xx, x2: xx, y1, y2, 'stroke-width': 2, class: a.tipo === 'fusao' ? 'stroke-brand-600' : 'stroke-slate-800 dark:stroke-slate-100' }));
-        g.appendChild(svgEl('line', { x1: xx, x2: xx, y1, y2, 'stroke-width': 12, stroke: 'transparent' }));
-        const mk = a.tipo === 'fusao' ? svgEl('circle', { cx: xx, cy: y2, r: 4.5, fill: '#A92823' }) : svgEl('rect', { x: xx - 4, y: y2 - 4, width: 8, height: 8, class: 'fill-slate-800 dark:fill-slate-100' });
-        g.appendChild(mk);
+        const dpath = `M${xx} ${y1} C${xx + 16} ${y1} ${xx + 6} ${y2} ${xx + 22} ${y2}`;
+        g.appendChild(svgEl('path', { d: dpath, fill: 'none', stroke: cor, 'stroke-width': w, 'stroke-linecap': 'round', opacity: 0.85 }));
+        g.appendChild(svgEl('path', { d: dpath, fill: 'none', stroke: 'transparent', 'stroke-width': 20 }));
+        g.appendChild(a.tipo === 'fusao'
+            ? svgEl('circle', { cx: xx + 22, cy: y2, r: 8, 'stroke-width': 3, stroke: '#A92823', class: 'fill-white dark:fill-slate-800' })
+            : svgEl('rect', { x: xx + 14, y: y2 - 8, width: 16, height: 16, rx: 3, 'stroke-width': 3, class: 'fill-white dark:fill-slate-800 stroke-slate-800 dark:stroke-slate-100' }));
         g.appendChild(svgEl('title', {}, `${a.tipo === 'fusao' ? 'Fusão' : 'Incorporação'} — ${dataBr(a.data)}`));
         const abrir = () => detalheAresta(a);
         g.addEventListener('click', abrir);
@@ -243,7 +292,31 @@ function desenharEvolucao() {
     $('evoGrafico').replaceChildren(svg);
 }
 
+// "Comece por aqui": histórias curtas, só com fatos e fonte, para quem não conhece os nomes antigos.
+function desenharCuradas() {
+    const el = $('evoCuradas');
+    if (!EVO.contexto.length) { el.classList.add('hidden'); return; }
+    el.classList.remove('hidden');
+    el.innerHTML = `<p class="text-xs font-semibold text-slate-500 uppercase">Comece por aqui: cinco histórias</p>
+        <p class="mt-2 flex flex-wrap gap-2">${EVO.contexto.map((c) => `<button type="button" data-curada="${esc(c.no)}" class="px-3 py-1.5 rounded-full border border-slate-300 dark:border-slate-600 text-sm font-semibold hover:bg-white dark:hover:bg-slate-800">${esc(c.titulo)}</button>`).join('')}</p>`;
+}
+document.addEventListener('click', (ev) => {
+    const b = ev.target.closest && ev.target.closest('[data-curada]');
+    if (!b) return;
+    detalheNo(b.dataset.curada);
+    const alvo = document.querySelector(`#evoGrafico [data-id="${CSS.escape(b.dataset.curada)}"]`);
+    if (alvo) alvo.scrollIntoView({ behavior: 'smooth', block: 'center' });
+});
+
 const nomeNo = (n) => n.nomes[n.nomes.length - 1];
+function blocoContexto(id) {
+    const c = EVO.contexto.find((x) => x.no === id);
+    if (!c) return '<p class="mt-3 text-xs text-slate-500">Ainda não temos uma nota de contexto histórico para este partido. O TSE registra quando o nome mudou, mas não o motivo.</p>';
+    return `<div class="mt-3 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 p-3">
+        <p class="text-xs font-semibold text-slate-500 uppercase">Contexto histórico: ${esc(c.titulo)}</p>
+        <ul class="mt-1 list-disc pl-5 space-y-1">${c.fatos.map((t) => `<li>${esc(t)}</li>`).join('')}</ul>
+        <p class="mt-2 text-xs text-slate-500">Só fatos com fonte; não atribuímos intenção. Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(c.fonte.url))}">${esc(c.fonte.nome)}</a>.</p></div>`;
+}
 function detalheNo(id) {
     const n = EVO.nos.find((x) => x.id === id);
     const hist = n.nomes.map((m) => `<li><b>${esc(m.sigla)}</b> — ${esc(m.nome)}${m.desde ? `, desde ${esc(dataBr(m.desde))}` : ''}${m.processo ? ` <span class="text-xs text-slate-500">(processo ${esc(m.processo)})</span>` : ''}</li>`).join('');
@@ -258,6 +331,7 @@ function detalheNo(id) {
         <p class="mt-1">${ini}. ${fim}.</p>
         <p class="mt-2 text-xs font-semibold text-slate-500">Nomes e siglas ao longo do tempo</p><ul class="list-disc pl-5">${hist}</ul>
         ${liga ? `<p class="mt-2 text-xs font-semibold text-slate-500">Ligações</p><ul class="list-disc pl-5">${liga}</ul>` : ''}
+        ${blocoContexto(n.id)}
         <p class="mt-2 text-xs text-slate-500">Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(EVO.fonte.url))}">TSE — partidos registrados</a>.</p></div>`;
 }
 function detalheAresta(a) {
@@ -281,7 +355,14 @@ async function iniciarEvolucao() {
         const conf = EVO.conferencia.every((c) => c.confere);
         $('evoFonte').innerHTML = `Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(EVO.fonte.url))}">${esc(EVO.fonte.nome)}</a>. Conferência interna: a data de registro de ${EVO.conferencia.map((c) => esc(c.sigla)).join(', ')} na lista oficial ${conf ? 'coincide' : 'NÃO coincide em algum caso com'} a data da fusão na tabela de fusões.`;
         $('soLigados').addEventListener('change', desenharEvolucao);
+        desenharCuradas();
         desenharEvolucao();
+        // espessura da linha = deputados hoje. Vem depois, sem travar o mapa; se a Câmara estiver fora do ar, o mapa segue sem esse dado.
+        api('/api/bancadas').then((bn) => {
+            const cam = (bn.casas || []).find((c) => c.id === 'camara');
+            CADEIRAS = Object.fromEntries(((cam && cam.partidos) || []).map((p) => [semAcento(p.sigla), p.cadeiras]));
+            desenharEvolucao();
+        }).catch(() => { CADEIRAS = {}; });
     } catch (e) {
         $('evoEstado').innerHTML = mensagemErro(e);
     }
