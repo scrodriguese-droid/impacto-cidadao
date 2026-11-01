@@ -38,3 +38,18 @@ def test_nome_de_lider_casa_no_titulo():
     c = {"titulo": "Paulo Pimenta e Randolfe Rodrigues", "participantes": [], "local": "Palácio da Alvorada"}
     assert ap.classificar(c, ("Paulo Pimenta",)) == ["congresso"]
     assert ap.classificar(c) == []
+
+
+def test_separar_cargo_e_pessoa():
+    assert ap.separar("Ministra da Casa Civil, Miriam Belchior") == ("Ministra da Casa Civil", "Miriam Belchior")
+    # várias pessoas no mesmo título: não tenta adivinhar
+    assert ap.separar("Ministro A, Fulano, e Secretário B, Beltrano") == ("Ministro A, Fulano, e Secretário B, Beltrano", None)
+    assert ap.separar("Reunião de trabalho") == ("Reunião de trabalho", None)
+
+
+def test_area_vem_do_nome_do_ministerio():
+    assert ap.area("Ministro das Relações Exteriores, Mauro Vieira") == "Relações Exteriores"
+    assert ap.area("Ministro da Secretaria de Comunicação Social, Sidônio Palmeira") == "Comunicação Social"
+    assert ap.area("Ministra da Casa Civil, Miriam Belchior") == "Casa Civil"
+    assert ap.area("Chefe do Gabinete Pessoal do Presidente da República, Oswaldo Malatesta") == "Gabinete Pessoal"
+    assert ap.area("Audiência com representantes do setor") is None

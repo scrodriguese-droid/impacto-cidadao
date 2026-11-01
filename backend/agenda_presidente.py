@@ -91,12 +91,37 @@ def classificar(c: dict, nomes: tuple[str, ...] = ()) -> list[str]:
     return cats
 
 
+def separar(texto: str) -> tuple[str, str | None]:
+    """'Ministra da Casa Civil, Miriam Belchior' → ('Ministra da Casa Civil', 'Miriam Belchior').
+    Só separa quando há uma única vírgula e o que vem depois parece um nome; títulos com várias pessoas ficam inteiros."""
+    if texto.count(",") == 1:
+        cargo, nome = (x.strip() for x in texto.split(","))
+        if cargo and nome and len(nome.split()) <= 6 and " e " not in nome:
+            return cargo, nome
+    return texto.strip().rstrip(","), None
+
+
+_RE_AREA = re.compile(r"Minist(?:ro|ra) d[aoe]s? (?:Secretaria (?:de |do |da |dos |das )?)?([^,]+)")
+
+
+def area(titulo: str) -> str | None:
+    """Nome oficial da área (ministério) que aparece no título; sem inventar tema: se não houver, não há etiqueta."""
+    m = _RE_AREA.search(titulo)
+    if m:
+        return m.group(1).strip()
+    if "gabinete pessoal" in _sem_acento(titulo):
+        return "Gabinete Pessoal"
+    return None
+
+
 def _nomes_do_congresso() -> tuple[str, ...]:
     """Nomes de presidentes das Casas e líderes (da base de lideranças); vazio se indisponível."""
     try:
         import governismo
-        l = governismo.liderancas()
-        pessoas = [*(p for p in (l.get("presidentes") or {}).values() if p), *l["governo"], *l["oposicao"], *l["maioria"],
+        # sem esperar a busca dos presidentes (que depende da Câmara e pode demorar): usa só se já estiver guardada
+        l = governismo._memo_agenda("liderancas", governismo._liderancas)
+        pres = (governismo._cache_agenda.get("presidentes") or (0, {}))[1]
+        pessoas = [*(p for p in pres.values() if p), *l["governo"], *l["oposicao"], *l["maioria"],
                    *(g["lider"] for g in l["camara"] + l["senado"])]
         return tuple(sorted({p["nome"] for p in pessoas if p and p.get("nome")}))
     except Exception as exc:  # noqa: BLE001
@@ -119,7 +144,19 @@ def _coletar() -> dict:
             continue
         for c in comps:
             c["categorias"] = classificar(c, nomes)
-        dias.append({"data": d, "compromissos": comps})
+            c["cargo"], c["pessoa"] = separar(c["titulo"])
+            c["area"] = area(c["titulo"])
+            c["acompanhantes"] = [dict(zip(("cargo", "nome"), (x[0], x[1])))
+                                  if x[1] else {"cargo": None, "nome": x[0]} for x in map(separar, c["participantes"])]
+        locais = {c["local"] for c in comps if c["local"]}
+        areas: dict[str, int] = {}
+        for c in comps:
+            if c["area"]:
+                areas[c["area"]] = areas.get(c["area"], 0) + 1
+        dias.append({"data": d, "compromissos": comps,
+                     "local_comum": next(iter(locais)) if len(locais) == 1 and all(c["local"] for c in comps) else None,
+                     "areas": [{"area": a, "n": n} for a, n in sorted(areas.items(), key=lambda x: (-x[1], x[0]))],
+                     "com_congresso": [c["titulo"] for c in comps if "congresso" in c["categorias"]]})
     if not dias:
         raise ErroFonte("Nenhum dia da agenda pôde ser lido.")
     todos = [c for d in dias for c in d["compromissos"]]
@@ -131,6 +168,7 @@ def _coletar() -> dict:
         "e_agendas": "https://eagendas.cgu.gov.br/",
         "notas": [
             "A agenda mostra com quem o Presidente se reúne, não o que foi tratado: a fonte oficial não informa a pauta de cada encontro.",
+            "As áreas (Relações Exteriores, Casa Civil…) são o nome do ministério citado no título do compromisso, sem interpretação de assunto.",
             "Mostramos os últimos dias publicados; a agenda do dia costuma sair ao longo do dia e pode mudar.",
             "As etiquetas (Congresso, ministros, cerimônias, fora de Brasília) são uma classificação automática por palavras no título e nos participantes e podem errar. Congresso inclui presidentes das Casas, líderes e parlamentares citados pelo nome.",
             "Encontros com representantes de setores e empresas, e as agendas de ministros, ficam no e-Agendas da CGU, que exige consulta no próprio site.",
