@@ -280,6 +280,25 @@ def _familias(nos: list[dict], arestas: list[dict]) -> list[list[str]]:
     return list(grupos.values())
 
 
+ARQ_CONTEXTO = RAIZ / "dados" / "partidos" / "contexto.json"
+
+
+def _contexto(nos: list[dict]) -> list[dict]:
+    """Notas históricas curadas (só fatos com fonte), ligadas ao partido que já teve a sigla em `contem`.
+    O TSE não registra o motivo de uma mudança de nome; por isso as notas dizem o que aconteceu, não por quê."""
+    try:
+        notas = json.loads(ARQ_CONTEXTO.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return []
+    saida = []
+    for n in notas:
+        alvo = _chave(n["contem"])
+        no = next((x for x in nos if any(_chave(m["sigla"]) == alvo for m in x["nomes"])), None)
+        if no:
+            saida.append({"no": no["id"], "titulo": n["titulo"], "fatos": n["fatos"], "fonte": n["fonte"]})
+    return saida
+
+
 def evolucao() -> dict:
     def produzir() -> dict:
         f = _ler_tse()
@@ -295,7 +314,7 @@ def evolucao() -> dict:
                 "n_registrados": len(f["registrados"]), "copia_local": bool(f.get("copia_local")), "lido_em": f.get("lido_em")}
     base = _memo("evolucao", produzir)
     return {
-        "consultado_em": _agora(), **base,
+        "consultado_em": _agora(), **base, "contexto": _contexto(base["nos"]),
         "fonte": {"nome": "TSE — Partidos políticos registrados no TSE (lista, fusões, incorporações e mudanças de nome/sigla)",
                   "url": URL_TSE},
         "lacunas": [

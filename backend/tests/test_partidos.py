@@ -56,3 +56,25 @@ def test_alinhar_remove_rotacao_e_reflexao():
     for p in (girado, refletido):
         al = partidos._alinhar(p, ref)
         assert all(abs(al[s][0] - ref[s][0]) < 1e-6 and abs(al[s][1] - ref[s][1]) < 1e-6 for s in ref)
+
+
+def test_contexto_liga_a_nota_ao_partido_que_ja_teve_a_sigla(tmp_path, monkeypatch):
+    arq = tmp_path / "contexto.json"
+    arq.write_text('[{"contem": "PMDB", "titulo": "t", "fatos": ["f"], "fonte": {"nome": "n", "url": "https://x"}},'
+                   ' {"contem": "XYZ", "titulo": "sem partido", "fatos": [], "fonte": {"nome": "n", "url": "https://x"}}]', encoding="utf-8")
+    monkeypatch.setattr(partidos, "ARQ_CONTEXTO", arq)
+    g = partidos._construir({k: [dict(x) for x in v] for k, v in FONTE.items()})
+    nos = g["nos"]
+    notas = partidos._contexto(nos)
+    assert [n["titulo"] for n in notas] == ["t"]        # a nota de sigla que não existe fica de fora
+    alvo = next(n for n in nos if n["id"] == notas[0]["no"])
+    assert [m["sigla"] for m in alvo["nomes"]] == ["PMDB", "MDB"]
+
+
+def test_contexto_ausente_ou_invalido_nao_quebra(tmp_path, monkeypatch):
+    monkeypatch.setattr(partidos, "ARQ_CONTEXTO", tmp_path / "nao-existe.json")
+    assert partidos._contexto([]) == []
+    ruim = tmp_path / "ruim.json"
+    ruim.write_text("não é json", encoding="utf-8")
+    monkeypatch.setattr(partidos, "ARQ_CONTEXTO", ruim)
+    assert partidos._contexto([]) == []

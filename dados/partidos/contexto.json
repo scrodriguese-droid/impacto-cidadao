@@ -1,0 +1,51 @@
+[
+  {
+    "contem": "PRN",
+    "titulo": "De PRN a Agir",
+    "fatos": [
+      "Fernando Collor de Mello foi eleito presidente da República em 1989 pelo PRN (Partido da Reconstrução Nacional).",
+      "A sigla passou a PTC (Partido Trabalhista Cristão) em 2000.",
+      "A troca para Agir foi anunciada em maio de 2021 e aprovada pelo TSE em março de 2022."
+    ],
+    "fonte": {"nome": "Wikipédia — Partido da Reconstrução Nacional", "url": "https://pt.wikipedia.org/wiki/Partido_da_Reconstrução_Nacional"}
+  },
+  {
+    "contem": "PMDB",
+    "titulo": "De MDB a PMDB e de volta a MDB",
+    "fatos": [
+      "O MDB foi criado em 1966, no regime de dois partidos da ditadura militar, e fazia a oposição ao governo.",
+      "A reforma partidária de 1979 voltou a permitir vários partidos e passou a exigir a palavra “partido” no nome das legendas: por isso o MDB virou PMDB, em 1980.",
+      "Em 19 de dezembro de 2017, a convenção nacional do partido aprovou, por 325 votos a 88, a volta ao nome MDB, a legenda que fez oposição durante o regime militar."
+    ],
+    "fonte": {"nome": "Wikipédia — Movimento Democrático Brasileiro (1980)", "url": "https://pt.wikipedia.org/wiki/Movimento_Democrático_Brasileiro_(1980)"}
+  },
+  {
+    "contem": "PFL",
+    "titulo": "De PFL a DEM e a União Brasil",
+    "fatos": [
+      "O PFL (Partido da Frente Liberal) foi fundado em 24 de janeiro de 1985, como dissidência do PDS.",
+      "Em 28 de março de 2007, a convenção aprovou a mudança de nome para Democratas (DEM).",
+      "Em 2021 o DEM e o PSL decidiram se fundir para formar o União Brasil; o TSE aprovou a fusão em 8 de fevereiro de 2022."
+    ],
+    "fonte": {"nome": "Wikipédia — Democratas (Brasil)", "url": "https://pt.wikipedia.org/wiki/Democratas_(Brasil)"}
+  },
+  {
+    "contem": "PPB",
+    "titulo": "A linhagem do PP",
+    "fatos": [
+      "O partido teve estes nomes: ARENA (1966–1979), PDS (1980–1993), PPR (1993–1995), PPB (1995–2003), PP (2003–2017) e Progressistas (desde 2017).",
+      "A troca para Progressistas foi anunciada em 16 de agosto de 2017 e aprovada pelo TSE em 11 de setembro de 2018."
+    ],
+    "fonte": {"nome": "Wikipédia — Progressistas", "url": "https://pt.wikipedia.org/wiki/Progressistas"}
+  },
+  {
+    "contem": "PPS",
+    "titulo": "De PPS a Cidadania",
+    "fatos": [
+      "O PPS foi fundado em 1992 por parte da executiva nacional do PCB; o registro é de 19 de março de 1992.",
+      "O nome mudou para Cidadania em março de 2019, com aprovação do TSE em setembro de 2019.",
+      "Em 2022 o partido formou a Federação PSDB Cidadania para as eleições daquele ano."
+    ],
+    "fonte": {"nome": "Wikipédia — Cidadania (partido político)", "url": "https://pt.wikipedia.org/wiki/Cidadania_(partido_político)"}
+  }
+]
