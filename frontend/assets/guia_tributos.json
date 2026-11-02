@@ -643,5 +643,157 @@
       "conferencia": "Os totais não foram reconciliados com os 3,51% do PIB que o Tesouro divulgou para o conjunto das transferências de 2024, porque os arquivos não trazem as partes necessárias e têm os problemas acima.",
       "ano_anterior": "O mesmo conjunto de 2024 tinha falhas piores: faltava novembro nos arquivos dos estados, e os valores de setembro vinham em centavos, sem vírgula (um FPE mensal de R$ 983 bilhões, se lido como está)."
     }
+  },
+  "beneficios": {
+    "titulo": "Isenções, benefícios fiscais e desonerações",
+    "intro": "É o contrário de um tributo: o governo escolhe não cobrar. O nome técnico é gasto tributário ou renúncia de receita. Aqui estão o que é, quanto custa e onde conferir.",
+    "tipo_titulo": "Que tipo de coisa é isso?",
+    "tipo_texto": "Não é um tributo: é um subsídio indireto. Em vez de cobrar o imposto e depois pagar o setor com dinheiro do orçamento, o governo abre mão de cobrar parte dele. Na contabilidade pública, isso se chama gasto tributário (tax expenditure em inglês).",
+    "caminhos": [
+      {
+        "titulo": "Subsídio direto",
+        "tom": "dir",
+        "passos": [
+          "O governo cobra o tributo.",
+          "O dinheiro entra no caixa.",
+          "O Congresso vota o gasto na lei orçamentária, todo ano.",
+          "O governo paga ao setor."
+        ]
+      },
+      {
+        "titulo": "Gasto tributário",
+        "tom": "ind",
+        "passos": [
+          "O governo deixa de cobrar parte do tributo.",
+          "O dinheiro nunca entra no caixa.",
+          "Não aparece na votação anual do orçamento.",
+          "O setor fica com o valor."
+        ]
+      }
+    ],
+    "mesmo_efeito": "Para as contas do governo, o efeito é parecido: o dinheiro que deixa de entrar faz falta do mesmo jeito. A diferença está na visibilidade. A despesa direta precisa ser votada todo ano. Muitos benefícios fiscais são aprovados uma vez e continuam valendo por anos, até a lei estabelecer um prazo ou alguém pedir revisão.",
+    "numeros_titulo": "Quanto custa, hoje, só a União",
+    "numeros_nota": "Projeção da Receita Federal para o PLOA {ano}, em reais correntes. Cobre só os tributos federais: os benefícios de ICMS (estados) e de IPTU e ISS (municípios) não estão nesta conta. Cada recorte soma o mesmo total.",
+    "visoes": [
+      [
+        "beneficio",
+        "Por benefício"
+      ],
+      [
+        "tributo",
+        "Por tributo"
+      ],
+      [
+        "area",
+        "Por área"
+      ]
+    ],
+    "glosas": {
+      "Simples Nacional": "Regime com alíquotas menores e pagamento unificado para pequenas empresas.",
+      "Zona Franca de Manaus e Áreas de Livre Comércio": "Incentivos para produzir e vender em áreas específicas da região Norte.",
+      "MEI - Microempreendedor Individual": "Contribuição fixa e baixa para quem trabalha por conta própria até o limite de faturamento.",
+      "Deduções do Rendimento Tributável - IRPF": "Gastos com saúde, educação e dependentes que reduzem o Imposto de Renda de quem declara.",
+      "Entidades Sem Fins Lucrativos - Imunes / Isentas": "Instituições de educação, saúde e assistência social que não pagam parte dos tributos.",
+      "Poupança e Títulos de Crédito - Setor Imobiliário e do Agronegócio ": "Rendimentos de poupança e de títulos do setor imobiliário e do agronegócio que não pagam Imposto de Renda.",
+      "Medicamentos, Produtos Farmacêuticos e Equipamentos Médicos": "Tributos reduzidos ou zerados sobre remédios e equipamentos de saúde.",
+      "Livros": "Papel, livros e publicações com tributos reduzidos ou zerados.",
+      "Desoneração da Folha de Salários": "Setores que pagam sobre o faturamento em vez de sobre a folha de pagamento."
+    },
+    "teoria_titulo": "Para que existem, na teoria",
+    "teoria": [
+      {
+        "t": "Estimular o que beneficia todo mundo",
+        "p": "Reduzir imposto de quem investe em pesquisa ou em energia limpa. A empresa arrisca, mas a inovação beneficia o país inteiro."
+      },
+      {
+        "t": "Baratear o que é essencial",
+        "p": "Tributos menores sobre alimentos básicos, remédios e livros. Como o pobre gasta mais da renda com isso, o benefício reduz o peso do sistema sobre ele."
+      },
+      {
+        "t": "Levar a produção para longe do eixo Sul-Sudeste",
+        "p": "Incentivos para atrair fábricas a regiões mais pobres ou remotas, como a Zona Franca de Manaus e os polos do Nordeste."
+      }
+    ],
+    "desvio_titulo": "Onde costuma dar errado",
+    "desvio_aviso": "São críticas frequentes da literatura de finanças públicas. Não valem para todo benefício: cada um deve ser avaliado pelos seus resultados.",
+    "desvios": [
+      {
+        "t": "Captura por quem tem mais lobby",
+        "p": "Setores bem organizados conseguem privilégios em nome do emprego, sem mostrar o que dão em troca."
+      },
+      {
+        "t": "Alguém paga a conta",
+        "p": "Quando o governo abre mão de receita de um grupo, o dinheiro pode ser recuperado em outros tributos, muitas vezes sobre o consumo, que pesa mais sobre quem ganha menos."
+      },
+      {
+        "t": "Falta de avaliação",
+        "p": "Nem sempre há meta para medir se os empregos prometidos surgiram ou se a empresa só aumentou a margem de lucro."
+      },
+      {
+        "t": "Guerra fiscal entre estados",
+        "p": "Estados e municípios competem com isenções de ICMS e de ISS para atrair fábricas, e o conjunto do país arrecada menos."
+      }
+    ],
+    "sintese": "Na teoria de finanças públicas, o benefício fiscal é um instrumento legítimo. O risco aparece quando falta prazo de validade, meta mensurável e divulgação para a sociedade.",
+    "onde_titulo": "Onde conferir os dados oficiais",
+    "onde": [
+      {
+        "esfera": "União",
+        "cor": "uniao",
+        "itens": [
+          {
+            "nome": "Demonstrativo dos Gastos Tributários (Receita Federal)",
+            "texto": "Publicado todo ano junto com o projeto de lei orçamentária. Traz a renúncia estimada por tributo, por benefício e por área, em planilhas para baixar.",
+            "url": "https://www.gov.br/receitafederal/pt-br/centrais-de-conteudo/publicacoes/relatorios/renuncia/gastos-tributarios-ploa"
+          },
+          {
+            "nome": "Anexo de renúncia de receita da LDO",
+            "texto": "A lei de diretrizes orçamentárias traz a estimativa de renúncia e como ela será compensada.",
+            "url": "https://www.gov.br/planejamento/pt-br/assuntos/orcamento/orcamentos-anuais/2026/pldo/16-anexo-iv-15-renuncia-de-receita-2026.pdf"
+          },
+          {
+            "nome": "Contas do Presidente da República (TCU)",
+            "texto": "O Tribunal de Contas da União emite parecer anual sobre as contas do governo federal, que inclui os benefícios tributários.",
+            "url": "https://sites.tcu.gov.br/acervo-de-contas-do-presidente/"
+          }
+        ]
+      },
+      {
+        "esfera": "Estados",
+        "cor": "estado",
+        "itens": [
+          {
+            "nome": "Convênios do Confaz",
+            "texto": "Benefício de ICMS só vale se os estados aprovarem em convênio no Conselho Nacional de Política Fazendária. O site reúne o histórico.",
+            "url": "https://www.confaz.fazenda.gov.br/legislacao/convenios"
+          },
+          {
+            "nome": "Secretaria da Fazenda do seu estado",
+            "texto": "Cada estado publica os seus incentivos e a estimativa de renúncia no portal da transparência e na lei de diretrizes orçamentárias.",
+            "url": ""
+          }
+        ]
+      },
+      {
+        "esfera": "Municípios",
+        "cor": "municipio",
+        "itens": [
+          {
+            "nome": "Portal de transparência da prefeitura",
+            "texto": "A Lei de Responsabilidade Fiscal (art. 14) exige estimativa e compensação da renúncia de receita, normalmente na lei de diretrizes orçamentárias municipal. As renúncias mais comuns são de IPTU e ISS.",
+            "url": ""
+          }
+        ]
+      }
+    ],
+    "termos_titulo": "Palavras para procurar nos relatórios",
+    "termos": [
+      "Gasto tributário",
+      "Renúncia de receita",
+      "Crédito presumido",
+      "Crédito outorgado",
+      "Regime especial de tributação",
+      "Desoneração da folha de pagamento"
+    ]
   }
 }
