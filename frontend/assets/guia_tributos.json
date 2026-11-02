@@ -314,5 +314,145 @@
   "raros_titulo": "Casos especiais",
   "raros_texto": "Cobranças de empresas, do comércio exterior ou de setores específicos. Provavelmente você nunca vai pagar uma guia delas como pessoa física.",
   "definicao": "Tributo é o dinheiro que a lei obriga você, ou uma empresa, a pagar ao governo. Não é doação nem preço de produto: quem não paga pode ter multa e dívida. Existem três tipos, e o que muda é o motivo da cobrança e o destino do dinheiro.",
-  "nao_tributo_titulo": "Cobranças que parecem tributo, mas não são"
+  "nao_tributo_titulo": "Cobranças que parecem tributo, mas não são",
+  "mapa": {
+    "fonte": "Receita Federal, Carga Tributária no Brasil 2024 (Tabela 02)",
+    "url": "https://www.gov.br/receitafederal/pt-br/centrais-de-conteudo/publicacoes/estudos/carga-tributaria/carga-tributaria-no-brasil-2024",
+    "nota": "Arrecadação bruta, antes de qualquer repasse: é o que cada nível de governo recolhe de tributos. Não inclui FGTS nem Sistema S.",
+    "anos": {
+      "2024": {
+        "pib_pct": 32.2,
+        "total_rs_mi": 3782085.15,
+        "entes": [
+          {
+            "id": "uniao",
+            "nome": "União",
+            "quem": "Governo Federal",
+            "rs_mi": 2501369.73,
+            "pct_pib": 21.3,
+            "pct": 66.14,
+            "fontes": "Imposto de Renda, PIS, Cofins, CSLL e contribuição previdenciária"
+          },
+          {
+            "id": "estado",
+            "nome": "Estados e DF",
+            "quem": "Governos estaduais",
+            "rs_mi": 993767.21,
+            "pct_pib": 8.46,
+            "pct": 26.28,
+            "fontes": "ICMS e IPVA"
+          },
+          {
+            "id": "municipio",
+            "nome": "Municípios",
+            "quem": "Prefeituras",
+            "rs_mi": 286948.2,
+            "pct_pib": 2.44,
+            "pct": 7.59,
+            "fontes": "ISS, IPTU e ITBI"
+          }
+        ]
+      },
+      "2023": {
+        "pib_pct": 30.22,
+        "total_rs_mi": 3307581.95,
+        "entes": [
+          {
+            "id": "uniao",
+            "nome": "União",
+            "quem": "Governo Federal",
+            "rs_mi": 2177440.77,
+            "pct_pib": 19.9,
+            "pct": 65.83,
+            "fontes": "Imposto de Renda, PIS, Cofins, CSLL e contribuição previdenciária"
+          },
+          {
+            "id": "estado",
+            "nome": "Estados e DF",
+            "quem": "Governos estaduais",
+            "rs_mi": 876813.38,
+            "pct_pib": 8.01,
+            "pct": 26.51,
+            "fontes": "ICMS e IPVA"
+          },
+          {
+            "id": "municipio",
+            "nome": "Municípios",
+            "quem": "Prefeituras",
+            "rs_mi": 253327.8,
+            "pct_pib": 2.31,
+            "pct": 7.66,
+            "fontes": "ISS, IPTU e ITBI"
+          }
+        ]
+      }
+    },
+    "repasse_pib": 3.51,
+    "repasse_fonte": "Tesouro Nacional, Carga Tributária Bruta do Governo Geral 2024",
+    "repasse_url": "https://www.gov.br/tesouronacional/pt-br/noticias/carga-tributaria-bruta-do-governo-geral-atinge-32-32-do-pib-em-2024"
+  },
+  "cascata": {
+    "frase": "Quem arrecada mais divide uma parte, por obrigação da Constituição, com quem arrecada menos e presta os serviços do dia a dia.",
+    "trechos": [
+      {
+        "de": "União",
+        "para": "Estados",
+        "cor": "estado",
+        "itens": [
+          [
+            "FPE",
+            "21,5% do Imposto de Renda e do IPI, dividido entre os estados (CF, art. 159, I, a)."
+          ],
+          [
+            "IPI-Exportação",
+            "10% do IPI vai para os estados que mais exportam (art. 159, II)."
+          ],
+          [
+            "Cide-Combustíveis",
+            "29% vai para os estados (art. 159, III)."
+          ]
+        ]
+      },
+      {
+        "de": "União",
+        "para": "Municípios",
+        "cor": "municipio",
+        "itens": [
+          [
+            "FPM",
+            "25,5% do Imposto de Renda e do IPI, dividido entre as prefeituras: 22,5% mais três parcelas extras de 1% (art. 159, I, b, d, e, f)."
+          ],
+          [
+            "ITR",
+            "50% do imposto rural vai para o município onde fica a terra; se a prefeitura fiscalizar e cobrar, fica com 100% (art. 158, II)."
+          ]
+        ]
+      },
+      {
+        "de": "Estados",
+        "para": "Municípios",
+        "cor": "municipio",
+        "itens": [
+          [
+            "ICMS",
+            "25% do ICMS vai para as prefeituras do estado (art. 158, IV)."
+          ],
+          [
+            "IPVA",
+            "50% do IPVA fica com o município onde o veículo está emplacado (art. 158, III)."
+          ],
+          [
+            "Cotas dos repasses federais",
+            "Dos 10% do IPI-Exportação e dos 29% da Cide que chegam ao estado, 25% seguem para as prefeituras (art. 159, §§ 3º e 4º)."
+          ]
+        ]
+      }
+    ],
+    "imposto_titulo": "Impostos: a Constituição manda dividir",
+    "imposto_texto": "O Imposto de Renda, o IPI, o ICMS, o IPVA e o ITR entram em regras de divisão. Parte do dinheiro que você paga ao governo federal volta para a sua cidade.",
+    "contrib_titulo": "Contribuições: ficam com quem cobra",
+    "contrib_texto": "PIS, Cofins, CSLL e as contribuições da previdência não entram nessa divisão: ficam com a União, para a finalidade definida em lei. A exceção é a Cide-Combustíveis.",
+    "retido_titulo": "O Imposto de Renda dos servidores fica em casa",
+    "retido_texto": "O imposto retido na fonte dos salários de servidores estaduais e municipais fica com o próprio estado ou município que paga (CF, arts. 157, I, e 158, I)."
+  }
 }
