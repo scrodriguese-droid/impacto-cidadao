@@ -27,6 +27,13 @@
         .dim-lin { display: grid; grid-template-columns: 11rem 1fr; gap: 1rem; border-top: 1px solid var(--line); padding: .9rem 0; margin-top: .8rem; }
         .dim-rot { font: 800 .68rem/1.3 var(--fonte-texto); letter-spacing: .12em; text-transform: uppercase; border-left: 6px solid var(--cor); padding-left: .6rem; }
         @media (max-width: 720px) { .dim-pers { flex-direction: column; } .dim-per { flex: none !important; } .dim-lin { grid-template-columns: 1fr; gap: .4rem; } }
+            .radar-itens li:has(> .primario-det) { display: block; }
+        .primario-sum { cursor: pointer; list-style: none; display: grid; grid-template-columns: 1fr auto; gap: .15rem 1rem; }
+        .primario-conv { grid-column: 1 / -1; }
+        .primario-sum::-webkit-details-marker { display: none; }
+        .primario-conv { display: block; margin-top: .3rem; font-size: .75rem; font-weight: 700; color: #A92823; text-decoration: underline; text-underline-offset: 2px; }
+        .primario-det[open] .primario-seta { display: inline-block; transform: rotate(180deg); }
+        .primario-corpo { margin-top: .5rem; }
     </style>
     <link rel="stylesheet" href="assets/brutalista.css">
 </head>
@@ -526,9 +533,14 @@ const negrito = (t) => esc(t).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>'); 
 /* Política fiscal × política monetária: cada lado com os seus números (Banco Central) e a tendência contra 12 meses antes */
 function itemConfronto(i) {
     const seta = i.tendencia ? ` · <b class="radar-seta radar-seta--${i.tendencia}">${SETA[i.tendencia]}</b>` : '';
-    return `<li><span class="radar-item-nome">${esc(i.nome)}</span>
+    const corpo = `<span class="radar-item-nome">${esc(i.nome)}</span>
         <span class="radar-item-valor">${esc(i.valor)}</span>
-        <span class="radar-item-nota">${esc(i.detalhe)}${seta}${i.antes ? ` (${esc(i.antes)})` : ''}</span></li>`;
+        <span class="radar-item-nota">${esc(i.detalhe)}${seta}${i.antes ? ` (${esc(i.antes)})` : ''}</span>`;
+    if (i.id !== 'primario') return `<li>${corpo}</li>`;
+    // clicar abre a evolução desde 2002, por ano e por governo (a série só é buscada na primeira abertura)
+    return `<li><details class="primario-det"><summary class="primario-sum">${corpo}
+        <span class="primario-conv"><i class="fa-solid fa-chart-line mr-1" aria-hidden="true"></i>Ver a evolução por ano e por governo <span class="primario-seta" aria-hidden="true">▾</span></span></summary>
+        <div class="primario-corpo"></div></details></li>`;
 }
 function colunaConfronto(c) {
     return `<section class="radar-lado"><p class="radar-pergunta">${esc(c.nome)}</p><h3 class="radar-secao-h">${esc(c.quem)}</h3>
@@ -604,6 +616,105 @@ function painelSocial(sc) {
 const MESES_ABREV = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
 const rotuloMes = (m) => `${MESES_ABREV[Number(m.slice(5, 7)) - 1]}/${m.slice(0, 4)}`;
 const fnum = (v, d = 1) => `${v < 0 ? '−' : ''}${Math.abs(v).toLocaleString('pt-BR', { minimumFractionDigits: d, maximumFractionDigits: d })}`;
+/* Resultado primário: item expansível com a evolução desde 2002, faixas por governo e uma tabela por governo.
+   Acima de zero = superávit; abaixo = déficit (o Banco Central publica com o sinal invertido; só o sinal muda). */
+let PRIMARIO = null, PRIMARIO_CARREGANDO = false;
+const mesNum = (m) => Number(m.slice(0, 4)) + (Number(m.slice(5, 7)) - 1) / 12;
+const pctSinal = (v) => `${v < 0 ? '−' : v > 0 ? '+' : ''}${fnum(Math.abs(v), 2)}%`;
+
+function graficoPrimario(h) {
+    const W = 760, L = 44, R = 64, TOPO = 52, ALT = 230, FUNDO = TOPO + ALT, H = FUNDO + 26;
+    const pts = h.pontos;
+    const t0 = mesNum(pts[0].mes), t1 = mesNum(pts[pts.length - 1].mes) + 1 / 12;
+    const x = (m) => L + (W - L - R) * (mesNum(m) - t0) / (t1 - t0);
+    const vs = pts.map((p) => p.valor);
+    const lo = Math.floor(Math.min(...vs) - 0.5), hi = Math.ceil(Math.max(...vs) + 0.5);
+    const y = (v) => TOPO + ALT * (1 - (v - lo) / (hi - lo));
+    const y0 = y(0);
+    const passo = hi - lo > 12 ? 4 : 2;
+    let grade = '';
+    for (let v = Math.ceil(lo / passo) * passo; v <= hi; v += passo) {
+        grade += `<line class="${v === 0 ? 'stroke-slate-500' : 'stroke-slate-200 dark:stroke-slate-700'}" stroke-width="${v === 0 ? 1.4 : 1}" x1="${L}" x2="${W - R}" y1="${y(v).toFixed(1)}" y2="${y(v).toFixed(1)}"/>
+            <text class="fill-slate-500" font-size="11" x="${L - 6}" y="${(y(v) + 4).toFixed(1)}" text-anchor="end">${v}%</text>`;
+    }
+    // faixas dos governos (alternando dois tons neutros) e o nome de cada um em dois andares, para não colidirem
+    const ini = pts[0].mes, fim = pts[pts.length - 1].mes;
+    let faixas = '', nomes = '';
+    h.governos.filter((g) => g.meses >= 6).forEach((g, k) => {
+        const a = x(g.inicio < ini ? ini : g.inicio), b = x(!g.fim || g.fim > fim ? fim : g.fim) + (W - L - R) / (t1 - t0) / 12;
+        faixas += `<rect x="${a.toFixed(1)}" y="${TOPO}" width="${(b - a).toFixed(1)}" height="${ALT}" class="${k % 2 ? 'fill-slate-100 dark:fill-slate-700/40' : 'fill-slate-50 dark:fill-slate-800/0'}"/>
+            <line x1="${a.toFixed(1)}" x2="${a.toFixed(1)}" y1="${TOPO - 14}" y2="${FUNDO}" class="stroke-slate-300 dark:stroke-slate-600" stroke-dasharray="2 3"/>`;
+        nomes += `<text class="fill-slate-700 dark:fill-slate-200" font-size="11" font-weight="700" x="${((a + b) / 2).toFixed(1)}" y="${TOPO - 20 + (k % 2) * 13}" text-anchor="middle">${esc(g.rotulo)}</text>`;
+    });
+    const caminho = pts.map((p, i) => `${i ? 'L' : 'M'}${x(p.mes).toFixed(1)} ${y(p.valor).toFixed(1)}`).join('');
+    const area = `${caminho} L${x(fim).toFixed(1)} ${y0.toFixed(1)} L${x(ini).toFixed(1)} ${y0.toFixed(1)} Z`;
+    const mes = (m) => rotuloMes(m);
+    const ult = pts[pts.length - 1];
+    const marca = (p, dy, txt) => `<circle cx="${x(p.mes).toFixed(1)}" cy="${y(p.valor).toFixed(1)}" r="3.6" class="fill-slate-800 dark:fill-slate-100"/>
+        <text class="fill-slate-800 dark:fill-slate-100" font-size="11" font-weight="700" x="${Math.min(Math.max(x(p.mes), L + 40), W - R - 40).toFixed(1)}" y="${(y(p.valor) + dy).toFixed(1)}" text-anchor="middle">${txt}</text>`;
+    let anos = '';
+    for (let a = Math.ceil(t0 / 4) * 4; a <= Math.floor(t1); a += 4) {
+        anos += `<line x1="${x(a + '-01').toFixed(1)}" x2="${x(a + '-01').toFixed(1)}" y1="${FUNDO}" y2="${FUNDO + 4}" class="stroke-slate-400"/>
+            <text class="fill-slate-500" font-size="11" x="${x(a + '-01').toFixed(1)}" y="${FUNDO + 17}" text-anchor="middle">${a}</text>`;
+    }
+    // um ponto por dezembro (o resultado do ano), com dica ao passar o cursor
+    const pontosAno = h.anos.map((a) => `<circle cx="${x(a.mes).toFixed(1)}" cy="${y(a.valor).toFixed(1)}" r="4" class="fill-white dark:fill-slate-800 stroke-slate-700 dark:stroke-slate-200" stroke-width="1.6"><title>${a.parcial ? 'até ' : ''}${esc(mes(a.mes))}: ${a.valor < 0 ? 'déficit' : 'superávit'} de ${fnum(Math.abs(a.valor), 2)}% do PIB${a.governo ? ' · ' + esc(a.governo) : ''}</title></circle>`).join('');
+    const alt = `Resultado primário do setor público em % do PIB, acumulado em 12 meses, de ${mes(ini)} a ${mes(fim)}. Melhor momento: ${pctSinal(h.melhor.valor)} em ${mes(h.melhor.mes)}; pior: ${pctSinal(h.pior.valor)} em ${mes(h.pior.mes)}; último valor: ${pctSinal(ult.valor)}.`;
+    return `<svg viewBox="0 0 ${W} ${H}" class="w-full min-w-[640px]" role="img" aria-label="${esc(alt)}">
+        ${faixas}${grade}
+        <defs><clipPath id="prAcima"><rect x="${L}" y="${TOPO}" width="${W - L - R}" height="${(y0 - TOPO).toFixed(1)}"/></clipPath>
+              <clipPath id="prAbaixo"><rect x="${L}" y="${y0.toFixed(1)}" width="${W - L - R}" height="${(FUNDO - y0).toFixed(1)}"/></clipPath></defs>
+        <path d="${area}" fill="#0f766e" fill-opacity=".28" clip-path="url(#prAcima)"/><path d="${area}" fill="#A92823" fill-opacity=".28" clip-path="url(#prAbaixo)"/>
+        <path d="${caminho}" fill="none" class="stroke-slate-800 dark:stroke-slate-100" stroke-width="1.8" stroke-linejoin="round"/>
+        ${pontosAno}${marca(h.melhor, -9, `${pctSinal(h.melhor.valor)} (${mes(h.melhor.mes)})`)}${marca(h.pior, 17, `${pctSinal(h.pior.valor)} (${mes(h.pior.mes)})`)}
+        <circle cx="${x(ult.mes).toFixed(1)}" cy="${y(ult.valor).toFixed(1)}" r="4" fill="#A92823"/>
+        <text class="fill-slate-800 dark:fill-slate-100" font-size="12" font-weight="800" x="${(x(ult.mes) + 8).toFixed(1)}" y="${(y(ult.valor) + 4).toFixed(1)}">${pctSinal(ult.valor)}</text>
+        <text class="fill-slate-500" font-size="10.5" x="${L}" y="${TOPO - 36}">% do PIB, acumulado em 12 meses · acima de zero = superávit · abaixo = déficit</text>
+        ${nomes}${anos}</svg>`;
+}
+
+function tabelaGovernosPrimario(h) {
+    const linhas = h.governos.filter((g) => g.meses >= 6).map((g) => `<tr class="border-t border-slate-100 dark:border-slate-700 align-top">
+        <td class="py-1.5 pr-3 font-semibold whitespace-nowrap">${esc(g.rotulo)}<span class="block text-[11px] font-normal text-slate-500">${esc(rotuloMes(g.primeiro.mes))} a ${esc(rotuloMes(g.ultimo.mes))}${g.parcial && !g.fim ? ' (em curso)' : ''}</span></td>
+        <td class="py-1.5 pr-3 tabular-nums">${pctSinal(g.media)}</td>
+        <td class="py-1.5 pr-3 tabular-nums">${pctSinal(g.primeiro.valor)} → ${pctSinal(g.ultimo.valor)}</td>
+        <td class="py-1.5 pr-3 tabular-nums">${pctSinal(g.melhor.valor)} <span class="text-[11px] text-slate-500">${esc(rotuloMes(g.melhor.mes))}</span></td>
+        <td class="py-1.5 tabular-nums">${pctSinal(g.pior.valor)} <span class="text-[11px] text-slate-500">${esc(rotuloMes(g.pior.mes))}</span></td></tr>`).join('');
+    return `<div class="overflow-x-auto"><table class="w-full text-sm mt-3"><thead><tr class="text-left text-xs text-slate-500">
+        <th class="pb-1 pr-3">Governo</th><th class="pb-1 pr-3" title="Média dos valores mensais (cada um já acumula 12 meses)">Média</th><th class="pb-1 pr-3">Do começo ao fim</th><th class="pb-1 pr-3">Melhor momento</th><th class="pb-1">Pior momento</th></tr></thead>
+        <tbody>${linhas}</tbody></table></div>`;
+}
+
+function corpoPrimario(h) {
+    const anos = h.anos.map((a) => `<tr><td>${a.ano}${a.parcial ? ' (até ' + esc(rotuloMes(a.mes)) + ')' : ''}</td><td>${esc(a.governo || '—')}</td><td>${pctSinal(a.valor)}</td><td>${a.valor < 0 ? 'déficit' : 'superávit'}</td></tr>`).join('');
+    return `<p class="text-sm mt-2">${esc(h.resumo)}</p>
+        <div class="mt-3 overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700 p-2">${graficoPrimario(h)}</div>
+        <p class="mt-2 text-xs text-slate-600 dark:text-slate-400">Cada círculo é o resultado de um ano (acumulado até dezembro); passe o cursor para ver o valor. As faixas mostram quem estava na Presidência em cada época: são uma régua do tempo, não uma explicação do resultado.</p>
+        ${tabelaGovernosPrimario(h)}
+        <details class="mt-2"><summary class="text-sm cursor-pointer">Ver o resultado de cada ano</summary>
+            <table class="radar-tabela"><thead><tr><th>Ano</th><th>Governo em dezembro</th><th>Resultado primário (% do PIB)</th><th></th></tr></thead><tbody>${anos}</tbody></table></details>
+        <ul class="mt-3 text-xs text-slate-500 list-disc pl-5 space-y-1">${h.notas.map((n) => `<li>${esc(n)}</li>`).join('')}
+            <li>Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(h.fonte.url))}">${esc(h.fonte.nome)}</a>.</li></ul>`;
+}
+
+async function abrirPrimario(det) {
+    const alvo = det.querySelector('.primario-corpo');
+    if (!alvo || PRIMARIO_CARREGANDO) return;
+    if (PRIMARIO) { alvo.innerHTML = corpoPrimario(PRIMARIO); return; }
+    PRIMARIO_CARREGANDO = true;
+    alvo.innerHTML = '<p class="text-sm text-slate-500" aria-live="polite"><i class="fa-solid fa-spinner fa-spin mr-1.5" aria-hidden="true"></i>Buscando a série do Banco Central…</p>';
+    try {
+        PRIMARIO = await api('/api/macro/historico-primario');
+        alvo.innerHTML = corpoPrimario(PRIMARIO);
+    } catch (e) {
+        alvo.innerHTML = `${mensagemErro(e)} <p class="mt-2 text-xs">O Banco Central às vezes recusa consultas por alguns minutos. Feche e abra de novo mais tarde.</p>`;
+    } finally { PRIMARIO_CARREGANDO = false; }
+}
+document.addEventListener('toggle', (ev) => {
+    const d = ev.target;
+    if (d.matches && d.matches('details.primario-det') && d.open && !d.dataset.carregado) { d.dataset.carregado = '1'; abrirPrimario(d).then(() => { if (!PRIMARIO) delete d.dataset.carregado; }); }
+}, true);
+
 function graficoLinhaTempo(h, compacto) {
     const W = compacto ? 360 : 760, L = compacto ? 32 : 40, R = compacto ? 58 : 78;
     const TAG = compacto ? 30 : 42, GAP = compacto ? 34 : 40;
