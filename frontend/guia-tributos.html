@@ -33,6 +33,10 @@
         .dark .pan-nota { background: #0f172a; }
         .pan-nota p + p { margin-top: .4rem; }
         .pan-nota .pan-nota-t { font-weight: 800; font-size: .72rem; letter-spacing: .06em; text-transform: uppercase; margin: 0 0 .3rem; }
+        .tl-chips button[aria-pressed="true"] { background: #111 !important; color: #fff !important; }
+        .det-trib { margin-top: .6rem; padding: .75rem .85rem; border: 2px solid #111; border-left-width: 6px; background: #fff; }
+        .dark .det-trib { background: #0f172a; border-color: #94a3b8; }
+        .det-trib .gt-sigla { font-size: 1.25rem; }
         .pan-fonte { font-size: .68rem; color: #64748b; margin-top: .6rem; line-height: 1.4; }
         /* balança: a viga pende para o lado mais pesado quando entra na tela */
         .bal-viga { transform-box: view-box; transform-origin: 130px 38px; transition: transform 1.6s cubic-bezier(.3, 1.5, .5, 1); }
@@ -243,7 +247,7 @@ document.addEventListener('click', (ev) => {
 });
 
 /* ---------- 1. Entenda ---------- */
-// Os três tipos, cada um com TODOS os tributos daquele tipo (só siglas, agrupadas por quem cobra); clicar leva ao catálogo.
+// Os três tipos, cada um com TODOS os tributos daquele tipo (só siglas, agrupadas por quem cobra); clicar abre a definição no próprio card.
 const ORDEM_ESFERA = ['União', 'Estado', 'Município', 'Estados e municípios', 'Todas as esferas', 'Varia'];
 const TIPO_DA_ESPECIE = { imposto: ['Imposto'], contribuicao: ['Contribuição'], taxa: ['Taxa'] };
 const chipsPorEsfera = (itens) => {
@@ -266,16 +270,43 @@ function painelEntenda() {
         <p class="text-base leading-relaxed" style="max-width:70ch">${esc(g.definicao)}</p>
         <div class="trib-especies">${cartoes}</div>
         <p class="ficha-nota mt-3"><b>${esc(g.nao_tributo_titulo)}:</b> ${nao.map((i) => `<button type="button" data-sigla="${esc(i.sigla)}" title="${esc(i.nome)}" class="underline" style="border:0!important;background:none!important;padding:0!important;text-transform:none;letter-spacing:0;font-weight:700">${esc(i.sigla)}</button>`).join(', ')}.</p>
-        <p class="ficha-nota">Toque em uma sigla para ver o que ela é, quem paga e para onde vai no catálogo.</p>
+        <p class="ficha-nota">Toque em uma sigla para ver o que ela é, quem paga e para onde vai.</p>
         <div class="mt-5 flex flex-wrap gap-2">
             <button type="button" data-aba="onde" class="${pillCls(false)}">Ver onde você paga <i class="fa-solid fa-arrow-right ml-1" aria-hidden="true"></i></button>
             <button type="button" data-aba="quem" class="${pillCls(false)}">Ver quem fica com o quê <i class="fa-solid fa-arrow-right ml-1" aria-hidden="true"></i></button></div>`;
 }
+// Clicar numa sigla abre a definição ali mesmo, logo abaixo do grupo; clicar de novo fecha.
+function fichaInline(i) {
+    const c = G.guia.comuns[i.sigla], onde = ondePagaDe(i.sigla);
+    const campos = c
+        ? `<dl><dt>Quem paga</dt><dd>${esc(c.quem)}</dd><dt>Como é calculado</dt><dd>${esc(c.calculo)}</dd><dt>Para onde vai</dt><dd>${esc(c.destino)}</dd></dl>`
+        : `<p class="mt-2 text-sm">${esc(i.onde || 'Caso especial: cobrado em situações específicas.')}</p>`;
+    return `<div class="det-trib gt-card" role="region" aria-label="Definição de ${esc(i.sigla)}">
+        <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1"><span class="gt-sigla">${esc(i.sigla)}</span><h4 class="font-semibold text-sm">${esc(i.nome)}</h4></div>
+        <div class="mt-1.5 flex flex-wrap gap-1.5 text-[11px] font-bold">
+            <span class="px-2 py-0.5 rounded-md bg-slate-200 dark:bg-slate-700">Quem cobra: ${esc(esferaDe(i))}</span>
+            ${onde ? `<span class="px-2 py-0.5 rounded-md bg-slate-200 dark:bg-slate-700">${esc(onde)}</span>` : ''}</div>
+        ${campos}${i.base_legal ? `<p class="ficha-nota mt-2">Base legal: ${esc(i.base_legal)}</p>` : ''}
+        <p class="mt-2"><a href="#catalogo" data-catalogo="${esc(i.sigla)}" class="text-xs font-semibold text-brand-700 dark:text-brand-400">Ver no catálogo completo <i class="fa-solid fa-arrow-right ml-1" aria-hidden="true"></i></a></p></div>`;
+}
 document.addEventListener('click', (ev) => {
+    const ver = ev.target.closest('#painel [data-catalogo]');
+    if (ver) {
+        ev.preventDefault();
+        G.tipo = ''; G.q = semAcento(ver.dataset.catalogo); G.qBruto = ver.dataset.catalogo; G.exato = true;
+        abrirAba('catalogo');
+        return;
+    }
     const s = ev.target.closest('#painel [data-sigla]');
     if (!s) return;
-    G.tipo = ''; G.q = semAcento(s.dataset.sigla); G.qBruto = s.dataset.sigla; G.exato = true;
-    abrirAba('catalogo');
+    const painel = $('painel'), jaAberta = s.getAttribute('aria-pressed') === 'true';
+    painel.querySelectorAll('.det-trib').forEach((d) => d.remove());
+    painel.querySelectorAll('[data-sigla][aria-pressed]').forEach((b) => b.setAttribute('aria-pressed', 'false'));
+    if (jaAberta) return;
+    const i = itemDe(s.dataset.sigla);
+    if (!i) return;
+    s.setAttribute('aria-pressed', 'true');
+    (s.closest('.tl-chips') || s.closest('p')).insertAdjacentHTML('afterend', fichaInline(i));
 });
 
 /* ---------- 2. Onde você paga ---------- */
