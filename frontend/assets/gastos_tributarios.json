@@ -1,0 +1,533 @@
+{
+  "ano": 2026,
+  "gerado_em": "2026-11-02",
+  "fonte": "Receita Federal, Demonstrativo dos Gastos Tributários (DGT), projeções do PLOA 2026",
+  "url": "https://www.gov.br/receitafederal/pt-br/centrais-de-conteudo/publicacoes/relatorios/renuncia/gastos-tributarios-ploa",
+  "unidade": "R$ correntes (projeção da renúncia de receita da União)",
+  "total_rs": 612842878964.0333,
+  "total_pct_pib": 4.432444942671219,
+  "total_pct_arrecadacao": 20.195943873531917,
+  "pib_rs": 13826294221146.102,
+  "arrecadacao_rs": 3034484957978.1377,
+  "por_beneficio": [
+    {
+      "nome": "Simples Nacional",
+      "rs": 134293685900.2623,
+      "pct_total": 21.913232658797657
+    },
+    {
+      "nome": "Agricultura e Agroindústria",
+      "rs": 79250731570.5995,
+      "pct_total": 12.931655778487167
+    },
+    {
+      "nome": "Rendimentos Isentos e Não Tributáveis - IRPF",
+      "rs": 63174201554.27601,
+      "pct_total": 10.308384697406856
+    },
+    {
+      "nome": "Entidades Sem Fins Lucrativos - Imunes / Isentas",
+      "rs": 55923681576.16725,
+      "pct_total": 9.125288633638402
+    },
+    {
+      "nome": "Deduções do Rendimento Tributável - IRPF",
+      "rs": 41685449291.09967,
+      "pct_total": 6.8019798747708275
+    },
+    {
+      "nome": "Poupança e Títulos de Crédito - Setor Imobiliário e do Agronegócio",
+      "rs": 36875915271.25536,
+      "pct_total": 6.017189158433472
+    },
+    {
+      "nome": "Zona Franca de Manaus e Áreas de Livre Comércio",
+      "rs": 35987588640.90607,
+      "pct_total": 5.872237383542826
+    },
+    {
+      "nome": "Desenvolvimento Regional",
+      "rs": 27081980749.471367,
+      "pct_total": 4.419074069238025
+    },
+    {
+      "nome": "Benefícios do Trabalhador",
+      "rs": 24313225586.416145,
+      "pct_total": 3.967285322384085
+    },
+    {
+      "nome": "Medicamentos, Produtos Farmacêuticos e Equipamentos Médicos",
+      "rs": 22368279466.45162,
+      "pct_total": 3.6499207601569243
+    },
+    {
+      "nome": "MEI - Microempreendedor Individual",
+      "rs": 11278818409.523092,
+      "pct_total": 1.8404094747073059
+    },
+    {
+      "nome": "Pesquisas Científicas e Inovação Tecnológica",
+      "rs": 10695062373.050135,
+      "pct_total": 1.7451556900080767
+    },
+    {
+      "nome": "Financiamentos Habitacionais",
+      "rs": 7989221685.4518585,
+      "pct_total": 1.303632947315479
+    },
+    {
+      "nome": "Informática e Automação",
+      "rs": 7695896832.208683,
+      "pct_total": 1.2557699691669821
+    },
+    {
+      "nome": "Desoneração da Folha de Salários",
+      "rs": 7652603429.363883,
+      "pct_total": 1.2487056131418317
+    },
+    {
+      "nome": "Desoneração da Folha dos Municípios",
+      "rs": 5498451466.574496,
+      "pct_total": 0.8972041048872484
+    },
+    {
+      "nome": "Embarcações e Aeronaves",
+      "rs": 5390280809.502507,
+      "pct_total": 0.8795534703143472
+    },
+    {
+      "nome": "Programa MOVER",
+      "rs": 3899999999.9999995,
+      "pct_total": 0.6363784477014189
+    },
+    {
+      "nome": "PROUNI",
+      "rs": 3867766840.1560316,
+      "pct_total": 0.6311188353357738
+    },
+    {
+      "nome": "Cultura e Audiovisual",
+      "rs": 3560299767.5991216,
+      "pct_total": 0.5809482152452441
+    },
+    {
+      "nome": "Livros",
+      "rs": 2734364728.541014,
+      "pct_total": 0.44617712343549815
+    },
+    {
+      "nome": "Fundos Constitucionais",
+      "rs": 2464443562.035153,
+      "pct_total": 0.40213301755274006
+    },
+    {
+      "nome": "Cadeira de Rodas e Aparelhos Assistivos",
+      "rs": 2061561289.1370487,
+      "pct_total": 0.33639312128778753
+    },
+    {
+      "nome": "Transporte de Passageiros",
+      "rs": 1670804517.4684753,
+      "pct_total": 0.27263179108695046
+    },
+    {
+      "nome": "Investimentos em Infra-Estrutura",
+      "rs": 1307797494.2691982,
+      "pct_total": 0.2133984972591892
+    },
+    {
+      "nome": "Automóveis - Pessoas Portadoras de Deficiência",
+      "rs": 1233872401.0834694,
+      "pct_total": 0.20133584699054383
+    },
+    {
+      "nome": "REIDI",
+      "rs": 1134419040.1109304,
+      "pct_total": 0.18510764815095582
+    },
+    {
+      "nome": "Incentivo ao Desporto",
+      "rs": 1104124047.9916732,
+      "pct_total": 0.1801642942899354
+    },
+    {
+      "nome": "Fundos da Criança e do Adolescente",
+      "rs": 1019485754.0506442,
+      "pct_total": 0.166353528619605
+    },
+    {
+      "nome": "Horário Eleitoral Gratuito",
+      "rs": 996119448.1055094,
+      "pct_total": 0.16254075592578932
+    },
+    {
+      "nome": "Transporte Coletivo",
+      "rs": 911474724.6564207,
+      "pct_total": 0.1487289411271619
+    },
+    {
+      "nome": "Seguro Rural",
+      "rs": 812968367.6959587,
+      "pct_total": 0.13265526868325914
+    },
+    {
+      "nome": "Petroquímica",
+      "rs": 693379864.525547,
+      "pct_total": 0.11314153893697125
+    },
+    {
+      "nome": "Água Mineral",
+      "rs": 577790268.3436319,
+      "pct_total": 0.09428032668346328
+    },
+    {
+      "nome": "Fundos do Idoso",
+      "rs": 568231643.5369952,
+      "pct_total": 0.09272060801253822
+    },
+    {
+      "nome": "Doações a Instituições de Ensino e Pesquisa e Entidades Civis Sem Fins Lucrativos",
+      "rs": 544309480.1766968,
+      "pct_total": 0.08881713386256734
+    },
+    {
+      "nome": "Minha Casa, Minha Vida",
+      "rs": 533660010.68543065,
+      "pct_total": 0.08707941774367103
+    },
+    {
+      "nome": "Dona de Casa",
+      "rs": 477998111.7611191,
+      "pct_total": 0.07799684522224369
+    },
+    {
+      "nome": "Gás Natural Liquefeito",
+      "rs": 475131520.08512604,
+      "pct_total": 0.07752909210404824
+    },
+    {
+      "nome": "Máquinas e Equipamentos - CNPq",
+      "rs": 438614747,
+      "pct_total": 0.0715705055986694
+    },
+    {
+      "nome": "Reciclagem",
+      "rs": 386245101.31580406,
+      "pct_total": 0.06302514307887916
+    },
+    {
+      "nome": "Motocicletas",
+      "rs": 351893015.5938508,
+      "pct_total": 0.057419777184765645
+    },
+    {
+      "nome": "Pronon",
+      "rs": 341800000.0000001,
+      "pct_total": 0.05577285985239618
+    },
+    {
+      "nome": "TAXI",
+      "rs": 340388514.6887134,
+      "pct_total": 0.055542542203332074
+    },
+    {
+      "nome": "Rede Arrecadadora",
+      "rs": 293960451.5082578,
+      "pct_total": 0.047966691234982914
+    },
+    {
+      "nome": "TEF - Tributação Específica do Futebol",
+      "rs": 235784251.30586904,
+      "pct_total": 0.03847385021499237
+    },
+    {
+      "nome": "Promoção de Produtos e Serviços Brasileiros",
+      "rs": 90701147.4047954,
+      "pct_total": 0.014800065484666997
+    },
+    {
+      "nome": "PADIS",
+      "rs": 90433590.14506145,
+      "pct_total": 0.014756407106815524
+    },
+    {
+      "nome": "REPORTO",
+      "rs": 90101392.751149,
+      "pct_total": 0.014702201142233869
+    },
+    {
+      "nome": "Biodiesel",
+      "rs": 69607132.59413554,
+      "pct_total": 0.01135807153569303
+    },
+    {
+      "nome": "RETID",
+      "rs": 60559335.383734174,
+      "pct_total": 0.009881706627007788
+    },
+    {
+      "nome": "Transporte Escolar",
+      "rs": 56962091.635968745,
+      "pct_total": 0.009294730116185583
+    },
+    {
+      "nome": "Termoeletricidade",
+      "rs": 49996149.44832678,
+      "pct_total": 0.00815806973768573
+    },
+    {
+      "nome": "Programação",
+      "rs": 49043794.20723957,
+      "pct_total": 0.008002670160766914
+    },
+    {
+      "nome": "Pronas/PCD",
+      "rs": 47779999.99999999,
+      "pct_total": 0.007796451854147127
+    },
+    {
+      "nome": "Indústria Cinematográfica e Radiodifusão",
+      "rs": 21021986.673437428,
+      "pct_total": 0.0034302408325235967
+    },
+    {
+      "nome": "ITR",
+      "rs": 8985397.77970702,
+      "pct_total": 0.0014661829464178797
+    },
+    {
+      "nome": "RECINE",
+      "rs": 5562323.841958066,
+      "pct_total": 0.0009076264133738121
+    },
+    {
+      "nome": "Evento Esportivo, Cultural e Científico",
+      "rs": 4300790.19564608,
+      "pct_total": 0.0007017769714345474
+    },
+    {
+      "nome": "TI e TIC - Tecnologia de Informação e Tecnologia da Informação e da Comunicação",
+      "rs": 3707550.8254637537,
+      "pct_total": 0.0006049757536109585
+    },
+    {
+      "nome": "Aerogeradores",
+      "rs": 352705.1390453581,
+      "pct_total": 5.755229458512773e-05
+    }
+  ],
+  "por_tributo": [
+    {
+      "nome": "Contribuição para o Financiamento da Seguridade Social - COFINS",
+      "rs": 138633040109.3654,
+      "pct_pib": 1.0026767685685318,
+      "pct_arrecadacao": 4.568585510528808,
+      "pct_total": 22.62130227305807
+    },
+    {
+      "nome": "Imposto sobre a Renda Pessoa Jurídica - IRPJ",
+      "rs": 117837817709.46313,
+      "pct_pib": 0.8522733266390393,
+      "pct_arrecadacao": 3.8832889054087745,
+      "pct_total": 19.22806346524895
+    },
+    {
+      "nome": "Imposto sobre a Renda Pessoa Física - IRPF",
+      "rs": 105523033228.52188,
+      "pct_pib": 0.7632054659095399,
+      "pct_arrecadacao": 3.4774610746079087,
+      "pct_total": 17.218611303259486
+    },
+    {
+      "nome": "Contribuição para a Previdência Social",
+      "rs": 97108589566.25418,
+      "pct_pib": 0.7023471945051996,
+      "pct_arrecadacao": 3.2001671094444033,
+      "pct_total": 15.845593201704366
+    },
+    {
+      "nome": "Imposto sobre a Renda Retido na Fonte - IRRF",
+      "rs": 38679033215.87528,
+      "pct_pib": 0.2797498201413876,
+      "pct_arrecadacao": 1.2746490343997925,
+      "pct_total": 6.311411055515468
+    },
+    {
+      "nome": "Contribuição Social sobre o Lucro Líquido - CSLL",
+      "rs": 36090975621.447235,
+      "pct_pib": 0.2610314451883229,
+      "pct_arrecadacao": 1.1893608345811169,
+      "pct_total": 5.889107446668293
+    },
+    {
+      "nome": "Contribuição Social para o PIS-PASEP",
+      "rs": 28366687329.268353,
+      "pct_pib": 0.20516478873915467,
+      "pct_arrecadacao": 0.9348106094475068,
+      "pct_total": 4.628704730520846
+    },
+    {
+      "nome": "Imposto sobre Produtos Industrializados - Operações Internas - IPI-Interno",
+      "rs": 19863790270.33229,
+      "pct_pib": 0.14366676965366737,
+      "pct_arrecadacao": 0.6546017049155991,
+      "pct_total": 3.241253337871951
+    },
+    {
+      "nome": "Imposto sobre Operações Financeiras - IOF",
+      "rs": 11974802477.779106,
+      "pct_pib": 0.08660890826020973,
+      "pct_arrecadacao": 0.394623886544419,
+      "pct_total": 1.9539759518820952
+    },
+    {
+      "nome": "Imposto sobre Importação - II",
+      "rs": 9642892376.36449,
+      "pct_pib": 0.06974314463536105,
+      "pct_arrecadacao": 0.3177769048092267,
+      "pct_total": 1.5734689440570975
+    },
+    {
+      "nome": "Imposto sobre Produtos Industrializados - Vinculado à Importação - IPI-Vinculado",
+      "rs": 7818797536.488902,
+      "pct_pib": 0.05655020362962289,
+      "pct_arrecadacao": 0.25766473206374135,
+      "pct_total": 1.2758241638878165
+    },
+    {
+      "nome": "Adicional ao Frete para a Renovação da Marinha Mercante - AFRMM",
+      "rs": 1244486894.964768,
+      "pct_pib": 0.009000870913490576,
+      "pct_arrecadacao": 0.04101147022307085,
+      "pct_total": 0.20306785600062502
+    },
+    {
+      "nome": "Contribuição para o Desenvolvimento da Indústria Cinematográfica Nacional - CONDECINE",
+      "rs": 49043794.20723957,
+      "pct_pib": 0.00035471394881957157,
+      "pct_arrecadacao": 0.0016162147740523718,
+      "pct_total": 0.00800267016076691
+    },
+    {
+      "nome": "Imposto sobre Propriedade Territorial Rural - ITR",
+      "rs": 8985397.77970702,
+      "pct_pib": 6.498775185880714e-05,
+      "pct_arrecadacao": 0.0002961094849418514,
+      "pct_total": 0.001466182946417879
+    },
+    {
+      "nome": "Contribuição de Intervenção no Domínio Econômico - CIDE",
+      "rs": 903435.9212966361,
+      "pct_pib": 6.5341870124166055e-06,
+      "pct_arrecadacao": 2.977229855502698e-05,
+      "pct_total": 0.00014741721774165498
+    }
+  ],
+  "por_area": [
+    {
+      "nome": "Comércio e Serviço",
+      "rs": 138138917834.42722,
+      "pct_total": 22.540674384263237
+    },
+    {
+      "nome": "Saúde",
+      "rs": 106667401637.26645,
+      "pct_total": 17.405342429299335
+    },
+    {
+      "nome": "Agricultura",
+      "rs": 91614958504.25409,
+      "pct_total": 14.949175661324901
+    },
+    {
+      "nome": "Trabalho",
+      "rs": 73165311862.2766,
+      "pct_total": 11.938673740642509
+    },
+    {
+      "nome": "Indústria",
+      "rs": 50917434730.045715,
+      "pct_total": 8.308399506267898
+    },
+    {
+      "nome": "Assistência Social",
+      "rs": 38031490433.971664,
+      "pct_total": 6.205748934908268
+    },
+    {
+      "nome": "Não definida",
+      "rs": 25791779579.390846,
+      "pct_total": 4.208546833894846
+    },
+    {
+      "nome": "Educação",
+      "rs": 21979226871.992092,
+      "pct_total": 3.586437507301446
+    },
+    {
+      "nome": "Habitação",
+      "rs": 19666151952.901215,
+      "pct_total": 3.2090039107814103
+    },
+    {
+      "nome": "Ciência e Tecnologia",
+      "rs": 19126237144.814938,
+      "pct_total": 3.120903872970909
+    },
+    {
+      "nome": "Transporte",
+      "rs": 12969880308.466074,
+      "pct_total": 2.1163467429679077
+    },
+    {
+      "nome": "Cultura",
+      "rs": 6542508280.08264,
+      "pct_total": 1.0675669906032486
+    },
+    {
+      "nome": "Energia",
+      "rs": 2633655240.3906875,
+      "pct_total": 0.4297439573488545
+    },
+    {
+      "nome": "Direitos da Cidadania",
+      "rs": 2583846344.053202,
+      "pct_total": 0.4216164424429648
+    },
+    {
+      "nome": "Desporto e Lazer",
+      "rs": 2175616486.261252,
+      "pct_total": 0.355003959569372
+    },
+    {
+      "nome": "Gestão Ambiental",
+      "rs": 386245101.31580406,
+      "pct_total": 0.06302514307887913
+    },
+    {
+      "nome": "Administração",
+      "rs": 293960451.5082578,
+      "pct_total": 0.04796669123498289
+    },
+    {
+      "nome": "Saneamento",
+      "rs": 62707280.07096637,
+      "pct_total": 0.010232195269522999
+    },
+    {
+      "nome": "Defesa Nacional",
+      "rs": 60559335.38373418,
+      "pct_total": 0.009881706627007786
+    },
+    {
+      "nome": "Comunicações",
+      "rs": 26004187.380149167,
+      "pct_total": 0.004243206256081064
+    },
+    {
+      "nome": "Organização Agrária",
+      "rs": 8985397.77970702,
+      "pct_total": 0.001466182946417879
+    }
+  ]
+}
