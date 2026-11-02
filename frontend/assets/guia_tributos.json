@@ -38,7 +38,12 @@
         "IBS",
         "IS"
       ],
-      "nota": "A reforma tributária do consumo troca, aos poucos, PIS, Cofins, ICMS e ISS por CBS e IBS."
+      "nota": "A reforma tributária do consumo troca, aos poucos, PIS, Cofins, ICMS e ISS por CBS e IBS.",
+      "secoes": {
+        "União": "A maior fatia dos tributos sobre o consumo vai para Brasília.",
+        "Estado": "A principal fonte de arrecadação dos governos estaduais.",
+        "Município": "O que fica na sua cidade quando você contrata um serviço."
+      }
     },
     {
       "id": "tem",
@@ -53,7 +58,12 @@
         "ITR",
         "IGF"
       ],
-      "nota": "No conjunto, o Brasil tributa pouco o patrimônio e muito o consumo."
+      "nota": "No conjunto, o Brasil tributa pouco o patrimônio e muito o consumo.",
+      "secoes": {
+        "União": "Pouca coisa: o governo federal cobra sobre a terra rural.",
+        "Estado": "Veículos, heranças e doações ficam com o governo do estado.",
+        "Município": "Casa, terreno e compra de imóvel: a cidade fica com esse dinheiro."
+      }
     },
     {
       "id": "ganha",
@@ -67,7 +77,10 @@
         "IRPJ",
         "CSLL"
       ],
-      "nota": "O FGTS também sai do salário, mas é depósito em nome do trabalhador, não tributo. IRPJ e CSLL são das empresas."
+      "nota": "O FGTS também sai do salário, mas é depósito em nome do trabalhador, não tributo. IRPJ e CSLL são das empresas.",
+      "secoes": {
+        "União": "O que se cobra sobre a renda e o salário vai quase todo para a União."
+      }
     },
     {
       "id": "servicos",
@@ -80,7 +93,11 @@
         "Licença de funcionamento",
         "Licença para obras"
       ],
-      "nota": "Os nomes e os valores variam de estado para estado e de município para município."
+      "nota": "Os nomes e os valores variam de estado para estado e de município para município.",
+      "secoes": {
+        "Estado": "Taxas por serviços estaduais, como os da Justiça.",
+        "Município": "Taxas e contribuições por serviços da cidade, como a iluminação pública e as licenças."
+      }
     }
   ],
   "comuns": {
