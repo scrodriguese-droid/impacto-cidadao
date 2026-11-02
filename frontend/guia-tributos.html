@@ -45,7 +45,7 @@
 <script>
 renderLayout('guia-tributos');
 
-const ABAS = [['entenda', 'Entenda em 30 segundos', 'fa-lightbulb'], ['onde', 'Onde você paga', 'fa-wallet'], ['quem', 'Quem fica com o quê', 'fa-sitemap'],
+const ABAS = [['entenda', 'Entenda', 'fa-lightbulb'], ['onde', 'Onde você paga', 'fa-wallet'], ['quem', 'Quem fica com o quê', 'fa-sitemap'],
               ['catalogo', 'Catálogo completo', 'fa-list'], ['historia', 'Como chegamos aqui', 'fa-clock-rotate-left']];
 const G = { grupos: [], cls: null, hist: null, guia: null, itens: [], aba: 'entenda', onde: 'compra', tipo: '', q: '' };
 const ESFERA_GRUPO = { Federal: 'União', Estadual: 'Estado', Municipal: 'Município', Mista: 'Reforma tributária', 'Estadual e Municipal': 'Estados e municípios', 'Variável': 'Varia' };
@@ -71,22 +71,40 @@ $('abas').addEventListener('click', (ev) => { const b = ev.target.closest('[data
 window.addEventListener('hashchange', () => abrirAba(location.hash.slice(1), false));
 
 /* ---------- 1. Entenda ---------- */
+// Os três tipos, cada um com TODOS os tributos daquele tipo (só siglas, agrupadas por quem cobra); clicar leva ao catálogo.
+const ORDEM_ESFERA = ['União', 'Estado', 'Município', 'Estados e municípios', 'Todas as esferas', 'Varia'];
+const TIPO_DA_ESPECIE = { imposto: ['Imposto'], contribuicao: ['Contribuição'], taxa: ['Taxa'] };
+const chipsPorEsfera = (itens) => {
+    const por = {};
+    itens.forEach((i) => { (por[esferaDe(i)] = por[esferaDe(i)] || []).push(i); });
+    return Object.keys(por).sort((a, b) => ORDEM_ESFERA.indexOf(a) - ORDEM_ESFERA.indexOf(b)).map((e) => `<div class="mt-3">
+        <p class="text-[10px] font-bold uppercase tracking-wide text-slate-500">${esc(e)} · ${por[e].length}</p>
+        <div class="tl-chips">${por[e].map((i) => `<button type="button" data-sigla="${esc(i.sigla)}" title="${esc(i.nome)}" class="px-2 py-0.5 text-xs font-bold">${esc(i.sigla)}</button>`).join('')}</div></div>`).join('');
+};
 function painelEntenda() {
     const g = G.guia;
-    $('painel').innerHTML = `
-        <h2 class="text-lg font-bold">Em 10 segundos</h2>
-        <div class="mt-3 grid md:grid-cols-3 gap-3">${g.resumo.map((r) => `<div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
-            <p class="font-bold"><i class="fa-solid ${esc(r.icone)} mr-2 text-brand-600" aria-hidden="true"></i>${esc(r.pergunta)}</p>
-            <p class="text-sm mt-2 leading-relaxed">${esc(r.resposta)}</p></div>`).join('')}</div>
-        <h2 class="text-lg font-bold mt-8">Nem tudo é “imposto”: os três tipos de cobrança</h2>
-        <p class="text-sm text-slate-500 mt-1">O que muda é o motivo da cobrança e o destino do dinheiro.</p>
-        <div class="trib-especies">${g.especies.map((e) => `<div class="trib-especie"><p class="trib-tag">${esc(e.nome)}</p>
+    const cartoes = g.especies.map((e) => {
+        const lista = G.itens.filter((i) => TIPO_DA_ESPECIE[e.id].includes(i.tipo));
+        return `<div class="trib-especie"><p class="trib-tag">${esc(e.nome)}</p>
             <p class="font-bold">${esc(e.apelido)}</p><p class="mt-1">${esc(e.texto)}</p>
-            <p class="ficha-nota"><b>Exemplos:</b> ${esc(e.exemplos)}</p></div>`).join('')}</div>
-        <div class="mt-6 flex flex-wrap gap-2">
+            <p class="mt-3 text-xs font-semibold">${lista.length} no Brasil, por quem cobra:</p>${chipsPorEsfera(lista)}</div>`;
+    }).join('');
+    const nao = G.itens.filter((i) => i.tipo === 'Outras cobranças');
+    $('painel').innerHTML = `
+        <p class="text-base leading-relaxed" style="max-width:70ch">${esc(g.definicao)}</p>
+        <div class="trib-especies">${cartoes}</div>
+        <p class="ficha-nota mt-3"><b>${esc(g.nao_tributo_titulo)}:</b> ${nao.map((i) => `<button type="button" data-sigla="${esc(i.sigla)}" title="${esc(i.nome)}" class="underline" style="border:0!important;background:none!important;padding:0!important;text-transform:none;letter-spacing:0;font-weight:700">${esc(i.sigla)}</button>`).join(', ')}.</p>
+        <p class="ficha-nota">Toque em uma sigla para ver o que ela é, quem paga e para onde vai no catálogo.</p>
+        <div class="mt-5 flex flex-wrap gap-2">
             <button type="button" data-aba="onde" class="${pillCls(false)}">Ver onde você paga <i class="fa-solid fa-arrow-right ml-1" aria-hidden="true"></i></button>
             <button type="button" data-aba="quem" class="${pillCls(false)}">Ver quem fica com o quê <i class="fa-solid fa-arrow-right ml-1" aria-hidden="true"></i></button></div>`;
 }
+document.addEventListener('click', (ev) => {
+    const s = ev.target.closest('#painel [data-sigla]');
+    if (!s) return;
+    G.tipo = ''; G.q = semAcento(s.dataset.sigla); G.qBruto = s.dataset.sigla; G.exato = true;
+    abrirAba('catalogo');
+});
 
 /* ---------- 2. Onde você paga ---------- */
 function cartaoOnde(sigla) {
@@ -131,7 +149,7 @@ function painelQuem() {
 /* ---------- 4. Catálogo completo ---------- */
 const TIPOS_FILTRO = [['', 'Todos'], ['Imposto', 'Impostos'], ['Contribuição', 'Contribuições'], ['Taxas', 'Taxas e outros']];
 const passaTipo = (i) => !G.tipo || (G.tipo === 'Taxas' ? ['Taxa', 'Outras cobranças'].includes(i.tipo) : i.tipo === G.tipo);
-const passaBusca = (i) => !G.q || semAcento([i.sigla, i.nome, i.onde, i.esfera].join(' ')).includes(G.q);
+const passaBusca = (i) => !G.q || (G.exato ? semAcento(i.sigla) === G.q : semAcento([i.sigla, i.nome, i.onde, i.esfera].join(' ')).includes(G.q));
 const tipoRotulo = { Imposto: 'Imposto', Contribuição: 'Contribuição', Taxa: 'Taxa', 'Outras cobranças': 'Não é tributo' };
 
 function cartaoCatalogo(i) {
@@ -161,8 +179,8 @@ function painelCatalogo() {
         <div id="listaCat" class="mt-3 grid md:grid-cols-2 gap-3"></div>
         <details id="raros" class="mt-6"><summary class="cursor-pointer text-sm font-semibold"></summary>
             <p class="text-xs text-slate-500 mt-2">${esc(G.guia.raros_texto)}</p><ul id="listaRaros" class="trib-lista trib-compacta"></ul></details>`;
-    $('buscaCat').addEventListener('input', debounce((ev) => { G.qBruto = ev.target.value; G.q = semAcento(ev.target.value.trim()); atualizarCatalogo(true); }, 120));
-    atualizarCatalogo(false);
+    $('buscaCat').addEventListener('input', debounce((ev) => { G.qBruto = ev.target.value; G.exato = false; G.q = semAcento(ev.target.value.trim()); atualizarCatalogo(true); }, 120));
+    atualizarCatalogo(!!G.exato);
 }
 function atualizarCatalogo(abrirRaros) {
     $('filtrosCat').innerHTML = TIPOS_FILTRO.map(([v, r]) => `<button type="button" data-tipo="${v}" aria-pressed="${G.tipo === v}" class="${pillCls(G.tipo === v)}">${esc(r)}</button>`).join('');

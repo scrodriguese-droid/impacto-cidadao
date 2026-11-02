@@ -1,74 +1,301 @@
 {
-  "resumo": [
-    { "pergunta": "O que é tributo?", "icone": "fa-scale-balanced", "resposta": "É o dinheiro que a lei obriga você, ou uma empresa, a pagar ao governo. Não é doação nem preço de produto: quem não paga pode ter multa e dívida." },
-    { "pergunta": "Quem cobra?", "icone": "fa-landmark", "resposta": "Três níveis de governo, cada um com os seus tributos: a União (governo federal), os estados e o Distrito Federal, e os municípios. Uma mesma conta pode juntar tributos de níveis diferentes." },
-    { "pergunta": "Para onde vai?", "icone": "fa-route", "resposta": "Depende do tipo. Em regra, o imposto vai para o caixa geral (saúde, escola, segurança, estradas). A contribuição vai para uma área definida, como a aposentadoria. A taxa paga o serviço ou a fiscalização usados." }
-  ],
   "especies": [
-    { "id": "imposto", "nome": "Imposto", "apelido": "Cheque em branco", "texto": "Você paga porque comprou, ganhou ou possui algo. O governo usa o dinheiro onde precisar. Não existe devolução direta: pagar IPTU não obriga a prefeitura a fazer algo na sua rua.", "exemplos": "IPTU, IPVA, Imposto de Renda, ICMS" },
-    { "id": "taxa", "nome": "Taxa", "apelido": "Pagou, usou", "texto": "Você só paga se usar um serviço público específico ou se o governo fiscalizar a sua atividade. Quem não usa nem é fiscalizado não paga.", "exemplos": "Emissão de passaporte, custas judiciais, licença de funcionamento" },
-    { "id": "contribuicao", "nome": "Contribuição", "apelido": "Dinheiro com carimbo", "texto": "Criada para financiar uma área definida em lei, como a seguridade social. O dinheiro não vai para o caixa geral: é separado para aquele fim.", "exemplos": "INSS, iluminação pública na conta de luz" }
+    {
+      "id": "imposto",
+      "nome": "Imposto",
+      "apelido": "Cheque em branco",
+      "texto": "Você paga porque comprou, ganhou ou possui algo. O dinheiro vai para o caixa geral do governo (saúde, escola, segurança, estradas), sem devolução direta: pagar IPTU não obriga a prefeitura a fazer algo na sua rua."
+    },
+    {
+      "id": "contribuicao",
+      "nome": "Contribuição",
+      "apelido": "Dinheiro com carimbo",
+      "texto": "Criada para financiar uma área definida em lei, como a aposentadoria ou a iluminação pública. O dinheiro não vai para o caixa geral: é separado para aquele fim."
+    },
+    {
+      "id": "taxa",
+      "nome": "Taxa",
+      "apelido": "Pagou, usou",
+      "texto": "Você paga porque usou um serviço público específico ou porque o governo fiscalizou a sua atividade. Quem não usa nem é fiscalizado não paga."
+    }
   ],
   "onde": [
-    { "id": "compra", "rotulo": "No que você compra", "icone": "fa-cart-shopping",
+    {
+      "id": "compra",
+      "rotulo": "No que você compra",
+      "icone": "fa-cart-shopping",
       "pergunta": "É o maior volume de tributos: já vem embutido no preço de produtos e serviços, mesmo quando a nota não mostra. Quem consome pouco ou muito paga a mesma alíquota sobre o que compra.",
-      "itens": ["ICMS", "ISS", "IPI", "PIS", "Cofins", "Cide-Combustíveis", "II", "IOF", "CBS", "IBS", "IS"],
-      "nota": "A reforma tributária do consumo troca, aos poucos, PIS, Cofins, ICMS e ISS por CBS e IBS." },
-    { "id": "tem", "rotulo": "No que você tem", "icone": "fa-house",
+      "itens": [
+        "ICMS",
+        "ISS",
+        "IPI",
+        "PIS",
+        "Cofins",
+        "Cide-Combustíveis",
+        "II",
+        "IOF",
+        "CBS",
+        "IBS",
+        "IS"
+      ],
+      "nota": "A reforma tributária do consumo troca, aos poucos, PIS, Cofins, ICMS e ISS por CBS e IBS."
+    },
+    {
+      "id": "tem",
+      "rotulo": "No que você tem",
+      "icone": "fa-house",
       "pergunta": "Tributos sobre patrimônio: imóvel, carro, herança e terra. É a camada menor, mas mostra bem quem fica com o dinheiro.",
-      "itens": ["IPTU", "ITBI", "IPVA", "ITCMD", "ITR", "IGF"],
-      "nota": "No conjunto, o Brasil tributa pouco o patrimônio e muito o consumo." },
-    { "id": "ganha", "rotulo": "No que você ganha", "icone": "fa-briefcase",
+      "itens": [
+        "IPTU",
+        "ITBI",
+        "IPVA",
+        "ITCMD",
+        "ITR",
+        "IGF"
+      ],
+      "nota": "No conjunto, o Brasil tributa pouco o patrimônio e muito o consumo."
+    },
+    {
+      "id": "ganha",
+      "rotulo": "No que você ganha",
+      "icone": "fa-briefcase",
       "pergunta": "Tributos sobre o trabalho e a renda. Para a maioria dos trabalhadores, o desconto aparece direto no contracheque.",
-      "itens": ["IRPF", "Previdenciária do empregado", "Previdenciária individual", "IRPJ", "CSLL"],
-      "nota": "O FGTS também sai do salário, mas é depósito em nome do trabalhador, não tributo. IRPJ e CSLL são das empresas." },
-    { "id": "servicos", "rotulo": "Nos serviços que você usa", "icone": "fa-building-columns",
+      "itens": [
+        "IRPF",
+        "Previdenciária do empregado",
+        "Previdenciária individual",
+        "IRPJ",
+        "CSLL"
+      ],
+      "nota": "O FGTS também sai do salário, mas é depósito em nome do trabalhador, não tributo. IRPJ e CSLL são das empresas."
+    },
+    {
+      "id": "servicos",
+      "rotulo": "Nos serviços que você usa",
+      "icone": "fa-building-columns",
       "pergunta": "Taxas e contribuições ligadas a um serviço ou a uma fiscalização: quem usa, paga.",
-      "itens": ["CIP/Cosip", "Judiciárias", "Licença de funcionamento", "Licença para obras"],
-      "nota": "Os nomes e os valores variam de estado para estado e de município para município." }
+      "itens": [
+        "CIP/Cosip",
+        "Judiciárias",
+        "Licença de funcionamento",
+        "Licença para obras"
+      ],
+      "nota": "Os nomes e os valores variam de estado para estado e de município para município."
+    }
   ],
   "comuns": {
-    "ICMS": { "quem": "Quem compra mercadorias: vem embutido no preço, inclusive em energia, telefone e transporte.", "calculo": "Cada estado define as alíquotas, que variam por produto.", "destino": "75% fica com o estado e 25% vai para as prefeituras (CF, art. 158, IV). Será substituído, aos poucos, pelo IBS." },
-    "ISS": { "quem": "Quem contrata serviços (reforma, consultoria, corte de cabelo): está no preço do serviço.", "calculo": "Alíquota definida pelo município, entre 2% e 5% do preço do serviço (LC 116/2003).", "destino": "100% do município que cobra." },
-    "IPI": { "quem": "Quem compra produtos industrializados, como eletrodomésticos e carros: está embutido no preço.", "calculo": "Alíquotas por produto, definidas pelo governo federal.", "destino": "União. Parte do IPI é dividida com estados e municípios (FPE e FPM)." },
-    "PIS": { "quem": "Cobrado das empresas sobre o faturamento; o custo chega ao preço que você paga.", "calculo": "Percentual sobre a receita da empresa, com regras diferentes por regime tributário.", "destino": "Financia, entre outros, o seguro-desemprego e o abono salarial. Será substituído, aos poucos, pela CBS." },
-    "Cofins": { "quem": "Cobrada das empresas sobre o faturamento; o custo chega ao preço que você paga.", "calculo": "Percentual sobre a receita da empresa, com regras diferentes por regime tributário.", "destino": "Seguridade social: saúde, previdência e assistência. Será substituída, aos poucos, pela CBS." },
-    "Cide-Combustíveis": { "quem": "Quem abastece: está embutida no preço dos combustíveis.", "calculo": "Valor definido em lei por unidade vendida.", "destino": "Infraestrutura de transportes e projetos ambientais do setor de petróleo e gás. Parte é repassada a estados e municípios." },
-    "II": { "quem": "Quem compra produtos do exterior, inclusive em compras online.", "calculo": "Alíquota sobre o valor do produto importado, que varia por produto.", "destino": "União. É usado também para proteger ou baratear produtos de fora." },
-    "IOF": { "quem": "Quem toma crédito, compra moeda estrangeira, usa cartão no exterior ou contrata certos seguros.", "calculo": "Alíquotas definidas pelo governo federal, que pode mudá-las por decreto.", "destino": "União." },
-    "CBS": { "quem": "Quem compra bens e serviços: nova contribuição federal sobre o consumo, criada pela reforma tributária.", "calculo": "Depende da transição prevista na LC 214/2025.", "destino": "União. Substitui PIS e Cofins gradualmente." },
-    "IBS": { "quem": "Quem compra bens e serviços: novo imposto sobre o consumo, compartilhado entre estados e municípios.", "calculo": "Depende da transição prevista na LC 214/2025; gestão por um comitê gestor.", "destino": "Estados e municípios. Substitui ICMS e ISS gradualmente." },
-    "IS": { "quem": "Quem compra bens que fazem mal à saúde ou ao meio ambiente, como cigarro e bebida alcoólica.", "calculo": "Previsto para começar com a transição da reforma; valores dependem de lei.", "destino": "União." },
-    "IPTU": { "quem": "Quem tem casa, apartamento, loja ou terreno na área urbana.", "calculo": "Alíquota definida pelo município sobre o valor venal do imóvel.", "destino": "100% da prefeitura: ajuda a pagar rua asfaltada, praça e iluminação." },
-    "ITBI": { "quem": "Em regra, quem compra um imóvel.", "calculo": "Alíquota do município sobre o valor da compra.", "destino": "100% do município. Sem pagá-lo, não se registra a casa no próprio nome." },
-    "IPVA": { "quem": "Quem tem carro, moto ou outro veículo automotor.", "calculo": "Alíquota estadual sobre o valor do veículo.", "destino": "50% fica com o estado e 50% com o município onde o veículo está emplacado." },
-    "ITCMD": { "quem": "Quem recebe herança ou doação.", "calculo": "Alíquota definida pelo estado, com teto de 8%.", "destino": "100% do estado." },
-    "ITR": { "quem": "Quem tem propriedade rural.", "calculo": "Depende do tamanho da área e de como a terra é aproveitada: pesa mais sobre terra improdutiva.", "destino": "União. O município que fiscaliza e cobra fica com 100% (CF, art. 158, II)." },
-    "IGF": { "quem": "Quem tem grandes fortunas.", "calculo": "Nunca foi regulamentado: hoje não existe cobrança.", "destino": "Está na Constituição desde 1988, mas só no papel." },
-    "IRPF": { "quem": "Quem recebe rendimentos acima da faixa de isenção: salário, aluguel, trabalho por conta própria.", "calculo": "Alíquota progressiva: quem ganha mais paga percentual maior. Veja os simuladores.", "destino": "Caixa geral da União. Parte do imposto é dividida com estados e municípios (FPE e FPM)." },
-    "IRPJ": { "quem": "Empresas, sobre o lucro.", "calculo": "Percentual sobre o lucro, com regras por regime tributário.", "destino": "Caixa geral da União. Parte é dividida com estados e municípios (FPE e FPM)." },
-    "CSLL": { "quem": "Empresas, sobre o lucro.", "calculo": "Percentual sobre o lucro, com regras por regime tributário.", "destino": "Seguridade social." },
-    "Previdenciária do empregado": { "quem": "Trabalhador de carteira assinada: é descontada do salário todo mês (é o “INSS” do contracheque).", "calculo": "Percentual progressivo por faixa de salário, até o teto do INSS.", "destino": "Previdência Social: aposentadorias, pensões e auxílios." },
-    "Previdenciária individual": { "quem": "Quem trabalha por conta própria e contribui sozinho para o INSS.", "calculo": "Percentual sobre o valor escolhido, entre o salário mínimo e o teto, conforme o plano.", "destino": "Previdência Social: aposentadorias, pensões e auxílios." },
-    "CIP/Cosip": { "quem": "Quem tem ligação de energia elétrica: vem na conta de luz.", "calculo": "Cada município define a cobrança em lei própria.", "destino": "Iluminação pública da cidade: postes, lâmpadas e manutenção." },
-    "Judiciárias": { "quem": "Quem abre um processo na Justiça estadual (as chamadas custas).", "calculo": "Cada estado define valores e faixas.", "destino": "Costuma financiar o próprio Judiciário estadual." },
-    "Licença de funcionamento": { "quem": "Quem abre comércio ou serviço: paga na prefeitura.", "calculo": "Cada município define em lei.", "destino": "Município: custeia a fiscalização da atividade." },
-    "Licença para obras": { "quem": "Quem constrói ou reforma imóvel.", "calculo": "Cada município define em lei.", "destino": "Município: custeia a análise e a fiscalização da obra." },
-    "FGTS": { "quem": "O empregador deposita todo mês 8% do salário em conta em nome do trabalhador (tecnicamente, não é tributo).", "calculo": "Percentual fixo sobre o salário.", "destino": "Fica na conta do trabalhador: pode ser sacado na demissão sem justa causa, na compra da casa própria e em outros casos previstos em lei." },
-    "Pedágio": { "quem": "Quem usa uma rodovia com cobrança.", "calculo": "Valor definido no contrato de concessão.", "destino": "Empresa concessionária ou governo, para manter a estrada (não é tributo)." }
+    "ICMS": {
+      "quem": "Quem compra mercadorias: vem embutido no preço, inclusive em energia, telefone e transporte.",
+      "calculo": "Cada estado define as alíquotas, que variam por produto.",
+      "destino": "75% fica com o estado e 25% vai para as prefeituras (CF, art. 158, IV). Será substituído, aos poucos, pelo IBS."
+    },
+    "ISS": {
+      "quem": "Quem contrata serviços (reforma, consultoria, corte de cabelo): está no preço do serviço.",
+      "calculo": "Alíquota definida pelo município, entre 2% e 5% do preço do serviço (LC 116/2003).",
+      "destino": "100% do município que cobra."
+    },
+    "IPI": {
+      "quem": "Quem compra produtos industrializados, como eletrodomésticos e carros: está embutido no preço.",
+      "calculo": "Alíquotas por produto, definidas pelo governo federal.",
+      "destino": "União. Parte do IPI é dividida com estados e municípios (FPE e FPM)."
+    },
+    "PIS": {
+      "quem": "Cobrado das empresas sobre o faturamento; o custo chega ao preço que você paga.",
+      "calculo": "Percentual sobre a receita da empresa, com regras diferentes por regime tributário.",
+      "destino": "Financia, entre outros, o seguro-desemprego e o abono salarial. Será substituído, aos poucos, pela CBS."
+    },
+    "Cofins": {
+      "quem": "Cobrada das empresas sobre o faturamento; o custo chega ao preço que você paga.",
+      "calculo": "Percentual sobre a receita da empresa, com regras diferentes por regime tributário.",
+      "destino": "Seguridade social: saúde, previdência e assistência. Será substituída, aos poucos, pela CBS."
+    },
+    "Cide-Combustíveis": {
+      "quem": "Quem abastece: está embutida no preço dos combustíveis.",
+      "calculo": "Valor definido em lei por unidade vendida.",
+      "destino": "Infraestrutura de transportes e projetos ambientais do setor de petróleo e gás. Parte é repassada a estados e municípios."
+    },
+    "II": {
+      "quem": "Quem compra produtos do exterior, inclusive em compras online.",
+      "calculo": "Alíquota sobre o valor do produto importado, que varia por produto.",
+      "destino": "União. É usado também para proteger ou baratear produtos de fora."
+    },
+    "IOF": {
+      "quem": "Quem toma crédito, compra moeda estrangeira, usa cartão no exterior ou contrata certos seguros.",
+      "calculo": "Alíquotas definidas pelo governo federal, que pode mudá-las por decreto.",
+      "destino": "União."
+    },
+    "CBS": {
+      "quem": "Quem compra bens e serviços: nova contribuição federal sobre o consumo, criada pela reforma tributária.",
+      "calculo": "Depende da transição prevista na LC 214/2025.",
+      "destino": "União. Substitui PIS e Cofins gradualmente."
+    },
+    "IBS": {
+      "quem": "Quem compra bens e serviços: novo imposto sobre o consumo, compartilhado entre estados e municípios.",
+      "calculo": "Depende da transição prevista na LC 214/2025; gestão por um comitê gestor.",
+      "destino": "Estados e municípios. Substitui ICMS e ISS gradualmente."
+    },
+    "IS": {
+      "quem": "Quem compra bens que fazem mal à saúde ou ao meio ambiente, como cigarro e bebida alcoólica.",
+      "calculo": "Previsto para começar com a transição da reforma; valores dependem de lei.",
+      "destino": "União."
+    },
+    "IPTU": {
+      "quem": "Quem tem casa, apartamento, loja ou terreno na área urbana.",
+      "calculo": "Alíquota definida pelo município sobre o valor venal do imóvel.",
+      "destino": "100% da prefeitura: ajuda a pagar rua asfaltada, praça e iluminação."
+    },
+    "ITBI": {
+      "quem": "Em regra, quem compra um imóvel.",
+      "calculo": "Alíquota do município sobre o valor da compra.",
+      "destino": "100% do município. Sem pagá-lo, não se registra a casa no próprio nome."
+    },
+    "IPVA": {
+      "quem": "Quem tem carro, moto ou outro veículo automotor.",
+      "calculo": "Alíquota estadual sobre o valor do veículo.",
+      "destino": "50% fica com o estado e 50% com o município onde o veículo está emplacado."
+    },
+    "ITCMD": {
+      "quem": "Quem recebe herança ou doação.",
+      "calculo": "Alíquota definida pelo estado, com teto de 8%.",
+      "destino": "100% do estado."
+    },
+    "ITR": {
+      "quem": "Quem tem propriedade rural.",
+      "calculo": "Depende do tamanho da área e de como a terra é aproveitada: pesa mais sobre terra improdutiva.",
+      "destino": "União. O município que fiscaliza e cobra fica com 100% (CF, art. 158, II)."
+    },
+    "IGF": {
+      "quem": "Quem tem grandes fortunas.",
+      "calculo": "Nunca foi regulamentado: hoje não existe cobrança.",
+      "destino": "Está na Constituição desde 1988, mas só no papel."
+    },
+    "IRPF": {
+      "quem": "Quem recebe rendimentos acima da faixa de isenção: salário, aluguel, trabalho por conta própria.",
+      "calculo": "Alíquota progressiva: quem ganha mais paga percentual maior. Veja os simuladores.",
+      "destino": "Caixa geral da União. Parte do imposto é dividida com estados e municípios (FPE e FPM)."
+    },
+    "IRPJ": {
+      "quem": "Empresas, sobre o lucro.",
+      "calculo": "Percentual sobre o lucro, com regras por regime tributário.",
+      "destino": "Caixa geral da União. Parte é dividida com estados e municípios (FPE e FPM)."
+    },
+    "CSLL": {
+      "quem": "Empresas, sobre o lucro.",
+      "calculo": "Percentual sobre o lucro, com regras por regime tributário.",
+      "destino": "Seguridade social."
+    },
+    "Previdenciária do empregado": {
+      "quem": "Trabalhador de carteira assinada: é descontada do salário todo mês (é o “INSS” do contracheque).",
+      "calculo": "Percentual progressivo por faixa de salário, até o teto do INSS.",
+      "destino": "Previdência Social: aposentadorias, pensões e auxílios."
+    },
+    "Previdenciária individual": {
+      "quem": "Quem trabalha por conta própria e contribui sozinho para o INSS.",
+      "calculo": "Percentual sobre o valor escolhido, entre o salário mínimo e o teto, conforme o plano.",
+      "destino": "Previdência Social: aposentadorias, pensões e auxílios."
+    },
+    "CIP/Cosip": {
+      "quem": "Quem tem ligação de energia elétrica: vem na conta de luz.",
+      "calculo": "Cada município define a cobrança em lei própria.",
+      "destino": "Iluminação pública da cidade: postes, lâmpadas e manutenção."
+    },
+    "Judiciárias": {
+      "quem": "Quem abre um processo na Justiça estadual (as chamadas custas).",
+      "calculo": "Cada estado define valores e faixas.",
+      "destino": "Costuma financiar o próprio Judiciário estadual."
+    },
+    "Licença de funcionamento": {
+      "quem": "Quem abre comércio ou serviço: paga na prefeitura.",
+      "calculo": "Cada município define em lei.",
+      "destino": "Município: custeia a fiscalização da atividade."
+    },
+    "Licença para obras": {
+      "quem": "Quem constrói ou reforma imóvel.",
+      "calculo": "Cada município define em lei.",
+      "destino": "Município: custeia a análise e a fiscalização da obra."
+    },
+    "FGTS": {
+      "quem": "O empregador deposita todo mês 8% do salário em conta em nome do trabalhador (tecnicamente, não é tributo).",
+      "calculo": "Percentual fixo sobre o salário.",
+      "destino": "Fica na conta do trabalhador: pode ser sacado na demissão sem justa causa, na compra da casa própria e em outros casos previstos em lei."
+    },
+    "Pedágio": {
+      "quem": "Quem usa uma rodovia com cobrança.",
+      "calculo": "Valor definido no contrato de concessão.",
+      "destino": "Empresa concessionária ou governo, para manter a estrada (não é tributo)."
+    }
   },
   "quem": [
-    { "id": "uniao", "nome": "União", "quemGoverna": "Governo Federal e Congresso", "texto": "Cobra os tributos de alcance nacional: sobre a renda, a indústria, o comércio exterior e as contribuições sociais. É a maior arrecadadora, mas divide uma parte com estados e municípios.", "siglas": ["IRPF", "IRPJ", "IPI", "IOF", "II", "ITR", "PIS", "Cofins", "CSLL", "CBS", "Previdenciária do empregado"] },
-    { "id": "estado", "nome": "Estados e Distrito Federal", "quemGoverna": "Governo Estadual e Assembleia", "texto": "Cobram sobretudo o imposto sobre a circulação de mercadorias, que é a sua maior fonte, além do imposto sobre veículos e sobre heranças.", "siglas": ["ICMS", "IPVA", "ITCMD", "Judiciárias"] },
-    { "id": "municipio", "nome": "Municípios", "quemGoverna": "Prefeitura e Câmara Municipal", "texto": "Cobram os tributos mais próximos do dia a dia: imóvel, serviços e licenças. Arrecadam menos que os outros níveis e dependem de repasses do estado e da União.", "siglas": ["IPTU", "ITBI", "ISS", "CIP/Cosip", "Licença de funcionamento", "Licença para obras"] }
+    {
+      "id": "uniao",
+      "nome": "União",
+      "quemGoverna": "Governo Federal e Congresso",
+      "texto": "Cobra os tributos de alcance nacional: sobre a renda, a indústria, o comércio exterior e as contribuições sociais. É a maior arrecadadora, mas divide uma parte com estados e municípios.",
+      "siglas": [
+        "IRPF",
+        "IRPJ",
+        "IPI",
+        "IOF",
+        "II",
+        "ITR",
+        "PIS",
+        "Cofins",
+        "CSLL",
+        "CBS",
+        "Previdenciária do empregado"
+      ]
+    },
+    {
+      "id": "estado",
+      "nome": "Estados e Distrito Federal",
+      "quemGoverna": "Governo Estadual e Assembleia",
+      "texto": "Cobram sobretudo o imposto sobre a circulação de mercadorias, que é a sua maior fonte, além do imposto sobre veículos e sobre heranças.",
+      "siglas": [
+        "ICMS",
+        "IPVA",
+        "ITCMD",
+        "Judiciárias"
+      ]
+    },
+    {
+      "id": "municipio",
+      "nome": "Municípios",
+      "quemGoverna": "Prefeitura e Câmara Municipal",
+      "texto": "Cobram os tributos mais próximos do dia a dia: imóvel, serviços e licenças. Arrecadam menos que os outros níveis e dependem de repasses do estado e da União.",
+      "siglas": [
+        "IPTU",
+        "ITBI",
+        "ISS",
+        "CIP/Cosip",
+        "Licença de funcionamento",
+        "Licença para obras"
+      ]
+    }
   ],
   "repasses": [
-    { "nome": "FPE e FPM", "texto": "Parte do Imposto de Renda e do IPI da União é dividida entre estados (FPE) e municípios (FPM) (CF, art. 159)." },
-    { "nome": "Cota do ICMS", "texto": "25% do ICMS arrecadado pelo estado é repassado às prefeituras (CF, art. 158, IV)." },
-    { "nome": "Cota do IPVA", "texto": "50% do IPVA fica com o município onde o veículo está emplacado (CF, art. 158, III)." },
-    { "nome": "ITR", "texto": "O município que fiscaliza e cobra o imposto rural fica com 100% dele (CF, art. 158, II)." },
-    { "nome": "Cide-Combustíveis", "texto": "Parte da contribuição federal sobre combustíveis é repassada a estados e municípios, para transportes (CF, art. 159, III)." }
+    {
+      "nome": "FPE e FPM",
+      "texto": "Parte do Imposto de Renda e do IPI da União é dividida entre estados (FPE) e municípios (FPM) (CF, art. 159)."
+    },
+    {
+      "nome": "Cota do ICMS",
+      "texto": "25% do ICMS arrecadado pelo estado é repassado às prefeituras (CF, art. 158, IV)."
+    },
+    {
+      "nome": "Cota do IPVA",
+      "texto": "50% do IPVA fica com o município onde o veículo está emplacado (CF, art. 158, III)."
+    },
+    {
+      "nome": "ITR",
+      "texto": "O município que fiscaliza e cobra o imposto rural fica com 100% dele (CF, art. 158, II)."
+    },
+    {
+      "nome": "Cide-Combustíveis",
+      "texto": "Parte da contribuição federal sobre combustíveis é repassada a estados e municípios, para transportes (CF, art. 159, III)."
+    }
   ],
   "raros_titulo": "Casos especiais",
-  "raros_texto": "Cobranças de empresas, do comércio exterior ou de setores específicos. Provavelmente você nunca vai pagar uma guia delas como pessoa física."
+  "raros_texto": "Cobranças de empresas, do comércio exterior ou de setores específicos. Provavelmente você nunca vai pagar uma guia delas como pessoa física.",
+  "definicao": "Tributo é o dinheiro que a lei obriga você, ou uma empresa, a pagar ao governo. Não é doação nem preço de produto: quem não paga pode ter multa e dívida. Existem três tipos, e o que muda é o motivo da cobrança e o destino do dinheiro.",
+  "nao_tributo_titulo": "Cobranças que parecem tributo, mas não são"
 }
