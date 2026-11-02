@@ -37,6 +37,13 @@
         .det-trib { margin-top: .6rem; padding: .75rem .85rem; border: 2px solid #111; border-left-width: 6px; background: #fff; }
         .dark .det-trib { background: #0f172a; border-color: #94a3b8; }
         .det-trib .gt-sigla { font-size: 1.25rem; }
+        .sec-esfera { margin-top: 1.4rem; }
+        .sec-esfera-t { display: flex; align-items: center; gap: .5rem; font-weight: 800; font-size: .95rem; text-transform: uppercase; letter-spacing: .04em; }
+        .sec-esfera-bola { width: .85rem; height: .85rem; border-radius: 50%; background: var(--cor-esfera); flex: none; }
+        .sec-esfera-n { font-size: .7rem; padding: 0 .4rem; border: 1px solid currentColor; opacity: .7; }
+        .sec-esfera-p { font-size: .85rem; margin-top: .15rem; color: var(--muted, #64748b); }
+        .sec-esfera-vazio { font-size: .85rem; margin-top: .4rem; padding: .6rem .8rem; border: 1px dashed #94a3b8; color: var(--muted, #64748b); }
+        .sec-esfera .pat { border-top: 3px solid var(--cor-esfera); }
         .pan-fonte { font-size: .68rem; color: #64748b; margin-top: .6rem; line-height: 1.4; }
         /* balança: a viga pende para o lado mais pesado quando entra na tela */
         .bal-viga { transform-box: view-box; transform-origin: 130px 38px; transition: transform 1.6s cubic-bezier(.3, 1.5, .5, 1); }
@@ -313,9 +320,29 @@ document.addEventListener('click', (ev) => {
 function cartaoOnde(sigla) {
     const i = itemDe(sigla), c = G.guia.comuns[sigla], fant = sigla === 'IGF';
     const cur = (G.hist.riqueza.cards.find((x) => x.sigla === sigla) || {}).curioso;
-    return `<div class="pat-card${fant ? ' pat-fantasma' : ''}"><p class="trib-tag">${esc(sigla)} ${selo(esferaDe(i))}</p>
+    return `<div class="pat-card${fant ? ' pat-fantasma' : ''}"><p class="trib-tag">${esc(sigla)}</p>
         <span class="pat-quem">${esc(i.nome)}</span>
         <p>${esc(c.quem)}</p><p class="mt-1.5 text-slate-600 dark:text-slate-400">${esc(c.destino)}</p>${cur ? `<p class="pat-curioso">${esc(cur)}</p>` : ''}</div>`;
+}
+// Cada situação é dividida por quem cobra: a posição do tributo já responde “para quem vai o dinheiro”.
+const SECOES_ESFERA = [
+    { id: 'União', cor: '#1d4ed8', titulo: 'Para a União (Governo Federal)' },
+    { id: 'Estado', cor: '#15803d', titulo: 'Para o Estado' },
+    { id: 'Município', cor: '#b45309', titulo: 'Para o Município' },
+    { id: 'Outros', cor: '#64748b', titulo: 'Dividido entre esferas ou varia' },
+];
+const secaoDe = (sigla) => { const e = esferaDe(itemDe(sigla)); return ['União', 'Estado', 'Município'].includes(e) ? e : 'Outros'; };
+function secoesOnde(b) {
+    const falas = b.secoes || {};
+    return SECOES_ESFERA.map((sec) => {
+        const itens = b.itens.filter((sg) => secaoDe(sg) === sec.id);
+        const vazio = !itens.length;
+        const fala = sec.id === 'Outros' || vazio ? '' : (falas[sec.id] || '');
+        if (vazio && sec.id === 'Outros') return '';
+        return `<section class="sec-esfera" style="--cor-esfera:${sec.cor}"><h3 class="sec-esfera-t"><span class="sec-esfera-bola" aria-hidden="true"></span>${esc(sec.titulo)} <span class="sec-esfera-n">${itens.length}</span></h3>
+            ${fala ? `<p class="sec-esfera-p">${esc(fala)}</p>` : ''}
+            ${vazio ? '<p class="sec-esfera-vazio">Nesta situação, nenhum dos tributos listados fica com este nível de governo.</p>' : `<div class="pat">${itens.map(cartaoOnde).join('')}</div>`}</section>`;
+    }).join('');
 }
 function painelOnde() {
     const b = G.guia.onde.find((o) => o.id === G.onde) || G.guia.onde[0];
@@ -323,7 +350,7 @@ function painelOnde() {
         <h2 class="text-lg font-bold">Onde você é tributado no dia a dia</h2>
         <div class="mt-3 flex flex-wrap gap-2" role="group" aria-label="Escolha uma situação">${G.guia.onde.map((o) => `<button type="button" data-onde="${o.id}" aria-pressed="${o.id === b.id}" class="${pillCls(o.id === b.id)}"><i class="fa-solid ${esc(o.icone)} mr-1.5" aria-hidden="true"></i>${esc(o.rotulo)}</button>`).join('')}</div>
         <p class="text-sm mt-4" style="max-width:70ch">${esc(b.pergunta)}</p>
-        <div class="pat">${b.itens.map(cartaoOnde).join('')}</div>
+        ${secoesOnde(b)}
         <p class="ficha-nota mt-2">${esc(b.nota)}</p>
         <p class="ficha-nota">Cada tributo aparece em um só grupo. Para ver todos juntos, com filtros, abra o <button type="button" data-aba="catalogo" class="underline font-semibold" style="border:0!important;background:none!important;padding:0!important;text-transform:none;letter-spacing:0">catálogo completo</button>.</p>`;
 }
