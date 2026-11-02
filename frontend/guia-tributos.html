@@ -103,6 +103,26 @@
         .cam ol { margin: 0; padding-left: 1.2rem; list-style: decimal; }
         .cam li { margin-top: .25rem; }
         .cam-igual { align-self: center; justify-self: center; font-size: 1.6rem; font-weight: 800; }
+        #benBarras [data-det] { cursor: pointer; padding: .25rem .4rem; margin: -.25rem -.4rem; }
+        #benBarras [data-det]:hover, #benBarras [data-det]:focus-visible { outline: 2px solid #A92823; outline-offset: 0; }
+        .det-seta { font-size: .65rem; margin-right: .4rem; transition: transform .15s; }
+        [aria-expanded="true"] .det-seta { transform: rotate(90deg); }
+        .det { margin: .2rem 0 .4rem; padding: .8rem .95rem; border: 2px solid #A92823; background: #fff; font-size: .85rem; line-height: 1.5; }
+        .dark .det { background: #0f172a; }
+        .det-gl { font-weight: 700; }
+        .det-res { margin-top: .4rem; }
+        .det-sub { margin-top: .8rem; font-size: .7rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--muted, #64748b); }
+        .det-trib { list-style: none; margin: .3rem 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: .3rem .5rem; }
+        .det-trib li { padding: 0 .45rem; border: 1px solid currentColor; font-size: .78rem; }
+        .det-itens { list-style: none; margin: .4rem 0 0; padding: 0; display: grid; gap: .55rem; }
+        .det-item-t { display: flex; justify-content: space-between; gap: .8rem; align-items: baseline; }
+        .det-item-v { font-weight: 800; white-space: nowrap; }
+        .det-item-m { font-size: .76rem; color: var(--muted, #64748b); }
+        .det details > summary, .det-mais > summary { cursor: pointer; font-size: .78rem; font-weight: 700; text-decoration: underline; margin-top: .2rem; }
+        .det details p { font-size: .78rem; margin-top: .3rem; max-width: 80ch; }
+        .det-base { color: var(--muted, #64748b); }
+        .det-aviso { margin-top: .8rem; padding: .5rem .7rem; border-left: 4px solid #b45309; background: #fef3c7; color: #111; font-size: .8rem; }
+        .det-fonte { margin-top: .8rem; font-size: .74rem; color: var(--muted, #64748b); }
         .pan-fonte { font-size: .68rem; color: #64748b; margin-top: .6rem; line-height: 1.4; }
         /* balança: a viga pende para o lado mais pesado quando entra na tela */
         .bal-viga { transform-box: view-box; transform-origin: 130px 38px; transition: transform 1.6s cubic-bezier(.3, 1.5, .5, 1); }
@@ -435,6 +455,7 @@ function reaisCurto(mi) {
     const v = mi * 1e6;
     if (v >= 1e12) return 'R$ ' + (v / 1e12).toFixed(2).replace('.', ',') + (v / 1e12 >= 2 ? ' trilhões' : ' trilhão');
     if (v >= 1e9) return 'R$ ' + Math.round(v / 1e9).toLocaleString('pt-BR') + ' bilhões';
+    if (v < 1e6) return 'menos de R$ 1 milhão';
     return 'R$ ' + Math.round(v / 1e6).toLocaleString('pt-BR') + ' milhões';
 }
 const MAPA = { ano: '2024' };
@@ -517,6 +538,70 @@ document.addEventListener('click', (ev) => {
 
 /* ---------- 3b. Isenções, benefícios fiscais e desonerações ---------- */
 const BEN = { visao: 'beneficio' };
+const semCaixa = (t) => String(t).toLowerCase();
+// Devolve a lista de dispositivos legais (Quadros XI a XXV do DGT) que formam a barra, ou null.
+function detalheDe(nome) {
+    const g = G.gastos;
+    if (!g) return null;
+    if (BEN.visao === 'beneficio') return g.detalhe_beneficio[nome] || null;
+    if (BEN.visao === 'tributo') {
+        const chave = nome.includes(' - ') ? nome.split(' - ').pop() : nome;
+        const k = Object.keys(g.detalhe_tributo).find((x) => semCaixa(x) === semCaixa(chave));
+        return k ? g.detalhe_tributo[k] : null;
+    }
+    return null;
+}
+function vigenciaTxt(v) { return v === 'indeterminado' ? 'sem prazo para acabar' : `vale até ${v}`; }
+function itemBeneficioHtml(x) {
+    return `<li><div class="det-item-t"><b>${esc(x.nome)}</b><span class="det-item-v">${esc(reaisCurto(x.rs / 1e6))}</span></div>
+        <p class="det-item-m">${esc(x.tributo)} · ${esc(vigenciaTxt(x.vigencia))}</p>
+        ${x.desc && x.desc !== '...' ? `<details><summary>O que a lei diz</summary><p>${esc(x.desc)}</p>${x.base ? `<p class="det-base">${esc(x.base)}</p>` : ''}</details>` : ''}</li>`;
+}
+function detalheHtml(nome, lista) {
+    const g = G.gastos, b = G.guia.beneficios;
+    const itens = lista.filter((x) => x.rs > 0).sort((p, q) => q.rs - p.rs);
+    const soma = itens.reduce((t, x) => t + x.rs, 0);
+    const porTrib = {};
+    itens.forEach((x) => { porTrib[x.tributo] = (porTrib[x.tributo] || 0) + x.rs; });
+    const trib = Object.entries(porTrib).sort((a, c) => c[1] - a[1]);
+    const semPrazo = itens.filter((x) => x.vigencia === 'indeterminado').length;
+    const datas = itens.filter((x) => x.vigencia !== 'indeterminado').map((x) => x.vigencia.split('/').reverse().join('-')).sort();
+    const prazo = !datas.length ? 'Nenhum dispositivo tem data para acabar.'
+        : `${semPrazo ? semPrazo + ' sem prazo para acabar e ' : ''}${datas.length} com prazo (o último vence em ${datas[datas.length - 1].split('-').reverse().join('/')}).`;
+    const alvo = (BEN.visao === 'beneficio' ? g.por_beneficio : g.por_tributo).find((x) => x.nome === nome);
+    const dif = alvo ? alvo.rs - soma : 0;
+    const gl = BEN.visao === 'beneficio' && b.glosas[nome];
+    const MOSTRA = 6;
+    return `<div class="det" role="region" aria-label="Detalhes de ${esc(nome.trim())}">
+        ${gl ? `<p class="det-gl">${esc(gl)}</p>` : ''}
+        <p class="det-res">São <b>${itens.length}</b> ${itens.length === 1 ? 'dispositivo legal' : 'dispositivos legais'}, somando <b>${esc(reaisCurto(soma / 1e6))}</b> de renúncia projetada. ${esc(prazo)}</p>
+        ${trib.length > 1 ? `<p class="det-sub">Sobre quais tributos recai</p><ul class="det-trib">${trib.map(([t, v]) => `<li><b>${esc(t)}</b> ${esc(reaisCurto(v / 1e6))}</li>`).join('')}</ul>` : ''}
+        <p class="det-sub">Principais dispositivos</p>
+        <ul class="det-itens">${itens.slice(0, MOSTRA).map(itemBeneficioHtml).join('')}</ul>
+        ${itens.length > MOSTRA ? `<details class="det-mais"><summary>Mostrar os outros ${itens.length - MOSTRA}</summary><ul class="det-itens">${itens.slice(MOSTRA).map(itemBeneficioHtml).join('')}</ul></details>` : ''}
+        ${Math.abs(dif) > 0.005 * (alvo ? alvo.rs : 1) && alvo ? `<p class="det-aviso">Os dispositivos listados somam ${esc(reaisCurto(soma / 1e6))}, mas o quadro-resumo da Receita informa ${esc(reaisCurto(alvo.rs / 1e6))} para este item. A planilha não detalha a diferença de ${esc(reaisCurto(Math.abs(dif) / 1e6))}.</p>` : ''}
+        <p class="det-fonte">Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(g.url)}">Receita Federal, DGT (PLOA ${esc(String(g.ano))})</a>. Valores são projeções, e a lista mostra só dispositivos com valor estimado.</p></div>`;
+}
+function alternarDetalhe(linha) {
+    const aberta = linha.getAttribute('aria-expanded') === 'true';
+    document.querySelectorAll('#benBarras .det').forEach((d) => d.remove());
+    document.querySelectorAll('#benBarras [data-det]').forEach((l) => l.setAttribute('aria-expanded', 'false'));
+    if (aberta) return;
+    const lista = detalheDe(linha.dataset.det);
+    if (!lista) return;
+    linha.setAttribute('aria-expanded', 'true');
+    linha.insertAdjacentHTML('afterend', detalheHtml(linha.dataset.det, lista));
+}
+document.addEventListener('click', (ev) => {
+    if (ev.target.closest('.det')) return;
+    const l = ev.target.closest('#benBarras [data-det]');
+    if (l) alternarDetalhe(l);
+});
+document.addEventListener('keydown', (ev) => {
+    if (ev.key !== 'Enter' && ev.key !== ' ') return;
+    const l = ev.target.closest && ev.target.closest('#benBarras [data-det]');
+    if (l && ev.target === l) { ev.preventDefault(); alternarDetalhe(l); }
+});
 function barrasBeneficio() {
     const g = G.gastos, b = G.guia.beneficios;
     const todos = g['por_' + BEN.visao], MAX = 12;
@@ -525,8 +610,9 @@ function barrasBeneficio() {
     const maior = Math.max(...linhas.map((x) => x.pct_total));
     return linhas.map((x) => {
         const gl = BEN.visao === 'beneficio' && b.glosas[x.nome];
-        return `<div class="mapa-linha" style="--cor-esfera:#A92823">
-            <div class="mapa-topo"><span class="mapa-nome" style="text-transform:none;letter-spacing:0">${esc(x.nome.trim())}</span>
+        const det = detalheDe(x.nome);
+        return `<div class="mapa-linha" style="--cor-esfera:#A92823"${det ? ` data-det="${esc(x.nome)}" role="button" tabindex="0" aria-expanded="false"` : ''}>
+            <div class="mapa-topo"><span class="mapa-nome" style="text-transform:none;letter-spacing:0">${det ? '<i class="fa-solid fa-chevron-right det-seta" aria-hidden="true"></i>' : ''}${esc(x.nome.trim())}</span>
                 <span class="mapa-valor"><b>${esc(reaisCurto(x.rs / 1e6))}</b> <span class="mapa-pct">${esc(pt1(x.pct_total))}%</span></span></div>
             <div class="mapa-barra" role="img" aria-label="${esc(x.nome)}: ${esc(pt1(x.pct_total))}% do total" title="Valor exato: R$ ${esc(x.rs.toLocaleString('pt-BR', { maximumFractionDigits: 0 }))}"><span style="width:${(x.pct_total / maior) * 100}%"></span></div>
             ${gl ? `<p class="mapa-fontes">${esc(gl)}</p>` : ''}</div>`;
@@ -539,6 +625,7 @@ function painelBeneficios() {
         <div class="mt-3 flex flex-wrap items-baseline gap-x-6 gap-y-1"><p><b class="text-3xl">${esc(reaisCurto(g.total_rs / 1e6))}</b> <span class="text-sm">de renúncia projetada para ${g.ano}</span></p>
             <p class="text-sm"><b>${esc(pt1(g.total_pct_pib))}%</b> do PIB · <b>${esc(pt1(g.total_pct_arrecadacao))}%</b> da arrecadação federal</p></div>
         <div class="mt-3 flex flex-wrap gap-2" role="group" aria-label="Escolha o recorte">${b.visoes.map(([id, r]) => `<button type="button" data-ben="${id}" aria-pressed="${BEN.visao === id}" class="${pillCls(BEN.visao === id)}">${esc(r)}</button>`).join('')}</div>
+        <p class="text-xs mt-3" style="color:var(--muted,#64748b)">Clique em uma barra para ver do que ela é feita, o prazo e o que a lei diz.</p>
         <div class="mapa" id="benBarras">${barrasBeneficio()}</div>
         <p class="ficha-nota mt-1">${esc(b.numeros_nota.replace('{ano}', g.ano))} Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(g.url)}">${esc(g.fonte)}</a>.</p>` : '<p class="ficha-nota mt-6">Os números do Demonstrativo dos Gastos Tributários não puderam ser carregados.</p>';
     const cards = (l) => `<div class="grid md:grid-cols-${l.length === 3 ? 3 : 2} gap-3 mt-3">${l.map((c) => `<div class="pan-nota" style="margin:0"><p class="pan-nota-t">${esc(c.t)}</p><p>${esc(c.p)}</p></div>`).join('')}</div>`;
