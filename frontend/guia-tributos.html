@@ -66,6 +66,11 @@
         .casc-trecho li { margin-top: .3rem; }
         .casc-trecho li b { display: inline-block; min-width: 7.5rem; }
         @media (max-width: 560px) { .casc-trecho li b { display: block; } }
+        .casc-val { display: inline-block; margin-left: .4rem; padding: 0 .4rem; font-size: .78rem; border: 1px solid var(--cor-esfera); }
+        .nota-transp { font-size: .78rem; line-height: 1.5; padding: .6rem .8rem; border: 1px dashed #94a3b8; max-width: 85ch; }
+        .nota-transp summary { cursor: pointer; font-weight: 800; }
+        .nota-transp ul { padding-left: 1.1rem; list-style: disc; }
+        .nota-transp li { margin-top: .3rem; }
         .pan-fonte { font-size: .68rem; color: #64748b; margin-top: .6rem; line-height: 1.4; }
         /* balança: a viga pende para o lado mais pesado quando entra na tela */
         .bal-viga { transform-box: view-box; transform-origin: 130px 38px; transition: transform 1.6s cubic-bezier(.3, 1.5, .5, 1); }
@@ -414,11 +419,32 @@ function mapaHtml() {
         <p class="ficha-nota mt-1">${esc(m.nota)} Passe o mouse sobre a barra para ver o valor exato. Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(m.url)}">${esc(m.fonte)}</a>.</p>`;
 }
 const COR_ESFERA = { uniao: '#1d4ed8', estado: '#15803d', municipio: '#b45309' };
+// Valor realmente repassado em 2024 (repasses.json, gerado a partir do Tesouro Transparente); mostra a cobertura quando o ano está incompleto.
+function valorRepasse(id) {
+    const r = G.repasses, it = r && id && r.itens.find((x) => x.id === id);
+    if (!it) return '';
+    const parcial = it.completo ? '' : ` (${it.meses} de 12 meses)`;
+    return `<span class="casc-val" title="Valor exato: R$ ${esc(it.rs.toLocaleString('pt-BR', { minimumFractionDigits: 2 }))}"><b>${esc(String(r.ano))}:</b> ${esc(reaisCurto(it.rs / 1e6))}${esc(parcial)}</span>`;
+}
+// Nota de rodapé que expõe a desorganização dos dados abertos, montada a partir dos avisos que o script detectou.
+function notaTransparencia() {
+    const r = G.repasses, t = G.guia.cascata.transparencia;
+    if (!r) return '';
+    const av = r.avisos, por = (tp) => av.filter((a) => a.tipo === tp);
+    const nome = por('nome'), cent = por('centavos'), falt = por('faltando');
+    const linhas = [];
+    if (nome.length) linhas.push(`<li><b>Nome do arquivo não bate com o conteúdo.</b> Em ${nome.length} arquivos, o mês no nome é o seguinte ao dos dados (o arquivo “202402” traz janeiro). Nos municípios, dois arquivos se chamam “202412”: um é de novembro, outro de dezembro.</li>`);
+    falt.forEach((a) => linhas.push(`<li><b>Mês faltando.</b> ${esc(a.texto)}</li>`));
+    cent.forEach((a) => linhas.push(`<li><b>Valores sem vírgula.</b> ${esc(a.texto)} Lido como está, o ${a.conjunto === 'estados' ? 'FPE' : 'FPM'} do mês seria R$ ${esc(Math.round(a.lido_literal_rs / 1e9).toLocaleString('pt-BR'))} bilhões. Os valores estão em centavos, e dividi por 100.</li>`));
+    return `<details class="nota-transp mt-4" open><summary>${esc(t.titulo)}</summary>
+        <p class="mt-2">${esc(t.abertura)}</p><ul class="mt-2">${linhas.join('')}<li><b>Colunas confusas.</b> ${esc(t.colunas)}</li></ul>
+        <p class="mt-2">${esc(t.conferencia)} Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(r.url)}">${esc(r.fonte)}</a>, gerado em ${esc(r.gerado_em.split('-').reverse().join('/'))}.</p></details>`;
+}
 function cascataHtml() {
     const c = G.guia.cascata, m = G.guia.mapa;
     const trecho = (t) => `<div class="casc-trecho" style="--cor-esfera:${COR_ESFERA[t.cor]}">
         <p class="casc-seta"><b>${esc(t.de)}</b> <i class="fa-solid fa-arrow-down-long" aria-hidden="true"></i> <b>${esc(t.para)}</b></p>
-        <ul>${t.itens.map(([n, x]) => `<li><b>${esc(n)}</b> ${esc(x)}</li>`).join('')}</ul></div>`;
+        <ul>${t.itens.map(([n, x, rid]) => `<li><b>${esc(n)}</b> ${esc(x)}${valorRepasse(rid)}</li>`).join('')}</ul></div>`;
     return `<p class="text-sm mt-1" style="max-width:70ch">${esc(c.frase)}</p>
         <div class="casc">
             <div class="casc-no" style="--cor-esfera:${COR_ESFERA.uniao}"><span class="sec-esfera-bola" aria-hidden="true"></span>UNIÃO</div>
@@ -430,7 +456,7 @@ function cascataHtml() {
         <div class="grid md:grid-cols-3 gap-3 mt-3">
             <div class="pan-nota" style="margin:0"><p class="pan-nota-t">${esc(c.imposto_titulo)}</p><p>${esc(c.imposto_texto)}</p></div>
             <div class="pan-nota" style="margin:0"><p class="pan-nota-t">${esc(c.contrib_titulo)}</p><p>${esc(c.contrib_texto)}</p></div>
-            <div class="pan-nota" style="margin:0"><p class="pan-nota-t">${esc(c.retido_titulo)}</p><p>${esc(c.retido_texto)}</p></div></div>`;
+            <div class="pan-nota" style="margin:0"><p class="pan-nota-t">${esc(c.retido_titulo)}</p><p>${esc(c.retido_texto)}</p></div></div>${notaTransparencia()}`;
 }
 function painelQuem() {
     const g = G.guia;
@@ -558,7 +584,8 @@ function painelHistoria() {
 (async function iniciar() {
     try {
         const [grupos, cls, hist, guia] = await Promise.all(['tributos', 'tributos_classe', 'tributos_historia', 'guia_tributos'].map((n) => fetch(`assets/${n}.json`).then((r) => { if (!r.ok) throw new Error(`Erro ${r.status} ao carregar ${n}`); return r.json(); })));
-        Object.assign(G, { grupos, cls, hist, guia });
+        const repasses = await fetch('assets/repasses.json').then((r) => (r.ok ? r.json() : null)).catch(() => null);
+        Object.assign(G, { grupos, cls, hist, guia, repasses });
         G.itens = grupos.flatMap((g) => g.itens.map((i) => ({ ...i, tipo: g.tipo, esfera: ESFERA_GRUPO[g.esfera] || g.esfera })));
         abrirAba(location.hash.slice(1) || 'panorama', false);
     } catch (e) { $('painel').innerHTML = mensagemErro(e); }
