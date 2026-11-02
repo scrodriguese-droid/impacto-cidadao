@@ -36,12 +36,18 @@ MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "a
 # (conjunto, categoria na coluna "Transferência") -> item mostrado. Só entram as linhas em que o item e a categoria
 # coincidem (o repasse direto); as linhas "FUNDEB" são parcelas retidas e não são somadas aqui.
 ITENS = [
-    ("estados", "FPE", "fpe", "FPE", "Estados"),
-    ("estados", "IPI-Exp", "ipi_exp", "IPI-Exportação", "Estados"),
-    ("estados", "CIDE-Combustíveis", "cide_estados", "Cide-Combustíveis (parte dos estados)", "Estados"),
-    ("municipios", "FPM", "fpm", "FPM", "Municípios"),
-    ("municipios", "ITR", "itr", "ITR", "Municípios"),
-    ("municipios", "CIDE-Combustíveis", "cide_municipios", "Cide-Combustíveis (parte dos municípios)", "Municípios"),
+    ("estados", "FPE", "fpe", "FPE", "Estados", "direto"),
+    ("estados", "IPI-Exp", "ipi_exp", "IPI-Exportação", "Estados", "direto"),
+    ("estados", "CIDE-Combustíveis", "cide_estados", "Cide-Combustíveis (parte dos estados)", "Estados", "direto"),
+    ("estados", "IOF-Ouro", "iof_ouro_estados", "IOF-Ouro (parte dos estados)", "Estados", "direto"),
+    ("estados", "LC 176/2020 (ADO25)", "lc176_estados", "Compensação pelas exportações (LC 176/2020)", "Estados", "direto"),
+    ("estados", "Royalties", "royalties_estados", "Royalties e participações na exploração de petróleo, minérios e água", "Estados", "categoria"),
+    ("municipios", "FPM", "fpm", "FPM", "Municípios", "direto"),
+    ("municipios", "ITR", "itr", "ITR", "Municípios", "direto"),
+    ("municipios", "CIDE-Combustíveis", "cide_municipios", "Cide-Combustíveis (parte dos municípios)", "Municípios", "direto"),
+    ("municipios", "IOF-Ouro", "iof_ouro_municipios", "IOF-Ouro (parte dos municípios)", "Municípios", "direto"),
+    ("municipios", "LC 176/2020 (ADO25)", "lc176_municipios", "Compensação pelas exportações (LC 176/2020)", "Municípios", "direto"),
+    ("municipios", "Royalties", "royalties_municipios", "Royalties e participações na exploração de petróleo, minérios e água", "Municípios", "categoria"),
 ]
 
 
@@ -93,7 +99,8 @@ def arquivos_do_ano(conjunto, ano, cache):
 def processar(conjunto, ano, cache):
     """Soma o ano por categoria e coleta os avisos de qualidade dos arquivos."""
     somas, meses_vistos, avisos = {}, {}, []
-    for nome, caminho in sorted(arquivos_do_ano(conjunto, ano, cache)):
+    arquivos = sorted(arquivos_do_ano(conjunto, ano, cache))
+    for nome, caminho in arquivos:
         if not caminho.exists():
             avisos.append({"tipo": "arquivo", "conjunto": conjunto, "texto": f"O arquivo {nome} não pôde ser baixado."})
             continue
@@ -125,6 +132,10 @@ def processar(conjunto, ano, cache):
             meses_vistos.setdefault(m, []).append(nome)
         for k, v in somar_linhas(corpo, i_item, i_cat, i_d1, fator).items():
             somas[k] = somas.get(k, 0.0) + v
+    repetidos = sorted({n for n, _ in arquivos if [x for x, _ in arquivos].count(n) > 1})
+    for n in repetidos:
+        avisos.append({"tipo": "nome_repetido", "conjunto": conjunto, "arquivo": n,
+                       "texto": f"Dois arquivos diferentes têm o mesmo nome, “{n}”."})
     for m, nomes in meses_vistos.items():
         if len(nomes) > 1:
             avisos.append({"tipo": "duplicado", "conjunto": conjunto, "mes_dados": m, "texto": f"O mês {m} aparece em mais de um arquivo ({', '.join(nomes)})."})
@@ -146,8 +157,9 @@ def somar_linhas(corpo, i_item, i_cat, i_d1, fator, so_categoria=None):
 
 
 def somar_diretos(conjunto, ano, cache):
-    """Como somar_linhas, mas só onde o item é igual à categoria (repasse direto, líquido do Fundeb)."""
-    soma = {}
+    """Devolve (direto, por_categoria): "direto" soma só onde o item é igual à categoria (repasse líquido do Fundeb);
+    "por_categoria" soma todas as linhas da categoria (usado em royalties, que vêm com vários itens)."""
+    soma, tudo = {}, {}
     for nome, caminho in arquivos_do_ano(conjunto, ano, cache):
         if not caminho.exists():
             continue
@@ -162,10 +174,11 @@ def somar_diretos(conjunto, ano, cache):
         fator = 0.01 if valores and all("." not in x for x in valores) else 1.0
         for r in corpo:
             item, cat = r[i_item].strip(), r[i_cat].strip()
+            tudo[cat] = tudo.get(cat, 0.0) + sum(numero(x) for x in r[i_d1:i_d1 + 3]) * fator
             if not (item == cat or (item.startswith("CIDE") and cat == "CIDE-Combustíveis") or (item == "IPI-EXP" and cat == "IPI-Exp")):
                 continue
             soma[cat] = soma.get(cat, 0.0) + sum(numero(x) for x in r[i_d1:i_d1 + 3]) * fator
-    return soma
+    return soma, tudo
 
 
 def main():
@@ -184,8 +197,8 @@ def main():
         diretos[conjunto] = somar_diretos(conjunto, a.ano, a.cache)
 
     itens = []
-    for conjunto, cat, id_, nome, destino in ITENS:
-        valor = diretos[conjunto].get(cat)
+    for conjunto, cat, id_, nome, destino, modo in ITENS:
+        valor = diretos[conjunto][0 if modo == "direto" else 1].get(cat)
         if valor is None:
             continue
         itens.append({"id": id_, "nome": nome, "destino": destino, "rs": round(valor, 2),
