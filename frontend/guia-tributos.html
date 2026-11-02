@@ -43,7 +43,8 @@
         .sec-esfera-n { font-size: .7rem; padding: 0 .4rem; border: 1px solid currentColor; opacity: .7; }
         .sec-esfera-p { font-size: .85rem; margin-top: .15rem; color: var(--muted, #64748b); }
         .sec-esfera-vazio { font-size: .85rem; margin-top: .4rem; padding: .6rem .8rem; border: 1px dashed #94a3b8; color: var(--muted, #64748b); }
-        .sec-esfera .pat { border-top: 3px solid var(--cor-esfera); }
+        .sec-esfera .pat { border-top: 3px solid var(--cor-esfera); margin-top: .3rem; }
+        .sec-tipo { margin-top: .8rem; font-size: .7rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--muted, #64748b); }
         .pan-fonte { font-size: .68rem; color: #64748b; margin-top: .6rem; line-height: 1.4; }
         /* balança: a viga pende para o lado mais pesado quando entra na tela */
         .bal-viga { transform-box: view-box; transform-origin: 130px 38px; transition: transform 1.6s cubic-bezier(.3, 1.5, .5, 1); }
@@ -332,6 +333,14 @@ const SECOES_ESFERA = [
     { id: 'Outros', cor: '#64748b', titulo: 'Dividido entre esferas ou varia' },
 ];
 const secaoDe = (sigla) => { const e = esferaDe(itemDe(sigla)); return ['União', 'Estado', 'Município'].includes(e) ? e : 'Outros'; };
+// Dentro de cada esfera: primeiro os impostos, depois as contribuições e as taxas.
+const GRUPOS_TIPO = [['Imposto', 'Impostos'], ['Contribuição', 'Contribuições'], ['Taxa', 'Taxas']];
+function porTipo(itens) {
+    return GRUPOS_TIPO.map(([t, rot]) => {
+        const l = itens.filter((sg) => (itemDe(sg).tipo === t));
+        return l.length ? `<p class="sec-tipo">${rot} · ${l.length}</p><div class="pat">${l.map(cartaoOnde).join('')}</div>` : '';
+    }).join('');
+}
 function secoesOnde(b) {
     const falas = b.secoes || {};
     return SECOES_ESFERA.map((sec) => {
@@ -341,7 +350,7 @@ function secoesOnde(b) {
         if (vazio && sec.id === 'Outros') return '';
         return `<section class="sec-esfera" style="--cor-esfera:${sec.cor}"><h3 class="sec-esfera-t"><span class="sec-esfera-bola" aria-hidden="true"></span>${esc(sec.titulo)} <span class="sec-esfera-n">${itens.length}</span></h3>
             ${fala ? `<p class="sec-esfera-p">${esc(fala)}</p>` : ''}
-            ${vazio ? '<p class="sec-esfera-vazio">Nesta situação, nenhum dos tributos listados fica com este nível de governo.</p>' : `<div class="pat">${itens.map(cartaoOnde).join('')}</div>`}</section>`;
+            ${vazio ? '<p class="sec-esfera-vazio">Nesta situação, nenhum dos tributos listados fica com este nível de governo.</p>' : porTipo(itens)}</section>`;
     }).join('');
 }
 function painelOnde() {
