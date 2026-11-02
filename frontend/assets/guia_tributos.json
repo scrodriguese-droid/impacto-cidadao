@@ -401,15 +401,18 @@
         "itens": [
           [
             "FPE",
-            "21,5% do Imposto de Renda e do IPI, dividido entre os estados (CF, art. 159, I, a)."
+            "21,5% do Imposto de Renda e do IPI, dividido entre os estados (CF, art. 159, I, a).",
+            "fpe"
           ],
           [
             "IPI-Exportação",
-            "10% do IPI vai para os estados que mais exportam (art. 159, II)."
+            "10% do IPI vai para os estados que mais exportam (art. 159, II).",
+            "ipi_exp"
           ],
           [
             "Cide-Combustíveis",
-            "29% vai para os estados (art. 159, III)."
+            "29% vai para os estados (art. 159, III).",
+            "cide_estados"
           ]
         ]
       },
@@ -420,11 +423,13 @@
         "itens": [
           [
             "FPM",
-            "25,5% do Imposto de Renda e do IPI, dividido entre as prefeituras: 22,5% mais três parcelas extras de 1% (art. 159, I, b, d, e, f)."
+            "25,5% do Imposto de Renda e do IPI, dividido entre as prefeituras: 22,5% mais três parcelas extras de 1% (art. 159, I, b, d, e, f).",
+            "fpm"
           ],
           [
             "ITR",
-            "50% do imposto rural vai para o município onde fica a terra; se a prefeitura fiscalizar e cobrar, fica com 100% (art. 158, II)."
+            "50% do imposto rural vai para o município onde fica a terra; se a prefeitura fiscalizar e cobrar, fica com 100% (art. 158, II).",
+            "itr"
           ]
         ]
       },
@@ -453,6 +458,12 @@
     "contrib_titulo": "Contribuições: ficam com quem cobra",
     "contrib_texto": "PIS, Cofins, CSLL e as contribuições da previdência não entram nessa divisão: ficam com a União, para a finalidade definida em lei. A exceção é a Cide-Combustíveis.",
     "retido_titulo": "O Imposto de Renda dos servidores fica em casa",
-    "retido_texto": "O imposto retido na fonte dos salários de servidores estaduais e municipais fica com o próprio estado ou município que paga (CF, arts. 157, I, e 158, I)."
+    "retido_texto": "O imposto retido na fonte dos salários de servidores estaduais e municipais fica com o próprio estado ou município que paga (CF, arts. 157, I, e 158, I).",
+    "transparencia": {
+      "titulo": "Nota sobre a qualidade dos dados abertos",
+      "abertura": "Os valores acima vêm das planilhas mensais de Transferências Constitucionais do Tesouro Transparente. O Tesouro publica os arquivos sem API de valores, e conferir cada um exigiu corrigir os problemas abaixo. Os números foram tratados pelo script scripts/gerar_repasses.py, e cada problema é detectado automaticamente.",
+      "colunas": "As colunas “Item transferência” e “Transferência” se misturam: as linhas do Fundeb reúnem parcelas de FPE, FPM, ICMS e IPVA, e o mesmo dinheiro pode aparecer nos arquivos de estados e de municípios. Não há documentação de como somar sem contar em dobro. Por isso a página mostra só o repasse direto de cada tributo, líquido do desconto de 20% para o Fundeb. As cotas de ICMS e IPVA que os estados repassam às prefeituras não aparecem como repasse nesse conjunto, só dentro do Fundeb.",
+      "conferencia": "Os totais não foram reconciliados com os 3,51% do PIB que o Tesouro divulga para o conjunto das transferências, porque o conjunto de arquivos não tem as partes necessárias e ainda tem os problemas acima."
+    }
   }
 }
