@@ -48,6 +48,7 @@ import eleicoes
 import equipamentos
 import analise_dimensoes
 import historico_divida
+import historico_primario
 import macro
 import radiografia_periodos
 import maturidade
@@ -1012,6 +1013,14 @@ def macro_reservas() -> dict:
 def macro_historico_divida() -> dict:
     try:
         return historico_divida.historico()
+    except Exception as exc:  # noqa: BLE001
+        raise _fonte_macro_indisponivel(exc) from exc
+
+
+@router.get("/macro/historico-primario", tags=["macro"])
+def macro_historico_primario() -> dict:
+    try:
+        return historico_primario.historico()
     except Exception as exc:  # noqa: BLE001
         raise _fonte_macro_indisponivel(exc) from exc
 
