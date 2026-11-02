@@ -71,6 +71,29 @@
         .nota-transp summary { cursor: pointer; font-weight: 800; }
         .nota-transp ul { padding-left: 1.1rem; list-style: disc; }
         .nota-transp li { margin-top: .3rem; }
+        .pool-leg { display: flex; flex-wrap: wrap; gap: .3rem 1rem; margin: .6rem 0 0; padding: 0; list-style: none; font-size: .78rem; font-weight: 700; }
+        .pool-leg li, .pool-lista li { display: flex; gap: .45rem; align-items: baseline; }
+        .pool-leg i, .pool-lista > li > i { width: .8rem; height: .8rem; flex: none; display: inline-block; align-self: center; }
+        .pool-grupo { margin-top: 1.4rem; }
+        .pool-g { font-size: 1rem; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; border-bottom: 3px solid #111; padding-bottom: .2rem; }
+        .dark .pool-g { border-color: #94a3b8; }
+        .pools { display: grid; gap: 1rem; margin-top: .8rem; }
+        @media (min-width: 900px) { .pools { grid-template-columns: repeat(2, minmax(0, 1fr)); } .pools .pool:first-child { grid-column: 1 / -1; } }
+        .pool { padding: .8rem .9rem; border: 2px solid #111; background: #fff; }
+        .dark .pool { background: #0f172a; border-color: #94a3b8; }
+        .pool-t { font-weight: 800; font-size: .95rem; }
+        .pool-s { font-size: .82rem; margin-top: .15rem; color: var(--muted, #64748b); }
+        .pool-barra { display: flex; height: 2.1rem; margin-top: .6rem; border: 2px solid #111; }
+        .dark .pool-barra { border-color: #94a3b8; }
+        .pool-barra span { display: flex; align-items: center; justify-content: center; color: #fff; font-size: .8rem; min-width: 3px; border-right: 2px solid #fff; }
+        .pool-barra span:last-child { border-right: 0; }
+        .pool-lista { list-style: none; margin: .6rem 0 0; padding: 0; font-size: .84rem; line-height: 1.4; display: grid; gap: .35rem; }
+        .pool-pct { font-weight: 800; min-width: 3rem; }
+        .pool-lista small { display: block; font-size: .76rem; color: var(--muted, #64748b); }
+        .pool-conta { margin-top: .6rem; font-size: .76rem; color: var(--muted, #64748b); }
+        .pool-val { display: inline-block; margin-left: .4rem; padding: 0 .4rem; font-size: .76rem; border: 1px solid #111; background: #fef3c7; color: #111; }
+        .pool-outros { list-style: none; margin: .6rem 0 0; padding: 0; display: grid; gap: .6rem; font-size: .85rem; line-height: 1.45; }
+        .pool-fim { margin-top: 1.2rem; padding: .7rem .9rem; border-left: 6px solid #b45309; background: #fef3c7; color: #111; font-weight: 700; font-size: .9rem; }
         .pan-fonte { font-size: .68rem; color: #64748b; margin-top: .6rem; line-height: 1.4; }
         /* balança: a viga pende para o lado mais pesado quando entra na tela */
         .bal-viga { transform-box: view-box; transform-origin: 130px 38px; transition: transform 1.6s cubic-bezier(.3, 1.5, .5, 1); }
@@ -420,43 +443,49 @@ function mapaHtml() {
 }
 const COR_ESFERA = { uniao: '#1d4ed8', estado: '#15803d', municipio: '#b45309' };
 // Valor realmente repassado em 2024 (repasses.json, gerado a partir do Tesouro Transparente); mostra a cobertura quando o ano está incompleto.
-function valorRepasse(id) {
+function valorRepasse(id, comDestino) {
     const r = G.repasses, it = r && id && r.itens.find((x) => x.id === id);
     if (!it) return '';
     const parcial = it.completo ? '' : ` (${it.meses} de 12 meses)`;
-    return `<span class="casc-val" title="Valor exato: R$ ${esc(it.rs.toLocaleString('pt-BR', { minimumFractionDigits: 2 }))}"><b>${esc(String(r.ano))}:</b> ${esc(reaisCurto(it.rs / 1e6))}${esc(parcial)}</span>`;
+    return `<span class="pool-val" title="Valor exato: R$ ${esc(it.rs.toLocaleString('pt-BR', { minimumFractionDigits: 2 }))}"><b>${comDestino ? esc(it.destino) + ', ' : ''}${esc(String(r.ano))}:</b> ${esc(reaisCurto(it.rs / 1e6))}${esc(parcial)}</span>`;
 }
 // Nota de rodapé que expõe a desorganização dos dados abertos, montada a partir dos avisos que o script detectou.
 function notaTransparencia() {
     const r = G.repasses, t = G.guia.cascata.transparencia;
     if (!r) return '';
     const av = r.avisos, por = (tp) => av.filter((a) => a.tipo === tp);
-    const nome = por('nome'), cent = por('centavos'), falt = por('faltando');
+    const nome = por('nome'), cent = por('centavos'), falt = por('faltando'), rep = por('nome_repetido');
     const linhas = [];
-    if (nome.length) linhas.push(`<li><b>Nome do arquivo não bate com o conteúdo.</b> Em ${nome.length} arquivos, o mês no nome é o seguinte ao dos dados (o arquivo “202402” traz janeiro). Nos municípios, dois arquivos se chamam “202412”: um é de novembro, outro de dezembro.</li>`);
+    if (nome.length) linhas.push(`<li><b>Nome do arquivo não bate com o conteúdo.</b> Em ${nome.length} arquivos, o mês no nome é o seguinte ao dos dados (o arquivo “${r.ano}02” traz janeiro).${rep.length ? ` Em cada conjunto há dois arquivos com o mesmo nome (${esc(rep.map((a) => '“' + a.arquivo.replace('Transferencia_Mensal_', '').replace('.csv', '') + '”').join(' e '))}): um é de novembro e o outro, de dezembro.` : ''}</li>`);
+    if (!falt.length && !cent.length) linhas.push(`<li><b>Em ${esc(String(r.ano))}, nenhum mês faltou e os valores vieram com vírgula.</b> ${esc(t.ano_anterior)}</li>`);
     falt.forEach((a) => linhas.push(`<li><b>Mês faltando.</b> ${esc(a.texto)}</li>`));
     cent.forEach((a) => linhas.push(`<li><b>Valores sem vírgula.</b> ${esc(a.texto)} Lido como está, o ${a.conjunto === 'estados' ? 'FPE' : 'FPM'} do mês seria R$ ${esc(Math.round(a.lido_literal_rs / 1e9).toLocaleString('pt-BR'))} bilhões. Os valores estão em centavos, e dividi por 100.</li>`));
     return `<details class="nota-transp mt-4" open><summary>${esc(t.titulo)}</summary>
         <p class="mt-2">${esc(t.abertura)}</p><ul class="mt-2">${linhas.join('')}<li><b>Colunas confusas.</b> ${esc(t.colunas)}</li></ul>
         <p class="mt-2">${esc(t.conferencia)} Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(r.url)}">${esc(r.fonte)}</a>, gerado em ${esc(r.gerado_em.split('-').reverse().join('/'))}.</p></details>`;
 }
+const POOL_ROT = { uniao: 'União', estado: 'Estados', municipio: 'Municípios', fundos: 'Fundos regionais' };
+const POOL_COR = { uniao: '#1d4ed8', estado: '#15803d', municipio: '#b45309', fundos: '#64748b' };
+function poolHtml(b) {
+    const barra = b.partes.map((p) => `<span style="flex:${p.pct};background:${POOL_COR[p.dest]}" title="${esc(String(p.pct).replace('.', ','))}%: ${esc(p.rotulo)}">${p.pct >= 8 ? `<b>${esc(String(p.pct).replace('.', ','))}%</b>` : ''}</span>`).join('');
+    const lista = b.partes.map((p) => `<li><i style="background:${POOL_COR[p.dest]}" aria-hidden="true"></i><span class="pool-pct">${esc(String(p.pct).replace('.', ','))}%</span>
+        <span>${p.dest === 'uniao' ? '' : '<i class="fa-solid fa-arrow-right-long" aria-hidden="true"></i> '}${esc(p.rotulo)}${valorRepasse(p.rep)}${p.depois ? `<small>${esc(p.depois)}${valorRepasse(p.rep_depois)}</small>` : ''}</span></li>`).join('');
+    return `<div class="pool"><h4 class="pool-t">${esc(b.titulo)}</h4>${b.sub ? `<p class="pool-s">${esc(b.sub)}</p>` : ''}
+        <div class="pool-barra" role="img" aria-label="${esc(b.titulo)}: ${esc(b.partes.map((p) => p.pct + '% ' + p.rotulo).join('; '))}">${barra}</div>
+        <ul class="pool-lista">${lista}</ul>${b.conta ? `<p class="pool-conta">${esc(b.conta)}</p>` : ''}</div>`;
+}
 function cascataHtml() {
     const c = G.guia.cascata, m = G.guia.mapa;
-    const trecho = (t) => `<div class="casc-trecho" style="--cor-esfera:${COR_ESFERA[t.cor]}">
-        <p class="casc-seta"><b>${esc(t.de)}</b> <i class="fa-solid fa-arrow-down-long" aria-hidden="true"></i> <b>${esc(t.para)}</b></p>
-        <ul>${t.itens.map(([n, x, rid]) => `<li><b>${esc(n)}</b> ${esc(x)}${valorRepasse(rid)}</li>`).join('')}</ul></div>`;
-    return `<p class="text-sm mt-1" style="max-width:70ch">${esc(c.frase)}</p>
-        <div class="casc">
-            <div class="casc-no" style="--cor-esfera:${COR_ESFERA.uniao}"><span class="sec-esfera-bola" aria-hidden="true"></span>UNIÃO</div>
-            ${trecho(c.trechos[0])}${trecho(c.trechos[1])}
-            <div class="casc-no" style="--cor-esfera:${COR_ESFERA.estado}"><span class="sec-esfera-bola" aria-hidden="true"></span>ESTADOS</div>
-            ${trecho(c.trechos[2])}
-            <div class="casc-no" style="--cor-esfera:${COR_ESFERA.municipio}"><span class="sec-esfera-bola" aria-hidden="true"></span>MUNICÍPIOS</div></div>
+    const legenda = `<ul class="pool-leg" aria-label="Legenda das cores">${c.legenda.map(([k, r]) => `<li><i style="background:${POOL_COR[k]}" aria-hidden="true"></i>${esc(r)}</li>`).join('')}</ul>`;
+    const grupos = c.grupos.map((g) => `<section class="pool-grupo"><h3 class="pool-g">${esc(g.titulo)}</h3><p class="text-sm">${esc(g.sub)}</p>
+        <div class="pools">${g.bolos.map(poolHtml).join('')}</div></section>`).join('');
+    const outros = `<section class="pool-grupo"><h3 class="pool-g">${esc(c.outros_titulo)}</h3><ul class="pool-outros">${c.outros.map((o) => `<li><b>${esc(o.nome)}</b> ${esc(o.texto)}${o.reps.map((id) => valorRepasse(id, true)).join('')}</li>`).join('')}</ul></section>`;
+    return `<p class="text-sm mt-1" style="max-width:70ch">${esc(c.frase)}</p>${legenda}${grupos}${outros}
+        <p class="pool-fim"><i class="fa-solid fa-lightbulb" aria-hidden="true"></i> ${esc(c.conclusao)}</p>
         <p class="mt-3 inline-block px-3 py-2 border-2 border-slate-700 text-sm"><span class="text-xs font-semibold text-slate-500">Repassado pela União a estados e municípios em 2024</span><br><b class="text-xl">${esc(pt1(m.repasse_pib))}% do PIB</b> <span class="text-[11px] text-slate-500"><a class="underline" target="_blank" rel="noopener" href="${esc(m.repasse_url)}">${esc(m.repasse_fonte)}</a></span></p>
-        <div class="grid md:grid-cols-3 gap-3 mt-3">
+        <div class="grid md:grid-cols-2 gap-3 mt-3">
             <div class="pan-nota" style="margin:0"><p class="pan-nota-t">${esc(c.imposto_titulo)}</p><p>${esc(c.imposto_texto)}</p></div>
-            <div class="pan-nota" style="margin:0"><p class="pan-nota-t">${esc(c.contrib_titulo)}</p><p>${esc(c.contrib_texto)}</p></div>
-            <div class="pan-nota" style="margin:0"><p class="pan-nota-t">${esc(c.retido_titulo)}</p><p>${esc(c.retido_texto)}</p></div></div>${notaTransparencia()}`;
+            <div class="pan-nota" style="margin:0"><p class="pan-nota-t">${esc(c.contrib_titulo)}</p><p>${esc(c.contrib_texto)}</p></div></div>${notaTransparencia()}`;
 }
 function painelQuem() {
     const g = G.guia;

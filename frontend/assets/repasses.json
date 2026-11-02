@@ -1,5 +1,5 @@
 {
-  "ano": 2024,
+  "ano": 2025,
   "gerado_em": "2026-11-02",
   "fonte": "Tesouro Nacional, Transferências Constitucionais para Estados e para Municípios (Tesouro Transparente)",
   "url": "https://www.tesourotransparente.gov.br/ckan/dataset/transferencias-constitucionais-para-municipios",
@@ -17,11 +17,10 @@
         8,
         9,
         10,
+        11,
         12
       ],
-      "faltam": [
-        11
-      ]
+      "faltam": []
     },
     "municipios": {
       "meses": [
@@ -46,31 +45,47 @@
       "id": "fpe",
       "nome": "FPE",
       "destino": "Estados",
-      "rs": 124948023669.05,
-      "meses": 11,
-      "completo": false
+      "rs": 163970337900.26,
+      "meses": 12,
+      "completo": true
     },
     {
       "id": "ipi_exp",
       "nome": "IPI-Exportação",
       "destino": "Estados",
-      "rs": 5984270281.29,
-      "meses": 11,
-      "completo": false
+      "rs": 7023875485.53,
+      "meses": 12,
+      "completo": true
     },
     {
       "id": "cide_estados",
       "nome": "Cide-Combustíveis (parte dos estados)",
       "destino": "Estados",
-      "rs": 737653135.35,
-      "meses": 11,
-      "completo": false
+      "rs": 691466984.61,
+      "meses": 12,
+      "completo": true
+    },
+    {
+      "id": "lc176_estados",
+      "nome": "Compensação pelas exportações (LC 176/2020)",
+      "destino": "Estados",
+      "rs": 3000000000.0,
+      "meses": 12,
+      "completo": true
+    },
+    {
+      "id": "royalties_estados",
+      "nome": "Royalties e participações na exploração de petróleo, minérios e água",
+      "destino": "Estados",
+      "rs": 33213381945.86,
+      "meses": 12,
+      "completo": true
     },
     {
       "id": "fpm",
       "nome": "FPM",
       "destino": "Municípios",
-      "rs": 155464801070.65,
+      "rs": 171596867650.8,
       "meses": 12,
       "completo": true
     },
@@ -78,7 +93,7 @@
       "id": "itr",
       "nome": "ITR",
       "destino": "Municípios",
-      "rs": 2455708530.93,
+      "rs": 2920316954.8,
       "meses": 12,
       "completo": true
     },
@@ -86,7 +101,23 @@
       "id": "cide_municipios",
       "nome": "Cide-Combustíveis (parte dos municípios)",
       "destino": "Municípios",
-      "rs": 241551491.51,
+      "rs": 226396037.05,
+      "meses": 12,
+      "completo": true
+    },
+    {
+      "id": "lc176_municipios",
+      "nome": "Compensação pelas exportações (LC 176/2020)",
+      "destino": "Municípios",
+      "rs": 984731139.31,
+      "meses": 12,
+      "completo": true
+    },
+    {
+      "id": "royalties_municipios",
+      "nome": "Royalties e participações na exploração de petróleo, minérios e água",
+      "destino": "Municípios",
+      "rs": 36756732685.83,
       "meses": 12,
       "completo": true
     }
@@ -95,192 +126,190 @@
     {
       "tipo": "nome",
       "conjunto": "estados",
-      "arquivo": "Transferencia_Mensal_Estados_202402.csv",
+      "arquivo": "Transferencia_Mensal_Estados_202502.csv",
       "mes_nome": 2,
       "mes_dados": 1,
-      "texto": "O arquivo “Transferencia_Mensal_Estados_202402.csv” traz os dados de janeiro de 2024, não de fevereiro."
+      "texto": "O arquivo “Transferencia_Mensal_Estados_202502.csv” traz os dados de janeiro de 2025, não de fevereiro."
     },
     {
       "tipo": "nome",
       "conjunto": "estados",
-      "arquivo": "Transferencia_Mensal_Estados_202403.csv",
+      "arquivo": "Transferencia_Mensal_Estados_202503.csv",
       "mes_nome": 3,
       "mes_dados": 2,
-      "texto": "O arquivo “Transferencia_Mensal_Estados_202403.csv” traz os dados de fevereiro de 2024, não de março."
+      "texto": "O arquivo “Transferencia_Mensal_Estados_202503.csv” traz os dados de fevereiro de 2025, não de março."
     },
     {
       "tipo": "nome",
       "conjunto": "estados",
-      "arquivo": "Transferencia_Mensal_Estados_202404.csv",
+      "arquivo": "Transferencia_Mensal_Estados_202504.csv",
       "mes_nome": 4,
       "mes_dados": 3,
-      "texto": "O arquivo “Transferencia_Mensal_Estados_202404.csv” traz os dados de março de 2024, não de abril."
+      "texto": "O arquivo “Transferencia_Mensal_Estados_202504.csv” traz os dados de março de 2025, não de abril."
     },
     {
       "tipo": "nome",
       "conjunto": "estados",
-      "arquivo": "Transferencia_Mensal_Estados_202405.csv",
+      "arquivo": "Transferencia_Mensal_Estados_202505.csv",
       "mes_nome": 5,
       "mes_dados": 4,
-      "texto": "O arquivo “Transferencia_Mensal_Estados_202405.csv” traz os dados de abril de 2024, não de maio."
+      "texto": "O arquivo “Transferencia_Mensal_Estados_202505.csv” traz os dados de abril de 2025, não de maio."
     },
     {
       "tipo": "nome",
       "conjunto": "estados",
-      "arquivo": "Transferencia_Mensal_Estados_202406.csv",
+      "arquivo": "Transferencia_Mensal_Estados_202506.csv",
       "mes_nome": 6,
       "mes_dados": 5,
-      "texto": "O arquivo “Transferencia_Mensal_Estados_202406.csv” traz os dados de maio de 2024, não de junho."
+      "texto": "O arquivo “Transferencia_Mensal_Estados_202506.csv” traz os dados de maio de 2025, não de junho."
     },
     {
       "tipo": "nome",
       "conjunto": "estados",
-      "arquivo": "Transferencia_Mensal_Estados_202407.csv",
+      "arquivo": "Transferencia_Mensal_Estados_202507.csv",
       "mes_nome": 7,
       "mes_dados": 6,
-      "texto": "O arquivo “Transferencia_Mensal_Estados_202407.csv” traz os dados de junho de 2024, não de julho."
+      "texto": "O arquivo “Transferencia_Mensal_Estados_202507.csv” traz os dados de junho de 2025, não de julho."
     },
     {
       "tipo": "nome",
       "conjunto": "estados",
-      "arquivo": "Transferencia_Mensal_Estados_202408.csv",
+      "arquivo": "Transferencia_Mensal_Estados_202508.csv",
       "mes_nome": 8,
       "mes_dados": 7,
-      "texto": "O arquivo “Transferencia_Mensal_Estados_202408.csv” traz os dados de julho de 2024, não de agosto."
+      "texto": "O arquivo “Transferencia_Mensal_Estados_202508.csv” traz os dados de julho de 2025, não de agosto."
     },
     {
       "tipo": "nome",
       "conjunto": "estados",
-      "arquivo": "Transferencia_Mensal_Estados_202409.csv",
+      "arquivo": "Transferencia_Mensal_Estados_202509.csv",
       "mes_nome": 9,
       "mes_dados": 8,
-      "texto": "O arquivo “Transferencia_Mensal_Estados_202409.csv” traz os dados de agosto de 2024, não de setembro."
+      "texto": "O arquivo “Transferencia_Mensal_Estados_202509.csv” traz os dados de agosto de 2025, não de setembro."
     },
     {
       "tipo": "nome",
       "conjunto": "estados",
-      "arquivo": "Transferencia_Mensal_Estados_202410.csv",
+      "arquivo": "Transferencia_Mensal_Estados_202510.csv",
       "mes_nome": 10,
       "mes_dados": 9,
-      "texto": "O arquivo “Transferencia_Mensal_Estados_202410.csv” traz os dados de setembro de 2024, não de outubro."
-    },
-    {
-      "tipo": "centavos",
-      "conjunto": "estados",
-      "arquivo": "Transferencia_Mensal_Estados_202410.csv",
-      "mes_dados": 9,
-      "lido_literal_rs": 983484280241.0,
-      "texto": "No arquivo de setembro de 2024 (estados) todos os valores vêm sem separador decimal."
+      "texto": "O arquivo “Transferencia_Mensal_Estados_202510.csv” traz os dados de setembro de 2025, não de outubro."
     },
     {
       "tipo": "nome",
       "conjunto": "estados",
-      "arquivo": "Transferencia_Mensal_Estados_202411.csv",
+      "arquivo": "Transferencia_Mensal_Estados_202511.csv",
       "mes_nome": 11,
       "mes_dados": 10,
-      "texto": "O arquivo “Transferencia_Mensal_Estados_202411.csv” traz os dados de outubro de 2024, não de novembro."
+      "texto": "O arquivo “Transferencia_Mensal_Estados_202511.csv” traz os dados de outubro de 2025, não de novembro."
     },
     {
-      "tipo": "faltando",
+      "tipo": "nome",
       "conjunto": "estados",
-      "mes_dados": 11,
-      "texto": "Não existe arquivo de novembro de 2024 nas transferências para estados."
-    },
-    {
-      "tipo": "nome",
-      "conjunto": "municipios",
-      "arquivo": "Transferencia_Mensal_Municipios_202402.csv",
-      "mes_nome": 2,
-      "mes_dados": 1,
-      "texto": "O arquivo “Transferencia_Mensal_Municipios_202402.csv” traz os dados de janeiro de 2024, não de fevereiro."
-    },
-    {
-      "tipo": "nome",
-      "conjunto": "municipios",
-      "arquivo": "Transferencia_Mensal_Municipios_202403.csv",
-      "mes_nome": 3,
-      "mes_dados": 2,
-      "texto": "O arquivo “Transferencia_Mensal_Municipios_202403.csv” traz os dados de fevereiro de 2024, não de março."
-    },
-    {
-      "tipo": "nome",
-      "conjunto": "municipios",
-      "arquivo": "Transferencia_Mensal_Municipios_202404.csv",
-      "mes_nome": 4,
-      "mes_dados": 3,
-      "texto": "O arquivo “Transferencia_Mensal_Municipios_202404.csv” traz os dados de março de 2024, não de abril."
-    },
-    {
-      "tipo": "nome",
-      "conjunto": "municipios",
-      "arquivo": "Transferencia_Mensal_Municipios_202405.csv",
-      "mes_nome": 5,
-      "mes_dados": 4,
-      "texto": "O arquivo “Transferencia_Mensal_Municipios_202405.csv” traz os dados de abril de 2024, não de maio."
-    },
-    {
-      "tipo": "nome",
-      "conjunto": "municipios",
-      "arquivo": "Transferencia_Mensal_Municipios_202406.csv",
-      "mes_nome": 6,
-      "mes_dados": 5,
-      "texto": "O arquivo “Transferencia_Mensal_Municipios_202406.csv” traz os dados de maio de 2024, não de junho."
-    },
-    {
-      "tipo": "nome",
-      "conjunto": "municipios",
-      "arquivo": "Transferencia_Mensal_Municipios_202407.csv",
-      "mes_nome": 7,
-      "mes_dados": 6,
-      "texto": "O arquivo “Transferencia_Mensal_Municipios_202407.csv” traz os dados de junho de 2024, não de julho."
-    },
-    {
-      "tipo": "nome",
-      "conjunto": "municipios",
-      "arquivo": "Transferencia_Mensal_Municipios_202408.csv",
-      "mes_nome": 8,
-      "mes_dados": 7,
-      "texto": "O arquivo “Transferencia_Mensal_Municipios_202408.csv” traz os dados de julho de 2024, não de agosto."
-    },
-    {
-      "tipo": "nome",
-      "conjunto": "municipios",
-      "arquivo": "Transferencia_Mensal_Municipios_202409.csv",
-      "mes_nome": 9,
-      "mes_dados": 8,
-      "texto": "O arquivo “Transferencia_Mensal_Municipios_202409.csv” traz os dados de agosto de 2024, não de setembro."
-    },
-    {
-      "tipo": "nome",
-      "conjunto": "municipios",
-      "arquivo": "Transferencia_Mensal_Municipios_202410.csv",
-      "mes_nome": 10,
-      "mes_dados": 9,
-      "texto": "O arquivo “Transferencia_Mensal_Municipios_202410.csv” traz os dados de setembro de 2024, não de outubro."
-    },
-    {
-      "tipo": "centavos",
-      "conjunto": "municipios",
-      "arquivo": "Transferencia_Mensal_Municipios_202410.csv",
-      "mes_dados": 9,
-      "lido_literal_rs": 1382294993557.0,
-      "texto": "No arquivo de setembro de 2024 (municípios) todos os valores vêm sem separador decimal."
-    },
-    {
-      "tipo": "nome",
-      "conjunto": "municipios",
-      "arquivo": "Transferencia_Mensal_Municipios_202411.csv",
-      "mes_nome": 11,
-      "mes_dados": 10,
-      "texto": "O arquivo “Transferencia_Mensal_Municipios_202411.csv” traz os dados de outubro de 2024, não de novembro."
-    },
-    {
-      "tipo": "nome",
-      "conjunto": "municipios",
-      "arquivo": "Transferencia_Mensal_Municipios_202412.csv",
+      "arquivo": "Transferencia_Mensal_Estados_202512.csv",
       "mes_nome": 12,
       "mes_dados": 11,
-      "texto": "O arquivo “Transferencia_Mensal_Municipios_202412.csv” traz os dados de novembro de 2024, não de dezembro."
+      "texto": "O arquivo “Transferencia_Mensal_Estados_202512.csv” traz os dados de novembro de 2025, não de dezembro."
+    },
+    {
+      "tipo": "nome_repetido",
+      "conjunto": "estados",
+      "arquivo": "Transferencia_Mensal_Estados_202512.csv",
+      "texto": "Dois arquivos diferentes têm o mesmo nome, “Transferencia_Mensal_Estados_202512.csv”."
+    },
+    {
+      "tipo": "nome",
+      "conjunto": "municipios",
+      "arquivo": "Transferencia_Mensal_Municipios_202502.csv",
+      "mes_nome": 2,
+      "mes_dados": 1,
+      "texto": "O arquivo “Transferencia_Mensal_Municipios_202502.csv” traz os dados de janeiro de 2025, não de fevereiro."
+    },
+    {
+      "tipo": "nome",
+      "conjunto": "municipios",
+      "arquivo": "Transferencia_Mensal_Municipios_202503.csv",
+      "mes_nome": 3,
+      "mes_dados": 2,
+      "texto": "O arquivo “Transferencia_Mensal_Municipios_202503.csv” traz os dados de fevereiro de 2025, não de março."
+    },
+    {
+      "tipo": "nome",
+      "conjunto": "municipios",
+      "arquivo": "Transferencia_Mensal_Municipios_202504.csv",
+      "mes_nome": 4,
+      "mes_dados": 3,
+      "texto": "O arquivo “Transferencia_Mensal_Municipios_202504.csv” traz os dados de março de 2025, não de abril."
+    },
+    {
+      "tipo": "nome",
+      "conjunto": "municipios",
+      "arquivo": "Transferencia_Mensal_Municipios_202505.csv",
+      "mes_nome": 5,
+      "mes_dados": 4,
+      "texto": "O arquivo “Transferencia_Mensal_Municipios_202505.csv” traz os dados de abril de 2025, não de maio."
+    },
+    {
+      "tipo": "nome",
+      "conjunto": "municipios",
+      "arquivo": "Transferencia_Mensal_Municipios_202506.csv",
+      "mes_nome": 6,
+      "mes_dados": 5,
+      "texto": "O arquivo “Transferencia_Mensal_Municipios_202506.csv” traz os dados de maio de 2025, não de junho."
+    },
+    {
+      "tipo": "nome",
+      "conjunto": "municipios",
+      "arquivo": "Transferencia_Mensal_Municipios_202507.csv",
+      "mes_nome": 7,
+      "mes_dados": 6,
+      "texto": "O arquivo “Transferencia_Mensal_Municipios_202507.csv” traz os dados de junho de 2025, não de julho."
+    },
+    {
+      "tipo": "nome",
+      "conjunto": "municipios",
+      "arquivo": "Transferencia_Mensal_Municipios_202508.csv",
+      "mes_nome": 8,
+      "mes_dados": 7,
+      "texto": "O arquivo “Transferencia_Mensal_Municipios_202508.csv” traz os dados de julho de 2025, não de agosto."
+    },
+    {
+      "tipo": "nome",
+      "conjunto": "municipios",
+      "arquivo": "Transferencia_Mensal_Municipios_202509.csv",
+      "mes_nome": 9,
+      "mes_dados": 8,
+      "texto": "O arquivo “Transferencia_Mensal_Municipios_202509.csv” traz os dados de agosto de 2025, não de setembro."
+    },
+    {
+      "tipo": "nome",
+      "conjunto": "municipios",
+      "arquivo": "Transferencia_Mensal_Municipios_202510.csv",
+      "mes_nome": 10,
+      "mes_dados": 9,
+      "texto": "O arquivo “Transferencia_Mensal_Municipios_202510.csv” traz os dados de setembro de 2025, não de outubro."
+    },
+    {
+      "tipo": "nome",
+      "conjunto": "municipios",
+      "arquivo": "Transferencia_Mensal_Municipios_202511.csv",
+      "mes_nome": 11,
+      "mes_dados": 10,
+      "texto": "O arquivo “Transferencia_Mensal_Municipios_202511.csv” traz os dados de outubro de 2025, não de novembro."
+    },
+    {
+      "tipo": "nome",
+      "conjunto": "municipios",
+      "arquivo": "Transferencia_Mensal_Municipios_202512.csv",
+      "mes_nome": 12,
+      "mes_dados": 11,
+      "texto": "O arquivo “Transferencia_Mensal_Municipios_202512.csv” traz os dados de novembro de 2025, não de dezembro."
+    },
+    {
+      "tipo": "nome_repetido",
+      "conjunto": "municipios",
+      "arquivo": "Transferencia_Mensal_Municipios_202512.csv",
+      "texto": "Dois arquivos diferentes têm o mesmo nome, “Transferencia_Mensal_Municipios_202512.csv”."
     }
   ]
 }

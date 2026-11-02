@@ -318,7 +318,7 @@
   "mapa": {
     "fonte": "Receita Federal, Carga Tributária no Brasil 2024 (Tabela 02)",
     "url": "https://www.gov.br/receitafederal/pt-br/centrais-de-conteudo/publicacoes/estudos/carga-tributaria/carga-tributaria-no-brasil-2024",
-    "nota": "Arrecadação bruta, antes de qualquer repasse: é o que cada nível de governo recolhe de tributos. Não inclui FGTS nem Sistema S.",
+    "nota": "Arrecadação bruta, antes de qualquer repasse: é o que cada nível de governo recolhe de tributos. Não inclui FGTS nem Sistema S. Este é o relatório oficial mais recente da Receita (a edição de 2025 deve sair por volta de dezembro de 2026).",
     "anos": {
       "2024": {
         "pib_pct": 32.2,
@@ -392,78 +392,256 @@
     "repasse_url": "https://www.gov.br/tesouronacional/pt-br/noticias/carga-tributaria-bruta-do-governo-geral-atinge-32-32-do-pib-em-2024"
   },
   "cascata": {
-    "frase": "Quem arrecada mais divide uma parte, por obrigação da Constituição, com quem arrecada menos e presta os serviços do dia a dia.",
-    "trechos": [
+    "frase": "O dinheiro que você paga a Brasília e ao governo do seu estado não fica todo com eles. A Constituição manda reservar parte e entregar a quem arrecada menos e atende você no dia a dia.",
+    "legenda": [
+      [
+        "uniao",
+        "Fica na União"
+      ],
+      [
+        "estado",
+        "Vai para os estados"
+      ],
+      [
+        "municipio",
+        "Vai para os municípios"
+      ],
+      [
+        "fundos",
+        "Fundos regionais"
+      ]
+    ],
+    "grupos": [
       {
-        "de": "União",
-        "para": "Estados",
-        "cor": "estado",
-        "itens": [
-          [
-            "FPE",
-            "21,5% do Imposto de Renda e do IPI, dividido entre os estados (CF, art. 159, I, a).",
-            "fpe"
-          ],
-          [
-            "IPI-Exportação",
-            "10% do IPI vai para os estados que mais exportam (art. 159, II).",
-            "ipi_exp"
-          ],
-          [
-            "Cide-Combustíveis",
-            "29% vai para os estados (art. 159, III).",
-            "cide_estados"
-          ]
+        "titulo": "1. O que desce de Brasília",
+        "sub": "Cada bolo mostra 100% do que a União arrecada naquele tributo e como a Constituição manda reparti-lo.",
+        "bolos": [
+          {
+            "titulo": "Bolo do Imposto de Renda e do IPI",
+            "sub": "A União junta tudo o que arrecada com os dois impostos e é obrigada a tirar 50% do bolo para repartir.",
+            "partes": [
+              {
+                "pct": 21.5,
+                "dest": "estado",
+                "rotulo": "Estados (FPE: Fundo de Participação dos Estados)",
+                "rep": "fpe",
+                "depois": null,
+                "rep_depois": null
+              },
+              {
+                "pct": 25.5,
+                "dest": "municipio",
+                "rotulo": "Municípios (FPM: Fundo de Participação dos Municípios)",
+                "rep": "fpm",
+                "depois": null,
+                "rep_depois": null
+              },
+              {
+                "pct": 3,
+                "dest": "fundos",
+                "rotulo": "Fundos de desenvolvimento do Norte, Nordeste e Centro-Oeste",
+                "rep": null,
+                "depois": null,
+                "rep_depois": null
+              },
+              {
+                "pct": 50,
+                "dest": "uniao",
+                "rotulo": "Os outros 50% ficam com a União",
+                "rep": null,
+                "depois": null,
+                "rep_depois": null
+              }
+            ],
+            "conta": "FPE e FPM somam 47% do bolo. Os 3% dos fundos regionais fecham os 50% que saem da União. O FPM tem 22,5% da regra original mais três parcelas extras de 1%, criadas por emendas à Constituição (art. 159, I)."
+          },
+          {
+            "titulo": "Parte do IPI: exportação",
+            "sub": "Antes dessa divisão, 10% do IPI vão para os estados que mais exportam.",
+            "partes": [
+              {
+                "pct": 10,
+                "dest": "estado",
+                "rotulo": "Estados exportadores (IPI-Exportação)",
+                "rep": "ipi_exp",
+                "depois": "Depois, 25% disso segue do estado para as prefeituras.",
+                "rep_depois": null
+              },
+              {
+                "pct": 90,
+                "dest": "uniao",
+                "rotulo": "O restante entra no bolo do Imposto de Renda e do IPI",
+                "rep": null,
+                "depois": null,
+                "rep_depois": null
+              }
+            ],
+            "conta": "Art. 159, II, e § 3º."
+          },
+          {
+            "titulo": "Cide-Combustíveis",
+            "sub": "A contribuição sobre combustíveis é uma das poucas contribuições que a Constituição manda dividir.",
+            "partes": [
+              {
+                "pct": 29,
+                "dest": "estado",
+                "rotulo": "Estados",
+                "rep": "cide_estados",
+                "depois": "Depois, 25% disso segue para as prefeituras.",
+                "rep_depois": "cide_municipios"
+              },
+              {
+                "pct": 71,
+                "dest": "uniao",
+                "rotulo": "Fica com a União",
+                "rep": null,
+                "depois": null,
+                "rep_depois": null
+              }
+            ],
+            "conta": "Art. 159, III, e § 4º."
+          },
+          {
+            "titulo": "ITR: imposto sobre a terra rural",
+            "sub": "A União cobra, e metade vai para o município onde fica a terra.",
+            "partes": [
+              {
+                "pct": 50,
+                "dest": "municipio",
+                "rotulo": "Município onde fica a terra",
+                "rep": "itr",
+                "depois": null,
+                "rep_depois": null
+              },
+              {
+                "pct": 50,
+                "dest": "uniao",
+                "rotulo": "Fica com a União",
+                "rep": null,
+                "depois": null,
+                "rep_depois": null
+              }
+            ],
+            "conta": "Se a prefeitura fiscalizar e cobrar o ITR, fica com 100% (art. 158, II)."
+          },
+          {
+            "titulo": "IOF sobre o ouro",
+            "sub": "Ouro tratado como ativo financeiro paga IOF, e a União não fica com nada.",
+            "partes": [
+              {
+                "pct": 30,
+                "dest": "estado",
+                "rotulo": "Estado de origem do ouro",
+                "rep": null,
+                "depois": null,
+                "rep_depois": null
+              },
+              {
+                "pct": 70,
+                "dest": "municipio",
+                "rotulo": "Município de origem do ouro",
+                "rep": null,
+                "depois": null,
+                "rep_depois": null
+              }
+            ],
+            "conta": "Art. 153, § 5º. O Tesouro não registrou valores desse repasse em 2025."
+          }
         ]
       },
       {
-        "de": "União",
-        "para": "Municípios",
-        "cor": "municipio",
-        "itens": [
-          [
-            "FPM",
-            "25,5% do Imposto de Renda e do IPI, dividido entre as prefeituras: 22,5% mais três parcelas extras de 1% (art. 159, I, b, d, e, f).",
-            "fpm"
-          ],
-          [
-            "ITR",
-            "50% do imposto rural vai para o município onde fica a terra; se a prefeitura fiscalizar e cobrar, fica com 100% (art. 158, II).",
-            "itr"
-          ]
-        ]
-      },
-      {
-        "de": "Estados",
-        "para": "Municípios",
-        "cor": "municipio",
-        "itens": [
-          [
-            "ICMS",
-            "25% do ICMS vai para as prefeituras do estado (art. 158, IV)."
-          ],
-          [
-            "IPVA",
-            "50% do IPVA fica com o município onde o veículo está emplacado (art. 158, III)."
-          ],
-          [
-            "Cotas dos repasses federais",
-            "Dos 10% do IPI-Exportação e dos 29% da Cide que chegam ao estado, 25% seguem para as prefeituras (art. 159, §§ 3º e 4º)."
-          ]
+        "titulo": "2. O que desce dos governos estaduais",
+        "sub": "Os estados formam outro bolo com o ICMS e o IPVA, e também são obrigados a dividir com os prefeitos.",
+        "bolos": [
+          {
+            "titulo": "Bolo do ICMS (compras e serviços)",
+            "sub": "",
+            "partes": [
+              {
+                "pct": 25,
+                "dest": "municipio",
+                "rotulo": "Municípios do estado",
+                "rep": null,
+                "depois": null,
+                "rep_depois": null
+              },
+              {
+                "pct": 75,
+                "dest": "estado",
+                "rotulo": "Fica com o estado",
+                "rep": null,
+                "depois": null,
+                "rep_depois": null
+              }
+            ],
+            "conta": "Art. 158, IV."
+          },
+          {
+            "titulo": "Bolo do IPVA (carros e motos)",
+            "sub": "",
+            "partes": [
+              {
+                "pct": 50,
+                "dest": "municipio",
+                "rotulo": "Município onde o veículo está emplacado",
+                "rep": null,
+                "depois": null,
+                "rep_depois": null
+              },
+              {
+                "pct": 50,
+                "dest": "estado",
+                "rotulo": "Fica com o estado",
+                "rep": null,
+                "depois": null,
+                "rep_depois": null
+              }
+            ],
+            "conta": "Art. 158, III."
+          }
         ]
       }
     ],
+    "outros_titulo": "Outros repasses da União, sem divisão por porcentagem",
+    "outros": [
+      {
+        "nome": "Imposto de Renda dos servidores",
+        "texto": "O imposto retido na fonte dos salários de servidores estaduais e municipais fica com o estado ou município que paga o salário (arts. 157, I, e 158, I).",
+        "reps": []
+      },
+      {
+        "nome": "Compensação pelas exportações",
+        "texto": "A União compensa os estados e municípios pelo ICMS que deixam de cobrar nas exportações (Lei Kandir e LC 176/2020).",
+        "reps": [
+          "lc176_estados",
+          "lc176_municipios"
+        ]
+      },
+      {
+        "nome": "Royalties e participações",
+        "texto": "Estados e municípios recebem parte da exploração de petróleo, minérios e água (art. 20, § 1º). Não é divisão de imposto: é compensação pela exploração do território.",
+        "reps": [
+          "royalties_estados",
+          "royalties_municipios"
+        ]
+      },
+      {
+        "nome": "Fundeb",
+        "texto": "Do FPE, FPM, ICMS, IPVA, ITR e IPI-Exportação, 20% ficam retidos para o Fundeb, o fundo da educação básica. Os valores em reais desta página já descontam essa parte.",
+        "reps": []
+      }
+    ],
+    "conclusao": "Repare que todas as faixas laranja terminam nos municípios. É por isso que as prefeituras dependem tanto de Brasília e dos governadores.",
     "imposto_titulo": "Impostos: a Constituição manda dividir",
     "imposto_texto": "O Imposto de Renda, o IPI, o ICMS, o IPVA e o ITR entram em regras de divisão. Parte do dinheiro que você paga ao governo federal volta para a sua cidade.",
     "contrib_titulo": "Contribuições: ficam com quem cobra",
     "contrib_texto": "PIS, Cofins, CSLL e as contribuições da previdência não entram nessa divisão: ficam com a União, para a finalidade definida em lei. A exceção é a Cide-Combustíveis.",
-    "retido_titulo": "O Imposto de Renda dos servidores fica em casa",
-    "retido_texto": "O imposto retido na fonte dos salários de servidores estaduais e municipais fica com o próprio estado ou município que paga (CF, arts. 157, I, e 158, I).",
     "transparencia": {
       "titulo": "Nota sobre a qualidade dos dados abertos",
-      "abertura": "Os valores acima vêm das planilhas mensais de Transferências Constitucionais do Tesouro Transparente. O Tesouro publica os arquivos sem API de valores, e conferir cada um exigiu corrigir os problemas abaixo. Os números foram tratados pelo script scripts/gerar_repasses.py, e cada problema é detectado automaticamente.",
+      "abertura": "Os valores acima vêm das planilhas mensais de Transferências Constitucionais do Tesouro Transparente. O Tesouro publica os arquivos sem API de valores, e conferir cada um revelou os problemas abaixo. Os números foram tratados pelo script scripts/gerar_repasses.py, e cada problema é detectado automaticamente.",
       "colunas": "As colunas “Item transferência” e “Transferência” se misturam: as linhas do Fundeb reúnem parcelas de FPE, FPM, ICMS e IPVA, e o mesmo dinheiro pode aparecer nos arquivos de estados e de municípios. Não há documentação de como somar sem contar em dobro. Por isso a página mostra só o repasse direto de cada tributo, líquido do desconto de 20% para o Fundeb. As cotas de ICMS e IPVA que os estados repassam às prefeituras não aparecem como repasse nesse conjunto, só dentro do Fundeb.",
-      "conferencia": "Os totais não foram reconciliados com os 3,51% do PIB que o Tesouro divulga para o conjunto das transferências, porque o conjunto de arquivos não tem as partes necessárias e ainda tem os problemas acima."
+      "conferencia": "Os totais não foram reconciliados com os 3,51% do PIB que o Tesouro divulgou para o conjunto das transferências de 2024, porque os arquivos não trazem as partes necessárias e têm os problemas acima.",
+      "ano_anterior": "O mesmo conjunto de 2024 tinha falhas piores: faltava novembro nos arquivos dos estados, e os valores de setembro vinham em centavos, sem vírgula (um FPE mensal de R$ 983 bilhões, se lido como está)."
     }
   }
 }
