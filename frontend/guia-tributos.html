@@ -590,7 +590,8 @@ function painelBeneficios() {
         <div class="mt-3 flex flex-wrap items-baseline gap-x-6 gap-y-1"><p><b class="text-3xl">${esc(reaisCurto(g.total_rs / 1e6))}</b> <span class="text-sm">de renúncia projetada para ${g.ano}</span></p>
             <p class="text-sm"><b>${esc(pt1(g.total_pct_pib))}%</b> do PIB · <b>${esc(pt1(g.total_pct_arrecadacao))}%</b> da arrecadação federal</p></div>
         <div class="mt-3 flex flex-wrap gap-2" role="group" aria-label="Escolha o recorte">${b.visoes.map(([id, r]) => `<button type="button" data-ben="${id}" aria-pressed="${BEN.visao === id}" class="${pillCls(BEN.visao === id)}">${esc(r)}</button>`).join('')}</div>
-        <p class="text-xs mt-3" style="color:var(--muted,#64748b)">Clique em uma barra para ver do que ela é feita, o prazo e o que a lei diz.</p>
+        <p id="benLegenda" class="text-sm mt-3" style="max-width:70ch"><b>O que é cada barra:</b> ${esc(b.visoes_texto[BEN.visao])}</p>
+        <p class="text-xs mt-1" style="color:var(--muted,#64748b);max-width:70ch">${esc(b.como_ler)} Clique em uma barra para ver do que ela é feita, o prazo e o que a lei diz.</p>
         <div class="mapa" id="benBarras">${barrasBeneficio()}</div>
         <p class="ficha-nota mt-1">${esc(b.numeros_nota.replace('{ano}', g.ano))} Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(g.url)}">${esc(g.fonte)}</a>.</p>` : '<p class="ficha-nota mt-6">Os números do Demonstrativo dos Gastos Tributários não puderam ser carregados.</p>';
     const cards = (l) => `<div class="grid md:grid-cols-${l.length === 3 ? 3 : 2} gap-3 mt-3">${l.map((c) => `<div class="pan-nota" style="margin:0"><p class="pan-nota-t">${esc(c.t)}</p><p>${esc(c.p)}</p></div>`).join('')}</div>`;
@@ -616,6 +617,7 @@ document.addEventListener('click', (ev) => {
     BEN.visao = v.dataset.ben;
     document.querySelectorAll('[data-ben]').forEach((x) => { const on = x.dataset.ben === BEN.visao; x.setAttribute('aria-pressed', on); x.className = pillCls(on); });
     $('benBarras').innerHTML = barrasBeneficio();
+    $('benLegenda').innerHTML = `<b>O que é cada barra:</b> ${esc(G.guia.beneficios.visoes_texto[BEN.visao])}`;
 });
 
 /* ---------- 4. Catálogo completo ---------- */
