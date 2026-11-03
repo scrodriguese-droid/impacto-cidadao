@@ -794,6 +794,12 @@
       "Crédito outorgado",
       "Regime especial de tributação",
       "Desoneração da folha de pagamento"
-    ]
+    ],
+    "visoes_texto": {
+      "beneficio": "Cada barra é um tipo de benefício, como o Simples Nacional. O valor é quanto o governo deixa de arrecadar por causa dele.",
+      "tributo": "Cada barra é um tributo. O valor é quanto desse tributo o governo deixa de cobrar, somando todos os benefícios que mexem nele. Exemplo: com isenções e alíquotas reduzidas, R$ 139 bilhões de Cofins não entram no caixa.",
+      "area": "Cada barra é a área do orçamento que o benefício atende, como saúde, agricultura ou educação. O valor é quanto o governo deixa de arrecadar em benefícios dessa área."
+    },
+    "como_ler": "O % ao lado de cada barra é a fatia daquele item no total de R$ 613 bilhões. O comprimento da barra compara com o maior item. As três visões mostram o mesmo dinheiro contado de formas diferentes, então não se somam."
   }
 }
