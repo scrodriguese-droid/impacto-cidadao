@@ -111,6 +111,9 @@
         .dark .det { background: #0f172a; }
         .det-gl { font-weight: 700; }
         .det-res { margin-top: .4rem; }
+        .det-como { margin-top: .7rem; padding: .55rem .75rem; background: #f1f5f9; color: #111; border-left: 4px solid #64748b; font-size: .8rem; }
+        .dark .det-como { background: #1e293b; color: #e2e8f0; }
+        .det-como ul { margin: .25rem 0 0; padding-left: 1.1rem; list-style: disc; }
         .det-sub { margin-top: .8rem; font-size: .7rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--muted, #64748b); }
         .det-trib { list-style: none; margin: .3rem 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: .3rem .5rem; }
         .det-trib li { padding: 0 .45rem; border: 1px solid currentColor; font-size: .78rem; }
@@ -519,8 +522,8 @@ function detalheDe(nome) {
 function vigenciaTxt(v) { return v === 'indeterminado' ? 'sem prazo para acabar' : `vale até ${v}`; }
 function itemBeneficioHtml(x) {
     return `<li><div class="det-item-t"><b>${esc(x.nome)}</b><span class="det-item-v">${esc(reaisCurto(x.rs / 1e6))}</span></div>
-        <p class="det-item-m">${esc(x.tributo)} · ${esc(vigenciaTxt(x.vigencia))}</p>
-        ${x.desc && x.desc !== '...' ? `<details><summary>O que a lei diz</summary><p>${esc(x.desc)}</p>${x.base ? `<p class="det-base">${esc(x.base)}</p>` : ''}</details>` : ''}</li>`;
+        <p class="det-item-m">Tributo: ${esc(x.tributo)} · ${esc(vigenciaTxt(x.vigencia))}</p>
+        ${x.desc && x.desc !== '...' ? `<details><summary>Ver o texto da lei</summary><p>${esc(x.desc)}</p>${x.base ? `<p class="det-base">${esc(x.base)}</p>` : ''}</details>` : ''}</li>`;
 }
 function detalheHtml(nome, lista) {
     const g = G.gastos, b = G.guia.beneficios;
@@ -531,21 +534,26 @@ function detalheHtml(nome, lista) {
     const trib = Object.entries(porTrib).sort((a, c) => c[1] - a[1]);
     const semPrazo = itens.filter((x) => x.vigencia === 'indeterminado').length;
     const datas = itens.filter((x) => x.vigencia !== 'indeterminado').map((x) => x.vigencia.split('/').reverse().join('-')).sort();
-    const prazo = !datas.length ? 'Nenhum dispositivo tem data para acabar.'
-        : `${semPrazo ? semPrazo + ' sem prazo para acabar e ' : ''}${datas.length} com prazo (o último vence em ${datas[datas.length - 1].split('-').reverse().join('/')}).`;
+    const prazo = !datas.length ? 'Nenhuma delas tem data para acabar.'
+        : `${semPrazo ? semPrazo + ' sem prazo para acabar e ' : ''}${datas.length} com prazo (a última vence em ${datas[datas.length - 1].split('-').reverse().join('/')}).`;
     const alvo = (BEN.visao === 'beneficio' ? g.por_beneficio : g.por_tributo).find((x) => x.nome === nome);
     const dif = alvo ? alvo.rs - soma : 0;
     const gl = BEN.visao === 'beneficio' && b.glosas[nome];
     const MOSTRA = 6;
     return `<div class="det" role="region" aria-label="Detalhes de ${esc(nome.trim())}">
         ${gl ? `<p class="det-gl">${esc(gl)}</p>` : ''}
-        <p class="det-res">São <b>${itens.length}</b> ${itens.length === 1 ? 'dispositivo legal' : 'dispositivos legais'}, somando <b>${esc(reaisCurto(soma / 1e6))}</b> de renúncia projetada. ${esc(prazo)}</p>
-        ${trib.length > 1 ? `<p class="det-sub">Sobre quais tributos recai</p><ul class="det-trib">${trib.map(([t, v]) => `<li><b>${esc(t)}</b> ${esc(reaisCurto(v / 1e6))}</li>`).join('')}</ul>` : ''}
-        <p class="det-sub">Principais dispositivos</p>
+        <p class="det-res">Este item não é uma regra só. Ele reúne <b>${itens.length}</b> ${itens.length === 1 ? 'regra da lei' : 'regras da lei'}, e cada uma dá um desconto ou uma isenção. Juntas, deixam o governo sem arrecadar <b>${esc(reaisCurto(soma / 1e6))}</b> por ano. ${esc(prazo)}</p>
+        <div class="det-como"><p class="det-sub" style="margin-top:0">Como ler este quadro</p><ul>
+            <li>Cada linha abaixo é uma regra da lei que reduz ou zera um tributo.</li>
+            <li>O valor à direita é quanto o governo deixa de arrecadar por causa dela.</li>
+            <li>Abaixo do nome aparece o tributo que deixa de ser cobrado e por quanto tempo a regra vale.</li>
+            <li>“Sem prazo para acabar” quer dizer que a regra vale até a lei ser mudada.</li></ul></div>
+        ${trib.length > 1 ? `<p class="det-sub">Quais tributos deixam de ser cobrados</p><ul class="det-trib">${trib.map(([t, v]) => `<li><b>${esc(t)}</b> ${esc(reaisCurto(v / 1e6))}</li>`).join('')}</ul>` : ''}
+        <p class="det-sub">Principais regras</p>
         <ul class="det-itens">${itens.slice(0, MOSTRA).map(itemBeneficioHtml).join('')}</ul>
-        ${itens.length > MOSTRA ? `<details class="det-mais"><summary>Mostrar os outros ${itens.length - MOSTRA}</summary><ul class="det-itens">${itens.slice(MOSTRA).map(itemBeneficioHtml).join('')}</ul></details>` : ''}
-        ${Math.abs(dif) > 0.005 * (alvo ? alvo.rs : 1) && alvo ? `<p class="det-aviso">Os dispositivos listados somam ${esc(reaisCurto(soma / 1e6))}, mas o quadro-resumo da Receita informa ${esc(reaisCurto(alvo.rs / 1e6))} para este item. A planilha não detalha a diferença de ${esc(reaisCurto(Math.abs(dif) / 1e6))}.</p>` : ''}
-        <p class="det-fonte">Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(g.url)}">Receita Federal, DGT (PLOA ${esc(String(g.ano))})</a>. Valores são projeções, e a lista mostra só dispositivos com valor estimado.</p></div>`;
+        ${itens.length > MOSTRA ? `<details class="det-mais"><summary>Mostrar as outras ${itens.length - MOSTRA} regras</summary><ul class="det-itens">${itens.slice(MOSTRA).map(itemBeneficioHtml).join('')}</ul></details>` : ''}
+        ${Math.abs(dif) > 0.005 * (alvo ? alvo.rs : 1) && alvo ? `<p class="det-aviso">As regras listadas somam ${esc(reaisCurto(soma / 1e6))}, mas o quadro-resumo da Receita informa ${esc(reaisCurto(alvo.rs / 1e6))} para este item. A planilha não detalha a diferença de ${esc(reaisCurto(Math.abs(dif) / 1e6))}.</p>` : ''}
+        <p class="det-fonte">Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(g.url)}">Receita Federal, DGT (PLOA ${esc(String(g.ano))})</a>. Valores são projeções, e a lista mostra só as regras com valor estimado.</p></div>`;
 }
 function alternarDetalhe(linha) {
     const aberta = linha.getAttribute('aria-expanded') === 'true';
