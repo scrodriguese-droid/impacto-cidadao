@@ -133,11 +133,8 @@
         /* cascata de etiquetas */
         .etiq { display: block; margin-top: -.3rem; padding: .35rem .6rem; border: 1px solid #334155; background: #fef3c7; font: 800 .75rem/1 'Inter', sans-serif; box-shadow: 2px 2px 0 #334155; }
         .dark .etiq { background: #fde68a; color: #1e293b; }
-        /* diagrama do pacto federativo */
-        .fluxo { stroke-dasharray: 7 7; animation: fluxo 1.1s linear infinite; }
-        @keyframes fluxo { to { stroke-dashoffset: -14; } }
         .barra-pan { height: 1.05rem; background: #8F8F8B; }
-        @media (prefers-reduced-motion: reduce) { .fluxo { animation: none; } .bal-viga, .bal-esq, .bal-dir { transition: none; } .pan-card:hover { transform: none; } }
+        @media (prefers-reduced-motion: reduce) { .bal-viga, .bal-esq, .bal-dir { transition: none; } .pan-card:hover { transform: none; } }
         .gt-sigla { font-family: var(--fonte-titulo, 'Anton'), sans-serif; font-size: 1.5rem; line-height: 1; text-transform: uppercase; }
     </style>
     <link rel="stylesheet" href="assets/brutalista.css">
@@ -190,7 +187,7 @@ $('abas').addEventListener('click', (ev) => { const b = ev.target.closest('[data
 window.addEventListener('hashchange', () => abrirAba(location.hash.slice(1), false));
 
 
-/* ---------- 0. Panorama: bússola e distorções, pacto federativo e como o Estado se financia ---------- */
+/* ---------- 0. Panorama: bússola e distorções e como o Estado se financia ---------- */
 const dica = (txt) => `<span class="dica" tabindex="0" role="button" aria-label="${esc(txt)}">?<span class="dica-t" role="tooltip">${esc(txt)}</span></span>`;
 const pt1 = (n) => Number(n).toLocaleString('pt-BR', { maximumFractionDigits: 2 });
 const MESES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
@@ -242,38 +239,6 @@ function painelPanorama() {
                     <p class="pan-p">Quanto mais confusa a regra, mais discussão e mais demora para o dinheiro entrar.</p>
                     <p class="pan-fonte">Fonte: Insper, Núcleo de Tributação (dados de 2019). Dado mais recente não localizado.</p></div>
             </div>
-        </div>
-
-        <div class="mt-10 p-5 sm:p-7" style="background:#0b1f3a;color:#fff;border-radius:1rem">
-            <h2 class="text-xl font-extrabold">O pacto federativo: de onde vem e para onde vai</h2>
-            <p class="text-sm mt-1" style="max-width:62ch;color:#cbd5e1">A União arrecada a maior fatia, mas quem cuida do dia a dia da população são os estados e, sobretudo, os municípios.</p>
-            <svg viewBox="0 0 860 450" class="w-full h-auto mt-4" role="img" aria-label="Diagrama: o Governo Federal arrecada cerca de 66%, repassa parte pelo FPE e FPM aos estados (26% da arrecadação) e municípios (8%); os estados repassam 25% do ICMS e 50% do IPVA aos municípios" font-family="Inter, system-ui, sans-serif">
-                <defs><marker id="seta" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0 0 L9 4.5 L0 9Z" fill="#fbbf24"/></marker></defs>
-                <path class="fluxo" d="M430 118 V168" stroke="#fbbf24" stroke-width="3" fill="none" marker-end="url(#seta)"/>
-                <path class="fluxo" d="M430 242 C430 290 210 270 210 316" stroke="#fbbf24" stroke-width="3" fill="none" marker-end="url(#seta)"/>
-                <path class="fluxo" d="M430 242 C430 290 650 270 650 316" stroke="#fbbf24" stroke-width="3" fill="none" marker-end="url(#seta)"/>
-                <path class="fluxo" d="M382 385 H476" stroke="#7dd3fc" stroke-width="3" fill="none" marker-end="url(#seta)"/>
-                <rect x="240" y="18" width="380" height="100" rx="10" fill="#1e3a8a" stroke="#93c5fd"/>
-                <text x="430" y="46" text-anchor="middle" font-size="13" font-weight="800" fill="#93c5fd" letter-spacing="2">GOVERNO FEDERAL</text>
-                <text x="430" y="76" text-anchor="middle" font-size="24" font-weight="800" fill="#fff">fica com 66%</text>
-                <text x="430" y="102" text-anchor="middle" font-size="12" fill="#cbd5e1">IR, IPI, PIS, Cofins e contribuições do INSS</text>
-                <rect x="290" y="168" width="280" height="74" rx="10" fill="#451a03" stroke="#fbbf24" stroke-width="2"/>
-                <text x="430" y="196" text-anchor="middle" font-size="13" font-weight="800" fill="#fbbf24" letter-spacing="2">TORNEIRA DOS FUNDOS</text>
-                <text x="430" y="218" text-anchor="middle" font-size="12" fill="#fde68a">FPE e FPM: parte do IR e do IPI volta</text>
-                <text x="430" y="234" text-anchor="middle" font-size="12" fill="#fde68a">para estados e prefeituras</text>
-                <rect x="30" y="318" width="352" height="116" rx="10" fill="#064e3b" stroke="#6ee7b7"/>
-                <text x="206" y="346" text-anchor="middle" font-size="13" font-weight="800" fill="#6ee7b7" letter-spacing="2">ESTADOS E DF</text>
-                <text x="206" y="374" text-anchor="middle" font-size="20" font-weight="800" fill="#fff">arrecadam 26%</text>
-                <text x="206" y="398" text-anchor="middle" font-size="12" fill="#d1fae5">ICMS, IPVA, ITCMD</text>
-                <text x="206" y="418" text-anchor="middle" font-size="12" fill="#d1fae5">Pagam: polícia, hospitais e escolas estaduais</text>
-                <rect x="476" y="318" width="354" height="116" rx="10" fill="#713f12" stroke="#fcd34d"/>
-                <text x="653" y="346" text-anchor="middle" font-size="13" font-weight="800" fill="#fcd34d" letter-spacing="2">MUNICÍPIOS</text>
-                <text x="653" y="374" text-anchor="middle" font-size="20" font-weight="800" fill="#fff">arrecadam 8%</text>
-                <text x="653" y="398" text-anchor="middle" font-size="12" fill="#fef3c7">IPTU, ISS, ITBI</text>
-                <text x="653" y="418" text-anchor="middle" font-size="12" fill="#fef3c7">Pagam: posto de saúde, creche, escola e rua</text>
-                <text x="429" y="370" text-anchor="middle" font-size="11" fill="#7dd3fc">25% do ICMS</text><text x="429" y="404" text-anchor="middle" font-size="11" fill="#7dd3fc">50% do IPVA</text>
-            </svg>
-            <p class="mt-3 text-xs" style="color:#94a3b8;max-width:78ch">Percentuais: parte de cada nível na arrecadação total de 2024 (União 21,3% do PIB, estados 8,5% e municípios 2,4%, de 32,2%). É o que cada um cobra, antes dos repasses; o que cada um gasta é outra conta. Fonte: Receita Federal. Os repasses estão na aba <button type="button" data-aba="quem" class="underline font-semibold" style="border:0!important;background:none!important;padding:0!important;color:#fff!important;text-transform:none;letter-spacing:0">Quem fica com o quê</button>.</p>
         </div>
 
         <div class="mt-10">
