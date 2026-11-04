@@ -82,13 +82,19 @@
 
     <div id="estado" class="mt-4"></div>
     <div id="painel" class="hidden mt-4 space-y-8"></div>
-    <section id="secDimensoes" class="hidden mt-12" aria-labelledby="tDim">
-        <h2 id="tDim">Análise das dimensões: ciclo e tendência</h2>
-        <p class="text-sm text-slate-500 mt-2" style="max-width:70ch">A mesma economia pode ir bem no trimestre e mal em duas décadas, ou o contrário. Por isso se olha para duas dimensões: o ciclo, de curto e médio prazo, e a tendência estrutural, de longo prazo.</p>
-        <div id="dimensoes" class="mt-4"></div>
-    </section>
-    <section id="secMaisFundo" class="hidden mt-12" aria-labelledby="tFundo">
-        <h2 id="tFundo">Ir mais fundo</h2>
+
+    <!-- Saúde fiscal: um painel modular, uma aba por vez -->
+    <div id="fiscal" class="hidden mt-4">
+        <div class="ftabs" role="tablist" aria-label="Seções da saúde fiscal">
+            <button type="button" role="tab" id="ft-termometro" aria-controls="fp-termometro" data-ftab="termometro"><i class="fa-solid fa-gauge-high" aria-hidden="true"></i><span>Termômetro das contas</span></button>
+            <button type="button" role="tab" id="ft-risco" aria-controls="fp-risco" data-ftab="risco"><i class="fa-solid fa-landmark" aria-hidden="true"></i><span>Risco e dívida</span></button>
+            <button type="button" role="tab" id="ft-cenario" aria-controls="fp-cenario" data-ftab="cenario"><i class="fa-solid fa-chart-line" aria-hidden="true"></i><span>Cenário e vida real</span></button>
+            <button type="button" role="tab" id="ft-imposto" aria-controls="fp-imposto" data-ftab="imposto"><i class="fa-solid fa-calculator" aria-hidden="true"></i><span>Meu imposto</span></button>
+        </div>
+        <div class="fpainel" id="fp-termometro" role="tabpanel" aria-labelledby="ft-termometro" tabindex="0">
+            <div id="pTermometro" class="space-y-10"></div>
+            <section id="secMaisFundo" class="mt-10" aria-labelledby="tFundo">
+                <h2 id="tFundo">Ir mais fundo</h2>
         <details class="sanfona mt-3"><summary>Ferramentas e telas complementares</summary>
             <ul class="mt-3">
                 <li><a href="guia-tributos.html"><b>Guia de tributos</b><span>O que é tributo, onde você paga, quem fica com o quê e o catálogo completo.</span></a></li>
@@ -100,8 +106,22 @@
                 <li><a href="financiamento.html"><b>Dívida e títulos públicos</b><span>Como o governo se financia e o que são os títulos.</span></a></li>
                 <li><a href="ciclo.html"><b>Ciclo econômico e contas públicas</b><span>Como a economia afeta a arrecadação e o gasto.</span></a></li>
             </ul></details>
-    </section>
-    <!-- Calculadora: só na aba “Entrada e saída” -->
+            </section>
+        </div>
+        <div class="fpainel" id="fp-risco" role="tabpanel" aria-labelledby="ft-risco" tabindex="0" hidden>
+            <div id="pRisco" class="space-y-10"></div>
+        </div>
+        <div class="fpainel" id="fp-cenario" role="tabpanel" aria-labelledby="ft-cenario" tabindex="0" hidden>
+            <div id="pCenario" class="space-y-10"></div>
+            <section id="secDimensoes" class="mt-10" aria-labelledby="tDim">
+                <h2 id="tDim">Análise das dimensões: ciclo e tendência</h2>
+                <p class="text-sm text-slate-500 mt-2" style="max-width:70ch">A mesma economia pode ir bem no trimestre e mal em duas décadas, ou o contrário. Por isso se olha para duas dimensões: o ciclo, de curto e médio prazo, e a tendência estrutural, de longo prazo.</p>
+                <div id="dimensoes" class="mt-4"></div>
+            </section>
+        </div>
+        <div class="fpainel" id="fp-imposto" role="tabpanel" aria-labelledby="ft-imposto" tabindex="0" hidden></div>
+    </div>
+    <!-- Calculadora: fica na aba “Meu imposto” da saúde fiscal e, na tela “Entrada e saída”, logo abaixo do painel -->
     <section id="secCalc" class="hidden mt-8" aria-labelledby="tCalc">
         <h2 id="tCalc" class="text-xl font-bold flex items-center"><i class="fa-solid fa-calculator text-teal-500 mr-2.5" aria-hidden="true"></i>Para onde vai o meu imposto</h2>
         <div class="mt-2 rounded-xl border border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 text-xs p-3.5 flex items-start gap-2.5" role="note">
@@ -149,7 +169,11 @@ if (ABA_FISCAL) {
     $('epigrafe').classList.remove('hidden');
     $('h1').textContent = 'Saúde fiscal';
     $('sub').textContent = 'As contas estão em dia? Dívida, limite da folha de pessoal e resultado primário. Dados oficiais do Tesouro Nacional (SICONFI).';
+    $('fp-imposto').appendChild($('secCalc'));   // a calculadora vira a aba “Meu imposto”
+    $('secCalc').classList.remove('hidden');
+    $('fiscal').classList.remove('hidden');
 }
+
 
 const ESFERAS = [
     { id: 'municipio', rotulo: 'Município', icone: 'fa-city' },
@@ -158,6 +182,32 @@ const ESFERAS = [
 ];
 const E = { municipio: lerPrefs().municipio || null, esfera: ler('ic_esfera_economia', 'municipio'), dados: null, aba: 'receitas' };
 if (!ESFERAS.some((x) => x.id === E.esfera)) E.esfera = 'municipio';
+
+/* ---------- abas da saúde fiscal: um eixo por vez ---------- */
+const FTABS = ['termometro', 'risco', 'cenario', 'imposto'];
+const FTAB_ALIAS = { conexao: 'risco', linhaTempo: 'risco', radar: 'risco', dimensoes: 'cenario', secCalc: 'imposto' };
+function selecionarFtab(id, { foco = false, url = true } = {}) {
+    if (!FTABS.includes(id)) id = 'termometro';
+    E.ftab = id;
+    FTABS.forEach((t) => {
+        const on = t === id, b = $('ft-' + t);
+        b.setAttribute('aria-selected', String(on)); b.tabIndex = on ? 0 : -1;
+        $('fp-' + t).hidden = !on;
+        if (on && foco) b.focus();
+    });
+    if (id === 'cenario' && !window.__dimensoes) { window.__dimensoes = true; montarDimensoes('dimensoes'); }   // só monta com a aba visível (os gráficos medem o espaço)
+    if (url) { try { history.replaceState(null, '', location.pathname + location.search + '#' + id); } catch (e) { /* sem histórico: segue sem */ } }
+}
+if (ABA_FISCAL) {
+    const h = location.hash.slice(1);
+    selecionarFtab(FTAB_ALIAS[h] || h, { url: false });
+    document.querySelector('.ftabs').addEventListener('click', (ev) => { const b = ev.target.closest('[data-ftab]'); if (b) selecionarFtab(b.dataset.ftab); });
+    document.querySelector('.ftabs').addEventListener('keydown', (ev) => {
+        const i = FTABS.indexOf(E.ftab);
+        const novo = { ArrowRight: (i + 1) % FTABS.length, ArrowLeft: (i + FTABS.length - 1) % FTABS.length, Home: 0, End: FTABS.length - 1 }[ev.key];
+        if (novo != null) { ev.preventDefault(); selecionarFtab(FTABS[novo], { foco: true }); }
+    });
+}
 // Código do ente no SICONFI: município = IBGE (7 dígitos); estado = 2 primeiros dígitos; União = 1.
 const codigoEnte = () => {
     if (E.esfera === 'uniao') return 1;
@@ -841,30 +891,35 @@ function perspectivaHistorica(h) {
         <p class="ficha-nota">Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(h.fonte.url))}">${esc(h.fonte.nome)}</a>.</p>
     </section>`;
 }
-function radarEconomico(dg) {
+/* O radar agora se divide em dois eixos: o confronto fiscal × monetário e a linha do tempo vão para “Risco e dívida”;
+   o painel de economia e vida da população vai para “Cenário e vida real”. */
+const avisoUniao = (txt) => `<div class="radar-aviso" role="status"><b>${txt}</b>
+    Esta análise é do país inteiro: <button type="button" class="underline font-bold" data-trocar-uniao>ver o escopo União</button>.</div>`;
+function criterioRadar(titulo, p) {
+    return `<p class="ficha-nota mt-2"><b>${titulo}.</b> ${esc(p.criterio)} Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(p.fonte.url))}">${esc(p.fonte.nome)}</a>.</p>`;
+}
+function radarPartes(dg) {
     if (!dg || !dg.fiscal) {
-        return `<div class="radar-aviso" role="status"><b>Radar econômico indisponível agora.</b>
-            Ele usa séries do Banco Central e do IBGE, que podem não ter respondido. Atualize a página em alguns minutos; os números abaixo seguem valendo.</div>`;
+        const aviso = `<div class="radar-aviso" role="status"><b>Radar econômico indisponível agora.</b>
+            Ele usa séries do Banco Central e do IBGE, que podem não ter respondido. Atualize a página em alguns minutos; os números das outras abas seguem valendo.</div>`;
+        return { risco: aviso, cenario: aviso };
     }
-    const avisoSocial = dg.social ? '' : `<div class="radar-aviso" role="status"><b>O painel de economia e vida da população não carregou.</b>
-        Ele usa dados do IBGE, que não responderam. Atualize a página em alguns minutos.</div>`;
     const c = dg.confronto;
     const historia = perspectivaHistorica(dg.historico);
-    const confronto = c ? `<div class="radar-confronto">${colunaConfronto(c.fiscal)}${colunaConfronto(c.monetaria)}</div>
-        <p class="ficha-nota mt-2">↑ melhorou · → estável · ↓ piorou, sempre em comparação com 12 meses antes. Fonte dos números: Banco Central (despesa primária: SICONFI).</p>
-        ${faixaConexao(c.conexao, !!historia)}${historia}${visoes(c.visoes)}`
-        : `<div class="radar-aviso" role="status"><b>O confronto entre política fiscal e monetária não carregou.</b> Atualize a página em alguns minutos.</div>`;
-    const criterios = [dg.social ? ['Economia e vida da população', dg.social] : null, ['Situação fiscal', dg.fiscal]].filter(Boolean)
-        .map(([t, p]) => `<p class="ficha-nota mt-2"><b>${t}.</b> ${esc(p.criterio)} Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(p.fonte.url))}">${esc(p.fonte.nome)}</a>.</p>`).join('');
-    return `<div class="radar" id="radar">
-        <p class="radar-sub">${esc(dg.subtitulo)}.</p>
-        ${confronto}
-        ${avisoSocial}${dg.social ? painelSocial(dg.social) : ''}
-        ${c ? '' : historia}
-        <details class="sanfona mt-4"><summary>Como classificamos</summary>
-            ${criterios}
-            <p class="ficha-nota mt-2">Os limites são escolhas do projeto, não verdades universais, e a tendência compara cada indicador com 12 meses antes.</p></details>
-    </div>`;
+    const confronto = c ? `<div class="radar" id="radar">
+            <h2>Por trás do número: quem decide o quê</h2>
+            <p class="radar-sub">${esc(dg.subtitulo)}. A dívida é o ponto onde duas decisões se encontram: o que o governo arrecada e gasta, e os juros que o Banco Central define.</p>
+            <div class="radar-confronto">${colunaConfronto(c.fiscal)}${colunaConfronto(c.monetaria)}</div>
+            <p class="ficha-nota mt-2">↑ melhorou · → estável · ↓ piorou, sempre em comparação com 12 meses antes. Fonte dos números: Banco Central (despesa primária: SICONFI).</p>
+            ${faixaConexao(c.conexao, !!historia)}</div>${historia}${visoes(c.visoes)}`
+        : `<div class="radar-aviso" role="status"><b>O confronto entre política fiscal e monetária não carregou.</b> Atualize a página em alguns minutos.</div>${historia}`;
+    const como = (itens) => `<details class="sanfona sanfona--leve mt-4"><summary>Como classificamos</summary>${itens}
+        <p class="ficha-nota mt-2">Os limites são escolhas do projeto, não verdades universais, e a tendência compara cada indicador com 12 meses antes.</p></details>`;
+    const cenario = dg.social
+        ? painelSocial(dg.social) + como(criterioRadar('Economia e vida da população', dg.social))
+        : `<div class="radar-aviso" role="status"><b>O painel de economia e vida da população não carregou.</b>
+            Ele usa dados do IBGE, que não responderam. Atualize a página em alguns minutos.</div>`;
+    return { risco: confronto + como(criterioRadar('Situação fiscal', dg.fiscal)), cenario };
 }
 
 /* Dívida pública dissecada: prazo, custo e indexadores (resumo; a página divida-risco.html tem o detalhe) */
@@ -919,13 +974,24 @@ function nivel1(d) {
         ? cartaz('PIB, 12 meses', brlCurto(sf.pib.valor_rs), `até ${esc(sf.pib.data.slice(5, 7))}/${esc(sf.pib.data.slice(0, 4))}`,
             'Soma de tudo o que o país produz em um ano (bens e serviços). É a régua das contas públicas: dívida, déficit e juros em % do PIB mostram o tamanho do problema em relação à riqueza do país. Valor derivado de séries do Banco Central.')
         : '';
-    return `<section aria-labelledby="n1"><h2 id="n1">As contas estão em dia?</h2>
-        ${d.esfera === 'uniao' ? radarEconomico(sf && sf.diagnostico) : ''}
-        <p class="text-sm text-slate-500 mt-2" style="max-width:70ch">Estes números respondem à pergunta. Abaixo deles, o detalhe de cada um.</p>
-        <div class="cartazes mt-4">${cDivida}${cLrf}${cPrim}${cPib}</div>
-        ${d.esfera === 'uniao' ? '<div id="dividaRisco" class="mt-8" aria-live="polite"></div>' : ''}
-        <details class="sanfona mt-6"><summary>Ver todos os números da situação fiscal</summary>
-            <div class="mt-4">${situacaoDetalhe(d)}</div></details></section>`;
+    const uniao = d.esfera === 'uniao';
+    const rp = uniao ? radarPartes(sf && sf.diagnostico) : null;
+    const termometro = `<section aria-labelledby="n1"><h2 id="n1">As contas estão em dia?</h2>
+        <p class="text-sm text-slate-500 mt-2" style="max-width:70ch">Estes números respondem à pergunta. Abaixo deles, o que significam e o detalhe de cada um.</p>
+        <div class="cartazes mt-4">${cDivida}${cLrf}${cPrim}${cPib}</div></section>
+        <section aria-labelledby="nDef"><h2 id="nDef">Déficit primário × déficit nominal</h2>
+        <div class="def-duo mt-3">
+            <div><p class="def-rot">Primário</p><p>Receitas menos despesas, <b>sem contar os juros</b> da dívida. Mostra se o governo fecha as contas do dia a dia.</p></div>
+            <div><p class="def-rot">Nominal</p><p>O primário <b>mais os juros</b>. Mostra quanto precisa ser coberto com dívida nova (a “necessidade de financiamento”).</p></div>
+        </div>${ESQUEMA_FLUXO}</section>
+        <section aria-labelledby="nDet"><h2 id="nDet">Os números por trás</h2>
+        <p class="text-sm text-slate-500 mt-2" style="max-width:70ch">Abra uma gaveta por vez: o fluxo do ano (o que entrou e saiu) e o estoque da dívida (o que se acumulou).</p>
+        <div class="mt-4">${situacaoDetalhe(d)}</div></section>`;
+    const risco = uniao
+        ? `<div id="dividaRisco" aria-live="polite"></div>${rp.risco}`
+        : avisoUniao('A análise de risco da dívida é federal.');
+    const cenario = uniao ? rp.cenario : avisoUniao('Desemprego, renda e inflação são medidos para o país.');
+    return { termometro, risco, cenario };
 }
 
 function listaGrupo(itens, total) {
@@ -993,27 +1059,30 @@ function nivel4(d) {
 
 function desenhar() {
     const d = E.dados;
-    $('secMaisFundo').classList.toggle('hidden', !ABA_FISCAL);
-    $('secDimensoes').classList.toggle('hidden', !ABA_FISCAL);
-    if (ABA_FISCAL && !window.__dimensoes) { window.__dimensoes = true; montarDimensoes('dimensoes'); }
     $('periodoRotulo').textContent = d ? `${d.instituicao || ''}${d.populacao ? ' · ' + Number(d.populacao).toLocaleString('pt-BR') + ' habitantes' : ''} · ${d.periodo.rotulo}` : '';
     const painel = $('painel');
-    painel.classList.toggle('hidden', !d);
+    painel.classList.toggle('hidden', ABA_FISCAL || !d);
+    if (!ABA_FISCAL) $('secCalc').classList.toggle('hidden', !d);
+    if (ABA_FISCAL) {
+        const f = d ? nivel1(d) : { termometro: '', risco: '', cenario: '' };
+        $('pTermometro').innerHTML = f.termometro; $('pRisco').innerHTML = f.risco; $('pCenario').innerHTML = f.cenario;
+        if (d && d.esfera === 'uniao') { carregarReservas(); carregarDividaRisco(); }
+        return;
+    }
     if (!d) return;
-    $('secCalc').classList.toggle('hidden', ABA_FISCAL);
-    painel.innerHTML = ABA_FISCAL ? nivel1(d)
-        : nivel2(d) + nivel3(d) + nivel4(d) + `<p class="text-[11px] text-slate-400">Fonte: ${esc(d.fonte)}. Os valores são declarados pelos próprios entes e podem ser retificados.</p>`;
+    painel.innerHTML = nivel2(d) + nivel3(d) + nivel4(d) + `<p class="text-[11px] text-slate-400">Fonte: ${esc(d.fonte)}. Os valores são declarados pelos próprios entes e podem ser retificados.</p>`;
     if (d.esfera === 'uniao') carregarReservas();
-    if (ABA_FISCAL && d.esfera === 'uniao') carregarDividaRisco();
 }
 
-$('painel').addEventListener('click', (ev) => {
+/* os blocos da saúde fiscal ficam em #fiscal (fora do #painel), então os cliques e as gavetas são escutados no <main> */
+$('conteudo').addEventListener('click', (ev) => {
+    if (ev.target.closest('[data-trocar-uniao]')) { E.esfera = 'uniao'; guardar('ic_esfera_economia', E.esfera); carregar(); return; }
     const b = ev.target.closest('[data-aba]');
     if (b) { E.aba = b.dataset.aba; desenhar(); return; }
     const s = ev.target.closest('[data-escopo]');
     if (s && s.dataset.escopo !== E.escopo) { E.escopo = s.dataset.escopo; guardar('ic_escopo_fiscal', E.escopo); repintarSituacao(); }
 });
-$('painel').addEventListener('toggle', (ev) => {   // "toggle" não borbulha: escuta na captura
+$('conteudo').addEventListener('toggle', (ev) => {   // "toggle" não borbulha: escuta na captura
     const g = ev.target.closest && ev.target.closest('details.sf-gaveta');
     if (g) E.gavetas[g.dataset.gaveta] = g.open;
 }, true);

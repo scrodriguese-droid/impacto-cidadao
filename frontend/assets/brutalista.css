@@ -1015,3 +1015,42 @@ details.conceito h5 { font: 800 .7rem/1.3 var(--fonte-texto); letter-spacing: .1
 .tg-marco:hover .tg-ponto, .tg-marco:focus-visible .tg-ponto, .tg-marco.sel .tg-ponto { fill: var(--vermelho); stroke: var(--vermelho); }
 .tg-faixa:focus-visible rect { stroke: var(--vermelho); stroke-width: 2; }
 .tg-painel { margin-top: .6rem; padding: 1rem 1.1rem; border: 1px solid var(--line); min-height: 11rem; }
+
+/* ---------- Saúde fiscal em abas: um eixo por vez ---------- */
+.ftabs { display: flex; gap: 0; padding-right: 2px; border-bottom: 3px solid var(--line); overflow-x: auto; scrollbar-width: thin; }
+.ftabs button { flex: 1 1 0; min-width: max-content; display: inline-flex; align-items: center; justify-content: center; gap: .55rem; min-height: 3rem; padding: .7rem .9rem;
+    border: 2px solid var(--line); border-bottom: 0; margin-right: -2px; background: transparent; color: var(--fg); cursor: pointer;
+    font: 800 .7rem/1.2 var(--fonte-texto); letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; }
+.ftabs button:hover { background: var(--papel-2); }
+.ftabs button i { color: inherit !important; }
+.ftabs button[aria-selected="true"] { background: var(--ativo) !important; color: var(--ativo-fg) !important; }
+.ftabs button:focus-visible { outline: 3px solid var(--vermelho); outline-offset: -3px; }
+.fpainel { padding-top: 1.6rem; }
+.fpainel[hidden] { display: none !important; }
+.fpainel:focus-visible { outline: none; }
+.fpainel > .space-y-10 > section > h2, .fpainel > .space-y-10 > div > h2, .fpainel > section > h2 { margin-bottom: .2rem; }
+@media (max-width: 640px) {
+    .ftabs button { flex: 0 0 auto; padding: .7rem .9rem; }
+}
+/* primário × nominal: duas leituras curtas */
+.def-duo { display: grid; gap: 0; border: 2px solid var(--line); }
+@media (min-width: 720px) { .def-duo { grid-template-columns: 1fr 1fr; } .def-duo > div + div { border-left: 1px solid var(--line); } }
+.def-duo > div { padding: .9rem 1.1rem; font-size: .92rem; line-height: 1.5; }
+.def-duo > div + div { border-top: 1px solid var(--line); }
+@media (min-width: 720px) { .def-duo > div + div { border-top: 0; } }
+.def-rot { font: 800 .7rem/1.2 var(--fonte-texto); letter-spacing: .12em; text-transform: uppercase; color: var(--vermelho); margin-bottom: .3rem; }
+.def-duo + .esq { margin-top: 1rem; }
+
+/* hierarquia das sanfonas: as gavetas principais são caixas com fundo e faixa vermelha ao abrir; as secundárias são discretas */
+.sf-gaveta, details.sf-gaveta:not(.sanfona) { border: 2px solid var(--line) !important; background: color-mix(in srgb, var(--papel-2) 40%, var(--papel)); padding: 0 1rem; margin-top: .7rem; }
+.sf-gaveta:last-of-type { border-bottom: 2px solid var(--line); }
+details.sf-gaveta[open]:not(.sanfona) { border-left: 8px solid var(--vermelho) !important; background: var(--papel); }
+.sf-gaveta > summary:hover .sf-gaveta-tit { text-decoration: underline; text-underline-offset: 3px; }
+.sf-gaveta-corpo { padding-right: .2rem; }
+details.conceito:not(.sanfona) { border-top: 1px dashed var(--line) !important; }
+details.conceito > summary { font-weight: 600; font-size: .86rem; color: var(--muted); }
+details.conceito[open] > summary { color: var(--fg); }
+details.notas-tec:not(.sanfona) { border: 0 !important; border-left: 3px solid var(--line) !important; background: transparent; }
+.notas-tec > summary { font-weight: 600; color: var(--muted); }
+details.sanfona.sanfona--leve > summary { font: 600 .86rem/1.3 var(--fonte-texto); letter-spacing: 0; text-transform: none; color: var(--muted); padding: .6rem 0; }
+details.sanfona.sanfona--leve { border-top: 1px solid var(--line); border-bottom: 0 !important; }
