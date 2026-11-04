@@ -55,7 +55,7 @@ const NAVEGACAO = [
     { id: 'planos', paginas: ['planos', 'analise-planos', 'resultados', 'partidos'], href: PLANOS_VISIVEIS ? 'planos.html' : 'resultados.html', icone: 'fa-flag', rotulo: 'Partidos e cadeiras' },
     { id: 'de-olho', paginas: ['de-olho'], href: 'de-olho-no-governo.html', icone: 'fa-eye', rotulo: 'De olho no governo' },
     { id: 'politicas', paginas: ['politicas'], href: 'politicas.html', icone: 'fa-landmark', rotulo: 'Políticas públicas' },
-    { id: 'orcamento', paginas: ['economia', 'fiscal', 'orcamento', 'tesouro', 'guia-tributos', 'tributos', 'simuladores', 'macro', 'divida-historico', 'financiamento', 'ciclo'], href: 'economia.html', icone: 'fa-coins', rotulo: 'Orçamento e contas públicas' },
+    { id: 'orcamento', paginas: ['economia', 'fiscal', 'orcamento', 'tesouro', 'guia-tributos', 'tributos', 'simuladores', 'macro', 'divida-historico', 'financiamento', 'divida-risco', 'ciclo'], href: 'economia.html', icone: 'fa-coins', rotulo: 'Orçamento e contas públicas' },
 ];
 const NAV_GLOSSARIO = { id: 'glossario', paginas: ['glossario'], href: 'glossario.html', icone: 'fa-book', rotulo: 'Glossário' };
 // Subnavegação: cada área do menu tem telas focadas, escolhidas por abas no topo da página.
@@ -92,6 +92,7 @@ const APROFUNDAR = {
         { id: 'macro', pai: 'fiscal', href: 'macro.html', rotulo: 'Indicadores' },
         { id: 'divida-historico', pai: 'fiscal', href: 'divida-historico.html', rotulo: 'História da dívida' },
         { id: 'financiamento', pai: 'fiscal', href: 'financiamento.html', rotulo: 'Dívida e títulos' },
+        { id: 'divida-risco', pai: 'fiscal', href: 'divida-risco.html', rotulo: 'Dissecando a dívida' },
         { id: 'ciclo', pai: 'fiscal', href: 'ciclo.html', rotulo: 'Ciclo econômico' },
     ],
 };
