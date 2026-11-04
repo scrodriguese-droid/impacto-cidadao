@@ -89,6 +89,7 @@
                 <li><a href="simuladores.html"><b>Simuladores de IR e MEI</b><span>Calcule o Imposto de Renda e o que paga um microempreendedor.</span></a></li>
                 <li><a href="macro.html"><b>Indicadores econômicos</b><span>Inflação, juros, desemprego e outros números do Banco Central e do IBGE.</span></a></li>
                 <li><a href="divida-historico.html"><b>História da dívida pública</b><span>A trajetória desde 2001 e os marcos que explicam as altas e quedas.</span></a></li>
+                <li><a href="divida-risco.html"><b>Dissecando a dívida pública</b><span>Prazo de vencimento, custo e indexadores: o que decide o risco além do tamanho da dívida.</span></a></li>
                 <li><a href="financiamento.html"><b>Dívida e títulos públicos</b><span>Como o governo se financia e o que são os títulos.</span></a></li>
                 <li><a href="ciclo.html"><b>Ciclo econômico e contas públicas</b><span>Como a economia afeta a arrecadação e o gasto.</span></a></li>
             </ul></details>
@@ -859,6 +860,30 @@ function radarEconomico(dg) {
     </div>`;
 }
 
+/* Dívida pública dissecada: prazo, custo e indexadores (resumo; a página divida-risco.html tem o detalhe) */
+async function carregarDividaRisco() {
+    const alvo = $('dividaRisco'); if (!alvo) return;
+    alvo.innerHTML = '<p class="text-sm text-slate-500"><i class="fa-solid fa-spinner fa-spin mr-1.5" aria-hidden="true"></i>Carregando a estrutura da dívida pública…</p>';
+    try {
+        if (!E.dividaRisco) E.dividaRisco = await api('/api/macro/divida-risco');
+        const r = E.dividaRisco, e = r.estrutura, c = r.custo && r.custo.atual, m = r.macro;
+        if (!e || !c) throw new Error('Dados da dívida indisponíveis no momento.');
+        const g = m.pib4 ? m.pib4.valor : null, selic = e.atual.indexadores['Selic (pós-fixado)'];
+        const ant = e.um_ano_antes;
+        alvo.innerHTML = `<h2>Dívida pública: o que decide o risco</h2>
+            <p class="text-sm text-slate-500 mt-2" style="max-width:72ch">O tamanho da dívida (${m.dbgg_pib ? pct(m.dbgg_pib.valor) + ' do PIB' : '—'}) não diz tudo. Importam também <b>quando ela vence</b> e <b>quanto custa carregá-la</b>.</p>
+            <div class="cartazes mt-4">
+                ${cartaz('Prazo médio', `${pc(e.atual.prazo_medio_anos)} anos`, 'até o vencimento, da dívida em mercado', ant ? `Um ano antes: ${pc(ant.prazo_medio_anos)} anos.` : '')}
+                ${cartaz('Vence em 12 meses', pct(e.atual.curto_pct), 'da dívida precisa ser renovada no próximo ano', ant ? `Um ano antes: ${pct(ant.curto_pct)}.` : '')}
+                ${cartaz('Custo real', `${pc(c.real)}% ao ano`, `contra um PIB que cresce ${g != null ? pc(g) + '%' : '—'}`, g != null ? `Diferença: ${pc(c.real - g)} p.p. Positiva, a dívida cresce sozinha antes do resultado primário.` : '', g != null && c.real > g)}
+                ${cartaz('Atrelada à Selic', pct(selic), 'da dívida em mercado muda de custo quando o Banco Central mexe nos juros', '')}
+            </div>
+            <p class="mt-4"><a class="inline-block px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold" href="divida-risco.html">Dissecar a dívida: prazo, custo e simulador <i class="fa-solid fa-arrow-right ml-1" aria-hidden="true"></i></a></p>`;
+    } catch (err) {
+        alvo.innerHTML = `<p class="text-sm text-slate-500">${esc(err.message || 'Dados da dívida indisponíveis no momento.')} <a class="underline" href="divida-risco.html">Abrir a página da dívida</a></p>`;
+    }
+}
+
 function nivel1(d) {
     const n = d.nivel1, p = n.lrf_pessoal, sf = d.situacao_fiscal, prim = d.deficits && d.deficits.primario;
     const div = sf && sf.estoque.itens[0];
@@ -891,6 +916,7 @@ function nivel1(d) {
         ${d.esfera === 'uniao' ? radarEconomico(sf && sf.diagnostico) : ''}
         <p class="text-sm text-slate-500 mt-2" style="max-width:70ch">Estes números respondem à pergunta. Abaixo deles, o detalhe de cada um.</p>
         <div class="cartazes mt-4">${cDivida}${cLrf}${cPrim}${cPib}</div>
+        ${d.esfera === 'uniao' ? '<div id="dividaRisco" class="mt-8" aria-live="polite"></div>' : ''}
         <details class="sanfona mt-6"><summary>Ver todos os números da situação fiscal</summary>
             <div class="mt-4">${situacaoDetalhe(d)}</div></details></section>`;
 }
@@ -971,6 +997,7 @@ function desenhar() {
     painel.innerHTML = ABA_FISCAL ? nivel1(d)
         : nivel2(d) + nivel3(d) + nivel4(d) + `<p class="text-[11px] text-slate-400">Fonte: ${esc(d.fonte)}. Os valores são declarados pelos próprios entes e podem ser retificados.</p>`;
     if (d.esfera === 'uniao') carregarReservas();
+    if (ABA_FISCAL && d.esfera === 'uniao') carregarDividaRisco();
 }
 
 $('painel').addEventListener('click', (ev) => {
