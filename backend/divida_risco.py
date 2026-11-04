@@ -71,6 +71,10 @@ def risco() -> dict[str, Any]:
             "atualizado": fat["atualizado"], "url": fat["url"], "pagina": fat["pagina"],
         }
 
+    leiloes = tentar("Resultado dos leilões", macro._leiloes)
+    if leiloes:
+        saida["leiloes"] = leiloes
+
     def ultimo(chave: str) -> dict | None:
         p = tentar(chave, lambda: macro.serie(chave)["pontos"])
         return {"valor": p[-1]["valor"], "data": p[-1]["data"]} if p else None

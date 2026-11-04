@@ -1421,6 +1421,39 @@ def _fatores_variacao() -> dict:
     return _memo(("fatores",), produzir)
 
 
+def _leiloes() -> dict:
+    """Resultado dos leilões de títulos do Tesouro (DPMFi): a taxa que o mercado cobra hoje para financiar o governo."""
+    def produzir() -> dict:
+        import xlrd
+
+        p = _http.json(f"{CKAN}/package_show", {"id": "ds013"})
+        rec = next(r for r in p["result"]["resources"] if "todos" in (r.get("url") or "").lower())
+        bruto = _http_arquivos.get(rec["url"], accept="*/*").content
+        ws = xlrd.open_workbook(file_contents=bruto).sheet_by_index(0)
+        cab = next(i for i in range(ws.nrows) if str(ws.cell_value(i, 1)).strip() == "Data do leilão")
+
+        def data(v):  # noqa: ANN001
+            return xlrd.xldate.xldate_as_datetime(v, 0).date().isoformat() if isinstance(v, float) else str(v)[:10]
+
+        linhas = []
+        for i in range(cab + 2, ws.nrows):
+            r = [ws.cell_value(i, c) for c in range(ws.ncols)]
+            if str(r[3]).strip() != "Venda" or "1" not in str(r[4]):
+                continue
+            taxa = r[8] if isinstance(r[8], float) else None
+            if taxa is None or not r[2]:
+                continue
+            linhas.append({"leilao": data(r[1]), "titulo": str(r[2]).strip(), "vencimento": data(r[6]), "taxa": round(taxa * 100, 4),
+                           "financeiro": r[11] if isinstance(r[11], float) else 0.0})
+        ultimos = {}
+        for x in linhas:
+            if x["titulo"] not in ultimos or x["leilao"] > ultimos[x["titulo"]]:
+                ultimos[x["titulo"]] = x["leilao"]
+        return {"atualizado": rec.get("last_modified") or p["result"].get("metadata_modified"), "url": rec["url"], "pagina": PAGINA_TESOURO + "ds013",
+                "por_titulo": {t: sorted([x for x in linhas if x["titulo"] == t and x["leilao"] == d], key=lambda x: x["vencimento"]) for t, d in ultimos.items()}}
+    return _memo(("leiloes",), produzir)
+
+
 def _tesouro_direto() -> dict:
     def produzir() -> dict:
         linhas, rec_e = _csv("estoque-do-tesouro-direto")

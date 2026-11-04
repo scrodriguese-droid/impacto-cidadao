@@ -8,3 +8,4 @@ anthropic>=1.0
 pypdf>=5.0
 truststore>=0.9
 openpyxl>=3.1
+xlrd>=2.0
