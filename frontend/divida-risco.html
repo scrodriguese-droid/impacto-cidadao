@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dissecando a dívida pública — ImpactoCidadão</title>
+    <meta name="description" content="Prazo de vencimento, custo e indexadores da dívida pública federal: o que decide o risco de uma crise fiscal além do tamanho da dívida.">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="assets/tailwind-config.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <style>
+        body { font-family: 'Inter', system-ui, sans-serif; }
+        :focus-visible { outline: 2px solid #A92823; outline-offset: 2px; }
+        .grafico { position: relative; height: 300px; }
+        .num-g { font-size: 1.9rem; font-weight: 800; line-height: 1.1; }
+        .cmp { display: grid; gap: .8rem; }
+        @media (min-width: 760px) { .cmp { grid-template-columns: 1fr 1fr; } }
+        .cmp > div { padding: .9rem 1rem; border: 2px solid #111; background: #fff; font-size: .88rem; line-height: 1.5; }
+        .dark .cmp > div { background: #0f172a; border-color: #94a3b8; }
+        .cmp .rot { font-weight: 800; text-transform: uppercase; letter-spacing: .06em; font-size: .75rem; }
+        .cmp ul { margin: .4rem 0; padding-left: 1.1rem; list-style: disc; }
+        .caixa { padding: .75rem .95rem; border-left: 4px solid #A92823; background: #f1f5f9; color: #111; font-size: .85rem; line-height: 1.55; }
+        .dark .caixa { background: #1e293b; color: #e2e8f0; }
+        .caixa p + p { margin-top: .4rem; }
+        .formula { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .85rem; padding: .6rem .8rem; background: #fff; border: 2px solid #111; color: #111; overflow-x: auto; }
+        .dark .formula { background: #0f172a; color: #e2e8f0; border-color: #94a3b8; }
+        .ctl { display: grid; gap: .8rem; }
+        @media (min-width: 760px) { .ctl { grid-template-columns: repeat(3, 1fr); } }
+        .ctl label { display: block; font-size: .8rem; font-weight: 700; }
+        .ctl input[type=range] { width: 100%; accent-color: #A92823; }
+        .barra-idx { display: flex; height: 2.2rem; border: 2px solid #111; }
+        .dark .barra-idx { border-color: #94a3b8; }
+        .barra-idx span { display: flex; align-items: center; justify-content: center; color: #fff; font-size: .78rem; font-weight: 700; min-width: 2px; border-right: 2px solid #fff; }
+        .barra-idx span:last-child { border-right: 0; }
+        .pan-nota { padding: .65rem .8rem; border-left: 4px solid #A92823; background: #f1f5f9; color: #111; font-size: .82rem; line-height: 1.5; }
+        .dark .pan-nota { background: #1e293b; color: #e2e8f0; }
+        .pan-nota-t { font-weight: 800; font-size: .72rem; letter-spacing: .06em; text-transform: uppercase; margin-bottom: .3rem; }
+        .sens { display: grid; gap: .7rem; }
+        @media (min-width: 760px) { .sens { grid-template-columns: repeat(3, 1fr); } }
+    </style>
+    <link rel="stylesheet" href="assets/brutalista.css">
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-full flex flex-col transition-colors duration-200">
+
+<a href="#conteudo" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-white focus:text-slate-900 focus:p-3">Ir para o conteúdo</a>
+<div id="cabecalho"></div>
+
+<main id="conteudo" class="max-w-6xl mx-auto px-4 sm:px-6 pt-6 pb-10 flex-grow w-full space-y-10">
+    <header>
+        <h1 class="text-2xl font-extrabold tracking-tight">Dissecando a dívida pública</h1>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1" style="max-width:72ch">O tamanho da dívida em relação ao PIB é só o começo. O risco de uma crise fiscal depende também de <b>quando a dívida vence</b> e de <b>quanto custa carregá-la</b>. Aqui estão os dois fatores, com os números oficiais de hoje.</p>
+        <p id="referencias" class="text-xs text-slate-500 mt-2" aria-live="polite"></p>
+    </header>
+
+    <div id="estado"></div>
+    <div id="conteudoModulo" class="hidden space-y-10"></div>
+</main>
+
+<div id="rodape"></div>
+
+<script src="assets/comum.js"></script>
+<script>
+renderLayout('divida-risco');
+
+/* ---------- utilidades ---------- */
+const reais = (n) => {
+    if (n == null) return '—';
+    const v = Math.abs(Number(n)), s = n < 0 ? '−' : '';
+    if (v >= 1e12) return `${s}R$ ${(v / 1e12).toLocaleString('pt-BR', { maximumFractionDigits: 2 })} tri`;
+    if (v >= 1e9) return `${s}R$ ${(v / 1e9).toLocaleString('pt-BR', { maximumFractionDigits: 0 })} bi`;
+    return `${s}R$ ${(v / 1e6).toLocaleString('pt-BR', { maximumFractionDigits: 0 })} mi`;
+};
+const n1 = (v, d = 1) => (v == null ? '—' : Number(v).toLocaleString('pt-BR', { minimumFractionDigits: d, maximumFractionDigits: d }));
+const pct = (v, d = 1) => (v == null ? '—' : `${n1(v, d)}%`);
+const fmtMes = (m) => (m ? m.split('-').reverse().join('/') : '—');
+const MES_CURTO = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+const mesCurto = (m) => `${MES_CURTO[+m.slice(5, 7) - 1]}/${m.slice(2, 4)}`;
+const cartao = (inner, extra = '') => `<div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 ${extra}">${inner}</div>`;
+const secao = (n, titulo, sub, corpo) => `<section aria-labelledby="b${n}"><p class="text-xs font-bold uppercase tracking-wider text-brand-700 dark:text-brand-400">${n}</p>
+    <h2 id="b${n}" class="text-xl font-bold">${esc(titulo)}</h2><p class="text-sm text-slate-500 dark:text-slate-400 mb-3" style="max-width:72ch">${sub}</p>${corpo}</section>`;
+const numero = (rot, valor, sub) => cartao(`<p class="text-xs font-semibold text-slate-500">${rot}</p><p class="num-g mt-1">${valor}</p><p class="text-xs text-slate-500 mt-1">${sub || ''}</p>`);
+const ehEscuro = () => document.documentElement.classList.contains('dark');
+const corTexto = () => (ehEscuro() ? '#cbd5e1' : '#475569');
+const corGrade = () => (ehEscuro() ? 'rgba(148,163,184,.18)' : 'rgba(100,116,139,.18)');
+const graficos = {};
+function desenharGrafico(id, config) {
+    if (graficos[id]) graficos[id].destroy();
+    const c = config; c.options = c.options || {};
+    c.options.responsive = true; c.options.maintainAspectRatio = false;
+    c.options.plugins = { ...(c.options.plugins || {}), legend: { labels: { color: corTexto() } } };
+    for (const eixo of Object.values(c.options.scales || {})) {
+        eixo.ticks = { ...(eixo.ticks || {}), color: corTexto() };
+        eixo.grid = { ...(eixo.grid || {}), color: corGrade() };
+        if (eixo.title) eixo.title.color = corTexto();
+    }
+    graficos[id] = new Chart($(id), c);
+}
+const COR_IDX = { 'Selic (pós-fixado)': '#A92823', 'Prefixado': '#2563eb', 'Índice de preços (IPCA/IGP-M)': '#059669', 'Câmbio (dívida externa)': '#d97706', 'Demais (TDA, contratos e outros)': '#64748b' };
+const NOME_IDX = { 'Selic (pós-fixado)': 'Atrelada à Selic', 'Prefixado': 'Juro fixo (prefixado)', 'Índice de preços (IPCA/IGP-M)': 'Atrelada à inflação', 'Câmbio (dívida externa)': 'Em dólar e outras moedas', 'Demais (TDA, contratos e outros)': 'Demais' };
+
+let D = null;
+
+/* ---------- tese ---------- */
+function blocoTese() {
+    return secao('Ponto de partida', 'Duas dívidas do mesmo tamanho podem ter riscos muito diferentes',
+        'Exemplo para ilustrar a ideia. Os números abaixo são hipotéticos e não são os do Brasil.',
+        `<div class="cmp"><div><p class="rot">Dívida A, de 80% do PIB</p><ul><li>Vence em média em 10 anos.</li><li>Paga juros reais de 2% ao ano.</li><li>A economia cresce 3% ao ano.</li></ul>
+            <p>O governo tem tempo para renovar a dívida, e a receita cresce mais rápido do que os juros. A dívida tende a encolher em proporção ao PIB.</p></div>
+        <div><p class="rot">Dívida B, de 80% do PIB</p><ul><li>Vence em média em 2 anos.</li><li>Paga juros reais de 7% ao ano.</li><li>A economia cresce 1% ao ano.</li></ul>
+            <p>Todo ano uma parte grande da dívida precisa ser renovada, a juros altos. Se o mercado desconfiar, o custo sobe, e a dívida cresce sozinha.</p></div></div>
+        <p class="caixa mt-3" style="max-width:80ch">A conclusão: o risco de insolvência ou de crise fiscal é determinado pela <b>capacidade de pagar no curto prazo</b> e pelo <b>custo de carregar a dívida</b>, além do seu tamanho.</p>`);
+}
+
+/* ---------- painel ---------- */
+function blocoPainel() {
+    const m = D.macro, e = D.estrutura, c = D.custo;
+    const r = c && c.atual ? c.atual.real : null, g = m.pib4 ? m.pib4.valor : null;
+    const cards = [
+        numero('Dívida bruta do governo geral', m.dbgg_pib ? pct(m.dbgg_pib.valor) + ' do PIB' : '—', 'Banco Central, ' + (m.dbgg_pib ? fmtMes(m.dbgg_pib.data.slice(0, 7)) : '')),
+        numero('Prazo médio até o vencimento', e ? `${n1(e.atual.prazo_medio_anos)} anos` : '—', e && e.um_ano_antes ? `Um ano antes: ${n1(e.um_ano_antes.prazo_medio_anos)} anos` : ''),
+        numero('Vence em até 12 meses', e ? pct(e.atual.curto_pct) : '—', e && e.um_ano_antes ? `Um ano antes: ${pct(e.um_ano_antes.curto_pct)}` : ''),
+        numero('Custo real da dívida (r)', r != null ? pct(r) + ' ao ano' : '—', 'Juros apropriados em 12 meses, descontada a inflação'),
+        numero('Crescimento do PIB (g)', g != null ? pct(g) : '—', m.pib4 ? `Acumulado em 4 trimestres, até o ${esc(m.pib4.ref)}` : ''),
+        numero('Diferença r − g', r != null && g != null ? `${n1(r - g)} p.p.` : '—', 'Positiva: a dívida cresce sozinha, antes do resultado primário'),
+    ];
+    return secao('Painel', 'A dívida do Brasil hoje, em seis números', 'Os três fatores lado a lado. Cada um é explicado nas seções a seguir.',
+        `<div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">${cards.join('')}</div>`);
+}
+
+/* ---------- 1. prazo ---------- */
+function blocoPrazo() {
+    const e = D.estrutura;
+    if (!e) return secao('Prazo', 'Quando a dívida vence', '', cartao('<p class="text-sm">O estoque da dívida está indisponível no momento.</p>'));
+    const cal = e.calendario, total12 = cal.reduce((t, x) => t + x.valor, 0);
+    const ant = e.um_ano_antes;
+    const corpo = `
+        <div class="caixa mb-3" style="max-width:80ch"><p>O governo quase nunca paga a dívida de uma vez. Ele <b>rola</b> a dívida: vende títulos novos no mercado para pagar os que estão vencendo.</p>
+            <p>Quando a maior parte vence só daqui a 5 ou 10 anos, o Tesouro pode esperar uma crise passar antes de emitir. Quando muito vence em poucos meses, ele depende do humor do mercado: se os investidores recusarem os títulos ou pedirem juros muito altos, surge a <b>crise de refinanciamento</b>.</p></div>
+        <div class="grid sm:grid-cols-3 gap-3">
+            ${numero('Prazo médio', `${n1(e.atual.prazo_medio_anos)} anos`, ant ? `Um ano antes: ${n1(ant.prazo_medio_anos)} anos` : '')}
+            ${numero('Vence em até 12 meses', `${pct(e.atual.curto_pct)}`, `${reais(total12)} a renovar. Em média, ${reais(total12 / 12)} por mês`)}
+            ${numero('Vence em mais de 3 anos', pct(e.atual.longo_pct), ant ? `Um ano antes: ${pct(ant.longo_pct)}` : '')}
+        </div>
+        <div class="grid lg:grid-cols-2 gap-4 mt-4">
+            ${cartao('<h3 class="font-bold text-sm">O perfil de vencimento ao longo dos anos</h3><p class="text-xs text-slate-500 mb-2">Fatia da dívida em mercado, por prazo até o vencimento.</p><div class="grafico"><canvas id="gPerfil" role="img" aria-label="Fatia da dívida por prazo de vencimento ao longo do tempo"></canvas></div>')}
+            ${cartao(`<h3 class="font-bold text-sm">O que vence nos próximos 12 meses</h3><p class="text-xs text-slate-500 mb-2">Valor que o Tesouro precisa pagar ou renovar em cada mês, a partir de ${esc(fmtMes(e.referencia))}.</p><div class="grafico"><canvas id="gCal" role="img" aria-label="Valor da dívida que vence em cada um dos próximos 12 meses"></canvas></div>`)}
+        </div>
+        <p class="text-xs text-slate-500 mt-3" style="max-width:80ch">${esc(D.metodo.mercado)} ${esc(D.metodo.prazo_medio)}</p>`;
+    return secao('Prazo', 'Quando a dívida vence: o risco de rolagem', 'Prazo curto deixa o governo refém do mercado na hora de renovar.', corpo);
+}
+function graficosPrazo() {
+    const e = D.estrutura; if (!e) return;
+    const s = e.serie;
+    desenharGrafico('gPerfil', { type: 'line', data: { labels: s.map((x) => mesCurto(x.mes)), datasets: [
+        { label: 'Até 12 meses', data: s.map((x) => x.curto_pct), backgroundColor: '#A92823', borderColor: '#A92823', fill: true, pointRadius: 0 },
+        { label: '1 a 3 anos', data: s.map((x) => x.medio_pct), backgroundColor: '#d97706', borderColor: '#d97706', fill: true, pointRadius: 0 },
+        { label: 'Mais de 3 anos', data: s.map((x) => x.longo_pct), backgroundColor: '#059669', borderColor: '#059669', fill: true, pointRadius: 0 }] },
+        options: { scales: { x: { ticks: { maxTicksLimit: 8 } }, y: { stacked: true, min: 0, max: 100, title: { display: true, text: '% da dívida em mercado' } } },
+            plugins: { tooltip: { callbacks: { label: (c) => `${c.dataset.label}: ${n1(c.parsed.y)}%` } } } } });
+    desenharGrafico('gCal', { type: 'bar', data: { labels: e.calendario.map((x) => mesCurto(x.mes)), datasets: [{ label: 'Vence no mês', data: e.calendario.map((x) => x.valor / 1e9), backgroundColor: '#A92823' }] },
+        options: { plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => `R$ ${n1(c.parsed.y, 0)} bilhões` } } }, scales: { y: { title: { display: true, text: 'R$ bilhões' } } } } });
+}
+
+/* ---------- 2. custo ---------- */
+const SIM = { r: 5, g: 2, p: 0 };
+function simular(d0, r, g, p, anos = 10) {
+    const v = [d0];
+    for (let i = 0; i < anos; i++) v.push(v[i] * (1 + r / 100) / (1 + g / 100) - p);
+    return v;
+}
+function blocoCusto() {
+    const c = D.custo, m = D.macro;
+    if (!c || !c.atual) return secao('Custo', 'Quanto custa carregar a dívida', '', cartao('<p class="text-sm">Os dados de custo estão indisponíveis no momento.</p>'));
+    const a = c.atual, g = m.pib4 ? m.pib4.valor : null, d0 = m.dbgg_pib ? m.dbgg_pib.valor : null;
+    const estab = d0 != null && g != null ? d0 * ((1 + a.real / 100) / (1 + g / 100) - 1) : null;
+    const prim = m.primario12 ? -m.primario12.valor : null;   // série do BCB: positivo = déficit
+    SIM.r = Math.round(a.real * 10) / 10; SIM.g = g != null ? g : 2; SIM.p = prim != null ? Math.round(prim * 10) / 10 : 0;
+    const corpo = `
+        <div class="caixa mb-3" style="max-width:80ch"><p>A dívida em proporção ao PIB depende de três coisas: do <b>juro real</b> que o governo paga (r), do <b>crescimento</b> da economia (g) e do <b>resultado primário</b> (receitas menos despesas, sem contar os juros).</p>
+            <p>Se r é maior que g, a conta de juros cresce mais rápido do que a riqueza do país, e a dívida sobe sozinha. Para segurá-la, o governo precisa de superávit primário.</p></div>
+        <p class="formula mb-3" style="max-width:80ch">dívida do ano que vem = dívida de hoje × (1 + r) ÷ (1 + g) − superávit primário</p>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            ${numero('Custo efetivo (nominal)', `${pct(a.nominal)} ao ano`, `Juros de ${esc(reais(c.juros_12m_rs))} em 12 meses`)}
+            ${numero('Custo real, sem a inflação (r)', `${pct(a.real)} ao ano`, `Inflação em 12 meses: ${pct(a.ipca12)}`)}
+            ${numero('Crescimento do PIB (g)', g != null ? pct(g) : '—', m.pib4 ? esc(m.pib4.ref) : '')}
+            ${numero('Superávit primário que estabiliza a dívida', estab != null ? `${n1(estab)}% do PIB` : '—', prim != null ? `Hoje: ${prim >= 0 ? 'superávit' : 'déficit'} de ${n1(Math.abs(prim))}% do PIB` : '')}
+        </div>
+        <div class="grid lg:grid-cols-2 gap-4 mt-4">
+            ${cartao('<h3 class="font-bold text-sm">Custo real da dívida × crescimento da economia</h3><p class="text-xs text-slate-500 mb-2">Quando a linha do custo está acima da do PIB, a dívida cresce sozinha.</p><div class="grafico"><canvas id="gCusto" role="img" aria-label="Custo real da dívida e crescimento do PIB ao longo do tempo"></canvas></div>')}
+            ${cartao(`<h3 class="font-bold text-sm">Simule: para onde vai a dívida?</h3><p class="text-xs text-slate-500 mb-2">Parte da dívida bruta de hoje (${d0 != null ? pct(d0) : '—'} do PIB). Mexa nos três botões.</p>
+                <div class="ctl">
+                    <div><label for="sr">Juro real (r): <span id="vr"></span></label><input id="sr" type="range" min="0" max="12" step="0.1"></div>
+                    <div><label for="sg">Crescimento do PIB (g): <span id="vg"></span></label><input id="sg" type="range" min="-2" max="6" step="0.1"></div>
+                    <div><label for="sp">Resultado primário: <span id="vp"></span></label><input id="sp" type="range" min="-4" max="4" step="0.1"></div>
+                </div>
+                <div class="flex flex-wrap gap-2 mt-3 text-xs" role="group" aria-label="Cenários prontos">
+                    <button type="button" data-cen="hoje" class="px-3 py-1.5 rounded-full border border-slate-300 dark:border-slate-600 font-semibold">Valores de hoje</button>
+                    <button type="button" data-cen="a" class="px-3 py-1.5 rounded-full border border-slate-300 dark:border-slate-600 font-semibold">r de 1% e g de 3%</button>
+                    <button type="button" data-cen="b" class="px-3 py-1.5 rounded-full border border-slate-300 dark:border-slate-600 font-semibold">r de 6,5% e g de 1%</button></div>
+                <p id="simTexto" class="text-sm font-semibold mt-3" aria-live="polite"></p>
+                <div class="grafico" style="height:220px"><canvas id="gSim" role="img" aria-label="Trajetória simulada da dívida em proporção do PIB"></canvas></div>`)}
+        </div>
+        <p class="text-xs text-slate-500 mt-3" style="max-width:80ch">${esc(D.metodo.custo)} A simulação é uma conta simples, não uma previsão: usa a dívida bruta do governo geral como ponto de partida e o custo efetivo da dívida federal como juro, e supõe que r, g e o primário ficam constantes por 10 anos. O superávit que estabiliza a dívida é dívida × (1 + r) ÷ (1 + g) − dívida, com os valores de hoje.</p>`;
+    return secao('Custo', 'Quanto custa carregar a dívida: a bola de neve', 'O que importa é a distância entre o juro e o crescimento da economia.', corpo);
+}
+function atualizarSim() {
+    const d0 = D.macro.dbgg_pib ? D.macro.dbgg_pib.valor : 80;
+    $('sr').value = SIM.r; $('sg').value = SIM.g; $('sp').value = SIM.p;
+    $('vr').textContent = `${n1(SIM.r)}% ao ano`; $('vg').textContent = `${n1(SIM.g)}% ao ano`;
+    $('vp').textContent = `${SIM.p >= 0 ? 'superávit' : 'déficit'} de ${n1(Math.abs(SIM.p))}% do PIB`;
+    const v = simular(d0, SIM.r, SIM.g, SIM.p), fim = v[v.length - 1];
+    $('simTexto').textContent = `Se esses valores se mantivessem por 10 anos, a dívida iria de ${n1(d0)}% para ${n1(fim)}% do PIB (${fim >= d0 ? '+' : '−'}${n1(Math.abs(fim - d0))} p.p.).`;
+    desenharGrafico('gSim', { type: 'line', data: { labels: v.map((_, i) => (i === 0 ? 'hoje' : `+${i}`)), datasets: [{ label: 'Dívida, % do PIB', data: v, borderColor: '#A92823', backgroundColor: 'rgba(169,40,35,.15)', fill: true, tension: .2, pointRadius: 2 }] },
+        options: { plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => `${n1(c.parsed.y)}% do PIB` } } }, scales: { y: { title: { display: true, text: '% do PIB' } }, x: { title: { display: true, text: 'anos a partir de hoje' } } } } });
+}
+function ligarSim() {
+    const r = $('sr'); if (!r) return;
+    [['sr', 'r'], ['sg', 'g'], ['sp', 'p']].forEach(([id, k]) => $(id).addEventListener('input', (ev) => { SIM[k] = +ev.target.value; atualizarSim(); }));
+    document.querySelectorAll('[data-cen]').forEach((b) => b.addEventListener('click', () => {
+        const c = D.custo.atual, g = D.macro.pib4 ? D.macro.pib4.valor : 2, prim = D.macro.primario12 ? -D.macro.primario12.valor : 0;
+        const cen = { hoje: [c.real, g, prim], a: [1, 3, SIM.p], b: [6.5, 1, SIM.p] }[b.dataset.cen];
+        SIM.r = Math.round(cen[0] * 10) / 10; SIM.g = Math.round(cen[1] * 10) / 10; SIM.p = Math.round(cen[2] * 10) / 10; atualizarSim();
+    }));
+    atualizarSim();
+}
+function graficosCusto() {
+    const c = D.custo; if (!c) return;
+    const s = c.serie;
+    desenharGrafico('gCusto', { type: 'line', data: { labels: s.map((x) => mesCurto(x.mes)), datasets: [
+        { label: 'Custo real da dívida (r)', data: s.map((x) => x.real), borderColor: '#A92823', backgroundColor: '#A92823', pointRadius: 0, tension: .2 },
+        { label: 'Crescimento do PIB em 4 trimestres (g)', data: s.map((x) => x.pib4), borderColor: '#2563eb', backgroundColor: '#2563eb', pointRadius: 0, tension: .2 }] },
+        options: { scales: { x: { ticks: { maxTicksLimit: 8 } }, y: { title: { display: true, text: '% ao ano' } } },
+            plugins: { tooltip: { callbacks: { label: (x) => `${x.dataset.label}: ${n1(x.parsed.y)}%` } } } } });
+}
+
+/* ---------- 3. indexadores ---------- */
+function blocoIndexadores() {
+    const e = D.estrutura; if (!e) return '';
+    const ix = e.atual.indexadores, ant = e.um_ano_antes ? e.um_ano_antes.indexadores : {};
+    const ordem = Object.keys(COR_IDX).filter((k) => ix[k] != null);
+    const barra = ordem.map((k) => `<span style="flex:${ix[k]};background:${COR_IDX[k]}" title="${esc(NOME_IDX[k])}: ${n1(ix[k])}%">${ix[k] >= 6 ? n1(ix[k], 0) + '%' : ''}</span>`).join('');
+    const leg = ordem.map((k) => `<li class="flex gap-2 items-baseline"><i class="inline-block w-3 h-3 flex-none self-center" style="background:${COR_IDX[k]}" aria-hidden="true"></i><span><b>${esc(NOME_IDX[k])}:</b> ${n1(ix[k])}%${ant[k] != null ? ` <span class="text-xs text-slate-500">(um ano antes: ${n1(ant[k])}%)</span>` : ''}</span></li>`).join('');
+    const tot = e.total;
+    const selic = tot * (ix['Selic (pós-fixado)'] || 0) / 100, ipca = tot * (ix['Índice de preços (IPCA/IGP-M)'] || 0) / 100, cambio = tot * (ix['Câmbio (dívida externa)'] || 0) / 100;
+    const o = [
+        ['Prefixado', 'O governo fixa a taxa na hora da venda (por exemplo, 10% ao ano). O Tesouro sabe quanto vai pagar até o vencimento. O risco é de quem compra: se os juros subirem depois, o título rende menos que o mercado.'],
+        ['Atrelada à Selic', 'O juro acompanha as decisões do Banco Central. Se a Selic sobe para conter a inflação, o custo da dívida sobe quase na hora.'],
+        ['Atrelada à inflação', 'Paga a inflação (IPCA) mais um juro. Protege o poder de compra de quem investe, e o Tesouro paga mais quando a inflação sobe.'],
+        ['Em dólar', 'É a parte mais sensível ao câmbio: se o real perde valor, a dívida em reais cresce. Foi a causa de calotes em vários países em desenvolvimento nas décadas de 1980 e 1990.'],
+    ].map(([t, p]) => `<div class="pan-nota" style="margin:0"><p class="pan-nota-t">${t}</p><p>${p}</p></div>`).join('');
+    const corpo = `
+        <div class="caixa mb-3" style="max-width:80ch"><p>Além do prazo e do custo médio, importa <b>ao que</b> a dívida está atrelada. Isso diz quem carrega o risco quando os juros, a inflação ou o câmbio mudam: o Tesouro ou o investidor.</p></div>
+        <div class="barra-idx" role="img" aria-label="Composição da dívida em mercado por tipo de remuneração">${barra}</div>
+        <ul class="mt-3 grid sm:grid-cols-2 gap-1 text-sm">${leg}</ul>
+        <div class="grid sm:grid-cols-2 gap-3 mt-4">${o}</div>
+        <h3 class="font-bold mt-6">O que acontece se algo mudar?</h3>
+        <p class="text-sm text-slate-500 mb-2" style="max-width:80ch">Contas simples sobre o estoque de hoje, que mostram a sensibilidade de cada parte. Não são previsões: supõem que o resto fica parado por um ano.</p>
+        <div class="sens">
+            ${cartao(`<p class="text-xs font-semibold text-slate-500">Se a Selic subir 1 ponto percentual</p><p class="num-g mt-1">+${reais(selic * 0.01)}</p><p class="text-xs text-slate-500 mt-1">em juros por ano, sobre ${reais(selic)} atrelados à Selic</p>`)}
+            ${cartao(`<p class="text-xs font-semibold text-slate-500">Se a inflação em 12 meses subir 1 ponto percentual</p><p class="num-g mt-1">+${reais(ipca * 0.01)}</p><p class="text-xs text-slate-500 mt-1">na correção da dívida, sobre ${reais(ipca)} atrelados à inflação</p>`)}
+            ${cartao(`<p class="text-xs font-semibold text-slate-500">Se o dólar subir 10% frente ao real</p><p class="num-g mt-1">+${reais(cambio * 0.1)}</p><p class="text-xs text-slate-500 mt-1">no valor da dívida em reais, sobre ${reais(cambio)} em moeda estrangeira</p>`)}
+        </div>
+        <div class="cartao mt-4">${cartao('<h3 class="font-bold text-sm">Como a composição mudou</h3><p class="text-xs text-slate-500 mb-2">Fatia de cada tipo de remuneração na dívida em mercado.</p><div class="grafico"><canvas id="gIdx" role="img" aria-label="Composição da dívida por indexador ao longo do tempo"></canvas></div>')}</div>`;
+    return secao('Indexadores', 'A que a dívida está atrelada: o tipo de juro', 'Quem carrega o risco muda conforme o indexador.', corpo);
+}
+function graficosIdx() {
+    const e = D.estrutura; if (!e) return;
+    const s = e.serie, chaves = Object.keys(COR_IDX).filter((k) => e.atual.indexadores[k] != null);
+    desenharGrafico('gIdx', { type: 'line', data: { labels: s.map((x) => mesCurto(x.mes)), datasets: chaves.map((k) => ({ label: NOME_IDX[k], data: s.map((x) => (x.indexadores[k] != null ? x.indexadores[k] : 0)),
+        backgroundColor: COR_IDX[k], borderColor: COR_IDX[k], fill: true, pointRadius: 0 })) },
+        options: { scales: { x: { ticks: { maxTicksLimit: 8 } }, y: { stacked: true, min: 0, max: 100, title: { display: true, text: '% da dívida em mercado' } } },
+            plugins: { tooltip: { callbacks: { label: (c) => `${c.dataset.label}: ${n1(c.parsed.y)}%` } } } } });
+}
+
+/* ---------- fontes ---------- */
+function blocoFontes() {
+    const l = (u, t) => `<a class="font-semibold underline" target="_blank" rel="noopener" href="${esc(u)}">${esc(t)}</a>`;
+    return secao('Fontes', 'Os dados oficiais', 'Estes são os lugares onde o Tesouro e o Banco Central publicam os números usados aqui.',
+        `<ul class="grid md:grid-cols-3 gap-3 text-sm">
+            <li>${cartao(`<p>${l('https://www.tesourotransparente.gov.br/publicacoes/relatorio-mensal-da-divida-rmd', 'Relatório Mensal da Dívida (Tesouro Nacional)')}</p><p class="text-xs text-slate-500 mt-1">O documento oficial sobre a gestão da dívida: composição por indexador, prazo médio e custo médio. O prazo e o custo que ele publica seguem a metodologia do Tesouro e podem diferir dos calculados aqui.</p>`)}</li>
+            <li>${cartao(`<p>${l(D.estrutura ? D.estrutura.pagina : 'https://www.tesourotransparente.gov.br/', 'Estoque da Dívida Pública Federal (Tesouro Transparente)')}</p><p class="text-xs text-slate-500 mt-1">Dados abertos do estoque por título e vencimento, que alimentam o prazo e o calendário de vencimentos. Os fatores de variação, com os juros apropriados, estão ${l(D.custo ? D.custo.pagina : 'https://www.tesourotransparente.gov.br/', 'neste conjunto')}.</p>`)}</li>
+            <li>${cartao(`<p>${l('https://www.bcb.gov.br/estatisticas/estatisticasfiscais', 'Estatísticas fiscais (Banco Central)')}</p><p class="text-xs text-slate-500 mt-1">Fonte oficial da dívida bruta do governo geral em proporção do PIB, que soma União, estados e municípios, usada em comparações internacionais.</p>`)}</li>
+        </ul>`);
+}
+
+function desenharTudo() { graficosPrazo(); graficosCusto(); graficosIdx(); ligarSim(); }
+
+/* ---------- início ---------- */
+(async function iniciar() {
+    $('estado').innerHTML = '<p class="text-sm text-slate-500" aria-live="polite"><i class="fa-solid fa-spinner fa-spin mr-1.5" aria-hidden="true"></i>Consultando o Tesouro Nacional e o Banco Central…</p>';
+    try {
+        D = await api('/api/macro/divida-risco');
+        $('estado').innerHTML = D.erros.length ? `<div class="text-xs text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl p-3">${D.erros.map(esc).join(' ')}</div>` : '';
+        const e = D.estrutura;
+        $('referencias').textContent = e ? `Estoque da dívida: ${fmtMes(e.referencia)} (Tesouro Nacional). Custo: ${D.custo ? fmtMes(D.custo.ultimo_mes.mes) : '—'} (Tesouro Nacional). Indicadores: Banco Central e IBGE.` : '';
+        $('conteudoModulo').innerHTML = blocoTese() + blocoPainel() + blocoPrazo() + blocoCusto() + blocoIndexadores() + blocoFontes();
+        $('conteudoModulo').classList.remove('hidden');
+        desenharTudo();
+        document.getElementById('btnTema')?.addEventListener('click', () => setTimeout(desenharTudo, 50));
+    } catch (e) { $('estado').innerHTML = mensagemErro(e); }
+})();
+</script>
+</body>
+</html>

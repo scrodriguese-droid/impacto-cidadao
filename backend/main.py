@@ -47,6 +47,7 @@ import economia
 import eleicoes
 import equipamentos
 import analise_dimensoes
+import divida_risco
 import historico_divida
 import historico_primario
 import macro
@@ -1035,6 +1036,14 @@ def macro_dimensoes() -> dict:
             log.warning("Radiografia por período indisponível: %s", exc)
             saida["periodos"] = None
         return saida
+    except Exception as exc:  # noqa: BLE001
+        raise _fonte_macro_indisponivel(exc) from exc
+
+
+@router.get("/macro/divida-risco", tags=["macro"])
+def macro_divida_risco() -> dict:
+    try:
+        return divida_risco.risco()
     except Exception as exc:  # noqa: BLE001
         raise _fonte_macro_indisponivel(exc) from exc
 

@@ -1261,6 +1261,13 @@ def _estoque_dpf() -> dict:
         por_indexador: dict[str, dict[str, float]] = defaultdict(lambda: defaultdict(float))
         faixas: dict[str, dict[str, float]] = defaultdict(lambda: defaultdict(float))
         calendario: dict[str, dict[str, float]] = defaultdict(lambda: defaultdict(float))  # mês de referência → AAAA-MM de vencimento
+        # só a carteira em poder do mercado (sem a do Banco Central): é a que precisa ser refinanciada de verdade
+        tot_m: dict[str, float] = defaultdict(float)
+        idx_m: dict[str, dict[str, float]] = defaultdict(lambda: defaultdict(float))
+        faixas_m: dict[str, dict[str, float]] = defaultdict(lambda: defaultdict(float))
+        peso_m: dict[str, float] = defaultdict(float)
+        base_m: dict[str, float] = defaultdict(float)
+        cal_m: dict[str, dict[str, float]] = defaultdict(lambda: defaultdict(float))
         for r in linhas:
             if len(r) < 7:
                 continue
@@ -1273,6 +1280,10 @@ def _estoque_dpf() -> dict:
             por_tipo[mes][r[6]] += v
             por_titulo[mes][_grupo_titulo(r[0])] += v
             por_indexador[mes][_indexador(r[0], r[6])] += v
+            no_mercado = r[5].strip() == "Mercado"
+            if no_mercado:
+                tot_m[mes] += v
+                idx_m[mes][_indexador(r[0], r[6])] += v
             m = re.fullmatch(r"(\d{2})/(\d{2})/(\d{4})", r[1].strip())
             venc[mes][m.group(3) if m else "s/d"] += v
             if not m:
@@ -1281,6 +1292,12 @@ def _estoque_dpf() -> dict:
             vm = int(m.group(3)) * 12 + int(m.group(2))
             rm = int(mes[:4]) * 12 + int(mes[5:7])
             meses_ate = vm - rm
+            if no_mercado:
+                peso_m[mes] += v * max(meses_ate, 0) / 12
+                base_m[mes] += v
+                faixas_m[mes]["curto" if meses_ate <= 12 else "medio" if meses_ate <= 36 else "longo"] += v
+                if 0 <= meses_ate <= 12:
+                    cal_m[mes][f"{m.group(3)}-{m.group(2)}"] += v
             peso_prazo[mes] += v * max(meses_ate, 0) / 12
             base_prazo[mes] += v
             faixas[mes]["curto" if meses_ate <= 12 else "medio" if meses_ate <= 36 else "longo"] += v
@@ -1307,6 +1324,18 @@ def _estoque_dpf() -> dict:
                 "faixas": {k: round(v, 2) for k, v in faixas[ultimo].items()},
                 "calendario": [{"mes": k, "valor": round(v, 2)} for k, v in sorted(calendario[ultimo].items())],
                 "indexadores": indexadores,
+                "mercado": {
+                    "referencia": ultimo,
+                    "total": round(tot_m[ultimo], 2),
+                    "calendario": [{"mes": k, "valor": round(v, 2)} for k, v in sorted(cal_m[ultimo].items())],
+                    "serie": [{"mes": m, "total": round(tot_m[m], 2),
+                               "prazo_medio_anos": round(peso_m[m] / base_m[m], 2) if base_m[m] else None,
+                               "curto_pct": round(100 * faixas_m[m].get("curto", 0) / base_m[m], 2) if base_m[m] else None,
+                               "medio_pct": round(100 * faixas_m[m].get("medio", 0) / base_m[m], 2) if base_m[m] else None,
+                               "longo_pct": round(100 * faixas_m[m].get("longo", 0) / base_m[m], 2) if base_m[m] else None,
+                               "indexadores": {k: round(100 * v / tot_m[m], 2) for k, v in idx_m[m].items()} if tot_m[m] else {}}
+                              for m in meses if tot_m[m]],
+                },
             },
             "referencia": ultimo, "atualizado": rec["atualizado"], "pagina": rec["pagina"], "url": rec["url"],
             "evolucao": [{"mes": m, "valor": round(total[m], 2)} for m in meses],
@@ -1362,6 +1391,34 @@ def _emissoes_resgates() -> dict:
                       if emissoes.get(m) is not None or resgates.get(m) is not None],
         }
     return _memo(("emissoes",), produzir)
+
+
+def _fatores_variacao() -> dict:
+    """Fatores de variação da DPF (Tesouro): de onde vem a variação mensal do estoque, com os juros apropriados."""
+    def produzir() -> dict:
+        from openpyxl import load_workbook
+
+        rec = _recurso("fatores-de-variacao-da-divida-publica-federal", "XLSX")
+        bruto = _http_arquivos.get(rec["url"], accept="*/*").content
+        ws = load_workbook(io.BytesIO(bruto), read_only=True, data_only=True).worksheets[0]
+        linhas = list(ws.iter_rows(values_only=True))
+        cab = next(r for r in linhas if sum(bool(isinstance(c, str) and re.fullmatch(r"[A-Za-zç]{3}/\d{2}", c.strip())) for c in r) > 12)
+        meses_pt = {"Jan": 1, "Fev": 2, "Mar": 3, "Abr": 4, "Mai": 5, "Jun": 6, "Jul": 7, "Ago": 8, "Set": 9, "Out": 10, "Nov": 11, "Dez": 12}
+        colunas: list[tuple[int, str]] = []
+        for i, c in enumerate(cab):
+            if isinstance(c, str) and re.fullmatch(r"[A-Za-zç]{3}/\d{2}", c.strip()) and c.strip()[:3].capitalize() in meses_pt:
+                colunas.append((i, f"20{c.strip()[4:]}-{meses_pt[c.strip()[:3].capitalize()]:02d}"))
+
+        def linha(rotulo: str) -> dict[str, float | None]:
+            r = next(r for r in linhas if isinstance(r[0], str) and r[0].strip().startswith(rotulo))
+            return {m: (float(r[i]) if isinstance(r[i], (int, float)) else None) for i, m in colunas}
+
+        anterior, atual = linha("Estoque anterior"), linha("Estoque mês em análise")
+        juros, emi, res = linha("I.2 - Juros"), linha("I.1.1 - Emissões"), linha("I.1.2 - Resgates")
+        return {"unidade": "R$ milhões", "atualizado": rec["atualizado"], "pagina": rec["pagina"], "url": rec["url"],
+                "serie": [{"mes": m, "estoque_anterior": anterior[m], "estoque": atual[m], "juros": juros[m], "emissoes": emi[m], "resgates": res[m]}
+                          for _, m in colunas if atual.get(m) is not None]}
+    return _memo(("fatores",), produzir)
 
 
 def _tesouro_direto() -> dict:
