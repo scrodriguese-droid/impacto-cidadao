@@ -461,12 +461,13 @@ a.chip-link:hover { background: var(--ativo); color: var(--ativo-fg); }
 .radar-sub { font-size: .95rem; line-height: 1.5; font-weight: 500; margin: .4rem 0 1.4rem; max-width: 70ch; }
 .radar-legenda { font-size: .88rem; line-height: 1.45; max-width: 52ch; min-height: 2.6em; }
 .radar-itens { margin-top: 1rem; display: grid; }
-.radar-itens li { list-style: none; padding: .7rem 0; border-top: 1px solid var(--line); display: grid; grid-template-columns: 1fr auto; gap: .15rem 1rem; }
+.radar-itens li { list-style: none; padding: 1rem 0; border-top: 1px solid var(--line); display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .3rem 1rem; align-items: baseline; }
 .radar-itens li:first-child { border-top: 2px solid var(--line); }
-.radar-item-nome { font-weight: 600; font-size: .9rem; }
-.radar-item-valor { font-family: var(--fonte-titulo); font-size: 1.5rem; line-height: 1; text-align: right; }
+.radar-item-nome { font-weight: 600; font-size: .95rem; line-height: 1.3; }
+.radar-item-valor { font-family: var(--fonte-titulo); font-size: 1.7rem; line-height: 1; text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .radar-item-valor small { font: 500 .7rem/1 var(--fonte-texto); }
-.radar-item-nota { grid-column: 1 / -1; font-size: .8rem; line-height: 1.45; color: var(--muted); }
+.radar-item-nota { grid-column: 1 / -1; font-size: .82rem; line-height: 1.5; color: var(--muted); max-width: 56ch; text-transform: none; letter-spacing: 0; font-weight: 400; }
+@media (max-width: 420px) { .radar-item-valor { font-size: 1.45rem; } }
 .radar-seta { font-weight: 700; }
 .radar-seta--piora { color: var(--vermelho); }
 /* linha do tempo da dívida e dos juros: um só gráfico, marcos direto na linha, sem faixas de fundo */
