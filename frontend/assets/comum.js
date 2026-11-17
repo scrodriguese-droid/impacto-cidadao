@@ -117,6 +117,13 @@ function renderLayout(paginaAtual) {
         sc.dataset.glossarioAuto = '1';
         document.body.append(sc);
     }
+    // PWA: permite instalar o site como app (celular e computador) e abrir offline o que já foi visto. Arquivos: manifest.webmanifest e sw.js
+    if (!document.querySelector('link[rel="manifest"]')) {
+        document.head.insertAdjacentHTML('beforeend', '<link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#A92823">');
+    }
+    if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+        navigator.serviceWorker.register('sw.js').catch(() => { /* sem service worker o site funciona normalmente */ });
+    }
     if (!document.querySelector('link[rel="icon"]')) {
         // Logo = ícone "user-group" do Lucide. SVG (nítido em qualquer tamanho) + PNG de reserva;
         // apple-touch-icon para quem salva o site na tela inicial do celular. Arquivos: scripts/gerar_icones.py
