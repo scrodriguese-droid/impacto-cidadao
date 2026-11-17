@@ -1054,3 +1054,38 @@ details.notas-tec:not(.sanfona) { border: 0 !important; border-left: 3px solid v
 .notas-tec > summary { font-weight: 600; color: var(--muted); }
 details.sanfona.sanfona--leve > summary { font: 600 .86rem/1.3 var(--fonte-texto); letter-spacing: 0; text-transform: none; color: var(--muted); padding: .6rem 0; }
 details.sanfona.sanfona--leve { border-top: 1px solid var(--line); border-bottom: 0 !important; }
+
+/* ---------- O filme da dívida (economia.html) ---------- */
+:root { --alivio: #1E6B3A; }
+.dark { --alivio: #5FBF86; }
+.fm-controles { display: flex; flex-wrap: wrap; gap: .8rem 1.2rem; align-items: center; justify-content: space-between; margin-top: 1rem; border-top: 2px solid var(--line); border-bottom: 1px solid var(--line); padding: .6rem 0; }
+.fm-modos { display: flex; flex-wrap: wrap; }
+.fm-modos button { font: 800 .72rem/1 var(--fonte-texto); letter-spacing: .1em; text-transform: uppercase; padding: .7rem 1rem; border: 2px solid var(--line); background: transparent; color: var(--fg); cursor: pointer; }
+.fm-modos button + button { border-left: 0; }
+.fm-modos button[aria-pressed="true"] { background: var(--line); color: var(--papel); }
+.fm-ano { font: 800 .72rem/1 var(--fonte-texto); letter-spacing: .1em; text-transform: uppercase; display: flex; gap: .5rem; align-items: center; }
+.fm-ano select { font: 600 .9rem var(--fonte-texto); border: 2px solid var(--line); background: transparent; color: var(--fg); padding: .5rem .6rem; }
+.fm-saldo { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; border: 2px solid var(--line); padding: .8rem 1.1rem; font-weight: 700; }
+.fm-saldo b { font-family: var(--fonte-titulo); font-size: 1.7rem; font-weight: 400; }
+.fm-saldo small { font-weight: 500; color: var(--muted); }
+.fm-motores { list-style: none; margin: 0; padding: 0; border-left: 2px solid var(--line); border-right: 2px solid var(--line); }
+.fm-motor { padding: 1rem 1.1rem; border-bottom: 1px solid var(--line); }
+.fm-cab { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; flex-wrap: wrap; }
+.fm-tit { font-size: .95rem; } .fm-tit span { color: var(--muted); font-size: .82rem; margin-left: .3rem; }
+.fm-val { font-family: var(--fonte-titulo); font-size: 1.9rem; line-height: 1; }
+.fm-sobe { color: var(--vermelho); } .fm-cai { color: var(--alivio); } .fm-zero { color: var(--muted); }
+.dark .fm-sobe { color: #E5584F; }
+.fm-barra { height: .6rem; background: var(--papel-2); margin: .55rem 0 .4rem; }
+.fm-barra i { display: block; height: 100%; }
+.fm-barra i.fm-sobe { background: var(--vermelho); } .fm-barra i.fm-cai { background: var(--alivio); } .fm-barra i.fm-zero { background: var(--muted); }
+.fm-txt { font-size: .9rem; line-height: 1.5; max-width: 70ch; }
+.fm-diag { border: 2px solid var(--line); border-top: 0; padding: .9rem 1.1rem; font-size: .95rem; line-height: 1.5; }
+.fm-diag-rot, .fm-foto-rot { font: 800 .68rem/1.3 var(--fonte-texto); letter-spacing: .14em; text-transform: uppercase; color: var(--vermelho); margin-bottom: .3rem; }
+.fm-foto { border: 2px solid var(--line); padding: 1.1rem 1.2rem; }
+.fm-foto-num { font-family: var(--fonte-titulo); font-size: clamp(2.2rem, 4vw, 3.4rem); line-height: 1; }
+.fm-hist { list-style: none; margin: 1rem 0 0; padding: 0; display: grid; gap: .35rem; }
+.fm-hist li { display: grid; grid-template-columns: 3rem minmax(0, 1fr); align-items: center; gap: .2rem .6rem; font-size: .82rem; }
+.fm-hist i { display: block; height: .55rem; background: var(--line); grid-column: 2; }
+.fm-hist b { grid-column: 2; font-weight: 600; color: var(--muted); }
+.fm-hist li > span { grid-row: 1 / span 2; font-weight: 800; }
+.fm-formula { font: 500 .95rem/1.8 ui-monospace, Consolas, monospace; margin-top: .5rem; }
