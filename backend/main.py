@@ -47,6 +47,7 @@ import economia
 import eleicoes
 import equipamentos
 import analise_dimensoes
+import divida_dinamica
 import divida_risco
 import historico_divida
 import historico_primario
@@ -1044,6 +1045,15 @@ def macro_dimensoes() -> dict:
 def macro_divida_risco() -> dict:
     try:
         return divida_risco.risco()
+    except Exception as exc:  # noqa: BLE001
+        raise _fonte_macro_indisponivel(exc) from exc
+
+
+@router.get("/macro/divida-dinamica", tags=["macro"])
+def macro_divida_dinamica() -> dict:
+    """O filme da dívida: o que fez a dívida líquida mudar a cada ano (primário, juros, câmbio e ajustes)."""
+    try:
+        return divida_dinamica.dinamica()
     except Exception as exc:  # noqa: BLE001
         raise _fonte_macro_indisponivel(exc) from exc
 

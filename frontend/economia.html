@@ -946,6 +946,86 @@ async function carregarDividaRisco() {
     }
 }
 
+/* O filme da dívida: o que fez a dívida líquida mudar de um ano para o outro (primário, juros, câmbio e ajustes) */
+const biR = (v, d = 1) => `R$ ${Math.abs(v).toLocaleString('pt-BR', { minimumFractionDigits: d, maximumFractionDigits: d })} bi`;
+const biSinal = (v) => `${v > 0.049 ? '+' : v < -0.049 ? '−' : ''}${biR(v)}`;
+const FILME_MOTORES = [
+    { chave: 'fiscal_bi', id: 'fiscal', titulo: 'O fator fiscal', sub: 'o dia a dia do governo',
+      texto: (v) => v > 0.049 ? 'Houve déficit primário: o governo gastou mais do que arrecadou (sem contar os juros) e pediu emprestada a diferença.'
+          : v < -0.049 ? 'Houve superávit primário: o governo arrecadou mais do que gastou (sem contar os juros). Isso ajudou a abater a dívida.'
+          : 'As contas do dia a dia ficaram no zero a zero (sem contar os juros).' },
+    { chave: 'juros_bi', id: 'juros', titulo: 'O fator monetário', sub: 'a conta dos juros',
+      texto: () => 'A taxa Selic e a inflação (que corrige parte dos títulos) cobraram o seu preço sobre a dívida antiga, independentemente do que o governo gastou em saúde ou obras.' },
+    { chave: 'cambio_bi', id: 'cambio', titulo: 'O fator cambial e patrimonial', sub: 'dólar e ajustes',
+      texto: (v) => v < -0.049 ? 'O dólar e ajustes patrimoniais (reservas internacionais em dólar, privatizações) aliviaram a conta.'
+          : v > 0.049 ? 'O dólar e ajustes patrimoniais (dívida em moeda estrangeira, reconhecimento de dívidas antigas) empurraram a conta para cima.'
+          : 'O dólar e os ajustes patrimoniais quase não mexeram na conta.' },
+];
+function filmeExtrato(a) {
+    const max = Math.max(...FILME_MOTORES.map((m) => Math.abs(a[m.chave])), 1);
+    const linhas = FILME_MOTORES.map((m, i) => {
+        const v = a[m.chave], cls = v > 0.049 ? 'sobe' : v < -0.049 ? 'cai' : 'zero';
+        const efeito = cls === 'sobe' ? 'aumentou a dívida' : cls === 'cai' ? 'reduziu a dívida' : 'sem efeito relevante';
+        return `<li class="fm-motor">
+            <div class="fm-cab"><p class="fm-tit"><b>${i + 1}. ${m.titulo}</b> <span>${m.sub}</span></p>
+                <p class="fm-val fm-${cls}" aria-label="${biSinal(v)}: ${efeito}">${biSinal(v)}</p></div>
+            <div class="fm-barra" aria-hidden="true"><i class="fm-${cls}" style="width:${Math.max(2, Math.abs(v) / max * 100).toFixed(1)}%"></i></div>
+            <p class="fm-txt">${m.texto(v)}${a.principal === m.id ? ' <b>Foi o maior fator do período.</b>' : ''}</p></li>`;
+    }).join('');
+    const fim = a.completo ? `dez/${a.ano}` : a.ate_rotulo;
+    return `<div class="fm-saldo"><span>Saldo anterior <small>(dívida líquida em dez/${a.ano - 1})</small></span><b>${biR(a.saldo_inicio_bi, 0)}</b></div>
+        <ol class="fm-motores">${linhas}</ol>
+        <div class="fm-saldo fm-saldo-fim"><span>Saldo atual <small>(dívida líquida em ${fim})</small></span><b>${biR(a.saldo_fim_bi, 0)}</b></div>
+        <div class="fm-diag"><p class="fm-diag-rot">Diagnóstico direto</p><p>${esc(a.diagnostico)}</p></div>`;
+}
+function filmeFoto(r, a) {
+    const f = r.fotografia.filter((x) => x.ano <= a.ano).slice(-10), max = Math.max(...f.map((x) => x.saldo_bi), 1);
+    const atual = f[f.length - 1];
+    const linhas = f.map((x) => `<li><span>${x.ano}</span><i style="width:${(x.saldo_bi / max * 100).toFixed(1)}%"></i><b>${biR(x.saldo_bi, 0)}${x.pib_pct != null ? ` · ${pct(x.pib_pct)} do PIB` : ''}</b></li>`).join('');
+    return `<div class="fm-foto"><p class="fm-foto-rot">O saldo da dívida líquida em ${atual.mes.slice(5) === '12' ? `dezembro de ${atual.ano}` : esc(atual.mes)}</p>
+        <p class="fm-foto-num">${biR(atual.saldo_bi, 0)}</p>
+        ${atual.pib_pct != null ? `<p class="cartaz-sub">${pct(atual.pib_pct)} do PIB</p>` : ''}
+        <p class="fm-txt">É o que o setor público deve (passivos) menos o que tem em caixa e reservas (ativos), numa data. Mostra o tamanho do buraco, mas não explica por que ele mudou: para isso, veja o filme.</p></div>
+        <ul class="fm-hist" aria-label="Saldo da dívida líquida no fim de cada ano">${linhas}</ul>`;
+}
+async function carregarDividaFilme() {
+    const alvo = $('dividaFilme'); if (!alvo) return;
+    alvo.innerHTML = '<p class="text-sm text-slate-500"><i class="fa-solid fa-spinner fa-spin mr-1.5" aria-hidden="true"></i>Carregando a dinâmica da dívida…</p>';
+    try {
+        if (!E.dividaFilme) E.dividaFilme = await api('/api/macro/divida-dinamica');
+        const r = E.dividaFilme;
+        if (!r.anos || !r.anos.length) throw new Error('Dados da dinâmica da dívida indisponíveis no momento.');
+        const completos = r.anos.filter((x) => x.completo);
+        let ano = (completos[completos.length - 1] || r.anos[r.anos.length - 1]).ano, modo = 'filme';
+        const opcoes = r.anos.slice().reverse().map((x) => `<option value="${x.ano}">${x.ano}${x.completo ? '' : ` (até ${x.ate_rotulo.split(' de ')[0]})`}</option>`).join('');
+        alvo.innerHTML = `<h2>A dinâmica da dívida: o filme contra a fotografia</h2>
+            <p class="text-sm text-slate-500 mt-2" style="max-width:72ch">Entenda se a dívida subiu porque o governo gastou demais ou porque os juros pesaram. A <b>fotografia</b> mostra quanto se deve hoje; o <b>filme</b> mostra o que fez esse número mudar.</p>
+            <div class="fm-controles">
+                <div class="fm-modos" role="group" aria-label="Modo de visualização">
+                    <button type="button" data-fmodo="foto" aria-pressed="false">A fotografia (estoque)</button>
+                    <button type="button" data-fmodo="filme" aria-pressed="true">O filme (fluxo)</button></div>
+                <label class="fm-ano">Ano <select id="fmAno">${opcoes}</select></label></div>
+            <div id="fmCorpo" class="mt-4" aria-live="polite"></div>
+            <details class="sanfona sanfona--leve mt-4"><summary><i class="fa-solid fa-circle-info" aria-hidden="true"></i> Ver a fórmula macroeconômica e a metodologia</summary>
+                <p class="fm-formula">Fotografia: DLSP<sub>t</sub> = Passivos<sub>t</sub> − Ativos<sub>t</sub><br>Filme: DLSP<sub>t</sub> = DLSP<sub>t−1</sub> − PRIM<sub>t</sub> + JUR<sub>t</sub> + AP<sub>t</sub></p>
+                <p class="ficha-nota mt-2">DLSP é a dívida líquida do setor público; PRIM, o resultado primário (positivo quando há superávit, por isso entra com sinal negativo); JUR, os juros apropriados; AP, câmbio e ajustes patrimoniais.</p>
+                <p class="ficha-nota mt-2">${esc(r.metodo.cambio)}</p>
+                <p class="ficha-nota mt-2">${esc(r.metodo.sinais)} Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(r.fonte.url))}">${esc(r.fonte.nome)}</a>, ${esc(r.fonte.periodo)}.</p></details>`;
+        const corpo = $('fmCorpo');
+        const pintar = () => {
+            const a = r.anos.find((x) => x.ano === ano);
+            corpo.innerHTML = modo === 'filme' ? filmeExtrato(a) : filmeFoto(r, a);
+            alvo.querySelectorAll('[data-fmodo]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.fmodo === modo)));
+        };
+        $('fmAno').value = String(ano);
+        $('fmAno').addEventListener('change', (e) => { ano = Number(e.target.value); pintar(); });
+        alvo.querySelectorAll('[data-fmodo]').forEach((b) => b.addEventListener('click', () => { modo = b.dataset.fmodo; pintar(); }));
+        pintar();
+    } catch (err) {
+        alvo.innerHTML = `<p class="text-sm text-slate-500">${esc(err.message || 'Dados da dinâmica da dívida indisponíveis no momento.')}</p>`;
+    }
+}
+
 function nivel1(d) {
     const n = d.nivel1, p = n.lrf_pessoal, sf = d.situacao_fiscal, prim = d.deficits && d.deficits.primario;
     const div = sf && sf.estoque.itens[0];
@@ -988,7 +1068,7 @@ function nivel1(d) {
         <p class="text-sm text-slate-500 mt-2" style="max-width:70ch">Abra uma gaveta por vez: o fluxo do ano (o que entrou e saiu) e o estoque da dívida (o que se acumulou).</p>
         <div class="mt-4">${situacaoDetalhe(d)}</div></section>`;
     const risco = uniao
-        ? `<div id="dividaRisco" aria-live="polite"></div>${rp.risco}`
+        ? `<div id="dividaRisco" aria-live="polite"></div><div id="dividaFilme"></div>${rp.risco}`
         : avisoUniao('A análise de risco da dívida é federal.');
     const cenario = uniao ? rp.cenario : avisoUniao('Desemprego, renda e inflação são medidos para o país.');
     return { termometro, risco, cenario };
@@ -1066,7 +1146,7 @@ function desenhar() {
     if (ABA_FISCAL) {
         const f = d ? nivel1(d) : { termometro: '', risco: '', cenario: '' };
         $('pTermometro').innerHTML = f.termometro; $('pRisco').innerHTML = f.risco; $('pCenario').innerHTML = f.cenario;
-        if (d && d.esfera === 'uniao') { carregarReservas(); carregarDividaRisco(); }
+        if (d && d.esfera === 'uniao') { carregarReservas(); carregarDividaRisco(); carregarDividaFilme(); }
         return;
     }
     if (!d) return;
