@@ -682,6 +682,36 @@ document.addEventListener('click', (ev) => {
 });
 
 /* ---------- 5. Como chegamos aqui (carga tributária no tempo) ---------- */
+/* Linha do tempo dos governos (1990 até hoje): cartões expansíveis com a mesma matriz de assuntos, para comparar descendo a página */
+function governosHtml(g) {
+    const linhas = g.linhas;
+    const cartoes = g.periodos.map((p, k) => `<li class="gv-card">
+        <h4 class="gv-h"><button type="button" class="gv-cab" aria-expanded="false" aria-controls="gvc${k}">
+            <span class="gv-anos">${esc(p.anos)}</span><span class="gv-quem"><b>${esc(p.nome)}</b><small>${esc(p.tema)}</small></span></button></h4>
+        <div class="gv-corpo" id="gvc${k}" hidden>
+            <p class="gv-carga"><b>Carga tributária:</b> ${esc(p.carga)}</p>
+            <dl class="gv-linhas">${linhas.map((l) => `<div class="gv-linha" data-linha="${esc(l.id)}"><dt>${esc(l.nome)}</dt><dd>${esc(p[l.id])}</dd></div>`).join('')}</dl>
+            <p class="tl-marco gv-marco">${esc(p.marco)}</p></div></li>`).join('');
+    return `<section class="gv" data-filtro="todos" aria-label="${esc(g.titulo)}">
+        <p class="gv-t">${esc(g.titulo)}</p><p class="tl-mudanca">${esc(g.intro)}</p>
+        <ul class="gv-repete">${g.repete.map(([a, b]) => `<li><b>${esc(a)}</b><span>${esc(b)}</span></li>`).join('')}</ul>
+        <div class="gv-comp" role="group" aria-label="Comparar por assunto"><span>Comparar por</span>
+            <button type="button" data-gl="todos" aria-pressed="true">Visão geral</button>
+            ${linhas.map((l) => `<button type="button" data-gl="${esc(l.id)}" aria-pressed="false">${esc(l.nome)}</button>`).join('')}</div>
+        <ol class="gv-lista">${cartoes}</ol><p class="ficha-nota">${esc(g.nota)}</p></section>`;
+}
+function ligarGovernos(raiz) {
+    const gv = raiz.querySelector('.gv'); if (!gv) return;
+    const abrir = (cab, sim) => { cab.setAttribute('aria-expanded', String(sim)); document.getElementById(cab.getAttribute('aria-controls')).hidden = !sim; };
+    gv.querySelectorAll('.gv-cab').forEach((c) => c.addEventListener('click', () => abrir(c, c.getAttribute('aria-expanded') !== 'true')));
+    gv.querySelectorAll('[data-gl]').forEach((b) => b.addEventListener('click', () => {
+        const f = b.dataset.gl;
+        gv.dataset.filtro = f;
+        gv.querySelectorAll('[data-gl]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+        gv.querySelectorAll('.gv-cab').forEach((c) => abrir(c, f !== 'todos'));   // um assunto só: abre todos os períodos para comparar
+    }));
+}
+
 function painelHistoria() {
     const hist = G.hist;
     const listaTempo = `<ol class="tl">${hist.eras.map((e) => `<li class="tl-era"><div><p class="tl-anos">${esc(e.anos)}</p><p class="tl-nome">${esc(e.nome)}</p></div>
@@ -719,7 +749,8 @@ function painelHistoria() {
             <div class="tl-carga"><span class="tl-barra"><i style="width:${Math.round(e.carga / 35 * 100)}%"></i></span><span>Carga: <b>${esc(e.carga_nota)}</b></span></div>
             <p class="tl-mudanca">${esc(e.mudanca)}</p>
             <ul class="tl-pontos">${e.pontos.map(([a, t]) => `<li><b>${esc(a)}</b><span>${esc(t)}</span></li>`).join('')}</ul><p class="tl-marco">${esc(e.marco)}</p>
-            <div class="tl-chips">${e.siglas.map((x) => `<b>${esc(x)}</b>`).join('')}</div>`;
+            <div class="tl-chips">${e.siglas.map((x) => `<b>${esc(x)}</b>`).join('')}</div>${k === 3 && hist.governos ? governosHtml(hist.governos) : ''}`;
+        if (k === 3) ligarGovernos(painel);
     };
     const mostrarMarco = (k, el) => {
         const m = hist.marcos[k], e = hist.eras[eraDoAno(m.ano)];
