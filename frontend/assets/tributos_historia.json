@@ -86,5 +86,139 @@
       { "sigla": "IGF", "esfera": "União", "nome": "Grandes fortunas", "texto": "Está na Constituição desde 1988, mas nunca foi regulamentado.", "curioso": "É o único imposto constitucional que existe só no papel.", "fantasma": true }
     ],
     "fecho": "No conjunto, o Brasil tributa pouco o patrimônio e muito o consumo."
+  },
+  "governos": {
+    "titulo": "Do Plano Real até hoje: governos diferentes, a mesma conta",
+    "intro": "A linha do gráfico subiu forte nos anos 1990 e, depois de 2000, ficou em um patamar alto, perto de 32% do PIB. Abra cada período e compare, descendo de 1990 até 2026. Para comparar um assunto só, escolha-o em “Comparar por”.",
+    "linhas": [
+      {
+        "id": "orientacao",
+        "nome": "Orientação"
+      },
+      {
+        "id": "fiscal",
+        "nome": "Fiscal e dívida"
+      },
+      {
+        "id": "moeda",
+        "nome": "Moeda e juros"
+      },
+      {
+        "id": "externo",
+        "nome": "Cenário externo"
+      },
+      {
+        "id": "arrecadacao",
+        "nome": "Arrecadação"
+      }
+    ],
+    "repete": [
+      [
+        "Estratégias diferentes",
+        "Nos anos 1990, o governo reduziu o papel do Estado e privatizou. Nos anos 2000, o Estado ampliou o crédito, o investimento e o salário mínimo."
+      ],
+      [
+        "A mesma ferramenta",
+        "Os dois mantiveram a CPMF e ampliaram contribuições como Cofins e PIS, que pertencem à União e não se dividem com estados e municípios."
+      ],
+      [
+        "Quando a receita faltou",
+        "Em 2014–2016, desonerações e recessão reduziram a receita, o resultado primário virou déficit e a dívida subiu. Os governos seguintes voltaram a buscar receita e a criar regras fiscais."
+      ]
+    ],
+    "nota": "Os períodos seguem o calendário de cada mandato (2016 aparece em dois). Os números de carga são aproximados: as séries da Receita Federal e do Tesouro foram revisadas e não são comparáveis entre si nem com os anos anteriores a 2002. As informações descrevem fatos e leis, sem avaliar os governos.",
+    "periodos": [
+      {
+        "id": "collor-itamar",
+        "anos": "1990–1994",
+        "nome": "Collor e Itamar Franco",
+        "tema": "Abertura e estabilização",
+        "carga": "Perto de 25% do PIB. A inflação alta corroía a receita.",
+        "orientacao": "Abertura da economia às importações, depois de décadas de protecionismo, e várias tentativas de acabar com uma inflação que passava de 1.000% ao ano.",
+        "fiscal": "O Plano Collor (1990) bloqueou parte das poupanças e a economia encolheu. Em 1994, o Fundo Social de Emergência livrou parte da receita da União de gastos obrigatórios para ajudar no ajuste.",
+        "moeda": "O país trocou de moeda mais de uma vez (cruzeiro, cruzeiro real) até a URV, em 1994, que preparou o real.",
+        "externo": "A dívida externa ainda pesava. O acordo do Plano Brady (1994) reabriu o acesso ao crédito internacional.",
+        "arrecadacao": "Com inflação alta, o dinheiro perdia valor entre o fato gerador e o pagamento do tributo. Em 1993 foi criado o IPMF, antecessor da CPMF, por emenda constitucional.",
+        "marco": "O Plano Real (julho de 1994) estabilizou a moeda, no governo Itamar."
+      },
+      {
+        "id": "fhc",
+        "anos": "1995–2002",
+        "nome": "Fernando Henrique Cardoso (I e II)",
+        "tema": "O tripé macroeconômico",
+        "carga": "Subiu de cerca de 25% para perto de 31% do PIB. Foi o período de maior alta no gráfico.",
+        "orientacao": "Privatizações (Vale, Telebras e outras) e menor papel direto do Estado na economia.",
+        "fiscal": "Superávit primário a partir de 1999, num acordo com o FMI, e Lei de Responsabilidade Fiscal em 2000. Mesmo assim a dívida pública cresceu, em boa parte por juros, câmbio e reconhecimento de dívidas antigas.",
+        "moeda": "Câmbio praticamente fixo até janeiro de 1999, quando passou a flutuar. Em 1999 entrou o regime de metas de inflação, e a Selic chegou a 45% ao ano em março daquele ano.",
+        "externo": "As crises do México (1994–95), da Ásia (1997) e da Rússia (1998) secaram o crédito internacional e pressionaram o real. Em 2001, vieram a crise de energia e a da Argentina.",
+        "arrecadacao": "A CPMF foi criada em 1996, para financiar a saúde. A Cofins subiu de 2% para 3% e ganhou base mais ampla (1999). Contribuições como essas pertencem à União e não se dividem com estados e municípios.",
+        "marco": "Nasce o “tripé”: metas de inflação, câmbio flutuante e meta de superávit primário."
+      },
+      {
+        "id": "lula-1-2",
+        "anos": "2003–2010",
+        "nome": "Lula (I e II)",
+        "tema": "Commodities e crédito",
+        "carga": "Entre 31% e 33% do PIB, em um patamar alto e estável.",
+        "orientacao": "Mais papel do Estado como indutor: bancos públicos (BNDES), PAC (2007), alta real do salário mínimo e crédito às famílias, mantendo o tripé da política econômica.",
+        "fiscal": "Superávit primário perto de 3% a 4% do PIB e dívida em queda em proporção do PIB. Em 2005, o país antecipou o pagamento da dívida com o FMI.",
+        "moeda": "A Selic caiu de 26,5% (início de 2003) para 8,75% (2009), com altas e baixas no caminho. O Banco Central acumulou reservas em dólar.",
+        "externo": "Boom das commodities, puxado pela demanda da China, elevou exportações e receita. A crise mundial de 2008 trouxe uma freada breve, em 2009.",
+        "arrecadacao": "PIS e Cofins viraram não cumulativos (2002–2003), com alíquotas maiores. A CPMF foi mantida e prorrogada, até o Senado rejeitá-la em dezembro de 2007. A receita cresceu com a atividade e o emprego formal.",
+        "marco": "As reservas internacionais passaram de cerca de US$ 36 bilhões (fim de 2002) para cerca de US$ 285 bilhões (fim de 2010)."
+      },
+      {
+        "id": "dilma",
+        "anos": "2011–2016",
+        "nome": "Dilma Rousseff (I e II)",
+        "tema": "A “nova matriz” e a recessão",
+        "carga": "Perto de 32% a 33% do PIB, caindo com a recessão.",
+        "orientacao": "A chamada “nova matriz econômica”: crédito de bancos públicos, controle de preços administrados (energia, gasolina) e desonerações para estimular a indústria.",
+        "fiscal": "O resultado primário, que era superávit, virou déficit em 2014 e o déficit aumentou em 2015. A dívida bruta passou a subir rápido.",
+        "moeda": "O Banco Central baixou a Selic até 7,25% (2012). Com a inflação em alta, ela voltou a subir, até 14,25% em 2015.",
+        "externo": "Fim do ciclo de alta das commodities: o minério e o petróleo caíram de preço a partir de 2014.",
+        "arrecadacao": "As desonerações (como a da folha de pagamentos) reduziram a receita. Em 2015, o governo reduziu parte delas, aumentou tributos sobre combustíveis e propôs recriar a CPMF, sem aprovação.",
+        "marco": "Recessão de 2015–2016: o PIB caiu quase 7% somando os dois anos."
+      },
+      {
+        "id": "temer",
+        "anos": "2016–2018",
+        "nome": "Michel Temer",
+        "tema": "O teto de gastos",
+        "carga": "Perto de 32% a 33% do PIB.",
+        "orientacao": "Foco em reformas e na confiança do mercado: reforma trabalhista (2017) e preços dos combustíveis da Petrobras alinhados ao mercado internacional.",
+        "fiscal": "Emenda Constitucional 95 (fim de 2016): o teto limitou a despesa federal à inflação do ano anterior, por até 20 anos. O resultado primário seguiu em déficit.",
+        "moeda": "Com a inflação em queda, a Selic desceu de 14,25% para 6,5% (2018), então a menor da série.",
+        "externo": "Economia mundial em recuperação. O país saiu da recessão em 2017, com crescimento baixo, perto de 1% a 2% ao ano.",
+        "arrecadacao": "Parte da desoneração da folha foi revertida (2017–2018) e o PIS/Cofins sobre combustíveis subiu em 2017 para reforçar a receita.",
+        "marco": "O teto de gastos foi a regra fiscal do país até 2023."
+      },
+      {
+        "id": "bolsonaro",
+        "anos": "2019–2022",
+        "nome": "Jair Bolsonaro",
+        "tema": "Previdência e pandemia",
+        "carga": "Chegou a cerca de 33% a 34% do PIB em 2021–2022 (Tesouro: 33,7% em 2022).",
+        "orientacao": "Agenda de reformas e privatizações (Eletrobras, 2022) e autonomia do Banco Central (2021), fortemente alterada pela pandemia.",
+        "fiscal": "Reforma da Previdência (2019). Em 2020, o “Orçamento de Guerra” e o auxílio emergencial levaram ao maior déficit primário da série. Em 2021 e 2022, a PEC dos Precatórios e a PEC de 2022 abriram espaço sob o teto.",
+        "moeda": "A Selic chegou à mínima de 2% (2020–2021) e subiu até 13,75% em 2022 para combater a inflação.",
+        "externo": "A pandemia e, em 2022, a guerra na Ucrânia: alta de preços de energia, alimentos e commodities.",
+        "arrecadacao": "A receita cresceu forte em 2021–2022, com commodities caras e inflação alta, mesmo com cortes pontuais (IPI, em 2022) e o limite ao ICMS de combustíveis e energia (Lei Complementar 194/2022).",
+        "marco": "A dívida bruta teve o pico da série em 2020 (perto de 88% do PIB) e recuou em 2021–2022, em parte pelo efeito da inflação sobre o PIB nominal."
+      },
+      {
+        "id": "lula-3",
+        "anos": "2023–2026",
+        "nome": "Lula (III)",
+        "tema": "Novo arcabouço e reforma tributária",
+        "carga": "32,2% do PIB em 2024, a maior da série da Receita Federal (iniciada em 2002).",
+        "orientacao": "Retomada do investimento público (Novo PAC) e de programas sociais, com foco em nova regra fiscal e reforma tributária.",
+        "fiscal": "O teto deu lugar ao Novo Arcabouço Fiscal (Lei Complementar 200/2023): meta de resultado primário e despesa que cresce a 70% do aumento da receita, dentro de um limite. Por isso, o equilíbrio das contas depende da arrecadação.",
+        "moeda": "O Banco Central, independente por lei, baixou a Selic até 10,5% (2024) e voltou a subir: chegou a 15% em 2025, o maior nível em quase 20 anos.",
+        "externo": "Juros altos no mundo e tensões comerciais, como as tarifas dos Estados Unidos em 2025.",
+        "arrecadacao": "A tributação de fundos exclusivos e de offshore (2023) e novas regras sobre apostas ampliaram a receita. Em 2025, a isenção de IR até R$ 5 mil veio acompanhada de um imposto mínimo sobre altas rendas (Lei 15.270).",
+        "marco": "Reforma tributária sobre o consumo (Emenda 132/2023): IBS e CBS substituem PIS, Cofins, IPI, ICMS e ISS, em transição gradual."
+      }
+    ]
   }
 }

@@ -1089,3 +1089,39 @@ details.sanfona.sanfona--leve { border-top: 1px solid var(--line); border-bottom
 .fm-hist b { grid-column: 2; font-weight: 600; color: var(--muted); }
 .fm-hist li > span { grid-row: 1 / span 2; font-weight: 800; }
 .fm-formula { font: 500 .95rem/1.8 ui-monospace, Consolas, monospace; margin-top: .5rem; }
+
+/* ---------- Linha do tempo dos governos (guia-tributos.html, era 1988–hoje) ---------- */
+.gv { margin-top: 1.6rem; padding-top: 1rem; border-top: 3px solid var(--line); }
+.gv-t { font-family: var(--fonte-titulo); font-size: 1.6rem; line-height: 1.05; text-transform: uppercase; margin-bottom: .5rem; }
+.gv-repete { list-style: none; padding: 0; margin: .9rem 0 0; display: grid; gap: 0; border: 2px solid var(--line); }
+.gv-repete li { padding: .7rem .9rem; font-size: .85rem; line-height: 1.45; }
+.gv-repete li + li { border-top: 1px solid var(--line); }
+.gv-repete b { display: block; font: 800 .68rem/1.3 var(--fonte-texto); letter-spacing: .12em; text-transform: uppercase; color: var(--vermelho); margin-bottom: .15rem; }
+.dark .gv-repete b { color: #E5584F; }
+@media (min-width: 760px) { .gv-repete { grid-template-columns: repeat(3, 1fr); } .gv-repete li + li { border-top: 0; border-left: 1px solid var(--line); } }
+.gv-comp { display: flex; flex-wrap: wrap; gap: .4rem; align-items: center; margin: 1.1rem 0 .8rem; }
+.gv-comp > span { font: 800 .68rem/1 var(--fonte-texto); letter-spacing: .12em; text-transform: uppercase; margin-right: .3rem; }
+.gv-comp button { font: 700 .72rem/1 var(--fonte-texto); padding: .55rem .7rem; border: 2px solid var(--line); background: transparent; color: var(--fg); cursor: pointer; }
+.gv-comp button[aria-pressed="true"] { background: var(--line); color: var(--papel); }
+.gv-lista { list-style: none; margin: 0; padding: 0; border-left: 3px solid var(--vermelho); margin-left: .35rem; }
+.gv-card { border-bottom: 1px solid var(--line); position: relative; padding-left: .9rem; }
+.gv-card::before { content: ""; position: absolute; left: -.62rem; top: 1.25rem; width: .8rem; height: .8rem; border-radius: 50%; background: var(--papel); border: 3px solid var(--vermelho); }
+.gv-h { margin: 0; font-weight: inherit; }
+.gv-cab { width: 100%; display: grid; grid-template-columns: 6.6rem minmax(0, 1fr) 1.2rem; gap: .8rem; align-items: baseline; text-align: left; background: transparent !important; border: 0 !important; box-shadow: none !important; padding: 1rem 0; cursor: pointer; color: var(--fg); }
+.gv-cab::after { content: "+"; font: 800 1.3rem/1 var(--fonte-texto); justify-self: end; }
+.gv-cab[aria-expanded="true"]::after { content: "−"; }
+.gv-anos { white-space: nowrap; font-family: var(--fonte-titulo); font-size: 1.35rem; line-height: 1; color: var(--vermelho); }
+.dark .gv-anos { color: #E5584F; }
+.gv-quem b { display: block; font-size: .95rem; } .gv-quem small { display: block; font: 800 .66rem/1.3 var(--fonte-texto); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-top: .2rem; }
+.gv-corpo { padding: 0 0 1.1rem; }
+.gv-carga { font-size: .82rem; line-height: 1.45; background: var(--papel-2); padding: .5rem .7rem; margin-bottom: .6rem; }
+.gv-linhas { margin: 0; }
+.gv-linha { display: grid; grid-template-columns: 8rem minmax(0, 1fr); gap: .7rem; padding: .5rem 0; border-bottom: 1px solid var(--papel-2); font-size: .86rem; line-height: 1.5; }
+.gv-linha dt { font: 800 .68rem/1.4 var(--fonte-texto); letter-spacing: .08em; text-transform: uppercase; } .gv-linha dd { margin: 0; }
+@media (max-width: 640px) { .gv-linha { grid-template-columns: 1fr; gap: .1rem; } .gv-cab { grid-template-columns: 5.4rem minmax(0, 1fr) 1.2rem; } }
+.gv:not([data-filtro="todos"]) .gv-linha:not([data-linha]) { display: none; }
+.gv[data-filtro="orientacao"] .gv-linha:not([data-linha="orientacao"]), .gv[data-filtro="fiscal"] .gv-linha:not([data-linha="fiscal"]),
+.gv[data-filtro="moeda"] .gv-linha:not([data-linha="moeda"]), .gv[data-filtro="externo"] .gv-linha:not([data-linha="externo"]),
+.gv[data-filtro="arrecadacao"] .gv-linha:not([data-linha="arrecadacao"]) { display: none; }
+.gv:not([data-filtro="todos"]) .gv-marco { display: none; }
+.gv:not([data-filtro="todos"]):not([data-filtro="arrecadacao"]) .gv-carga { display: none; }
