@@ -294,15 +294,26 @@ function desenharRadar(d) {
         <h3 class="font-bold"><i class="fa-solid fa-triangle-exclamation text-amber-500 mr-1.5" aria-hidden="true"></i>${esc(d.gatilho.titulo)}</h3>
         ${d.gatilho.paragrafos.map((p) => `<p class="text-sm mt-2 text-slate-700 dark:text-slate-300" style="max-width:70ch">${esc(p)}</p>`).join('')}</div>`;
 
-    const medidas = d.medidas.map((m) => `<div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5">
-        <h4 class="font-bold">${esc(m.titulo)}</h4>
-        <div class="grid md:grid-cols-2 gap-3 mt-3">
-            <div class="rounded-xl bg-slate-100 dark:bg-slate-900/60 p-4">
-                <p class="text-[11px] font-bold uppercase tracking-wide text-slate-500">Como é hoje</p>
-                <p class="text-sm mt-1.5 text-slate-700 dark:text-slate-300">${esc(m.hoje)}</p></div>
-            <div class="rounded-xl bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 p-4">
-                <p class="text-[11px] font-bold uppercase tracking-wide text-sky-700 dark:text-sky-300">A proposta de ajuste</p>
-                <p class="text-sm mt-1.5 text-slate-800 dark:text-slate-100">${esc(m.proposta)}</p></div></div></div>`).join('');
+    const SELO = {
+        mantido: ['Mantido no Senado', 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'],
+        alterado: ['Alterado no Senado', 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'],
+        removido: ['Fora do texto do Senado', 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300'],
+    };
+    const artigos = d.artigos.map((a) => {
+        const [rot, cor] = SELO[a.senado.estado] || SELO.mantido;
+        return `<article class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5">
+            <div class="flex flex-wrap items-start justify-between gap-2">
+                <h4 class="font-bold"><span class="text-brand-700 dark:text-brand-400">Art. ${esc(a.n)}</span> · ${esc(a.titulo)}</h4>
+                <span class="px-2.5 py-1 rounded-full text-[11px] font-bold ${cor}">${esc(rot)}</span></div>
+            <p class="text-sm mt-2 text-slate-800 dark:text-slate-100" style="max-width:70ch">${esc(a.resumo)}</p>
+            <details class="mt-3"><summary class="cursor-pointer text-sm font-semibold text-brand-700 dark:text-brand-400">Entender melhor</summary>
+                <div class="mt-2 space-y-2">${a.explicacao.map((p) => `<p class="text-sm text-slate-700 dark:text-slate-300" style="max-width:70ch">${esc(p)}</p>`).join('')}
+                <p class="text-xs rounded-lg bg-slate-100 dark:bg-slate-900/60 p-3 text-slate-600 dark:text-slate-400"><b>No Senado:</b> ${esc(a.senado.nota)}</p></div></details></article>`;
+    }).join('');
+
+    const faq = (d.faq || []).map((f) => `<details class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
+        <summary class="cursor-pointer font-semibold">${esc(f.p)}</summary>
+        <div class="mt-3 space-y-2">${f.r.map((p) => `<p class="text-sm text-slate-700 dark:text-slate-300" style="max-width:70ch">${esc(p)}</p>`).join('')}</div></details>`).join('');
 
     const etapas = d.congresso.etapas.map((e) => {
         const ic = e.estado === 'feito' ? '<span class="shrink-0 w-6 h-6 rounded-full bg-emerald-500 text-white text-xs flex items-center justify-center"><i class="fa-solid fa-check" aria-hidden="true"></i></span>'
@@ -324,14 +335,15 @@ function desenharRadar(d) {
             <span><b>Status atual:</b> <span class="inline-block px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">${esc(d.status)}</span></span>
             <span class="text-slate-500"><b>Atualizado em:</b> <time datetime="${esc(d.atualizado_em)}">${esc(dataBR)}</time></span></div>
         <div class="mt-4">${gatilho}</div>
-        <h3 class="bolso-titulo">O que está na mesa: as principais medidas</h3>
-        ${d.medidas_nota ? `<p class="text-xs text-slate-500 mt-1" style="max-width:70ch">${esc(d.medidas_nota)}</p>` : ''}
-        <div class="space-y-3 mt-3">${medidas}</div>
+        <h3 class="bolso-titulo">O que diz cada artigo</h3>
+        ${d.artigos_nota ? `<p class="text-xs text-slate-500 mt-1" style="max-width:70ch">${esc(d.artigos_nota)}</p>` : ''}
+        <div class="space-y-3 mt-3">${artigos}</div>
         <h3 class="bolso-titulo">Termômetro no Congresso: onde está a lei?</h3>
         <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5">
             <p class="text-sm text-slate-600 dark:text-slate-300" style="max-width:70ch">${esc(d.congresso.intro)}</p>
             <ol class="mt-4 space-y-3">${etapas}</ol>
-            <p class="text-xs mt-4 text-slate-600 dark:text-slate-400" role="note"><b>Nota:</b> ${esc(d.congresso.nota)}</p>${fonte}</div>`;
+            <p class="text-xs mt-4 text-slate-600 dark:text-slate-400" role="note"><b>Nota:</b> ${esc(d.congresso.nota)}</p>${fonte}</div>
+        ${faq ? `<h3 class="bolso-titulo">Perguntas frequentes</h3><div class="space-y-3 mt-3">${faq}</div>` : ''}`;
 }
 fetch('assets/ajuste-fiscal.json', { cache: 'no-cache' }).then((r) => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
     .then(desenharRadar)

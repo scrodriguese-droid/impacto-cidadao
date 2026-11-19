@@ -1,52 +1,228 @@
 {
   "titulo": "Radar do orçamento: PLP 299/2026, o pacote de ajuste fiscal",
-  "subtitulo": "O que o projeto muda nas regras do orçamento federal, em que fase ele está no Congresso e o que pode mudar até virar lei.",
+  "subtitulo": "Artigo por artigo, em linguagem simples, com a fase em que o projeto está no Congresso.",
   "atualizado_em": "2026-11-19",
   "status": "Aprovado no Senado; aguardando a Câmara dos Deputados",
   "gatilho": {
-    "titulo": "O gatilho: por que este projeto existe?",
+    "titulo": "Em poucas palavras",
     "paragrafos": [
-      "O PLP 299/2026 foi apresentado em 11/11/2026 pelo senador Jaques Wagner (PT/BA) e altera o Novo Arcabouço Fiscal (Lei Complementar 200/2023). Ele dá ao Governo federal novos instrumentos para cumprir a meta de resultado primário (a diferença entre o que a União arrecada e o que gasta, sem contar os juros da dívida) e manter a dívida pública em trajetória sustentável.",
-      "Segundo a justificativa do autor, o esforço é dividido entre várias frentes: contenção do crescimento da despesa, contingenciamento, revisão de benefícios tributários, compensações tributárias e limites para despesas específicas. O texto diz que isso não deve concentrar o ônus nas políticas que garantem direitos sociais. O projeto também abre espaço extraordinário em 2026 para pagar parte do subsídio ao diesel, por causa do conflito geopolítico em curso.",
-      "Esta página descreve o que o texto diz. Ela não avalia se as medidas são boas ou ruins."
+      "O PLP 299/2026 foi apresentado em 11/11/2026 pelo senador Jaques Wagner (PT/BA). Ele muda o Novo Arcabouço Fiscal (Lei Complementar 200/2023) e outras leis para ajudar o Governo federal a cumprir a meta de resultado primário (a diferença entre o que a União arrecada e o que gasta, sem contar os juros da dívida).",
+      "Segundo a justificativa do autor, o esforço é dividido entre contenção de despesas, revisão de benefícios tributários e limites para gastos específicos, sem concentrar o ônus nas políticas sociais. Esta página descreve o que o texto diz e não avalia se as medidas são boas ou ruins."
     ]
   },
-  "medidas_nota": "Resumo do texto-base aprovado pelo Senado (Substitutivo, Emenda nº 75), comparado com as regras atuais. No turno suplementar, em 18/11, o Senado aprovou ainda as emendas 83, 90, 91 e 92, que não estão detalhadas aqui. Para o texto final, use os links de fonte.",
-  "medidas": [
+  "artigos_nota": "A lista segue o projeto original, com 17 artigos. O selo de cada artigo mostra o que aconteceu com ele no texto aprovado pelo Senado (Substitutivo, Emenda nº 75), que tem 15 artigos. No turno suplementar de 18/11 o Senado aprovou ainda as emendas 83, 90, 91 e 92, que não estão detalhadas aqui. Para o texto final, use os links de fonte.",
+  "artigos": [
     {
-      "titulo": "Limite de crescimento da despesa em anos de contenção",
-      "hoje": "O limite de gastos do Executivo cresce, a cada ano, de acordo com a receita, numa faixa entre 0,6% e 2,5% acima da inflação (Lei Complementar 200/2023).",
-      "proposta": "A partir de 2027, no ano em que o Governo adotar medidas de contenção de gastos, o crescimento real do limite não poderá passar de 2,0% ao ano. A economia sai de contenção de despesas, e a redução não se acumula para os anos seguintes."
+      "n": "1º",
+      "titulo": "O freio de emergência",
+      "resumo": "A partir de 2027, no ano em que o Governo precisar conter gastos para cumprir a meta fiscal, o limite de crescimento real da despesa cai de 2,5% para 2,0%.",
+      "explicacao": [
+        "Hoje, o limite de gastos do Executivo cresce a cada ano de acordo com a receita, numa faixa entre 0,6% e 2,5% acima da inflação (Lei Complementar 200/2023). O artigo cria um teto de 2,0% nos anos em que o Governo adotar medidas de contenção.",
+        "Ele também autoriza o bloqueio de verbas (limitação de empenho e de movimentação financeira) já quando o resultado projetado cair no intervalo inferior de tolerância da meta, antes de a meta ser descumprida. Podem ser atingidas despesas sujeitas a limite de dotação, menos as obrigações constitucionais.",
+        "Se o bloqueio superar o necessário para respeitar o teto de 2,0%, o excedente reduz o limite de gastos daquele ano, e essa redução não se acumula nos anos seguintes.",
+        "Por fim, o Executivo fica autorizado a reduzir a compensação de tributos (quando a empresa usa créditos de um tributo para abater débitos de outro, regra do art. 74 da Lei 9.430/1996), até o valor equivalente ao que foi cortado ou bloqueado. Um ato do Executivo define os percentuais, que podem variar conforme o valor ou o tipo de crédito."
+      ],
+      "senado": { "estado": "alterado", "nota": "Mantido, com ajustes. O bloqueio também não atinge o serviço da dívida, a pesquisa científica custeada por fundo próprio e o que a LDO ressalvar, e vale só para o Executivo. A parte da compensação de tributos (art. 6º-F) foi alvo de destaque na votação." }
     },
     {
-      "titulo": "Contingenciamento (bloqueio de gastos)",
-      "hoje": "A limitação de empenho e de movimentação financeira segue o art. 9º da Lei de Responsabilidade Fiscal, quando a meta fiscal está em risco.",
-      "proposta": "O Governo fica autorizado a limitar empenho e pagamentos quando o resultado primário projetado cair no intervalo inferior de tolerância da meta. Podem ser atingidas despesas sujeitas a limite de dotação. Ficam de fora as obrigações constitucionais, o serviço da dívida, a pesquisa científica custeada por fundo próprio e o que a LDO ressalvar."
+      "n": "2º",
+      "titulo": "Lei Kandir: repasses a estados e municípios",
+      "resumo": "Até 2030, a União entrega R$ 1 bilhão por ano da compensação da Lei Kandir, e o restante fica para 2031 a 2037.",
+      "explicacao": [
+        "A Lei Complementar 176/2020 prevê repasses da União a estados e municípios para compensar perdas da Lei Kandir (a lei que isentou as exportações de ICMS). Este artigo reduz a entrega anual para R$ 1 bilhão até 2030.",
+        "O montante total devido não muda. O que muda é o calendário: a diferença é paga mais tarde, até 2037. Com isso, o Governo gasta menos agora."
+      ],
+      "senado": { "estado": "alterado", "nota": "A regra vale para 2027 a 2030, e a diferença não entregue é paga em parcelas anuais iguais do ano seguinte até 2037, somadas às entregas já previstas para esses anos." }
     },
     {
-      "titulo": "Benefícios tributários (isenções e regimes especiais)",
-      "hoje": "A Lei Complementar 224/2025 (art. 4º) já traz regras para reduzir benefícios tributários federais.",
-      "proposta": "Na regra de cálculo, isenção e alíquota zero passam a pagar 20% da alíquota padrão. Alíquotas reduzidas, bases de cálculo reduzidas e créditos presumidos são reduzidos em 20%. Ficam de fora a CPRB (desoneração da folha), os incentivos para tecnologia da informação e semicondutores e os benefícios para compra de veículos por pessoas com deficiência ou com autismo. O regime especial da reforma tributária (art. 106 da LC 214/2025) fica limitado ao valor previsto no demonstrativo de gastos tributários da LOA 2026, corrigido pelo IPCA."
+      "n": "3º",
+      "titulo": "Receita do petróleo fora do cálculo de despesas obrigatórias",
+      "resumo": "Até 2030, o imposto sobre a exportação de petróleo bruto não entra na conta que define gastos mínimos ligados à receita corrente líquida.",
+      "explicacao": [
+        "Algumas despesas obrigatórias são calculadas como percentual da receita corrente líquida (RCL) da União. O piso da saúde, de 15% da RCL, é um exemplo. O artigo diz que, até 2030, a receita do imposto de exportação de óleos brutos de petróleo não pode ser contabilizada nesse cálculo.",
+        "Na prática, quando esse imposto gera arrecadação, o piso dessas despesas cresce menos do que cresceria com a regra atual. O texto não fixa um valor nem determina redução do que já é gasto: muda a base de cálculo.",
+        "Quem defende a medida argumenta que despesas permanentes não devem depender de uma receita instável, que varia com o preço do petróleo. Quem critica argumenta que o piso dessas áreas passa a crescer menos.",
+        "O artigo também prevê que, a partir de 2028, as hipóteses dos incisos I e II do art. 14 da Lei Complementar 235/2026 (que o projeto não reproduz) vêm acompanhadas de redução equivalente no limite de despesas."
+      ],
+      "senado": { "estado": "alterado", "nota": "Mantido. Foi acrescentada uma exceção: o aporte ao Fundo Constitucional do Distrito Federal continua corrigido pela receita corrente líquida." }
     },
     {
-      "titulo": "Compensação de tributos",
-      "hoje": "O contribuinte pode usar créditos de um tributo para abater débitos de outro, administrados pela Receita Federal (art. 74 da Lei 9.430/1996).",
-      "proposta": "O Executivo fica autorizado a reduzir essa compensação, até o valor equivalente ao que for contido ou reduzido no limite de gastos. Um ato do Executivo define os percentuais, que podem variar conforme o valor ou o tipo de crédito. Esse artigo (6º-F) foi alvo de destaque na votação do Senado."
+      "n": "4º",
+      "titulo": "Corte de 20% em benefícios tributários",
+      "resumo": "Isenções, alíquotas reduzidas e créditos tributários de empresas e setores são reduzidos em 20%.",
+      "explicacao": [
+        "Benefícios tributários são descontos, isenções e regimes especiais que reduzem o imposto devido por certos setores. A Lei Complementar 224/2025 já tem regras para reduzi-los, e este artigo muda a forma de cálculo.",
+        "Isenção e alíquota zero passam a pagar 20% da alíquota padrão: quem tinha isenção total passa a pagar 20% do imposto normal. Alíquota reduzida passa a ser 80% da reduzida mais 20% da padrão. Reduções de base de cálculo e de tributo e créditos presumidos valem 80% do que valem hoje. Regimes que cobram um percentual da receita bruta têm esse percentual elevado em 20%.",
+        "O efeito é aumentar a arrecadação, porque as empresas beneficiadas pagam mais imposto. Os benefícios deixam de existir apenas na parte cortada."
+      ],
+      "senado": { "estado": "alterado", "nota": "Mantido, com exceções: a CPRB (desoneração da folha de pagamento), os incentivos para tecnologia da informação e semicondutores e os benefícios para compra de veículos por pessoas com deficiência ou com autismo." }
     },
     {
-      "titulo": "Repasses e despesas com teto até 2030",
-      "hoje": "Os valores seguem as leis de cada tema: Lei Complementar 176/2020 (entregas a estados e municípios), Lei 9.796/1999 (compensação previdenciária entre regimes) e Lei 10.184/2001 (financiamento às exportações, Proex).",
-      "proposta": "De 2027 a 2030, a entrega da LC 176/2020 fica limitada a R$ 1 bilhão por ano, e a diferença é paga em parcelas anuais até 2037. A compensação previdenciária (Lei 9.796) fica limitada a R$ 3 bilhões por ano, corrigidos pelo limite de despesas. A equalização do Proex fica limitada a R$ 1 bilhão por ano até 2030."
+      "n": "5º",
+      "titulo": "Bolsas de estudo com recursos de ciência e tecnologia",
+      "resumo": "O orçamento anual pode usar parte dos recursos do FNDCT para pagar bolsas de estudo e pesquisa no ensino superior.",
+      "explicacao": [
+        "O Fundo Nacional de Desenvolvimento Científico e Tecnológico (FNDCT, Lei 11.540/2007) financia ciência e tecnologia. O artigo permite que a lei orçamentária destine parte desses recursos a bolsas de estudo e de pesquisa no ensino superior, a auxílios ligados a elas e à formação e fixação de pessoal para o desenvolvimento científico.",
+        "Na prática, parte do custo das bolsas pode sair desse fundo, em vez de sair do orçamento geral dos ministérios."
+      ],
+      "senado": { "estado": "mantido", "nota": "Mantido sem mudanças (art. 5º do Substitutivo)." }
     },
     {
-      "titulo": "Supersalários",
-      "hoje": "O § 11 do art. 37 da Constituição prevê o que não entra no teto remuneratório do funcionalismo, e a lei que o regulamenta ainda não foi aprovada.",
-      "proposta": "O Congresso deve votar, em até 120 dias após a publicação da lei, o projeto que regulamenta esse ponto. A economia no Executivo reduz o limite de gastos e pode ir para investimentos e segurança pública. A economia nos demais Poderes e órgãos autônomos fica com eles, para reestruturar seus quadros."
+      "n": "6º",
+      "titulo": "Previsão de crescimento das despesas obrigatórias",
+      "resumo": "A LDO deveria trazer uma estimativa de quatro anos do crescimento de despesas constitucionais, com um plano de gestão e de combate a fraudes.",
+      "explicacao": [
+        "Despesas como as de pessoal, aposentadorias e benefícios assistenciais vêm da Constituição e crescem por regras próprias. O artigo exigiria que a Lei de Diretrizes Orçamentárias estimasse a variação dessas despesas para o ano e para os quatro seguintes.",
+        "Junto com a estimativa, o Governo teria que apresentar um plano de medidas normativas e de gestão, inclusive de combate a fraudes, irregularidades e benefícios indevidos, para que esse crescimento convergisse com o do limite de gastos."
+      ],
+      "senado": { "estado": "removido", "nota": "O Substitutivo do Senado não mantém este artigo." }
     },
     {
-      "titulo": "Espaço extra em 2026 e investimentos",
-      "hoje": "As despesas do subsídio ao diesel (Medida Provisória 1.391/2026) contam para a meta de resultado primário de 2026.",
-      "proposta": "Em 2026, até R$ 10,5 bilhões dessas despesas podem ser descontados da meta. Se o resultado do ano anterior superar o piso da meta e houver contenção, o Executivo pode abrir crédito para investimentos estruturantes, inclusive os definidos pelas bancadas estaduais. Restos a pagar de contratos e convênios de vários anos só poderão ser cancelados depois de 31/12/2027."
+      "n": "7º",
+      "titulo": "Teto para a compensação previdenciária",
+      "resumo": "De 2027 a 2030, a despesa com a compensação previdenciária fica limitada a R$ 3 bilhões por ano, corrigidos pelo limite de gastos.",
+      "explicacao": [
+        "Quando alguém trabalha parte da vida no setor privado (INSS) e parte no setor público, os regimes de previdência acertam contas entre si. Essa compensação financeira é regulada pela Lei 9.796/1999.",
+        "O artigo limita o que a União gasta com esses acertos a R$ 3 bilhões por ano entre 2027 e 2030, com correção anual pelo crescimento do limite de despesas."
+      ],
+      "senado": { "estado": "mantido", "nota": "Mantido (art. 6º do Substitutivo). O destaque sobre o art. 7º original também foi votado em 18/11." }
+    },
+    {
+      "n": "8º",
+      "titulo": "Garantia sobre benefícios já concedidos",
+      "resumo": "As medidas não criam obrigação futura para a União e não afetam benefícios já concedidos.",
+      "explicacao": [
+        "O artigo diz duas coisas: aplicar esta lei não cria obrigações futuras para a União, e as novas regras não atingem benefícios que já tenham sido concedidos pela legislação."
+      ],
+      "senado": { "estado": "mantido", "nota": "Mantido (art. 7º do Substitutivo)." }
+    },
+    {
+      "n": "9º",
+      "titulo": "Dispensa de compensação para medidas ligadas ao seguro rural",
+      "resumo": "Medidas da Lei 10.823/2003 aprovadas antes desta lei passam a ser consideradas em dia com a exigência de compensação da Lei de Responsabilidade Fiscal.",
+      "explicacao": [
+        "A Lei de Responsabilidade Fiscal (art. 17) exige que despesas obrigatórias de caráter continuado venham acompanhadas de compensação. Este artigo diz que as medidas da Lei 10.823/2003 (subvenção ao seguro rural) aprovadas até a publicação desta lei já atendem a essa exigência, por causa do que a própria lei prevê.",
+        "Também afasta a aplicação do art. 29 da Lei 15.321/2025 para esse caso."
+      ],
+      "senado": { "estado": "alterado", "nota": "Mantido (art. 8º do Substitutivo), com ajuste na redação." }
+    },
+    {
+      "n": "10",
+      "titulo": "Limite para um regime especial fiscal",
+      "resumo": "Um regime especial da reforma tributária fica limitado ao valor previsto no orçamento de 2026, corrigido pelo IPCA.",
+      "explicacao": [
+        "O art. 106 da Lei Complementar 214/2025, da reforma tributária, prevê um regime especial fiscal. O artigo limita o custo desse regime ao valor do demonstrativo de gastos tributários da lei orçamentária de 2026, corrigido a cada ano pelo IPCA.",
+        "Um comitê criado pelo Executivo define quais projetos são beneficiados dentro desse limite. Assim, o benefício não pode crescer além da inflação."
+      ],
+      "senado": { "estado": "mantido", "nota": "Mantido (art. 9º do Substitutivo)." }
+    },
+    {
+      "n": "11",
+      "titulo": "Uso de sobras de fundos",
+      "resumo": "O Executivo poderia usar até 40% do superávit financeiro de fundos do ano anterior para pagar obrigações constitucionais.",
+      "explicacao": [
+        "Fundos e outras fontes têm destino definido por lei, e o que sobra no fim do ano (superávit financeiro) normalmente só pode ser usado para aquela finalidade. O artigo autorizaria o Executivo a desvincular até 40% dessas sobras para custear obrigações constitucionais.",
+        "Ficariam de fora vinculações constitucionais, repartição de receitas com estados e municípios, fundos de desenvolvimento social e recursos de seguridade social, saúde, educação e segurança pública."
+      ],
+      "senado": { "estado": "removido", "nota": "O Substitutivo do Senado não mantém este artigo." }
+    },
+    {
+      "n": "12",
+      "titulo": "Regulamentação do teto remuneratório (supersalários)",
+      "resumo": "O Congresso teria 120 dias para votar a lei que regulamenta o § 11 do art. 37 da Constituição, sobre o que entra no teto do funcionalismo.",
+      "explicacao": [
+        "O § 11 do art. 37 da Constituição lista parcelas que ficam fora do teto remuneratório do serviço público, e a lei que o regulamenta ainda não foi aprovada. O artigo dá 120 dias, contados da publicação, para o Congresso votar esse projeto.",
+        "A LDO deve mostrar a redução de valores que isso gerar. No texto original, essa economia reduz o limite de gastos e pode ir para investimentos ou para a segurança pública e o sistema socioeducativo."
+      ],
+      "senado": { "estado": "alterado", "nota": "Art. 10 do Substitutivo. A economia no Executivo reduz o limite de gastos e pode ir para segurança pública. Nos demais Poderes e órgãos autônomos, a economia fica com eles, para recompor seus quadros, e o remanejamento de recursos entre Poderes é vedado." }
+    },
+    {
+      "n": "13",
+      "titulo": "Teto para o Proex",
+      "resumo": "Até 2030, a despesa com equalização de juros do Proex fica limitada a R$ 1 bilhão por ano.",
+      "explicacao": [
+        "O Proex (Programa de Financiamento às Exportações, Lei 10.184/2001) cobre parte do custo dos juros de financiamentos a exportações brasileiras. O artigo limita o que a União gasta com essa equalização a R$ 1 bilhão por ano até 2030."
+      ],
+      "senado": { "estado": "mantido", "nota": "Mantido (art. 11 do Substitutivo)." }
+    },
+    {
+      "n": "14",
+      "titulo": "Crédito para investimentos depois de um bom resultado",
+      "resumo": "Se o resultado do ano anterior superar o piso da meta e tiver havido contenção, o Executivo pode abrir crédito para investimentos estruturantes.",
+      "explicacao": [
+        "A condição é que o resultado primário do ano anterior fique acima do limite inferior da meta e que o Governo tenha adotado as medidas de contenção do art. 6º-C. Nesse caso, o Executivo pode abrir, por ato próprio, crédito adicional para investimentos estruturantes.",
+        "O crédito fica limitado ao valor que foi contido e não conta no limite de gastos, mas a meta de resultado primário do ano continua valendo."
+      ],
+      "senado": { "estado": "alterado", "nota": "Art. 12 do Substitutivo. O texto passa a citar os investimentos definidos pelas bancadas estaduais no processo orçamentário." }
+    },
+    {
+      "n": "15",
+      "titulo": "Subsídio ao diesel fora da meta de 2026",
+      "resumo": "Em 2026, até R$ 10,5 bilhões gastos com o subsídio ao diesel podem ser descontados da meta de resultado primário.",
+      "explicacao": [
+        "A Medida Provisória 1.391/2026 criou uma subvenção econômica a produtores e importadores de óleo diesel para estabilizar preços de combustíveis. O artigo permite, em caráter excepcional em 2026, deduzir da meta de resultado primário as despesas dessa subvenção, até R$ 10,5 bilhões.",
+        "O gasto continua existindo. A diferença é que ele deixa de pesar no cálculo de cumprimento da meta daquele ano. Segundo a justificativa do autor, a medida protege a população dos efeitos do conflito geopolítico em curso."
+      ],
+      "senado": { "estado": "mantido", "nota": "Mantido (art. 13 do Substitutivo)." }
+    },
+    {
+      "n": "16",
+      "titulo": "Proteção a contratos de vários anos",
+      "resumo": "Saldos bloqueados de restos a pagar de contratos plurianuais só poderão ser cancelados depois de 31/12/2027.",
+      "explicacao": [
+        "Restos a pagar são despesas já empenhadas que não foram pagas até o fim do ano. O artigo vale para contratos, convênios, acordos e ajustes de vários anos em vigor em novembro de 2026: se os saldos forem bloqueados ou não liquidados, eles só podem ser cancelados depois de 31/12/2027, e os prazos para cumprir a cláusula suspensiva são prorrogados pelo mesmo período.",
+        "Isso evita que obras e projetos em andamento percam o dinheiro empenhado durante um período de aperto."
+      ],
+      "senado": { "estado": "alterado", "nota": "Art. 14 do Substitutivo. Passa a incluir também os termos de execução descentralizada." }
+    },
+    {
+      "n": "17",
+      "titulo": "Quando a lei começa a valer",
+      "resumo": "A lei vale desde a publicação. Para o corte de benefícios tributários (art. 4º), valem os prazos da Constituição.",
+      "explicacao": [
+        "A maior parte da lei entra em vigor na data da publicação. O art. 4º, que reduz benefícios tributários, tem prazos próprios: para tributos sujeitos à regra de noventena ou a prazo semelhante da Constituição, passa a valer no primeiro dia do quarto mês depois da publicação. Para os demais tributos, a partir de 1º de janeiro de 2027."
+      ],
+      "senado": { "estado": "mantido", "nota": "Mantido (art. 15 do Substitutivo)." }
+    }
+  ],
+  "faq": [
+    {
+      "p": "Por que cumprir a meta fiscal é tão importante?",
+      "r": [
+        "A meta fiscal é o compromisso do Governo de controlar a diferença entre o que arrecada e o que gasta. Esta é a avaliação da equipe econômica e de muitos economistas, e há debate sobre o ritmo e a forma do ajuste. Os motivos mais citados são:",
+        "Juros: quando o Governo gasta mais do que arrecada, ele toma dinheiro emprestado emitindo títulos da dívida. Se há dúvida sobre a capacidade de pagar, quem empresta cobra juros maiores, e isso encarece o crédito para empresas, o financiamento da casa própria e o cartão de crédito.",
+        "Dólar e inflação: com menos confiança, investidores podem tirar dinheiro do país, e o dólar sobe. Como o Brasil importa combustíveis, trigo e fertilizantes, isso pode chegar aos preços no mercado.",
+        "Serviços públicos: quanto maior a dívida, maior a parte dos impostos usada para pagar juros, e menor a parte disponível para saúde, educação e infraestrutura.",
+        "Investimento: empresas costumam investir mais em países com regras fiscais previsíveis.",
+        "Consequências legais: a Lei de Responsabilidade Fiscal prevê medidas automáticas, como bloqueio de verbas, e manobras contábeis para esconder o resultado podem configurar crime de responsabilidade."
+      ]
+    },
+    {
+      "p": "É um novo teto de gastos?",
+      "r": [
+        "Não. O PLP 299/2026 não cria um novo teto: ele altera o limite de gastos do Novo Arcabouço Fiscal (2023), que já existe.",
+        "Teto de gastos de 2016 (Emenda Constitucional 95): as despesas federais só podiam crescer pela inflação do ano anterior, ou seja, 0% de crescimento real.",
+        "Arcabouço fiscal de 2023: o limite de despesas cresce com a receita, numa faixa de 0,6% a 2,5% acima da inflação por ano.",
+        "O que o PLP muda: nos anos em que o Governo precisar conter gastos para cumprir a meta, o teto de crescimento real passa de 2,5% para 2,0% ao ano. O texto não altera o piso de 0,6%.",
+        "Isto é, mesmo com o ajuste, a regra atual prevê um crescimento real mínimo de 0,6% ao ano, enquanto o teto de 2016 previa zero."
+      ]
+    },
+    {
+      "p": "O ajuste retira R$ 10 bilhões do SUS?",
+      "r": [
+        "O valor de R$ 10 bilhões não aparece no texto do projeto. É uma estimativa que circula no debate, e esta página não encontrou fonte oficial para ele.",
+        "O que o texto diz (art. 3º): até 2030, o imposto de exportação de petróleo bruto não entra na receita corrente líquida usada para calcular despesas obrigatórias. O piso da saúde é de 15% dessa receita.",
+        "O texto não determina corte no dinheiro que o SUS já tem. Ele muda a base de cálculo do piso, que cresce menos do que cresceria com a regra atual quando o petróleo gera arrecadação. Para quem critica, isso significa menos dinheiro para a saúde do que haveria com a regra antiga. Para quem defende, despesas permanentes como salários e hospitais não deveriam depender de uma receita instável, que varia com o preço do petróleo.",
+        "Outro ponto no debate: o art. 4º reduz benefícios tributários, o que pode aumentar a arrecadação e a receita corrente líquida, e parte disso compensaria o efeito. O resultado final depende da arrecadação de cada ano."
+      ]
+    },
+    {
+      "p": "É apenas uma tentativa de agradar o mercado?",
+      "r": [
+        "As fontes oficiais mostram motivos além do mercado. A justificativa do autor fala em reforçar o cumprimento das metas fiscais e a sustentabilidade da dívida, e em criar espaço para o subsídio ao diesel em 2026. A equipe econômica também usa os argumentos da primeira pergunta: juros altos, dólar e inflação atingem toda a população, em especial quem tem menos renda.",
+        "Ao mesmo tempo, o mercado financeiro acompanha o pacote de perto, porque a meta fiscal influencia juros, dólar e a confiança dos investidores. Quem critica o ajuste costuma dizer que ele pesa sobre gastos sociais e investimentos. O autor afirma que o texto não concentra o ônus nas políticas sociais, e a discordância aparece em pontos específicos, como o cálculo do piso da saúde (art. 3º).",
+        "Por isso, esta página mostra o que cada artigo diz, para você formar a sua opinião."
+      ]
     }
   ],
   "congresso": {
@@ -57,7 +233,7 @@
       { "texto": "Votação na Câmara dos Deputados", "detalhe": "Precisa de 257 votos. Se os deputados mudarem o texto, ele volta ao Senado.", "estado": "atual" },
       { "texto": "Sanção presidencial e publicação", "estado": "pendente" }
     ],
-    "nota": "O projeto ainda não é lei. A Câmara pode alterar o texto, inclusive retirar ou mudar medidas. Na versão original, por exemplo, havia a desvinculação de até 40% do superávit financeiro de fundos, que o substitutivo do Senado não mantém."
+    "nota": "O projeto ainda não é lei. A Câmara pode alterar o texto, inclusive retirar ou mudar medidas."
   },
   "fontes": [
     { "nome": "Senado Federal: tramitação do PLP 299/2026", "url": "https://www25.senado.leg.br/web/atividade/materias/-/materia/176328" },
