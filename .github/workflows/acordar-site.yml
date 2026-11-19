@@ -1,0 +1,58 @@
+# Mantém o site do Render acordado e com os dados do Tesouro/BCB/IBGE já carregados.
+#   * a cada ~10 min: acessa /api/saude (o plano gratuito do Render dorme após 15 min sem visitas);
+#   * a cada ~3 h: além disso, "esquenta" as consultas lentas (o servidor guarda cada uma por 6 h na memória,
+#     então quem chega depois já encontra tudo pronto).
+# Precisa da variável do repositório SITE_URL (Settings -> Secrets and variables -> Actions -> Variables),
+# por exemplo https://impacto-cidadao.onrender.com (sem barra no final).
+# O GitHub costuma atrasar agendamentos em alguns minutos; é normal. Também roda sob demanda (Run workflow).
+name: Acordar o site
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+    - cron: "5 */3 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: acordar-site
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  acordar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SITE_URL: ${{ vars.SITE_URL }}
+      ESQUENTAR: ${{ github.event.schedule == '5 */3 * * *' || github.event_name == 'workflow_dispatch' }}
+    steps:
+      - name: Acordar o servidor
+        run: |
+          if [ -z "$SITE_URL" ]; then echo "Defina a variável SITE_URL no repositório."; exit 1; fi
+          SITE_URL="${SITE_URL%/}"
+          # o Render pode levar ~1 min para acordar: tenta por até ~5 min
+          for i in 1 2 3 4 5; do
+            if curl -fsS --max-time 90 "$SITE_URL/api/saude"; then echo; exit 0; fi
+            echo "Tentativa $i falhou; aguardando..."; sleep 20
+          done
+          echo "O site não respondeu."; exit 1
+
+      - name: Esquentar os dados lentos (Tesouro, BCB, IBGE)
+        if: env.ESQUENTAR == 'true'
+        run: |
+          SITE_URL="${SITE_URL%/}"
+          # falha em uma fonte não derruba o resto
+          for rota in \
+            /api/macro/resumo \
+            /api/macro/divida \
+            /api/macro/divida-risco \
+            /api/macro/divida-dinamica \
+            /api/macro/historico-divida \
+            /api/tributos/arrecadacao \
+            /api/tributos/repasses \
+            /api/tributos/fluxo-federal ; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 120 "$SITE_URL$rota" || echo erro)
+            echo "$code $rota"
+            sleep 3
+          done
