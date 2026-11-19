@@ -291,7 +291,7 @@ atualizar();
 function desenharRadar(d) {
     const dataBR = d.atualizado_em ? d.atualizado_em.split('-').reverse().join('/') : '—';
     const gatilho = `<div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5">
-        <h3 class="font-bold"><i class="fa-solid fa-triangle-exclamation text-amber-500 mr-1.5" aria-hidden="true"></i>O gatilho: ${esc(d.gatilho.titulo.toLowerCase().replace(/^./, (c) => c.toUpperCase()))}</h3>
+        <h3 class="font-bold"><i class="fa-solid fa-triangle-exclamation text-amber-500 mr-1.5" aria-hidden="true"></i>${esc(d.gatilho.titulo)}</h3>
         ${d.gatilho.paragrafos.map((p) => `<p class="text-sm mt-2 text-slate-700 dark:text-slate-300" style="max-width:70ch">${esc(p)}</p>`).join('')}</div>`;
 
     const medidas = d.medidas.map((m) => `<div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5">
@@ -314,8 +314,8 @@ function desenharRadar(d) {
             ${e.detalhe ? `<p class="text-xs text-slate-500 dark:text-slate-400">${esc(e.detalhe)}</p>` : ''}</div></li>`;
     }).join('');
 
-    const fonte = d.fonte && d.fonte.nome
-        ? `<p class="text-[11px] text-slate-400 mt-3">Fonte: ${d.fonte.url ? `<a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(d.fonte.url))}">${esc(d.fonte.nome)}</a>` : esc(d.fonte.nome)}.</p>` : '';
+    const fonte = (d.fontes || []).length
+        ? `<p class="text-xs mt-3">Fontes oficiais: ${d.fontes.map((f) => `<a class="underline text-brand-700 dark:text-brand-400" target="_blank" rel="noopener" href="${esc(urlSegura(f.url))}">${esc(f.nome)}</a>`).join(' · ')}</p>` : '';
 
     $('resRadar').innerHTML = `
         <h2 id="tRadar" class="text-xl font-bold flex items-center"><i class="fa-solid fa-satellite-dish text-brand-600 mr-2.5" aria-hidden="true"></i>${esc(d.titulo)}</h2>
@@ -324,8 +324,9 @@ function desenharRadar(d) {
             <span><b>Status atual:</b> <span class="inline-block px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">${esc(d.status)}</span></span>
             <span class="text-slate-500"><b>Atualizado em:</b> <time datetime="${esc(d.atualizado_em)}">${esc(dataBR)}</time></span></div>
         <div class="mt-4">${gatilho}</div>
-        <h3 class="bolso-titulo">O que está na mesa: as principais medidas propostas</h3>
-        <div class="space-y-3">${medidas}</div>
+        <h3 class="bolso-titulo">O que está na mesa: as principais medidas</h3>
+        ${d.medidas_nota ? `<p class="text-xs text-slate-500 mt-1" style="max-width:70ch">${esc(d.medidas_nota)}</p>` : ''}
+        <div class="space-y-3 mt-3">${medidas}</div>
         <h3 class="bolso-titulo">Termômetro no Congresso: onde está a lei?</h3>
         <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5">
             <p class="text-sm text-slate-600 dark:text-slate-300" style="max-width:70ch">${esc(d.congresso.intro)}</p>

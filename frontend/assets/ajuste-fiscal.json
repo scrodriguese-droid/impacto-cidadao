@@ -1,36 +1,66 @@
 {
-  "titulo": "Radar do orçamento: o pacote de ajuste fiscal em debate",
-  "subtitulo": "O que o Governo propôs para travar os gastos, o impacto nos serviços e em que fase a lei se encontra no Congresso Nacional.",
+  "titulo": "Radar do orçamento: PLP 299/2026, o pacote de ajuste fiscal",
+  "subtitulo": "O que o projeto muda nas regras do orçamento federal, em que fase ele está no Congresso e o que pode mudar até virar lei.",
   "atualizado_em": "2026-11-19",
-  "status": "Em debate na Câmara dos Deputados",
+  "status": "Aprovado no Senado; aguardando a Câmara dos Deputados",
   "gatilho": {
-    "titulo": "Por que cortar gastos agora?",
+    "titulo": "O gatilho: por que este projeto existe?",
     "paragrafos": [
-      "O Novo Arcabouço Fiscal (a lei que controla o orçamento) diz que as despesas totais do governo só podem crescer até 2,5% acima da inflação por ano.",
-      "No entanto, as despesas obrigatórias (como pensões, saúde e educação) estão a crescer a um ritmo muito mais acelerado. Se nada for feito, estas rubricas obrigatórias vão \"esmagar\" o resto do orçamento (as chamadas despesas discricionárias), deixando o país sem dinheiro para obras, polícias e funcionamento dos ministérios já em 2027."
+      "O PLP 299/2026 foi apresentado em 11/11/2026 pelo senador Jaques Wagner (PT/BA) e altera o Novo Arcabouço Fiscal (Lei Complementar 200/2023). Ele dá ao Governo federal novos instrumentos para cumprir a meta de resultado primário (a diferença entre o que a União arrecada e o que gasta, sem contar os juros da dívida) e manter a dívida pública em trajetória sustentável.",
+      "Segundo a justificativa do autor, o esforço é dividido entre várias frentes: contenção do crescimento da despesa, contingenciamento, revisão de benefícios tributários, compensações tributárias e limites para despesas específicas. O texto diz que isso não deve concentrar o ônus nas políticas que garantem direitos sociais. O projeto também abre espaço extraordinário em 2026 para pagar parte do subsídio ao diesel, por causa do conflito geopolítico em curso.",
+      "Esta página descreve o que o texto diz. Ela não avalia se as medidas são boas ou ruins."
     ]
   },
+  "medidas_nota": "Resumo do texto-base aprovado pelo Senado (Substitutivo, Emenda nº 75), comparado com as regras atuais. No turno suplementar, em 18/11, o Senado aprovou ainda as emendas 83, 90, 91 e 92, que não estão detalhadas aqui. Para o texto final, use os links de fonte.",
   "medidas": [
     {
-      "titulo": "Regra da saúde e da educação",
-      "hoje": "O governo é obrigado a investir um percentual fixo de tudo o que arrecada (ex.: 15% para a saúde). Se a arrecadação bate recordes, o gasto nestas áreas sobe na mesma proporção.",
-      "proposta": "O piso para estas áreas passa a seguir a regra geral do Arcabouço (crescimento máximo de 2,5% ao ano), desvinculando-se dos picos de arrecadação."
+      "titulo": "Limite de crescimento da despesa em anos de contenção",
+      "hoje": "O limite de gastos do Executivo cresce, a cada ano, de acordo com a receita, numa faixa entre 0,6% e 2,5% acima da inflação (Lei Complementar 200/2023).",
+      "proposta": "A partir de 2027, no ano em que o Governo adotar medidas de contenção de gastos, o crescimento real do limite não poderá passar de 2,0% ao ano. A economia sai de contenção de despesas, e a redução não se acumula para os anos seguintes."
     },
     {
-      "titulo": "Salário mínimo e benefícios (BPC / Seguro-Desemprego)",
-      "hoje": "O salário mínimo sobe acima da inflação (ganho real atrelado ao PIB). Benefícios como o BPC (para idosos e pessoas com deficiência de baixa renda) sobem automaticamente com ele.",
-      "proposta": "Limitar o ganho real do salário mínimo ao teto do Arcabouço (2,5%) ou desvincular o cálculo do BPC e das pensões, fazendo com que estes subam apenas pela inflação, sem ganhos reais, poupando dezenas de bilhões ao Tesouro."
+      "titulo": "Contingenciamento (bloqueio de gastos)",
+      "hoje": "A limitação de empenho e de movimentação financeira segue o art. 9º da Lei de Responsabilidade Fiscal, quando a meta fiscal está em risco.",
+      "proposta": "O Governo fica autorizado a limitar empenho e pagamentos quando o resultado primário projetado cair no intervalo inferior de tolerância da meta. Podem ser atingidas despesas sujeitas a limite de dotação. Ficam de fora as obrigações constitucionais, o serviço da dívida, a pesquisa científica custeada por fundo próprio e o que a LDO ressalvar."
+    },
+    {
+      "titulo": "Benefícios tributários (isenções e regimes especiais)",
+      "hoje": "A Lei Complementar 224/2025 (art. 4º) já traz regras para reduzir benefícios tributários federais.",
+      "proposta": "Na regra de cálculo, isenção e alíquota zero passam a pagar 20% da alíquota padrão. Alíquotas reduzidas, bases de cálculo reduzidas e créditos presumidos são reduzidos em 20%. Ficam de fora a CPRB (desoneração da folha), os incentivos para tecnologia da informação e semicondutores e os benefícios para compra de veículos por pessoas com deficiência ou com autismo. O regime especial da reforma tributária (art. 106 da LC 214/2025) fica limitado ao valor previsto no demonstrativo de gastos tributários da LOA 2026, corrigido pelo IPCA."
+    },
+    {
+      "titulo": "Compensação de tributos",
+      "hoje": "O contribuinte pode usar créditos de um tributo para abater débitos de outro, administrados pela Receita Federal (art. 74 da Lei 9.430/1996).",
+      "proposta": "O Executivo fica autorizado a reduzir essa compensação, até o valor equivalente ao que for contido ou reduzido no limite de gastos. Um ato do Executivo define os percentuais, que podem variar conforme o valor ou o tipo de crédito. Esse artigo (6º-F) foi alvo de destaque na votação do Senado."
+    },
+    {
+      "titulo": "Repasses e despesas com teto até 2030",
+      "hoje": "Os valores seguem as leis de cada tema: Lei Complementar 176/2020 (entregas a estados e municípios), Lei 9.796/1999 (compensação previdenciária entre regimes) e Lei 10.184/2001 (financiamento às exportações, Proex).",
+      "proposta": "De 2027 a 2030, a entrega da LC 176/2020 fica limitada a R$ 1 bilhão por ano, e a diferença é paga em parcelas anuais até 2037. A compensação previdenciária (Lei 9.796) fica limitada a R$ 3 bilhões por ano, corrigidos pelo limite de despesas. A equalização do Proex fica limitada a R$ 1 bilhão por ano até 2030."
+    },
+    {
+      "titulo": "Supersalários",
+      "hoje": "O § 11 do art. 37 da Constituição prevê o que não entra no teto remuneratório do funcionalismo, e a lei que o regulamenta ainda não foi aprovada.",
+      "proposta": "O Congresso deve votar, em até 120 dias após a publicação da lei, o projeto que regulamenta esse ponto. A economia no Executivo reduz o limite de gastos e pode ir para investimentos e segurança pública. A economia nos demais Poderes e órgãos autônomos fica com eles, para reestruturar seus quadros."
+    },
+    {
+      "titulo": "Espaço extra em 2026 e investimentos",
+      "hoje": "As despesas do subsídio ao diesel (Medida Provisória 1.391/2026) contam para a meta de resultado primário de 2026.",
+      "proposta": "Em 2026, até R$ 10,5 bilhões dessas despesas podem ser descontados da meta. Se o resultado do ano anterior superar o piso da meta e houver contenção, o Executivo pode abrir crédito para investimentos estruturantes, inclusive os definidos pelas bancadas estaduais. Restos a pagar de contratos e convênios de vários anos só poderão ser cancelados depois de 31/12/2027."
     }
   ],
   "congresso": {
-    "intro": "Para cortar gastos estruturais, o Governo precisa de alterar a Constituição (PEC) ou aprovar Leis Complementares. O percurso é longo:",
+    "intro": "O projeto é uma lei complementar (PLP): não muda a Constituição e precisa de maioria absoluta em cada Casa (257 votos na Câmara e 41 no Senado). Ele começou no Senado, e a Câmara agora é a Casa revisora.",
     "etapas": [
-      { "texto": "Proposta fechada pelo Ministério da Fazenda e Casa Civil", "estado": "feito" },
-      { "texto": "Votação na Câmara dos Deputados", "detalhe": "Precisa de 308 votos, em 2 turnos", "estado": "atual" },
-      { "texto": "Votação no Senado Federal", "detalhe": "Precisa de 49 votos, em 2 turnos", "estado": "pendente" },
-      { "texto": "Sanção presidencial / promulgação", "estado": "pendente" }
+      { "texto": "Projeto apresentado no Senado", "detalhe": "11/11/2026, com urgência aprovada no mesmo dia", "estado": "feito" },
+      { "texto": "Aprovado pelo Plenário do Senado", "detalhe": "18/11/2026, turno suplementar com 69 votos a favor, 2 contra e 1 abstenção. Enviado à Câmara.", "estado": "feito" },
+      { "texto": "Votação na Câmara dos Deputados", "detalhe": "Precisa de 257 votos. Se os deputados mudarem o texto, ele volta ao Senado.", "estado": "atual" },
+      { "texto": "Sanção presidencial e publicação", "estado": "pendente" }
     ],
-    "nota": "O texto pode ser alterado (desidratado) a qualquer momento pelos deputados para poupar setores com maior poder de pressão política."
+    "nota": "O projeto ainda não é lei. A Câmara pode alterar o texto, inclusive retirar ou mudar medidas. Na versão original, por exemplo, havia a desvinculação de até 40% do superávit financeiro de fundos, que o substitutivo do Senado não mantém."
   },
-  "fonte": { "nome": "", "url": "" }
+  "fontes": [
+    { "nome": "Senado Federal: tramitação do PLP 299/2026", "url": "https://www25.senado.leg.br/web/atividade/materias/-/materia/176328" },
+    { "nome": "Congresso Nacional: PLP 299/2026", "url": "https://www.congressonacional.leg.br/materias/materias-bicamerais/-/ver/plp-299-2026" }
+  ]
 }
