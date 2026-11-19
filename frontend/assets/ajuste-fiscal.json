@@ -1,0 +1,36 @@
+{
+  "titulo": "Radar do orçamento: o pacote de ajuste fiscal em debate",
+  "subtitulo": "O que o Governo propôs para travar os gastos, o impacto nos serviços e em que fase a lei se encontra no Congresso Nacional.",
+  "atualizado_em": "2026-11-19",
+  "status": "Em debate na Câmara dos Deputados",
+  "gatilho": {
+    "titulo": "Por que cortar gastos agora?",
+    "paragrafos": [
+      "O Novo Arcabouço Fiscal (a lei que controla o orçamento) diz que as despesas totais do governo só podem crescer até 2,5% acima da inflação por ano.",
+      "No entanto, as despesas obrigatórias (como pensões, saúde e educação) estão a crescer a um ritmo muito mais acelerado. Se nada for feito, estas rubricas obrigatórias vão \"esmagar\" o resto do orçamento (as chamadas despesas discricionárias), deixando o país sem dinheiro para obras, polícias e funcionamento dos ministérios já em 2027."
+    ]
+  },
+  "medidas": [
+    {
+      "titulo": "Regra da saúde e da educação",
+      "hoje": "O governo é obrigado a investir um percentual fixo de tudo o que arrecada (ex.: 15% para a saúde). Se a arrecadação bate recordes, o gasto nestas áreas sobe na mesma proporção.",
+      "proposta": "O piso para estas áreas passa a seguir a regra geral do Arcabouço (crescimento máximo de 2,5% ao ano), desvinculando-se dos picos de arrecadação."
+    },
+    {
+      "titulo": "Salário mínimo e benefícios (BPC / Seguro-Desemprego)",
+      "hoje": "O salário mínimo sobe acima da inflação (ganho real atrelado ao PIB). Benefícios como o BPC (para idosos e pessoas com deficiência de baixa renda) sobem automaticamente com ele.",
+      "proposta": "Limitar o ganho real do salário mínimo ao teto do Arcabouço (2,5%) ou desvincular o cálculo do BPC e das pensões, fazendo com que estes subam apenas pela inflação, sem ganhos reais, poupando dezenas de bilhões ao Tesouro."
+    }
+  ],
+  "congresso": {
+    "intro": "Para cortar gastos estruturais, o Governo precisa de alterar a Constituição (PEC) ou aprovar Leis Complementares. O percurso é longo:",
+    "etapas": [
+      { "texto": "Proposta fechada pelo Ministério da Fazenda e Casa Civil", "estado": "feito" },
+      { "texto": "Votação na Câmara dos Deputados", "detalhe": "Precisa de 308 votos, em 2 turnos", "estado": "atual" },
+      { "texto": "Votação no Senado Federal", "detalhe": "Precisa de 49 votos, em 2 turnos", "estado": "pendente" },
+      { "texto": "Sanção presidencial / promulgação", "estado": "pendente" }
+    ],
+    "nota": "O texto pode ser alterado (desidratado) a qualquer momento pelos deputados para poupar setores com maior poder de pressão política."
+  },
+  "fonte": { "nome": "", "url": "" }
+}
