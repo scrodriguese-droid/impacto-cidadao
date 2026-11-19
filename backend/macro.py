@@ -45,6 +45,7 @@ def _agora() -> str:
 
 
 _travas: dict[tuple, threading.Lock] = defaultdict(threading.Lock)
+_falhas: dict[tuple, tuple[float, Exception]] = {}   # fonte que falhou sem nenhum valor guardado: não insiste por NOVA_TENTATIVA_S
 
 
 def _memo(chave: tuple, produzir):  # noqa: ANN001
@@ -58,16 +59,20 @@ def _memo(chave: tuple, produzir):  # noqa: ANN001
         agora = time.time()
         if chave in _cache and agora - _cache[chave][0] < TTL_S:
             return _cache[chave][1]
+        if chave not in _cache and chave in _falhas and agora - _falhas[chave][0] < NOVA_TENTATIVA_S:
+            raise _falhas[chave][1]   # sem isto, cada visita repetia as 5 tentativas (~30 s) de uma fonte fora do ar
         try:
             valor = produzir()
         except Exception as exc:  # noqa: BLE001 — qualquer falha da fonte: vale mais o dado de ontem do que a tela vazia
             if chave not in _cache:
+                _falhas[chave] = (agora, exc)
                 raise
             log.warning("fonte %s indisponível (%s): mantendo o último valor guardado", chave[:2], exc)
             valor = _cache[chave][1]
             _cache[chave] = (agora - TTL_S + NOVA_TENTATIVA_S, valor)
             return valor
         _cache[chave] = (agora, valor)
+        _falhas.pop(chave, None)
         return valor
 
 
