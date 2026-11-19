@@ -95,7 +95,41 @@
         "estado": "alterado",
         "nota": "Mantido. Foi acrescentada uma exceção: o aporte ao Fundo Constitucional do Distrito Federal continua corrigido pela receita corrente líquida."
       },
-      "traducao": "Algumas despesas são calculadas como uma fatia da arrecadação, como a saúde, que é 15% da receita corrente líquida. Se o imposto sobre a exportação de petróleo deixa de entrar nessa conta, a base fica menor, e a fatia cresce menos nos anos em que o petróleo render. Não é tirar dinheiro que já existe, e sim reduzir o quanto o piso aumentaria. A discussão é se essa receita instável deve ou não sustentar gastos permanentes."
+      "traducao": "Algumas despesas são calculadas como uma fatia da arrecadação, como a saúde, que é 15% da receita corrente líquida. Se o imposto sobre a exportação de petróleo deixa de entrar nessa conta, a base fica menor, e a fatia cresce menos nos anos em que o petróleo render. Não é tirar dinheiro que já existe, e sim reduzir o quanto o piso aumentaria. A discussão é se essa receita instável deve ou não sustentar gastos permanentes.",
+      "analise": {
+        "titulo": "Análise crítica: a armadilha fiscal",
+        "blocos": [
+          {
+            "titulo": "A tese: um ganho de curto prazo pode virar problema de longo prazo",
+            "paragrafos": [
+              "Quem defende a medida argumenta que ligar o piso da saúde a uma receita instável, como o imposto sobre a exportação de petróleo, pode ser uma armadilha. Um dinheiro que ajuda no curto prazo pode enfraquecer a base de financiamento do próprio setor no longo prazo. O raciocínio tem três passos.",
+              "Orçamento engessado: num ano de petróleo caro, o piso sobe, e esse dinheiro extra poderia pagar despesas permanentes, como contratar profissionais, abrir leitos e ampliar serviços. No ano seguinte, se o preço do barril despencar, a receita cai, mas os hospitais já estão abertos e os salários continuam. A despesa ficou rígida, e a receita sumiu.",
+              "Ciclo do endividamento: para cobrir esse buraco sem fechar serviços, o governo teria que emitir mais dívida. Se o mercado perceber descontrole, pode cobrar juros maiores, e a parte do orçamento usada para pagar juros cresce, deixando menos para o resto.",
+              "Dólar e insumos: com o descontrole fiscal, o real pode se desvalorizar e a inflação voltar. O SUS depende de insumos importados, como equipamentos, reagentes de laboratório e princípios ativos de medicamentos. Nesse cenário, o dinheiro a mais seria corroído pela alta de preços desses insumos."
+            ]
+          },
+          {
+            "titulo": "Como a troca é justificada",
+            "paragrafos": [
+              "O argumento é que o pacote troca uma receita volátil por uma receita mais estável. Ao mesmo tempo em que tira o petróleo da conta do piso, o art. 4º reduz benefícios tributários de empresas, o que aumenta a arrecadação permanente. Essa arrecadação também entra na receita corrente líquida e, portanto, no cálculo do piso da saúde.",
+              "Segundo essa linha de raciocínio, o dinheiro imprevisível do petróleo ajudaria o resultado das contas, em vez de criar despesas fixas. Com a dívida crescendo menos, o risco do país cairia, o que abriria espaço para o Banco Central reduzir a Selic. O Brasil gasta centenas de bilhões de reais por ano em juros da dívida, e uma queda dos juros liberaria parte desse dinheiro no futuro para investimentos, inclusive na saúde, sem depender do preço do barril."
+            ]
+          },
+          {
+            "titulo": "O contraponto",
+            "paragrafos": [
+              "Quem critica a mudança aponta que, na prática, o piso da saúde passa a crescer menos do que cresceria com a regra atual nos anos em que o petróleo render. Para essa corrente, o setor precisa do máximo de recursos possível, venha de onde vier.",
+              "Há também dúvidas sobre cada elo da cadeia de justificativas. O piso é um mínimo, e a volatilidade da receita também poderia ser tratada de outras formas, sem reduzir a base do piso. A arrecadação extra do art. 4º é incerta, porque depende da aprovação da Câmara e das exceções incluídas pelo Senado. E a queda dos juros depende de muitos fatores além da política fiscal."
+            ]
+          },
+          {
+            "titulo": "O que o texto não diz",
+            "paragrafos": [
+              "O artigo vale só até 2030 e não corta o valor que a saúde já recebe: ele muda a base de cálculo do piso. O texto também não obriga o Governo a aplicar na saúde o dinheiro que o piso deixa de exigir, nem traz o valor de R$ 10 bilhões que circula no debate."
+            ]
+          }
+        ]
+      }
     },
     {
       "n": "4º",
