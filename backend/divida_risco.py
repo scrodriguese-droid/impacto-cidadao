@@ -7,6 +7,7 @@ O que o projeto calcula, e não a fonte, aparece identificado em "metodo". Nada 
 from __future__ import annotations
 
 import logging
+from concurrent.futures import ThreadPoolExecutor
 from typing import Any
 
 import macro
@@ -47,7 +48,26 @@ def risco() -> dict[str, Any]:
             saida["erros"].append(f"{nome} indisponível no momento.")
             return None
 
-    dpf = tentar("Estoque da Dívida Pública Federal", macro._estoque_dpf)
+    # As fontes são independentes: buscamos em paralelo (a soma dos tempos vira o da mais lenta, e o Render corta em ~100 s).
+    # As séries do BCB ficam numa linha só (sequenciais), porque o BCB bloqueia muitos pedidos ao mesmo tempo.
+    def serie_bcb() -> tuple[list | None, dict[str, dict | None]]:
+        ipca12 = tentar("IPCA em 12 meses", lambda: macro.serie("ipca12")["pontos"])
+        chaves = ("selic", "ipca12", "dbgg_pib", "primario12", "nominal12", "juros12")
+        return ipca12, {c: ultimo(c) for c in chaves}
+
+    def ultimo(chave: str) -> dict | None:
+        p = tentar(chave, lambda: macro.serie(chave)["pontos"])
+        return {"valor": p[-1]["valor"], "data": p[-1]["data"]} if p else None
+
+    with ThreadPoolExecutor(max_workers=5) as pool:
+        f_dpf = pool.submit(tentar, "Estoque da Dívida Pública Federal", macro._estoque_dpf)
+        f_fat = pool.submit(tentar, "Fatores de variação da dívida", macro._fatores_variacao)
+        f_pib = pool.submit(tentar, "PIB (IBGE)", macro._sidra_pib)
+        f_lei = pool.submit(tentar, "Resultado dos leilões", macro._leiloes)
+        f_bcb = pool.submit(serie_bcb)
+        dpf, fat, pib, leiloes = f_dpf.result(), f_fat.result(), f_pib.result(), f_lei.result()
+        ipca_serie, ultimos = f_bcb.result()
+
     if dpf:
         m = dpf["_extra"]["mercado"]
         serie = m["serie"][-12 * ANOS_SERIE:]
@@ -57,9 +77,6 @@ def risco() -> dict[str, Any]:
             "calendario": m["calendario"], "serie": serie,
         }
 
-    fat = tentar("Fatores de variação da dívida", macro._fatores_variacao)
-    ipca_serie = tentar("IPCA em 12 meses", lambda: macro.serie("ipca12")["pontos"])
-    pib = tentar("PIB (IBGE)", macro._sidra_pib)
     if fat and ipca_serie and pib:
         ipca = {p["data"][:7]: p["valor"] for p in ipca_serie}
         custo = _custo_efetivo(fat, ipca, pib["acum4"])
@@ -71,17 +88,12 @@ def risco() -> dict[str, Any]:
             "atualizado": fat["atualizado"], "url": fat["url"], "pagina": fat["pagina"],
         }
 
-    leiloes = tentar("Resultado dos leilões", macro._leiloes)
     if leiloes:
         saida["leiloes"] = leiloes
 
-    def ultimo(chave: str) -> dict | None:
-        p = tentar(chave, lambda: macro.serie(chave)["pontos"])
-        return {"valor": p[-1]["valor"], "data": p[-1]["data"]} if p else None
-
     saida["macro"] = {
-        "selic": ultimo("selic"), "ipca12": ultimo("ipca12"), "dbgg_pib": ultimo("dbgg_pib"),
-        "primario12": ultimo("primario12"), "nominal12": ultimo("nominal12"), "juros12": ultimo("juros12"),
+        "selic": ultimos["selic"], "ipca12": ultimos["ipca12"], "dbgg_pib": ultimos["dbgg_pib"],
+        "primario12": ultimos["primario12"], "nominal12": ultimos["nominal12"], "juros12": ultimos["juros12"],
         "pib4": None,
     }
     if pib:
