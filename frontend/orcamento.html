@@ -311,6 +311,8 @@ function desenharRadar(d) {
                 ${a.traducao ? `<div class="rounded-xl bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 p-4"><p class="text-[11px] font-bold uppercase tracking-wide text-sky-700 dark:text-sky-300"><i class="fa-solid fa-language mr-1" aria-hidden="true"></i>Traduzindo para o dia a dia</p><p class="text-sm mt-1.5 text-slate-800 dark:text-slate-100">${esc(a.traducao)}</p></div>
                 <p class="text-[11px] font-bold uppercase tracking-wide text-slate-500 pt-1">Em linguagem técnica</p>` : ''}
                 ${a.explicacao.map((p) => `<p class="text-sm text-slate-700 dark:text-slate-300">${esc(p)}</p>`).join('')}
+                ${a.analise ? `<div class="rounded-xl border border-slate-300 dark:border-slate-600 p-4 mt-2"><p class="text-[11px] font-bold uppercase tracking-wide text-slate-500"><i class="fa-solid fa-magnifying-glass-chart mr-1" aria-hidden="true"></i>${esc(a.analise.titulo)}</p>
+                    ${a.analise.blocos.map((b) => `<h6 class="font-bold text-sm mt-3">${esc(b.titulo)}</h6>${b.paragrafos.map((p) => `<p class="text-sm mt-1.5 text-slate-700 dark:text-slate-300">${esc(p)}</p>`).join('')}`).join('')}</div>` : ''}
                 <p class="text-xs rounded-lg bg-slate-100 dark:bg-slate-900/60 p-3 text-slate-600 dark:text-slate-400"><b>No Senado:</b> ${esc(a.senado.nota)}</p></div></details></article>`;
     }).join('');
 

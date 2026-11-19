@@ -40,7 +40,46 @@
         "estado": "alterado",
         "nota": "A regra vale para 2027 a 2030, e a diferença não entregue é paga em parcelas anuais iguais do ano seguinte até 2037, somadas às entregas já previstas para esses anos."
       },
-      "traducao": "A União deve a estados e municípios uma compensação por ter tirado o ICMS das exportações (Lei Kandir). Pela proposta, ela paga só R$ 1 bilhão por ano até 2030 e o restante depois, até 2037. A dívida total continua a mesma: é como esticar as parcelas. O governo gasta menos agora, e os estados e municípios recebem mais tarde."
+      "traducao": "A União deve a estados e municípios uma compensação por ter tirado o ICMS das exportações (Lei Kandir). Pela proposta, ela paga só R$ 1 bilhão por ano até 2030 e o restante depois, até 2037. A dívida total continua a mesma: é como esticar as parcelas. O governo gasta menos agora, e os estados e municípios recebem mais tarde.",
+      "analise": {
+        "titulo": "Análise crítica: Lei Kandir",
+        "blocos": [
+          {
+            "titulo": "Como a lei surgiu",
+            "paragrafos": [
+              "A Lei Kandir (Lei Complementar 87) foi sancionada em 13 de setembro de 1996, no governo de Fernando Henrique Cardoso. A explicação mais usada para a sua origem está no Plano Real.",
+              "Para acabar com a hiperinflação em 1994, o governo atrelou o real ao dólar (no início, 1 real valia 1 dólar). Com o dólar barato, os produtos importados ficaram baratos no Brasil, e a indústria nacional foi forçada a segurar os preços. Isso importava porque a inflação da época era \"inercial\": os comerciantes antecipavam os aumentos esperando que os preços subiriam, e isso criava uma bola de neve.",
+              "O efeito colateral foi que um real forte barateia as compras de fora e encarece as vendas para o exterior. O Brasil passou a importar muito e exportar pouco, e os dólares saíam mais rápido do que entravam. Se faltassem dólares, o governo não conseguiria manter a paridade do real, a moeda poderia se desvalorizar de uma vez e a inflação voltaria.",
+              "Neste cenário, a Lei Kandir isentou de ICMS a exportação de produtos primários e semielaborados, como soja e minério. A ideia era baratear as exportações, trazer dólares para o país e dar apoio ao valor do real."
+            ]
+          },
+          {
+            "titulo": "Por que a isenção durou três décadas",
+            "paragrafos": [
+              "Os motivos mais citados para a lei ter permanecido, mesmo com as reclamações dos governadores, são estes:",
+              "Regra do comércio internacional: em geral, o imposto sobre consumo é cobrado no país onde o produto é consumido, e não no que o vende para fora. Se o Brasil voltasse a cobrar ICMS na exportação, a soja, a carne e o minério ficariam mais caros que os de concorrentes, como Estados Unidos e Austrália.",
+              "Proteção na Constituição: a Emenda Constitucional 42, de 2003, levou a regra para o texto da Constituição. Desde então, revogar a isenção exige uma emenda constitucional (PEC), que precisa de uma maioria muito maior de votos.",
+              "Peso do setor exportador: o agronegócio e a mineração, os maiores beneficiados, têm bancadas fortes no Congresso, e costuma-se citar esse peso como um motivo para a regra não mudar.",
+              "Dependência de dólares: a exportação de commodities traz moeda forte e ajuda a manter as contas externas em ordem. Quem defende a isenção diz que mexer nela atingiria o setor que mais traz dólares ao país.",
+              "A lei não ficou intacta: foi alterada e complementada várias vezes, em especial no tema das compensações aos estados."
+            ]
+          },
+          {
+            "titulo": "O outro lado: os estados",
+            "paragrafos": [
+              "O ICMS é um imposto estadual. Ao isentar as exportações, a Lei Kandir tirou receita dos estados, e a Constituição prevê que a União compense essa perda. Os governadores reclamam há anos que a compensação ficou abaixo do que perderam.",
+              "A disputa chegou ao Supremo Tribunal Federal (ADO 25), que reconheceu a omissão do Congresso em regulamentar a compensação. O resultado foi um acordo, transformado na Lei Complementar 176/2020: a União paga um total de R$ 58 bilhões, em parcelas até 2037. É esse calendário que o art. 2º do PLP 299/2026 muda."
+            ]
+          },
+          {
+            "titulo": "E depois de 2037?",
+            "paragrafos": [
+              "Pelo cronograma da LC 176/2020, que o projeto mantém, os repasses terminam em 2037. O que acaba nessa data é a obrigação de pagar essa compensação.",
+              "A isenção do ICMS sobre as exportações continua valendo, e só uma PEC pode mudá-la. Assim, os estados seguem sem arrecadar esse imposto, e nada impede que o tema volte ao debate, por exemplo com pedidos de uma nova compensação."
+            ]
+          }
+        ]
+      }
     },
     {
       "n": "3º",
