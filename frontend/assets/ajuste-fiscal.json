@@ -10,7 +10,7 @@
       "Segundo a justificativa do autor, o esforço é dividido entre contenção de despesas, revisão de benefícios tributários e limites para gastos específicos, sem concentrar o ônus nas políticas sociais. Esta página descreve o que o texto diz e não avalia se as medidas são boas ou ruins."
     ]
   },
-  "artigos_nota": "A lista segue o projeto original, com 17 artigos. O selo de cada artigo mostra o que aconteceu com ele no texto aprovado pelo Senado (Substitutivo, Emenda nº 75), que tem 15 artigos. No turno suplementar de 18/11 o Senado aprovou ainda as emendas 83, 90, 91 e 92, que não estão detalhadas aqui. Para o texto final, use os links de fonte.",
+  "artigos_nota": "A lista segue o projeto original, com 17 artigos. O selo de cada artigo mostra o que aconteceu com ele no texto aprovado pelo Senado (Substitutivo, Emenda nº 75), que tem 15 artigos. No turno suplementar de 18/11 o Senado aprovou também as emendas 83, 90, 91 e 92, descritas na seção Emendas. A subemenda do relator à emenda 83 não está descrita na fonte consultada. Para o texto final, use os links de fonte.",
   "artigos": [
     {
       "n": "1º",
@@ -22,17 +22,25 @@
         "Se o bloqueio superar o necessário para respeitar o teto de 2,0%, o excedente reduz o limite de gastos daquele ano, e essa redução não se acumula nos anos seguintes.",
         "Por fim, o Executivo fica autorizado a reduzir a compensação de tributos (quando a empresa usa créditos de um tributo para abater débitos de outro, regra do art. 74 da Lei 9.430/1996), até o valor equivalente ao que foi cortado ou bloqueado. Um ato do Executivo define os percentuais, que podem variar conforme o valor ou o tipo de crédito."
       ],
-      "senado": { "estado": "alterado", "nota": "Mantido, com ajustes. O bloqueio também não atinge o serviço da dívida, a pesquisa científica custeada por fundo próprio e o que a LDO ressalvar, e vale só para o Executivo. A parte da compensação de tributos (art. 6º-F) foi alvo de destaque na votação." }
+      "senado": {
+        "estado": "alterado",
+        "nota": "Mantido, com ajustes. O bloqueio também não atinge o serviço da dívida, a pesquisa científica custeada por fundo próprio e o que a LDO ressalvar, e vale só para o Executivo. O art. 6º-F (compensação de tributos) foi votado em separado a pedido do Republicanos e mantido (49 votos a 31). A emenda 83, da senadora Tereza Cristina (PP/MS), aprovada em 18/11, acrescentou que essa redução não vale para as compensações com créditos de PIS/Cofins da transição da reforma tributária (art. 378 da LC 214/2025)."
+      },
+      "traducao": "Imagine que a família prometeu sobrar R$ 1.000 no mês, aceitando errar até R$ 200 para baixo. Pelo texto, se a projeção do meio do mês já mostra que só vão sobrar R$ 800 (o piso da tolerância), o corte de gastos pode começar na hora, antes de a promessa ser quebrada: é o \"sinal amarelo\". O que pode ser segurado são gastos que o governo decide fazer ou adiar, como obras e compras de equipamentos. O que fica protegido são as obrigações da Constituição, como aposentadorias e os pisos de saúde e educação. Nos anos de aperto, o orçamento também cresce menos (2% em vez de até 2,5% acima da inflação). E a Receita pode limitar o uso de créditos de um imposto para abater outro."
     },
     {
       "n": "2º",
       "titulo": "Lei Kandir: repasses a estados e municípios",
       "resumo": "Até 2030, a União entrega R$ 1 bilhão por ano da compensação da Lei Kandir, e o restante fica para 2031 a 2037.",
       "explicacao": [
-        "A Lei Complementar 176/2020 prevê repasses da União a estados e municípios para compensar perdas da Lei Kandir (a lei que isentou as exportações de ICMS). Este artigo reduz a entrega anual para R$ 1 bilhão até 2030.",
+        "A Lei Complementar 176/2020 prevê repasses da União a estados e municípios para compensar perdas da Lei Kandir (a lei que isentou as exportações de ICMS). Segundo a justificativa de várias emendas, a entrega anual cairia de R$ 4 bilhões para R$ 1 bilhão até 2030, dentro de um total de R$ 58 bilhões.",
         "O montante total devido não muda. O que muda é o calendário: a diferença é paga mais tarde, até 2037. Com isso, o Governo gasta menos agora."
       ],
-      "senado": { "estado": "alterado", "nota": "A regra vale para 2027 a 2030, e a diferença não entregue é paga em parcelas anuais iguais do ano seguinte até 2037, somadas às entregas já previstas para esses anos." }
+      "senado": {
+        "estado": "alterado",
+        "nota": "A regra vale para 2027 a 2030, e a diferença não entregue é paga em parcelas anuais iguais do ano seguinte até 2037, somadas às entregas já previstas para esses anos."
+      },
+      "traducao": "A União deve a estados e municípios uma compensação por ter tirado o ICMS das exportações (Lei Kandir). Pela proposta, ela paga só R$ 1 bilhão por ano até 2030 e o restante depois, até 2037. A dívida total continua a mesma: é como esticar as parcelas. O governo gasta menos agora, e os estados e municípios recebem mais tarde."
     },
     {
       "n": "3º",
@@ -44,18 +52,26 @@
         "Quem defende a medida argumenta que despesas permanentes não devem depender de uma receita instável, que varia com o preço do petróleo. Quem critica argumenta que o piso dessas áreas passa a crescer menos.",
         "O artigo também prevê que, a partir de 2028, as hipóteses dos incisos I e II do art. 14 da Lei Complementar 235/2026 (que o projeto não reproduz) vêm acompanhadas de redução equivalente no limite de despesas."
       ],
-      "senado": { "estado": "alterado", "nota": "Mantido. Foi acrescentada uma exceção: o aporte ao Fundo Constitucional do Distrito Federal continua corrigido pela receita corrente líquida." }
+      "senado": {
+        "estado": "alterado",
+        "nota": "Mantido. Foi acrescentada uma exceção: o aporte ao Fundo Constitucional do Distrito Federal continua corrigido pela receita corrente líquida."
+      },
+      "traducao": "Algumas despesas são calculadas como uma fatia da arrecadação, como a saúde, que é 15% da receita corrente líquida. Se o imposto sobre a exportação de petróleo deixa de entrar nessa conta, a base fica menor, e a fatia cresce menos nos anos em que o petróleo render. Não é tirar dinheiro que já existe, e sim reduzir o quanto o piso aumentaria. A discussão é se essa receita instável deve ou não sustentar gastos permanentes."
     },
     {
       "n": "4º",
       "titulo": "Corte de 20% em benefícios tributários",
       "resumo": "Isenções, alíquotas reduzidas e créditos tributários de empresas e setores são reduzidos em 20%.",
       "explicacao": [
-        "Benefícios tributários são descontos, isenções e regimes especiais que reduzem o imposto devido por certos setores. A Lei Complementar 224/2025 já tem regras para reduzi-los, e este artigo muda a forma de cálculo.",
+        "Benefícios tributários são descontos, isenções e regimes especiais que reduzem o imposto devido por certos setores. A Lei Complementar 224/2025 já reduz esses benefícios (segundo a justificativa de emendas, em 10%), e este artigo muda a forma de cálculo e amplia a redução para 20%.",
         "Isenção e alíquota zero passam a pagar 20% da alíquota padrão: quem tinha isenção total passa a pagar 20% do imposto normal. Alíquota reduzida passa a ser 80% da reduzida mais 20% da padrão. Reduções de base de cálculo e de tributo e créditos presumidos valem 80% do que valem hoje. Regimes que cobram um percentual da receita bruta têm esse percentual elevado em 20%.",
         "O efeito é aumentar a arrecadação, porque as empresas beneficiadas pagam mais imposto. Os benefícios deixam de existir apenas na parte cortada."
       ],
-      "senado": { "estado": "alterado", "nota": "Mantido, com exceções: a CPRB (desoneração da folha de pagamento), os incentivos para tecnologia da informação e semicondutores e os benefícios para compra de veículos por pessoas com deficiência ou com autismo." }
+      "senado": {
+        "estado": "alterado",
+        "nota": "Mantido, com exceções: a CPRB (desoneração da folha de pagamento), os incentivos para tecnologia da informação e semicondutores e os benefícios para compra de veículos por pessoas com deficiência ou com autismo."
+      },
+      "traducao": "Muitas empresas pagam menos imposto por descontos e regimes especiais. O projeto reduz esses descontos em 20%: quem tinha isenção total passa a pagar 20% do imposto normal. Para o governo, entra mais arrecadação. Para as empresas beneficiadas, a conta de impostos sobe. O Senado deixou alguns setores de fora."
     },
     {
       "n": "5º",
@@ -65,7 +81,11 @@
         "O Fundo Nacional de Desenvolvimento Científico e Tecnológico (FNDCT, Lei 11.540/2007) financia ciência e tecnologia. O artigo permite que a lei orçamentária destine parte desses recursos a bolsas de estudo e de pesquisa no ensino superior, a auxílios ligados a elas e à formação e fixação de pessoal para o desenvolvimento científico.",
         "Na prática, parte do custo das bolsas pode sair desse fundo, em vez de sair do orçamento geral dos ministérios."
       ],
-      "senado": { "estado": "mantido", "nota": "Mantido sem mudanças (art. 5º do Substitutivo)." }
+      "senado": {
+        "estado": "mantido",
+        "nota": "Mantido sem mudanças (art. 5º do Substitutivo)."
+      },
+      "traducao": "O fundo de ciência e tecnologia pode pagar bolsas de estudo e de pesquisa nas universidades. Assim, parte desse custo sai do fundo, e não do orçamento comum dos ministérios."
     },
     {
       "n": "6º",
@@ -75,7 +95,11 @@
         "Despesas como as de pessoal, aposentadorias e benefícios assistenciais vêm da Constituição e crescem por regras próprias. O artigo exigiria que a Lei de Diretrizes Orçamentárias estimasse a variação dessas despesas para o ano e para os quatro seguintes.",
         "Junto com a estimativa, o Governo teria que apresentar um plano de medidas normativas e de gestão, inclusive de combate a fraudes, irregularidades e benefícios indevidos, para que esse crescimento convergisse com o do limite de gastos."
       ],
-      "senado": { "estado": "removido", "nota": "O Substitutivo do Senado não mantém este artigo." }
+      "senado": {
+        "estado": "removido",
+        "nota": "O Substitutivo do Senado não mantém este artigo."
+      },
+      "traducao": "O governo teria que explicar, todo ano, quanto devem crescer nos próximos quatro anos as despesas obrigatórias (como pessoal e aposentadorias) e o que fará para controlá-las, inclusive combatendo fraudes. Esse artigo saiu do texto do Senado."
     },
     {
       "n": "7º",
@@ -85,7 +109,11 @@
         "Quando alguém trabalha parte da vida no setor privado (INSS) e parte no setor público, os regimes de previdência acertam contas entre si. Essa compensação financeira é regulada pela Lei 9.796/1999.",
         "O artigo limita o que a União gasta com esses acertos a R$ 3 bilhões por ano entre 2027 e 2030, com correção anual pelo crescimento do limite de despesas."
       ],
-      "senado": { "estado": "mantido", "nota": "Mantido (art. 6º do Substitutivo). O destaque sobre o art. 7º original também foi votado em 18/11." }
+      "senado": {
+        "estado": "mantido",
+        "nota": "Mantido (art. 6º do Substitutivo). Foi votado em separado a pedido da liderança do PL (senador Izalci Lucas, PL/DF) e aprovado por 45 votos a 32."
+      },
+      "traducao": "Quando alguém trabalhou parte da vida no INSS e parte no serviço público, os dois sistemas de previdência acertam contas entre si. A proposta coloca um teto de R$ 3 bilhões por ano no que a União paga nesses acertos, de 2027 a 2030."
     },
     {
       "n": "8º",
@@ -94,7 +122,11 @@
       "explicacao": [
         "O artigo diz duas coisas: aplicar esta lei não cria obrigações futuras para a União, e as novas regras não atingem benefícios que já tenham sido concedidos pela legislação."
       ],
-      "senado": { "estado": "mantido", "nota": "Mantido (art. 7º do Substitutivo)." }
+      "senado": {
+        "estado": "mantido",
+        "nota": "Mantido (art. 7º do Substitutivo)."
+      },
+      "traducao": "É uma garantia: as regras novas não criam dívidas para o futuro e não tiram benefícios que já foram concedidos."
     },
     {
       "n": "9º",
@@ -104,17 +136,25 @@
         "A Lei de Responsabilidade Fiscal (art. 17) exige que despesas obrigatórias de caráter continuado venham acompanhadas de compensação. Este artigo diz que as medidas da Lei 10.823/2003 (subvenção ao seguro rural) aprovadas até a publicação desta lei já atendem a essa exigência, por causa do que a própria lei prevê.",
         "Também afasta a aplicação do art. 29 da Lei 15.321/2025 para esse caso."
       ],
-      "senado": { "estado": "alterado", "nota": "Mantido (art. 8º do Substitutivo), com ajuste na redação." }
+      "senado": {
+        "estado": "alterado",
+        "nota": "Mantido (art. 8º do Substitutivo), com ajuste na redação."
+      },
+      "traducao": "É uma regra de contabilidade. Certas medidas do seguro rural já aprovadas não precisam apresentar a compensação extra que a Lei de Responsabilidade Fiscal exigiria."
     },
     {
       "n": "10",
       "titulo": "Limite para um regime especial fiscal",
       "resumo": "Um regime especial da reforma tributária fica limitado ao valor previsto no orçamento de 2026, corrigido pelo IPCA.",
       "explicacao": [
-        "O art. 106 da Lei Complementar 214/2025, da reforma tributária, prevê um regime especial fiscal. O artigo limita o custo desse regime ao valor do demonstrativo de gastos tributários da lei orçamentária de 2026, corrigido a cada ano pelo IPCA.",
+        "O art. 106 da Lei Complementar 214/2025, da reforma tributária, trata do Regime Especial de Incentivos para o Desenvolvimento da Infraestrutura (Reidi). O artigo limita o custo desse regime ao valor do demonstrativo de gastos tributários da lei orçamentária de 2026, corrigido a cada ano pelo IPCA.",
         "Um comitê criado pelo Executivo define quais projetos são beneficiados dentro desse limite. Assim, o benefício não pode crescer além da inflação."
       ],
-      "senado": { "estado": "mantido", "nota": "Mantido (art. 9º do Substitutivo)." }
+      "senado": {
+        "estado": "mantido",
+        "nota": "Mantido (art. 9º do Substitutivo)."
+      },
+      "traducao": "Um regime especial da reforma tributária (o Reidi, para obras de infraestrutura) não pode custar mais do que o previsto no orçamento de 2026, mais a inflação. Ele não pode crescer além disso."
     },
     {
       "n": "11",
@@ -124,17 +164,25 @@
         "Fundos e outras fontes têm destino definido por lei, e o que sobra no fim do ano (superávit financeiro) normalmente só pode ser usado para aquela finalidade. O artigo autorizaria o Executivo a desvincular até 40% dessas sobras para custear obrigações constitucionais.",
         "Ficariam de fora vinculações constitucionais, repartição de receitas com estados e municípios, fundos de desenvolvimento social e recursos de seguridade social, saúde, educação e segurança pública."
       ],
-      "senado": { "estado": "removido", "nota": "O Substitutivo do Senado não mantém este artigo." }
+      "senado": {
+        "estado": "removido",
+        "nota": "O Substitutivo do Senado não mantém este artigo."
+      },
+      "traducao": "Fundos têm sobras no fim do ano, que normalmente só podem ser usadas no tema do fundo. O artigo deixaria o governo usar até 40% dessas sobras para pagar contas obrigatórias, menos as de saúde, educação e segurança. Esse artigo saiu do texto do Senado."
     },
     {
       "n": "12",
       "titulo": "Regulamentação do teto remuneratório (supersalários)",
-      "resumo": "O Congresso teria 120 dias para votar a lei que regulamenta o § 11 do art. 37 da Constituição, sobre o que entra no teto do funcionalismo.",
+      "resumo": "O Congresso teria 120 dias (no texto do Senado, 60) para votar a lei que regulamenta o § 11 do art. 37 da Constituição, sobre o que entra no teto do funcionalismo.",
       "explicacao": [
-        "O § 11 do art. 37 da Constituição lista parcelas que ficam fora do teto remuneratório do serviço público, e a lei que o regulamenta ainda não foi aprovada. O artigo dá 120 dias, contados da publicação, para o Congresso votar esse projeto.",
+        "O § 11 do art. 37 da Constituição lista parcelas que ficam fora do teto remuneratório do serviço público, e a lei que o regulamenta ainda não foi aprovada. O artigo dá 120 dias, contados da publicação, para o Congresso votar esse projeto. No turno suplementar, a emenda 90, do senador Alessandro Vieira (MDB/SE), reduziu esse prazo para 60 dias, e ela foi aprovada.",
         "A LDO deve mostrar a redução de valores que isso gerar. No texto original, essa economia reduz o limite de gastos e pode ir para investimentos ou para a segurança pública e o sistema socioeducativo."
       ],
-      "senado": { "estado": "alterado", "nota": "Art. 10 do Substitutivo. A economia no Executivo reduz o limite de gastos e pode ir para segurança pública. Nos demais Poderes e órgãos autônomos, a economia fica com eles, para recompor seus quadros, e o remanejamento de recursos entre Poderes é vedado." }
+      "senado": {
+        "estado": "alterado",
+        "nota": "Art. 10 do Substitutivo. A economia no Executivo reduz o limite de gastos e pode ir para segurança pública. Nos demais Poderes e órgãos autônomos, a economia fica com eles, e o remanejamento de recursos entre Poderes é vedado. O prazo para o Congresso votar a lei caiu para 60 dias (emenda 90, aprovada em 18/11)."
+      },
+      "traducao": "Alguns servidores recebem acima do teto do funcionalismo por causa de verbas \"indenizatórias\". A lei que diz o que pode ficar fora do teto ainda não existe. O projeto dá um prazo para o Congresso votá-la, e a economia reduz o limite de gastos do Executivo. Na versão do Senado, o prazo caiu de 120 para 60 dias."
     },
     {
       "n": "13",
@@ -143,7 +191,11 @@
       "explicacao": [
         "O Proex (Programa de Financiamento às Exportações, Lei 10.184/2001) cobre parte do custo dos juros de financiamentos a exportações brasileiras. O artigo limita o que a União gasta com essa equalização a R$ 1 bilhão por ano até 2030."
       ],
-      "senado": { "estado": "mantido", "nota": "Mantido (art. 11 do Substitutivo)." }
+      "senado": {
+        "estado": "mantido",
+        "nota": "Mantido (art. 11 do Substitutivo)."
+      },
+      "traducao": "O Proex ajuda empresas brasileiras a financiar vendas ao exterior. O governo só poderá gastar R$ 1 bilhão por ano com esse apoio até 2030."
     },
     {
       "n": "14",
@@ -153,7 +205,11 @@
         "A condição é que o resultado primário do ano anterior fique acima do limite inferior da meta e que o Governo tenha adotado as medidas de contenção do art. 6º-C. Nesse caso, o Executivo pode abrir, por ato próprio, crédito adicional para investimentos estruturantes.",
         "O crédito fica limitado ao valor que foi contido e não conta no limite de gastos, mas a meta de resultado primário do ano continua valendo."
       ],
-      "senado": { "estado": "alterado", "nota": "Art. 12 do Substitutivo. O texto passa a citar os investimentos definidos pelas bancadas estaduais no processo orçamentário." }
+      "senado": {
+        "estado": "alterado",
+        "nota": "Art. 12 do Substitutivo. O texto passa a citar os investimentos definidos pelas bancadas estaduais no processo orçamentário."
+      },
+      "traducao": "Se o governo apertou os gastos e o ano terminou melhor que o piso da meta, ele pode usar o valor que economizou para investimentos no ano seguinte, sem esse gasto entrar no limite de despesas."
     },
     {
       "n": "15",
@@ -163,7 +219,11 @@
         "A Medida Provisória 1.391/2026 criou uma subvenção econômica a produtores e importadores de óleo diesel para estabilizar preços de combustíveis. O artigo permite, em caráter excepcional em 2026, deduzir da meta de resultado primário as despesas dessa subvenção, até R$ 10,5 bilhões.",
         "O gasto continua existindo. A diferença é que ele deixa de pesar no cálculo de cumprimento da meta daquele ano. Segundo a justificativa do autor, a medida protege a população dos efeitos do conflito geopolítico em curso."
       ],
-      "senado": { "estado": "mantido", "nota": "Mantido (art. 13 do Substitutivo)." }
+      "senado": {
+        "estado": "mantido",
+        "nota": "Mantido (art. 13 do Substitutivo)."
+      },
+      "traducao": "O governo gastou com o subsídio ao diesel em 2026. O artigo permite não contar até R$ 10,5 bilhões desse gasto na hora de ver se a meta do ano foi cumprida. O gasto existe, mas não pesa na conta da meta."
     },
     {
       "n": "16",
@@ -173,7 +233,11 @@
         "Restos a pagar são despesas já empenhadas que não foram pagas até o fim do ano. O artigo vale para contratos, convênios, acordos e ajustes de vários anos em vigor em novembro de 2026: se os saldos forem bloqueados ou não liquidados, eles só podem ser cancelados depois de 31/12/2027, e os prazos para cumprir a cláusula suspensiva são prorrogados pelo mesmo período.",
         "Isso evita que obras e projetos em andamento percam o dinheiro empenhado durante um período de aperto."
       ],
-      "senado": { "estado": "alterado", "nota": "Art. 14 do Substitutivo. Passa a incluir também os termos de execução descentralizada." }
+      "senado": {
+        "estado": "alterado",
+        "nota": "Art. 14 do Substitutivo. Passa a incluir também os termos de execução descentralizada."
+      },
+      "traducao": "Obras e contratos de vários anos que já tinham dinheiro reservado: mesmo que o dinheiro seja bloqueado, o saldo só pode ser cancelado depois do fim de 2027. Isso dá tempo para o projeto continuar."
     },
     {
       "n": "17",
@@ -182,7 +246,11 @@
       "explicacao": [
         "A maior parte da lei entra em vigor na data da publicação. O art. 4º, que reduz benefícios tributários, tem prazos próprios: para tributos sujeitos à regra de noventena ou a prazo semelhante da Constituição, passa a valer no primeiro dia do quarto mês depois da publicação. Para os demais tributos, a partir de 1º de janeiro de 2027."
       ],
-      "senado": { "estado": "mantido", "nota": "Mantido (art. 15 do Substitutivo)." }
+      "senado": {
+        "estado": "mantido",
+        "nota": "Mantido (art. 15 do Substitutivo)."
+      },
+      "traducao": "A lei vale desde a publicação. A parte que reduz benefícios tributários segue os prazos da Constituição: em geral, 90 dias depois da publicação ou a partir de 1º de janeiro de 2027."
     }
   ],
   "faq": [
@@ -228,15 +296,1528 @@
   "congresso": {
     "intro": "O projeto é uma lei complementar (PLP): não muda a Constituição e precisa de maioria absoluta em cada Casa (257 votos na Câmara e 41 no Senado). Ele começou no Senado, e a Câmara agora é a Casa revisora.",
     "etapas": [
-      { "texto": "Projeto apresentado no Senado", "detalhe": "11/11/2026, com urgência aprovada no mesmo dia", "estado": "feito" },
-      { "texto": "Aprovado pelo Plenário do Senado", "detalhe": "18/11/2026, turno suplementar com 69 votos a favor, 2 contra e 1 abstenção. Enviado à Câmara.", "estado": "feito" },
-      { "texto": "Votação na Câmara dos Deputados", "detalhe": "Precisa de 257 votos. Se os deputados mudarem o texto, ele volta ao Senado.", "estado": "atual" },
-      { "texto": "Sanção presidencial e publicação", "estado": "pendente" }
+      {
+        "texto": "Projeto apresentado no Senado",
+        "detalhe": "11/11/2026, com urgência aprovada no mesmo dia",
+        "estado": "feito"
+      },
+      {
+        "texto": "Aprovado pelo Plenário do Senado",
+        "detalhe": "18/11/2026, turno suplementar com 69 votos a favor, 2 contra e 1 abstenção. Enviado à Câmara.",
+        "estado": "feito"
+      },
+      {
+        "texto": "Votação na Câmara dos Deputados",
+        "detalhe": "Precisa de 257 votos. Se os deputados mudarem o texto, ele volta ao Senado.",
+        "estado": "atual"
+      },
+      {
+        "texto": "Sanção presidencial e publicação",
+        "estado": "pendente"
+      }
     ],
     "nota": "O projeto ainda não é lei. A Câmara pode alterar o texto, inclusive retirar ou mudar medidas."
   },
   "fontes": [
-    { "nome": "Senado Federal: tramitação do PLP 299/2026", "url": "https://www25.senado.leg.br/web/atividade/materias/-/materia/176328" },
-    { "nome": "Congresso Nacional: PLP 299/2026", "url": "https://www.congressonacional.leg.br/materias/materias-bicamerais/-/ver/plp-299-2026" }
-  ]
+    {
+      "nome": "Senado Federal: tramitação do PLP 299/2026",
+      "url": "https://www25.senado.leg.br/web/atividade/materias/-/materia/176328"
+    },
+    {
+      "nome": "Congresso Nacional: PLP 299/2026",
+      "url": "https://www.congressonacional.leg.br/materias/materias-bicamerais/-/ver/plp-299-2026"
+    }
+  ],
+  "emendas": {
+    "titulo": "Emendas: o que foi proposto para mudar o texto",
+    "intro": "O projeto recebeu 92 emendas no Senado: 76 no primeiro turno (12/11) e 16 no turno suplementar (16 a 18/11). Para as emendas do primeiro turno, a fonte consultada não registra resultado individual: o Plenário votou o substitutivo do relator, que incorporou parte das sugestões. Veja abaixo as que foram decididas, os destaques e a lista completa.",
+    "principais": [
+      {
+        "n": 75,
+        "autor": "Eduardo Braga (MDB/AM), relator",
+        "titulo": "Substitutivo do relator",
+        "conteudo": "Reescreve o projeto, que passa de 17 para 15 artigos. Retira a desvinculação de 40% das sobras de fundos e a estimativa de despesas obrigatórias na LDO. Acrescenta ressalvas ao corte de benefícios tributários (CPRB, tecnologia da informação e semicondutores, veículos de pessoas com deficiência), ao bloqueio de gastos (serviço da dívida, pesquisa) e ao Fundo Constitucional do DF. Muda o calendário da Lei Kandir e protege a autonomia dos demais Poderes na regra dos supersalários.",
+        "resultado": "Aprovada em 12/11, por 45 votos a 31, com destaques. O texto final foi aprovado em 18/11, por 69 a 2, com 1 abstenção."
+      },
+      {
+        "n": 83,
+        "autor": "Tereza Cristina (PP/MS)",
+        "titulo": "Compensação de tributos e a reforma tributária",
+        "conteudo": "A redução da compensação de tributos (art. 6º-F) não vale para as compensações com os créditos de PIS/Cofins da transição da reforma tributária (art. 378 da LC 214/2025). A autora diz que esses créditos são uma garantia dada por lei complementar e não devem ser atingidos por ato do Executivo.",
+        "resultado": "Aprovada em 18/11, com subemenda do relator (o conteúdo da subemenda não está descrito na fonte consultada)."
+      },
+      {
+        "n": 90,
+        "autor": "Alessandro Vieira (MDB/SE)",
+        "titulo": "Prazo dos supersalários: 60 dias",
+        "conteudo": "Reduz de 120 para 60 dias o prazo para o Congresso votar a lei que regulamenta o § 11 do art. 37 da Constituição. O autor diz que o tema já foi objeto de várias proposições e condiciona a economia que o projeto espera obter.",
+        "resultado": "Aprovada em 18/11."
+      },
+      {
+        "n": 91,
+        "autor": "Alessandro Vieira (MDB/SE)",
+        "titulo": "Prestação de contas do resultado primário",
+        "conteudo": "Se o resultado primário do ano anterior, apurado pelo Banco Central, ficar abaixo de 0,5% do PIB, o Executivo apresenta ao Congresso as causas e as medidas previstas, na audiência pública da Lei de Responsabilidade Fiscal. Não muda a meta nem cria bloqueio automático.",
+        "resultado": "Aprovada em 18/11."
+      },
+      {
+        "n": 92,
+        "autor": "Eduardo Braga (MDB/AM), relator",
+        "titulo": "Ajustes de redação",
+        "conteudo": "Adequações de redação nos arts. 1º, 3º e 12 do substitutivo. O texto completo não está na lista de emendas dos dados abertos.",
+        "resultado": "Aprovada em 18/11."
+      },
+      {
+        "n": 40,
+        "autor": "Rogério Marinho (PL/RN)",
+        "titulo": "Texto alternativo, mais duro",
+        "conteudo": "Limita o crescimento real do gasto a 0,6% (e não 2,0%) nos anos de contenção, exige contenção até o centro da banda da meta, suprime o art. 6º-F e os arts. 2º, 7º, 14 e 15, e mantém a desvinculação de 40% de sobras de fundos. A justificativa fala em grave crise fiscal e dívida em patamar elevado.",
+        "resultado": "Destacada pela liderança do PL e rejeitada, por 30 votos a 47."
+      }
+    ],
+    "destaques": [
+      {
+        "alvo": "Art. 7º do projeto (compensação previdenciária, Lei 9.796)",
+        "autor": "Liderança do PL (Izalci Lucas, PL/DF)",
+        "resultado": "Votado em separado e aprovado, por 45 votos a 32. O dispositivo foi mantido."
+      },
+      {
+        "alvo": "Art. 6º-F da LC 200/2023 (compensação de tributos)",
+        "autor": "Liderança do Republicanos (Alan Rick, Republicanos/AC)",
+        "resultado": "Votado em separado e aprovado, por 49 votos a 31. O dispositivo foi mantido."
+      },
+      {
+        "alvo": "Art. 2º (Lei Kandir)",
+        "autor": "Liderança do PL (Izalci Lucas, PL/DF)",
+        "resultado": "Retirado pelo autor, depois que o relator alterou o artigo no turno suplementar."
+      },
+      {
+        "alvo": "Emenda 40",
+        "autor": "Liderança do PL (Izalci Lucas, PL/DF)",
+        "resultado": "Rejeitada, por 30 votos a 47."
+      }
+    ],
+    "lista": [
+      {
+        "n": 1,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Alessandro Vieira",
+            "partido": "MDB",
+            "uf": "SE"
+          }
+        ],
+        "resumo": "Reescreve o art. 8º: a garantia de não afetar benefícios vale só para os previdenciários e assistenciais, e não para os incentivos tributários do art. 4º.",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/531a5911-8467-42a5-9fd7-71e8c13c5edf"
+      },
+      {
+        "n": 2,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Alessandro Vieira",
+            "partido": "MDB",
+            "uf": "SE"
+          }
+        ],
+        "resumo": "Suprime o art. 14 (crédito para investimentos): diz que ele só passa a contenção de um ano para o outro e anula o efeito fiscal.",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/36b39045-bc88-4200-99c1-76056d96b5c5"
+      },
+      {
+        "n": 3,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Alessandro Vieira",
+            "partido": "MDB",
+            "uf": "SE"
+          }
+        ],
+        "resumo": "Suprime o art. 15 (diesel fora da meta de 2026).",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/ddf22bc5-b809-4aee-bf5c-6b0601471e71"
+      },
+      {
+        "n": 4,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Otto Alencar",
+            "partido": "PSD",
+            "uf": "BA"
+          }
+        ],
+        "resumo": "Suprime o art. 6º-F (compensação de tributos).",
+        "resultado": "Retirada pelo autor",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/2536446f-e540-46f4-ba41-35411ecd995e"
+      },
+      {
+        "n": 5,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Sergio Moro",
+            "partido": "PL",
+            "uf": "PR"
+          }
+        ],
+        "resumo": "Tira o lucro presumido do aumento de 20% nos percentuais de presunção (inciso VII do § 4º do art. 4º da LC 224/2025).",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/ddbb0077-1a92-43a7-a1f6-dd6de374c5cd"
+      },
+      {
+        "n": 6,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Sergio Moro",
+            "partido": "PL",
+            "uf": "PR"
+          }
+        ],
+        "resumo": "Suprime o art. 4º (redução de benefícios tributários de 10% para 20%).",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/81b9043e-7568-41ac-bda7-26c28949dfe8"
+      },
+      {
+        "n": 7,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Sergio Moro",
+            "partido": "PL",
+            "uf": "PR"
+          }
+        ],
+        "resumo": "Suprime o art. 6º-F (compensação de tributos).",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/8d38663c-0a75-47cc-b967-e5ae8e7be447"
+      },
+      {
+        "n": 8,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Alessandro Vieira",
+            "partido": "MDB",
+            "uf": "SE"
+          }
+        ],
+        "resumo": "Cria metas de resultado primário para quatro anos, fixadas na LDO do primeiro ano de cada mandato presidencial.",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/79d735cc-53bc-4eab-afb6-e6e17c6d5a84"
+      },
+      {
+        "n": 9,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Alessandro Vieira",
+            "partido": "MDB",
+            "uf": "SE"
+          }
+        ],
+        "resumo": "Cria regras (arts. 6º-G a 6º-M) para quando a meta de resultado primário do ano for descumprida.",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/d2f7fdb7-abce-49ff-8b14-6ef9b98f8de9"
+      },
+      {
+        "n": 10,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Zequinha Marinho",
+            "partido": "PODE",
+            "uf": "PA"
+          }
+        ],
+        "resumo": "Art. 15 (diesel): subvenção no mesmo valor por litro para o produtor nacional e o importador, sem excluir o produtor nacional.",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/3472068d-da40-4a6d-87c5-083c807c2bd0"
+      },
+      {
+        "n": 11,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Randolfe Rodrigues",
+            "partido": "PT",
+            "uf": "AP"
+          }
+        ],
+        "resumo": "Art. 16: inclui os termos de execução descentralizada entre os contratos com restos a pagar protegidos.",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/32dafbee-c0d6-4fe0-afd9-346bb495baee"
+      },
+      {
+        "n": 12,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Luis Carlos Heinze",
+            "partido": "PP",
+            "uf": "RS"
+          }
+        ],
+        "resumo": "Art. 15 (diesel): subvenção no mesmo valor por litro para o produtor nacional e o importador, com revisão periódica do valor.",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/6025cf4a-8653-4ad8-a5c8-e5219f353eab"
+      },
+      {
+        "n": 13,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Damares Alves",
+            "partido": "REPUBLICANOS",
+            "uf": "DF"
+          }
+        ],
+        "resumo": "Preserva os benefícios tributários na compra de veículos por pessoas com deficiência e com transtorno do espectro autista.",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/aa8bf6c5-a472-4446-8f75-a0cd00cd8034"
+      },
+      {
+        "n": 14,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Damares Alves",
+            "partido": "REPUBLICANOS",
+            "uf": "DF"
+          }
+        ],
+        "resumo": "Protege o Fundo Constitucional do Distrito Federal (FCDF) das vedações do art. 3º e garante o cálculo integral do aporte.",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/2ef77f28-7d21-49ac-b74e-8fd596fd6753"
+      },
+      {
+        "n": 15,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Jader Barbalho",
+            "partido": "MDB",
+            "uf": "PA"
+          }
+        ],
+        "resumo": "Art. 5º (fundo de ciência): dá prioridade a bioeconomia, biotecnologia, clima, mineração sustentável, transição energética e saúde tropical.",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/d6e46b2e-ebb2-466b-b4ad-d54f44bc50be"
+      },
+      {
+        "n": 16,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Jader Barbalho",
+            "partido": "MDB",
+            "uf": "PA"
+          }
+        ],
+        "resumo": "Art. 14: o crédito para investimentos leva em conta os definidos pelas bancadas estaduais.",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/699c07c7-2a78-455e-8e77-7a492c2b971c"
+      },
+      {
+        "n": 17,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Jorge Seif",
+            "partido": "PL",
+            "uf": "SC"
+          }
+        ],
+        "resumo": "Art. 11: inclui a Defesa Nacional entre as áreas protegidas da desvinculação de sobras de fundos.",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/0bb84833-8ad6-4780-a466-cd0e79db8e38"
+      },
+      {
+        "n": 18,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Randolfe Rodrigues",
+            "partido": "PT",
+            "uf": "AP"
+          }
+        ],
+        "resumo": "Art. 6º-D: limita a redução ou o cancelamento de despesas ao Poder Executivo.",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/050e75c6-9bd9-4fa3-a740-e94fc4369fe7"
+      },
+      {
+        "n": 19,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Sergio Moro",
+            "partido": "PL",
+            "uf": "PR"
+          },
+          {
+            "nome": "Marcos Rogério",
+            "partido": "PL",
+            "uf": "RO"
+          },
+          {
+            "nome": "Oriovisto Guimarães",
+            "partido": "PSDB",
+            "uf": "PR"
+          }
+        ],
+        "resumo": "Suprime o art. 2º (Lei Kandir).",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/36815c1e-2475-498c-ae43-038dc7d40b60"
+      },
+      {
+        "n": 20,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Izalci Lucas",
+            "partido": "PL",
+            "uf": "DF"
+          }
+        ],
+        "resumo": "Exclui o aporte ao FCDF das vedações do art. 3º.",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/6ad6a9f9-fc9e-474d-905e-32d3dfe6cc23"
+      },
+      {
+        "n": 21,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Izalci Lucas",
+            "partido": "PL",
+            "uf": "DF"
+          }
+        ],
+        "resumo": "Art. 11: protege da desvinculação os recursos da administração tributária.",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/417c3956-f2d0-46ce-8eb9-8bbf1dd87c72"
+      },
+      {
+        "n": 22,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Izalci Lucas",
+            "partido": "PL",
+            "uf": "DF"
+          }
+        ],
+        "resumo": "Impede que as exclusões de receita do art. 3º alterem a apuração da receita corrente líquida (base do FCDF).",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/aa689318-a218-4ab5-ae33-2029e229f6f3"
+      },
+      {
+        "n": 23,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Izalci Lucas",
+            "partido": "PL",
+            "uf": "DF"
+          }
+        ],
+        "resumo": "Art. 11: a desvinculação não alcança os recursos do FCDF.",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/c23f4d53-8a70-4647-bebb-4700e5a94da6"
+      },
+      {
+        "n": 24,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Izalci Lucas",
+            "partido": "PL",
+            "uf": "DF"
+          }
+        ],
+        "resumo": "Art. 6º-D: o bloqueio de gastos não alcança os recursos do FCDF.",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/7617debf-ff0d-4469-9d5a-5a5d38b41d13"
+      },
+      {
+        "n": 25,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Izalci Lucas",
+            "partido": "PL",
+            "uf": "DF"
+          }
+        ],
+        "resumo": "Art. 2º: o novo calendário da Lei Kandir não pode reduzir os repasses federais ao Distrito Federal.",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/3312c0fc-fa5d-425d-90d4-92d2bd2bf3c4"
+      },
+      {
+        "n": 26,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Flávio Arns",
+            "partido": "PSB",
+            "uf": "PR"
+          }
+        ],
+        "resumo": "Suprime o art. 2º (Lei Kandir): diz que o ajuste deve recair sobre as contas da União, e não sobre as dos estados.",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/9092226a-e950-42d0-a585-2a16544983c6"
+      },
+      {
+        "n": 27,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Leany Lemos",
+            "partido": "PSB",
+            "uf": "DF"
+          }
+        ],
+        "resumo": "Muda o limite de dedução de despesas com saúde no imposto de renda (Lei 9.250/1995).",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/ab14b9bc-b66c-40c7-9b27-49b91f5a684a"
+      },
+      {
+        "n": 28,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Flávio Arns",
+            "partido": "PSB",
+            "uf": "PR"
+          },
+          {
+            "nome": "Mara Gabrilli",
+            "partido": "PSD",
+            "uf": "SP"
+          },
+          {
+            "nome": "Eduardo Gomes",
+            "partido": "PL",
+            "uf": "TO"
+          },
+          {
+            "nome": "Jorge Kajuru",
+            "partido": "PSB",
+            "uf": "GO"
+          },
+          {
+            "nome": "Confúcio Moura",
+            "partido": "MDB",
+            "uf": "RO"
+          },
+          {
+            "nome": "Romário",
+            "partido": "S/Partido",
+            "uf": "RJ"
+          },
+          {
+            "nome": "Carlos Viana",
+            "partido": "PSD",
+            "uf": "MG"
+          }
+        ],
+        "resumo": "Preserva do corte os benefícios para pessoas com deficiência na compra de veículos e os incentivos a doações e patrocínios dedutíveis.",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/fa14bf12-d387-4372-b8cf-e250967783a3"
+      },
+      {
+        "n": 29,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Alessandro Vieira",
+            "partido": "MDB",
+            "uf": "SE"
+          }
+        ],
+        "resumo": "Cria regra permanente (art. 14-B): o subsídio ao diesel sai da meta só quando o preço internacional subir acima de certos patamares.",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/1b79d177-8082-4bac-bc83-7c8d8cc23280"
+      },
+      {
+        "n": 30,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Angelo Coronel",
+            "partido": "REPUBLICANOS",
+            "uf": "BA"
+          }
+        ],
+        "resumo": "Preserva a redução do imposto de renda de empreendimentos nas áreas da Sudene e da Sudam.",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/363de011-72dc-4607-99b7-abe9dc8e2855"
+      },
+      {
+        "n": 31,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Plínio Valério",
+            "partido": "PSDB",
+            "uf": "AM"
+          }
+        ],
+        "resumo": "Art. 11: amplia as exceções à desvinculação de sobras de fundos.",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/dee1840c-e852-4cb2-bdda-2adc4e877354"
+      },
+      {
+        "n": 32,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Sérgio Petecão",
+            "partido": "PSD",
+            "uf": "AC"
+          }
+        ],
+        "resumo": "Art. 11: amplia as exceções à desvinculação de sobras de fundos (inclui a administração tributária).",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/69c948bc-d8c1-48e1-937c-1fae1c2d0c42"
+      },
+      {
+        "n": 33,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Alessandro Vieira",
+            "partido": "MDB",
+            "uf": "SE"
+          }
+        ],
+        "resumo": "Mantém só o art. 15 (diesel) e a vigência da lei; suprime os demais artigos.",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/b418d763-011e-430b-956f-bad5d52209d2"
+      },
+      {
+        "n": 34,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Izalci Lucas",
+            "partido": "PL",
+            "uf": "DF"
+          }
+        ],
+        "resumo": "Art. 15 (diesel): subvenção no mesmo valor por litro para o produtor nacional e o importador.",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/71321078-c8f2-47c9-b870-64f7b5285c65"
+      },
+      {
+        "n": 35,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Izalci Lucas",
+            "partido": "PL",
+            "uf": "DF"
+          }
+        ],
+        "resumo": "Suprime o art. 6º-F: diz que ele limita compensações sem teto, prazo ou critério definidos em lei.",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/ee8ccbe6-3814-459f-b0b1-d0be11272196"
+      },
+      {
+        "n": 36,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Izalci Lucas",
+            "partido": "PL",
+            "uf": "DF"
+          }
+        ],
+        "resumo": "Suprime o art. 4º (corte de benefícios tributários de 10% para 20%).",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/f43280a3-08a3-4063-8d09-21b3777daabc"
+      },
+      {
+        "n": 37,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Izalci Lucas",
+            "partido": "PL",
+            "uf": "DF"
+          }
+        ],
+        "resumo": "Suprime o art. 3º (receita do imposto de exportação de petróleo).",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/2270c473-7a4a-4714-a69b-b935dc9f095d"
+      },
+      {
+        "n": 38,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Eduardo Gomes",
+            "partido": "PL",
+            "uf": "TO"
+          }
+        ],
+        "resumo": "Art. 11: ajusta as exceções à desvinculação de sobras de fundos.",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/ad2e9117-fc92-4ea9-a33b-4b8c639cabea"
+      },
+      {
+        "n": 39,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Eduardo Gomes",
+            "partido": "PL",
+            "uf": "TO"
+          }
+        ],
+        "resumo": "Art. 11: ajusta as exceções à desvinculação de sobras de fundos.",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/df12599c-af46-4534-bfe4-79432b0ebe1d"
+      },
+      {
+        "n": 40,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Rogerio Marinho",
+            "partido": "PL",
+            "uf": "RN"
+          }
+        ],
+        "resumo": "Reescreve o projeto: limita o crescimento real do gasto a 0,6% (e não 2,0%) nos anos de contenção, exige contenção até o centro da banda da meta, suprime o art. 6º-F e os arts. 2º, 7º, 14 e 15, e mantém a desvinculação de 40% de sobras de fundos.",
+        "resultado": "Rejeitada (30 a 47)",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/59ec1c44-38f4-4ca5-90b1-0cb904109a9d"
+      },
+      {
+        "n": 41,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Eduardo Gomes",
+            "partido": "PL",
+            "uf": "TO"
+          }
+        ],
+        "resumo": "Art. 12 (supersalários): ajusta o destino da economia e proíbe remanejar recursos entre Poderes.",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/601a6c33-8ba4-471c-ab78-446a18c4a04f"
+      },
+      {
+        "n": 42,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Tereza Cristina",
+            "partido": "PP",
+            "uf": "MS"
+          }
+        ],
+        "resumo": "Reescreve o art. 6º-D (quais despesas podem ser reduzidas) e seu parágrafo único.",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/8f84cfcf-ad1b-4f29-9fd4-a9ef8122c3a4"
+      },
+      {
+        "n": 43,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Romário",
+            "partido": "S/Partido",
+            "uf": "RJ"
+          }
+        ],
+        "resumo": "Preserva a Lei de Incentivo ao Esporte do corte de benefícios tributários.",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/64795385-c595-471d-bc56-f2137b10ade0"
+      },
+      {
+        "n": 44,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Laércio Oliveira",
+            "partido": "PP",
+            "uf": "SE"
+          }
+        ],
+        "resumo": "Reescreve o art. 6º-F: limites percentuais para a compensação de tributos, com limite global e regras em sete parágrafos.",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/3effcbe2-6194-41f5-83cb-95fecef180c4"
+      },
+      {
+        "n": 45,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Laércio Oliveira",
+            "partido": "PP",
+            "uf": "SE"
+          }
+        ],
+        "resumo": "Preserva do aumento de 20% a CPRB (transporte rodoviário de cargas, de passageiros e metroferroviário).",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/ccf958d5-6768-4ea5-b3a4-01c3a63dfd26"
+      },
+      {
+        "n": 46,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Laércio Oliveira",
+            "partido": "PP",
+            "uf": "SE"
+          }
+        ],
+        "resumo": "Impede que o corte de benefícios alcance regimes da CBS (como a alíquota zero do transporte).",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/7afbacd5-cf89-46ae-8fc6-16edb0b557d3"
+      },
+      {
+        "n": 47,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Laércio Oliveira",
+            "partido": "PP",
+            "uf": "SE"
+          }
+        ],
+        "resumo": "Preserva as atividades de transporte com presunção de 8% no lucro presumido.",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/4c50a984-ecb4-4ee5-a2eb-8716aded8137"
+      },
+      {
+        "n": 48,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Laércio Oliveira",
+            "partido": "PP",
+            "uf": "SE"
+          }
+        ],
+        "resumo": "Art. 6º-F: a redução não alcança créditos remanescentes de PIS/Cofins nem contribuintes sem débitos em aberto, e o saldo é corrigido pela Selic.",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/05a2a7fa-50bf-408a-a532-1a65dbbe9acf"
+      },
+      {
+        "n": 49,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Magno Malta",
+            "partido": "PL",
+            "uf": "ES"
+          }
+        ],
+        "resumo": "Suprime o art. 2º (Lei Kandir).",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/bb3a426d-d939-4b3a-b6c8-efc1003f435f"
+      },
+      {
+        "n": 50,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Alan Rick",
+            "partido": "REPUBLICANOS",
+            "uf": "AC"
+          }
+        ],
+        "resumo": "Suprime o art. 6º-F (compensação de tributos).",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/29c53c80-debc-488e-a3d0-56c45413226f"
+      },
+      {
+        "n": 51,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Nelsinho Trad",
+            "partido": "PSD",
+            "uf": "MS"
+          }
+        ],
+        "resumo": "Suprime o art. 2º (Lei Kandir).",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/51e427b1-f34a-4dee-89c9-96d124852f6e"
+      },
+      {
+        "n": 52,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Nelsinho Trad",
+            "partido": "PSD",
+            "uf": "MS"
+          }
+        ],
+        "resumo": "Suprime o art. 6º-F (compensação de tributos).",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/7c635a22-3206-4072-a0cd-f9693ae69496"
+      },
+      {
+        "n": 53,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Randolfe Rodrigues",
+            "partido": "PT",
+            "uf": "AP"
+          }
+        ],
+        "resumo": "Suprime o art. 6º (plano de convergência das despesas obrigatórias constitucionais).",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/6edc0f62-7ddf-4216-8496-0833f13c3b80"
+      },
+      {
+        "n": 54,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Luis Carlos Heinze",
+            "partido": "PP",
+            "uf": "RS"
+          }
+        ],
+        "resumo": "Art. 11: ajusta as exceções à desvinculação de sobras de fundos.",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/074df270-5ecf-4226-a7a2-1018ea5e0c69"
+      },
+      {
+        "n": 55,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Laércio Oliveira",
+            "partido": "PP",
+            "uf": "SE"
+          }
+        ],
+        "resumo": "Art. 10 (Reidi): critérios objetivos em lei, limite só para a CBS e proteção dos projetos e contratos já habilitados.",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/ab200651-dda9-4af6-958f-359a91f07bdf"
+      },
+      {
+        "n": 56,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Laércio Oliveira",
+            "partido": "PP",
+            "uf": "SE"
+          }
+        ],
+        "resumo": "Art. 17: o corte de benefícios (art. 4º) só valeria a partir de 1º/1/2028.",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/74becf02-ff5a-42e2-8689-7d6e9530a2ab"
+      },
+      {
+        "n": 57,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Renan Calheiros",
+            "partido": "MDB",
+            "uf": "AL"
+          }
+        ],
+        "resumo": "Documento em imagem: o conteúdo não pôde ser lido. Veja o texto na fonte.",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/ddd3809d-7a41-4134-b2b6-ad8c4b595a2c"
+      },
+      {
+        "n": 58,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Astronauta Marcos Pontes",
+            "partido": "PL",
+            "uf": "SP"
+          }
+        ],
+        "resumo": "Art. 11: ajusta as exceções à desvinculação de sobras de fundos (emenda ligada ao FNDCT).",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/1f5ec4c2-34d2-450e-a82e-0dc39b0b38ef"
+      },
+      {
+        "n": 59,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Humberto Costa",
+            "partido": "PT",
+            "uf": "PE"
+          }
+        ],
+        "resumo": "Art. 12: até a lei dos supersalários, veda pagar parcelas indenizatórias fora do teto e limita o valor ao empenhado em 2026.",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/fc14f64e-ffec-44e0-82fe-c1597e05e86c"
+      },
+      {
+        "n": 60,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Giordano",
+            "partido": "PODE",
+            "uf": "SP"
+          }
+        ],
+        "resumo": "Art. 6º-F: a redução não alcança créditos de benefícios fiscais concedidos por prazo e condições determinados.",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/13570e8b-0383-497d-a567-f77975aabb63"
+      },
+      {
+        "n": 61,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Lucas Barreto",
+            "partido": "PSD",
+            "uf": "AP"
+          }
+        ],
+        "resumo": "Art. 11: ajusta as exceções à desvinculação de sobras de fundos.",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/6d40c626-58be-405c-994e-9dc64e8ae1e2"
+      },
+      {
+        "n": 62,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Lucas Barreto",
+            "partido": "PSD",
+            "uf": "AP"
+          }
+        ],
+        "resumo": "Art. 12 (supersalários): ajusta o destino da economia e proíbe remanejar recursos entre Poderes.",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/d25463ab-2afa-4c1e-80ca-04b38e0ac598"
+      },
+      {
+        "n": 63,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Magno Malta",
+            "partido": "PL",
+            "uf": "ES"
+          }
+        ],
+        "resumo": "Suprime o art. 4º (corte de benefícios tributários).",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/6c670fae-4aed-4222-bdf3-00d1490aa2a8"
+      },
+      {
+        "n": 64,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Magno Malta",
+            "partido": "PL",
+            "uf": "ES"
+          }
+        ],
+        "resumo": "Suprime o art. 6º-F (compensação de tributos).",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/e23dbed3-233c-4dc8-99ad-4e69dc1a80e6"
+      },
+      {
+        "n": 65,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Wellington Fagundes",
+            "partido": "PL",
+            "uf": "MT"
+          }
+        ],
+        "resumo": "Suprime o art. 2º (Lei Kandir).",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/bfcf075f-8916-4159-8a5f-fa283d1c8c8d"
+      },
+      {
+        "n": 66,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Wellington Fagundes",
+            "partido": "PL",
+            "uf": "MT"
+          }
+        ],
+        "resumo": "Tira o transporte de cargas do aumento da presunção no lucro presumido.",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/c96d443a-1431-460e-a966-0756b980c08a"
+      },
+      {
+        "n": 67,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Wellington Fagundes",
+            "partido": "PL",
+            "uf": "MT"
+          }
+        ],
+        "resumo": "Suprime o art. 10 (limite do Reidi).",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/d4fc1036-7daf-4e65-942f-cda18f5496a3"
+      },
+      {
+        "n": 68,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Wellington Fagundes",
+            "partido": "PL",
+            "uf": "MT"
+          }
+        ],
+        "resumo": "Suprime o art. 6º-F (compensação de tributos).",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/c8350c77-2849-47e9-9b8f-fa8e90d181ad"
+      },
+      {
+        "n": 69,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Tereza Cristina",
+            "partido": "PP",
+            "uf": "MS"
+          }
+        ],
+        "resumo": "Reescreve o art. 6º-D e acrescenta parágrafo único.",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/c4ad61e9-71ad-41e4-90ca-b8f87fcccdee"
+      },
+      {
+        "n": 70,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Astronauta Marcos Pontes",
+            "partido": "PL",
+            "uf": "SP"
+          }
+        ],
+        "resumo": "Art. 12-A (bolsas do FNDCT): foca em iniciação científica, pós-graduação, pós-doutorado e fixação de pesquisadores, ligadas a projetos.",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/f9fdbfa4-65df-455c-b85c-c592e43ff2d8"
+      },
+      {
+        "n": 71,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Efraim Filho",
+            "partido": "PL",
+            "uf": "PB"
+          }
+        ],
+        "resumo": "Art. 11: ajusta as exceções à desvinculação de sobras de fundos.",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/d1ae0a10-e2e7-4045-af89-f723a71ba58e"
+      },
+      {
+        "n": 72,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Leany Lemos",
+            "partido": "PSB",
+            "uf": "DF"
+          }
+        ],
+        "resumo": "Impede que as exclusões de receita do art. 3º alterem a apuração da receita corrente líquida (base do FCDF).",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/9aae21c7-08b9-4a91-a341-a5781c42ef5a"
+      },
+      {
+        "n": 73,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Alan Rick",
+            "partido": "REPUBLICANOS",
+            "uf": "AC"
+          }
+        ],
+        "resumo": "Art. 12 (supersalários): ajusta o destino da economia.",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/ba8ff040-ca64-4ce6-8a08-2bcd0e8ed421"
+      },
+      {
+        "n": 74,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Efraim Filho",
+            "partido": "PL",
+            "uf": "PB"
+          }
+        ],
+        "resumo": "Lucro presumido: aplica o corte apenas aos benefícios específicos efetivamente usados.",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/133f2887-c85d-4bc1-b0fb-81e8166b2152"
+      },
+      {
+        "n": 75,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Eduardo Braga",
+            "partido": "MDB",
+            "uf": "AM"
+          }
+        ],
+        "resumo": "Substitutivo do relator: reescreve o projeto (15 artigos).",
+        "resultado": "Aprovada",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/d262286e-9b74-4b02-9dcb-c15a08f194b2"
+      },
+      {
+        "n": 76,
+        "turno": "normal",
+        "data": "2026-11-12",
+        "autores": [
+          {
+            "nome": "Wilder Morais",
+            "partido": "PL",
+            "uf": "GO"
+          }
+        ],
+        "resumo": "Reescreve o art. 4º (benefícios tributários) com regras para o lucro presumido.",
+        "resultado": "",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/85c07405-2274-43ac-aed7-95f43415dac9"
+      },
+      {
+        "n": 77,
+        "turno": "suplementar",
+        "data": "2026-11-16",
+        "autores": [
+          {
+            "nome": "Alessandro Vieira",
+            "partido": "MDB",
+            "uf": "SE"
+          }
+        ],
+        "resumo": "Cria piso de resultado primário (0,5% do PIB) a partir de 2027 e regras de ajuste (arts. 6º-G a 6º-P).",
+        "resultado": "Rejeitada",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/ddc3fa9e-25d6-4215-99a2-efb3528e5343"
+      },
+      {
+        "n": 78,
+        "turno": "suplementar",
+        "data": "2026-11-16",
+        "autores": [
+          {
+            "nome": "Alessandro Vieira",
+            "partido": "MDB",
+            "uf": "SE"
+          }
+        ],
+        "resumo": "Art. 10, § 3º: a economia dos supersalários nos demais Poderes reduz o limite deles e vai para o Executivo, para saúde e assistência social.",
+        "resultado": "Rejeitada",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/db8baf2c-aa00-481e-ad5d-53994c3c2572"
+      },
+      {
+        "n": 79,
+        "turno": "suplementar",
+        "data": "2026-11-17",
+        "autores": [
+          {
+            "nome": "Leany Lemos",
+            "partido": "PSB",
+            "uf": "DF"
+          }
+        ],
+        "resumo": "Muda a dedução de despesas com saúde no imposto de renda (Lei 9.250/1995).",
+        "resultado": "Prejudicada",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/92bda5d7-975b-472d-9a73-d550a1587d31"
+      },
+      {
+        "n": 80,
+        "turno": "suplementar",
+        "data": "2026-11-17",
+        "autores": [
+          {
+            "nome": "Wilder Morais",
+            "partido": "PL",
+            "uf": "GO"
+          }
+        ],
+        "resumo": "Suprime o art. 6º-D (quais despesas podem ser reduzidas ou bloqueadas).",
+        "resultado": "Rejeitada",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/cc4c94a5-4638-415f-875a-fc286d812f30"
+      },
+      {
+        "n": 81,
+        "turno": "suplementar",
+        "data": "2026-11-17",
+        "autores": [
+          {
+            "nome": "Alessandro Vieira",
+            "partido": "MDB",
+            "uf": "SE"
+          }
+        ],
+        "resumo": "Suprime o § 3º do art. 10 do substitutivo (economia dos supersalários nos demais Poderes).",
+        "resultado": "Rejeitada",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/0fd4d84d-96c3-4856-a111-9a25424bb24e"
+      },
+      {
+        "n": 82,
+        "turno": "suplementar",
+        "data": "2026-11-17",
+        "autores": [
+          {
+            "nome": "Wilder Morais",
+            "partido": "PL",
+            "uf": "GO"
+          }
+        ],
+        "resumo": "Suprime o art. 4º do substitutivo (corte de 20% em benefícios tributários).",
+        "resultado": "Prejudicada",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/61929a0f-ae0a-4a8b-a1d8-516d08d23980"
+      },
+      {
+        "n": 83,
+        "turno": "suplementar",
+        "data": "2026-11-17",
+        "autores": [
+          {
+            "nome": "Tereza Cristina",
+            "partido": "PP",
+            "uf": "MS"
+          }
+        ],
+        "resumo": "Art. 6º-F, § 2º: a redução da compensação não vale para créditos de PIS/Cofins da transição da reforma tributária (art. 378 da LC 214/2025).",
+        "resultado": "Aprovada, com subemenda do relator",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/89b619af-2546-489c-a4a1-880f5e8bdc1b"
+      },
+      {
+        "n": 84,
+        "turno": "suplementar",
+        "data": "2026-11-17",
+        "autores": [
+          {
+            "nome": "Humberto Costa",
+            "partido": "PT",
+            "uf": "PE"
+          }
+        ],
+        "resumo": "Art. 10: até a lei dos supersalários, veda pagar parcelas indenizatórias fora do teto e limita o valor ao empenhado em 2026.",
+        "resultado": "Prejudicada",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/49027870-37d3-4cf9-874d-587e9426b6f9"
+      },
+      {
+        "n": 85,
+        "turno": "suplementar",
+        "data": "2026-11-18",
+        "autores": [
+          {
+            "nome": "Humberto Costa",
+            "partido": "PT",
+            "uf": "PE"
+          }
+        ],
+        "resumo": "Art. 6º-F: a redução não alcança créditos de benefícios fiscais concedidos por prazo e condições determinados.",
+        "resultado": "Prejudicada",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/e560cc4f-0880-422f-95b9-28ffa43d1b4e"
+      },
+      {
+        "n": 86,
+        "turno": "suplementar",
+        "data": "2026-11-18",
+        "autores": [
+          {
+            "nome": "Astronauta Marcos Pontes",
+            "partido": "PL",
+            "uf": "SP"
+          }
+        ],
+        "resumo": "Art. 10: inclui a Defesa Nacional entre os destinos da economia dos supersalários.",
+        "resultado": "Rejeitada",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/a9dc04f3-9bf8-46e3-ab1c-661511187397"
+      },
+      {
+        "n": 87,
+        "turno": "suplementar",
+        "data": "2026-11-18",
+        "autores": [
+          {
+            "nome": "Carlos Portinho",
+            "partido": "PL",
+            "uf": "RJ"
+          }
+        ],
+        "resumo": "Art. 7º: o texto não afeta dotações da Segurança Pública e da Defesa Nacional.",
+        "resultado": "Rejeitada",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/d3b52284-af1d-4734-aaa9-b3c0e6580dd0"
+      },
+      {
+        "n": 88,
+        "turno": "suplementar",
+        "data": "2026-11-18",
+        "autores": [
+          {
+            "nome": "Carlos Portinho",
+            "partido": "PL",
+            "uf": "RJ"
+          }
+        ],
+        "resumo": "Art. 4º: inclui o setor de defesa entre as ressalvas do corte de benefícios.",
+        "resultado": "Rejeitada",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/7ff4ebb4-3651-410e-9dd5-efb39e6ca408"
+      },
+      {
+        "n": 89,
+        "turno": "suplementar",
+        "data": "2026-11-18",
+        "autores": [
+          {
+            "nome": "Carlos Portinho",
+            "partido": "PL",
+            "uf": "RJ"
+          }
+        ],
+        "resumo": "Art. 10: inclui a Defesa Nacional e retira o prazo de 120 dias.",
+        "resultado": "Rejeitada",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/103c125c-a547-4775-b164-9619e4e4450a"
+      },
+      {
+        "n": 90,
+        "turno": "suplementar",
+        "data": "2026-11-18",
+        "autores": [
+          {
+            "nome": "Alessandro Vieira",
+            "partido": "MDB",
+            "uf": "SE"
+          }
+        ],
+        "resumo": "Art. 10: reduz de 120 para 60 dias o prazo para o Congresso votar a lei dos supersalários.",
+        "resultado": "Aprovada",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/de393b66-b806-4f3b-82db-bca3d5e4aa99"
+      },
+      {
+        "n": 91,
+        "turno": "suplementar",
+        "data": "2026-11-18",
+        "autores": [
+          {
+            "nome": "Alessandro Vieira",
+            "partido": "MDB",
+            "uf": "SE"
+          }
+        ],
+        "resumo": "Cria um dever de prestação de contas: se o resultado primário do ano anterior ficar abaixo de 0,5% do PIB, o Executivo apresenta as causas e as medidas no Congresso.",
+        "resultado": "Aprovada",
+        "url": "https://legis.senado.leg.br/sdleg-getter/dadosabertos/documento/f15ea18e-2be5-4519-9f82-a693407e4795"
+      },
+      {
+        "n": 92,
+        "turno": "suplementar",
+        "data": "2026-11-18",
+        "autores": [
+          {
+            "nome": "Eduardo Braga",
+            "partido": "MDB",
+            "uf": "AM"
+          }
+        ],
+        "resumo": "Adequações de redação nos arts. 1º, 3º e 12 do substitutivo.",
+        "resultado": "Aprovada",
+        "url": ""
+      }
+    ]
+  }
 }
