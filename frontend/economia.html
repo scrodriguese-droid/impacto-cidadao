@@ -1135,8 +1135,16 @@ function nivel1(d) {
         <section aria-labelledby="nDef"><h2 id="nDef">Déficit primário × déficit nominal</h2>
         <div class="def-duo mt-3">
             <div><p class="def-rot">Primário</p><p>Receitas menos despesas, <b>sem contar os juros</b> da dívida. Mostra se o governo fecha as contas do dia a dia.</p></div>
-            <div><p class="def-rot">Nominal</p><p>O primário <b>mais os juros</b>. Mostra quanto precisa ser coberto com dívida nova (a “necessidade de financiamento”).</p></div>
-        </div>${ESQUEMA_FLUXO}</section>
+            <div><p class="def-rot">Nominal</p><p>O primário <b>mais os juros</b>. É também chamado de <b>necessidade de financiamento</b>, explicada logo abaixo.</p></div>
+        </div>
+        <h3 class="mt-6 font-bold">Necessidade de financiamento: o número que liga o ano à dívida</h3>
+        <div class="def-duo def-trio mt-2">
+            <div><p class="def-rot">O que é</p><p>É o quanto o governo precisa conseguir emprestado em um período, depois de pagar todas as despesas e os juros com a receita que tem. Se o nominal fecha em déficit de R$ 100, faltam R$ 100 para a conta fechar. Quando o resultado é positivo, o governo tem sobra e pode abater dívida.</p></div>
+            <div><p class="def-rot">Como é coberta</p><p>Principalmente pela venda de títulos públicos a investidores. Também podem entrar empréstimos e o uso de dinheiro em caixa ou de reservas. Tudo isso vira dívida, ou reduz o dinheiro guardado, e por isso é chamado de “financiamento”.</p></div>
+            <div><p class="def-rot">Por que é central</p><p>É a ligação entre o resultado do ano e o estoque da dívida: o déficit nominal de hoje se soma à dívida de amanhã, e essa dívida paga juros nos anos seguintes, que entram de novo no nominal. Por isso o Banco Central a acompanha de perto, em proporção do PIB.</p></div>
+        </div>
+        <p class="text-xs text-slate-500 mt-2" style="max-width:75ch">O Banco Central também a mede “por baixo”, pela variação da dívida líquida (aproximadamente, com ajustes como câmbio e privatizações). A medida “por cima” soma receitas, despesas e juros. Em teoria as duas chegam ao mesmo valor, e pequenas diferenças vêm da metodologia.</p>
+        ${ESQUEMA_FLUXO}</section>
         <section aria-labelledby="nDet"><h2 id="nDet">Os números por trás</h2>
         <p class="text-sm text-slate-500 mt-2" style="max-width:70ch">Abra uma gaveta por vez: o fluxo do ano (o que entrou e saiu) e o estoque da dívida (o que se acumulou).</p>
         <div class="mt-4">${situacaoDetalhe(d)}</div></section>
