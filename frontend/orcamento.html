@@ -31,6 +31,14 @@
         .lrf-cx h4 { font: 800 .8rem/1.3 var(--fonte-texto); letter-spacing: .08em; text-transform: uppercase; margin-bottom: .45rem; }
         .lrf-cx ul { list-style: none; padding: 0; display: grid; gap: .55rem; }
         .lrf-rodape { margin-top: .8rem; padding-top: .5rem; border-top: 1px solid var(--line); font-size: .78rem; line-height: 1.5; color: var(--muted); }
+        .lrf-grade--2 { grid-template-columns: minmax(0, 1fr); }
+        @media (min-width: 860px) { .lrf-grade--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+        .lrf-cx p + ul { margin-top: .6rem; }
+        .lrf-conclusao { margin-top: .9rem; padding: .75rem .95rem; border-left: 6px solid var(--vermelho); background: var(--papel-2, transparent); font-size: .9rem; line-height: 1.55; max-width: 80ch; }
+        .lrf-lead--curto { font-size: .9rem; margin-bottom: .2rem; }
+        .lrf-tab tbody th span { display: block; margin-top: .2rem; font-weight: 600; letter-spacing: 0; color: var(--muted); text-transform: none; }
+        .lrf-dilema { margin-top: 1.4rem; padding: 1rem 1.1rem; border: 2px solid var(--fg); }
+        .lrf-dilema p:last-child { margin-top: .4rem; font-size: .95rem; line-height: 1.55; max-width: 80ch; }
         .lrf-tab-wrap { overflow-x: auto; margin-top: .9rem; }
         .lrf-tab { width: 100%; min-width: 34rem; border-collapse: collapse; border: 2px solid var(--line); font-size: .86rem; line-height: 1.55; }
         .lrf-tab th, .lrf-tab td { text-align: left; vertical-align: top; padding: .6rem .8rem; border-bottom: 1px solid var(--line); }
@@ -97,6 +105,54 @@
                     <td>Multa de 30% dos vencimentos anuais, por infração administrativa (Lei 10.028/2000). Crimes contra as finanças públicas, com pena de detenção ou reclusão (Código Penal, arts. 359-A a 359-H). Crime de responsabilidade, que pode levar à perda do cargo e à inabilitação por até 5 anos para função pública. Condenações e contas rejeitadas por irregularidade insanável também podem gerar inelegibilidade (Lei da Ficha Limpa).</td></tr>
             </tbody></table></div>
         <p class="lrf-nota">As penas dependem de decisão do Tribunal de Contas, do Legislativo ou da Justiça, caso a caso. Fonte: <a class="underline" target="_blank" rel="noopener" href="https://www.planalto.gov.br/ccivil_03/leis/lcp/lcp101.htm">Lei Complementar 101/2000, no Planalto</a>.</p>
+    </section>
+
+    <!-- ========================= A2. CONTRADIÇÕES ESTRUTURAIS ========================= -->
+    <section class="lrf mt-8" aria-labelledby="tContra">
+        <p class="lrf-kicker">O outro lado da conta</p>
+        <h2 id="tContra" class="lrf-titulo">Contradições estruturais do orçamento público</h2>
+        <p class="lrf-lead">O orçamento federal tem duas forças que puxam em direções opostas: regras que exigem equilíbrio das contas e gastos garantidos pela Constituição e por leis, que crescem por conta própria. Entender esse cabo de guerra explica por que o ajuste costuma cair sobre os mesmos itens.</p>
+
+        <h3 class="lrf-bloco"><b>1</b> Por que o bloqueio costuma cair sobre os investimentos</h3>
+        <div class="lrf-grade lrf-grade--2">
+            <article class="lrf-cx lrf-cx--regra"><h4>Despesas obrigatórias: a maior parte</h4>
+                <p>Em torno de nove a cada dez reais da despesa primária federal já têm destino definido pela Constituição ou por lei. O governo não pode simplesmente deixar de pagar:</p>
+                <ul>
+                    <li><b>Previdência e benefícios.</b> Aposentadorias, pensões e o BPC/Loas.</li>
+                    <li><b>Pessoal.</b> Salários e aposentadorias de servidores civis e militares.</li>
+                    <li><b>Pisos constitucionais.</b> Gastos mínimos com saúde e educação.</li>
+                </ul>
+                <p class="lrf-rodape">Os juros da dívida não entram nessa conta: o resultado primário os exclui. Mas também têm de ser pagos, e são a outra grande despesa que não se corta.</p></article>
+            <article class="lrf-cx lrf-cx--regra"><h4>Despesas discricionárias: o que sobra</h4>
+                <p>É a fatia em que o governo escolhe quanto gastar, e a única sobre a qual o bloqueio da LRF (contingenciamento) pode agir:</p>
+                <ul>
+                    <li><b>Custeio da máquina.</b> Energia, água, limpeza, passagens e bolsas de pesquisa.</li>
+                    <li><b>Investimentos.</b> Rodovias, ferrovias, hospitais, escolas, saneamento e equipamentos.</li>
+                    <li><b>Emendas parlamentares.</b> Parte delas é de execução obrigatória e também sai dessa fatia.</li>
+                </ul></article>
+        </div>
+        <p class="lrf-conclusao"><b>O efeito.</b> Quando a receita cai e a lei manda bloquear gastos para cumprir a meta, o corte só pode recair sobre a parte discricionária, e nela os investimentos são parte importante. Críticos apontam que isso reduz a infraestrutura e o crescimento futuro. Quem defende as regras responde que, sem elas, a dívida e os juros crescem mais, o que também reduz o espaço para investir.</p>
+
+        <h3 class="lrf-bloco"><b>2</b> Por que a LRF ganhou regras complementares</h3>
+        <p class="lrf-lead lrf-lead--curto">Em 2000, o Senado fixou limites de dívida para estados e municípios, mas nunca votou um limite para a dívida da União. Na década de 2000, o crescimento econômico e os superávits primários mantiveram a dívida federal sob controle. A partir da crise de 2014–2016, a receita caiu, as despesas obrigatórias seguiram subindo por reajustes automáticos e a dívida cresceu rápido. A meta anual da LDO podia ser alterada de um ano para o outro, e isso mostrou que ela sozinha não bastava como âncora. Vieram duas regras complementares:</p>
+        <div class="lrf-tab-wrap"><table class="lrf-tab">
+            <thead><tr><th scope="col">Regra</th><th scope="col">Como funciona</th><th scope="col">Objetivo</th><th scope="col">Críticas</th></tr></thead>
+            <tbody>
+                <tr><th scope="row">Teto de gastos<br><span>EC 95/2016</span></th>
+                    <td>Limitou o crescimento da despesa primária da União à inflação do ano anterior, por até 20 anos. Os juros ficam fora do limite.</td>
+                    <td>Reduzir o gasto federal em relação ao PIB.</td>
+                    <td>As despesas obrigatórias, como as do INSS, cresciam acima da inflação e ocupavam o espaço dos investimentos. A regra foi alterada por emendas constitucionais (como as de 2021 e 2022).</td></tr>
+                <tr><th scope="row">Novo Arcabouço Fiscal<br><span>LC 200/2023</span></th>
+                    <td>Substituiu o teto. A despesa pode crescer acima da inflação, entre 0,6% e 2,5% ao ano, atrelada a 70% do crescimento da receita.</td>
+                    <td>Dar previsibilidade sem congelar o investimento: a lei prevê um piso para essa despesa.</td>
+                    <td>Ainda precisa conciliar a alta automática das despesas obrigatórias (previdência, saúde, educação) com o limite máximo de crescimento real.</td></tr>
+            </tbody></table></div>
+
+        <div class="lrf-dilema">
+            <p class="lrf-kicker">O dilema central</p>
+            <p>De um lado, a LRF e o Arcabouço Fiscal pedem contas equilibradas, para que a dívida e os juros não saiam de controle. Do outro, a Constituição de 1988 garante uma ampla rede de direitos sociais e gastos obrigatórios que crescem com o tempo. Como nenhum dos dois lados cede com facilidade, o ajuste tende a fechar sobre a parte que o governo pode escolher: custeio, ciência e investimentos.</p>
+        </div>
+        <p class="lrf-nota">Os números e o texto das regras estão em fontes oficiais: <a class="underline" target="_blank" rel="noopener" href="https://www.planalto.gov.br/ccivil_03/leis/lcp/lcp200.htm">Lei Complementar 200/2023</a> e, para a composição do orçamento, o <a class="underline" target="_blank" rel="noopener" href="https://www2.camara.leg.br/orcamento-da-uniao/raio-x-do-orcamento">Raio-X do Orçamento, da Câmara dos Deputados</a>.</p>
     </section>
 
     <div class="sticky top-16 z-30 -mx-4 sm:mx-0 px-4 sm:px-0 py-2 mt-3 bg-slate-50/90 dark:bg-slate-900/90 backdrop-blur">
