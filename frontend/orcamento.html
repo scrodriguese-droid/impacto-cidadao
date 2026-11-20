@@ -79,6 +79,23 @@
         .meta-chip--meta { border-left: 3px dashed var(--fg); width: 0; height: .8rem; }
         .meta-chip--real { border-left: 5px solid var(--vermelho); width: 0; height: .8rem; }
         .meta-nota { margin-top: .7rem; font-size: .76rem; line-height: 1.5; color: var(--muted); max-width: 80ch; }
+        .ciclo-abrir { display: flex !important; justify-content: space-between; align-items: baseline; gap: .5rem; width: 100%; text-align: left; background: transparent; border: 0; border-bottom: 2px solid transparent; padding: .1rem 0; color: inherit; cursor: pointer; }
+        .ciclo-abrir:hover { border-bottom-color: var(--fg); }
+        .ciclo-abrir:focus-visible { outline: 3px solid var(--vermelho); outline-offset: 2px; }
+        .ciclo-abrir-dica { flex: none; font: 800 .6rem/1.2 var(--fonte-texto); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+        .ciclo-abrir[aria-expanded="true"] { background: var(--fg); color: var(--papel); padding: .1rem .4rem; }
+        .ciclo-abrir[aria-expanded="true"] .ciclo-abrir-dica { color: var(--papel); }
+        .ciclo-abrir[aria-expanded="true"] .fa-chevron-down { transform: rotate(180deg); }
+        .pt-grade { display: grid; gap: .8rem; margin-top: .8rem; }
+        @media (min-width: 760px) { .pt-grade { grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); } }
+        .pt-item { border: 2px solid var(--line); padding: .8rem .95rem; }
+        .pt-rot { font: 800 .64rem/1.3 var(--fonte-texto); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+        .pt-rot span { font-weight: 600; letter-spacing: 0; text-transform: none; }
+        .pt-num { margin-top: .35rem; font-family: var(--fonte-titulo); font-size: 1.5rem; line-height: 1.1; }
+        .pt-txt { margin-top: .4rem; font-size: .82rem; line-height: 1.5; }
+        .pt-lista { margin: .5rem 0 0 1.1rem; padding: 0; list-style: decimal; font-size: .84rem; line-height: 1.5; }
+        .pt-lista li { margin-top: .25rem; }
+        .pt-aviso { margin-top: .8rem; font-size: .76rem; line-height: 1.5; color: var(--muted); max-width: 80ch; }
         .abas-orc { display: flex; flex-wrap: wrap; gap: 0; margin-top: 1.1rem; border-bottom: 3px solid var(--fg); }
         .abas-orc button { flex: 1 1 auto; padding: .65rem .9rem; font: 800 .74rem/1.2 var(--fonte-texto); letter-spacing: .08em; text-transform: uppercase; text-align: left; border: 2px solid var(--line); border-bottom: 0; margin-right: -2px; background: transparent; color: var(--muted); cursor: pointer; }
         .abas-orc button[aria-selected="true"] { background: var(--fg); color: var(--papel); border-color: var(--fg); }
@@ -421,7 +438,12 @@ function linhaDoTempo(r) {
     const nos = r.linha_do_tempo.map((n) => {
         // cinco linhas por cartão (nome, estado, situação e projeto, anatomia, fonte): assim as três colunas se alinham
         return `<li class="ciclo-no">
-            <p class="ciclo-cab font-bold"><i class="fa-solid ${IC_TIPO[n.tipo] || 'fa-file'} mr-1.5 text-slate-400" aria-hidden="true"></i>${esc(n.tipo)} <span class="font-normal text-slate-500 text-sm">${esc(n.periodo)}</span></p>
+            ${(() => {
+                const rot = `<i class="fa-solid ${IC_TIPO[n.tipo] || 'fa-file'} mr-1.5 text-slate-400" aria-hidden="true"></i>${esc(n.tipo)} <span class="font-normal text-sm">${esc(n.periodo)}</span>`;
+                return r.esfera === 'uniao'
+                    ? `<button type="button" class="ciclo-cab ciclo-abrir font-bold" data-tipo="${esc(n.tipo)}" aria-expanded="false" aria-controls="pontosLei"><span>${rot}</span><span class="ciclo-abrir-dica">Ver os pontos <i class="fa-solid fa-chevron-down" aria-hidden="true"></i></span></button>`
+                    : `<p class="ciclo-cab font-bold">${rot}</p>`;
+            })()}
             <p class="ciclo-estado"><span class="ciclo-dot ciclo-dot--${esc(n.estado)}" aria-hidden="true"></span>${esc(n.estado_rotulo)}</p>
             <div class="ciclo-sit">${n.detalhe ? `<p class="ciclo-det">${esc(n.detalhe)}</p>` : ''}${projetoCiclo(n.projeto)}</div>
             ${anatomiaCiclo(n.tipo)}
@@ -495,6 +517,46 @@ function cartaoProposta(r) {
         <p class="text-[11px] text-slate-400 mt-2">São os números da proposta do Governo: o Congresso pode alterá-la antes de aprovar.</p>`, 'mt-4');
 }
 
+/* Pontos principais do texto da lei (PPA e LDO vêm da API; a LOA usa o resumo da proposta que já vem com o ciclo) */
+function pontoItem(i) {
+    const cab = `<p class="pt-rot">${esc(i.rotulo)}${i.artigo ? ` <span>· ${esc(i.artigo)}</span>` : ''}</p>`;
+    if (i.lista) return `<div class="pt-item">${cab}<ol class="pt-lista">${i.lista.map((x) => `<li>${esc(x)}</li>`).join('')}</ol>${i.nota ? `<p class="pt-txt">${esc(i.nota)}</p>` : ''}</div>`;
+    return `<div class="pt-item">${cab}<p class="pt-num">${esc(i.valor)}</p><p class="pt-txt">${esc(i.texto)}</p></div>`;
+}
+function cartaoPontos(d) {
+    const nome = d.tipo === 'PPA' ? 'Plano Plurianual (PPA)' : 'Lei de Diretrizes Orçamentárias (LDO)';
+    return cartao(`<h3 class="font-bold">Principais pontos: ${esc(nome)}</h3>
+        <p class="text-xs text-slate-500">${esc(d.proposicao)}${d.virou_lei ? ' · já virou lei' : ' · ainda em votação no Congresso'}</p>
+        <div class="pt-grade">${d.itens.map(pontoItem).join('')}</div>
+        <p class="pt-aviso">${esc(d.aviso)}</p>
+        <p class="text-xs mt-2 space-x-3"><a class="underline text-brand-700 dark:text-brand-400" target="_blank" rel="noopener" href="${esc(urlSegura(d.url_texto))}">Ler o texto completo</a>
+            <a class="underline text-brand-700 dark:text-brand-400" target="_blank" rel="noopener" href="${esc(urlSegura(d.url_tramitacao))}">Acompanhar na Câmara</a></p>`, 'mt-4');
+}
+const _pontos = {};
+function ligarPontos(r) {
+    const botoes = [...document.querySelectorAll('.ciclo-abrir')];
+    const alvo = $('pontosLei');
+    let aberto = null;
+    async function mostrar(tipo) {
+        aberto = tipo;
+        botoes.forEach((b) => b.setAttribute('aria-expanded', String(b.dataset.tipo === tipo)));
+        if (!tipo) { alvo.innerHTML = ''; return; }
+        if (tipo === 'LOA') {
+            alvo.innerHTML = cartaoProposta(r) || cartao('<p class="text-sm text-slate-600 dark:text-slate-300">Não há projeto da LOA em votação agora.</p>', 'mt-4');
+            return;
+        }
+        alvo.innerHTML = carregando('Lendo o texto do projeto (na primeira vez pode levar alguns segundos)…');
+        try {
+            const d = _pontos[tipo] || (_pontos[tipo] = await api('/api/orcamento/pontos/' + tipo));
+            if (aberto === tipo) alvo.innerHTML = cartaoPontos(d);
+        } catch (e) {
+            if (aberto === tipo) alvo.innerHTML = cartao('<p class="text-sm text-slate-600 dark:text-slate-300">Não conseguimos ler os pontos deste documento agora. Use o link da tramitação no cartão para abrir o texto.</p>', 'mt-4');
+        }
+    }
+    botoes.forEach((b) => b.addEventListener('click', () => mostrar(aberto === b.dataset.tipo ? null : b.dataset.tipo)));
+    if (r.proposta) mostrar('LOA');
+}
+
 function cartaoLocal(r) {
     const o = r.orcamento_local;
     if (!o) {
@@ -542,7 +604,8 @@ async function carregarCiclo() {
     $('resCiclo').innerHTML = carregando('Consultando as fontes oficiais (na primeira vez, o texto do projeto do orçamento é lido do PDF e pode levar alguns segundos)…');
     try {
         const r = await api('/api/orcamento/ciclo/' + encodeURIComponent(ente));
-        $('resCiclo').innerHTML = linhaDoTempo(r) + (r.esfera === 'uniao' ? cartaoProposta(r) : cartaoLocal(r)) + detalhes(r);
+        $('resCiclo').innerHTML = linhaDoTempo(r) + (r.esfera === 'uniao' ? '<div id="pontosLei" aria-live="polite"></div>' : cartaoLocal(r)) + detalhes(r);
+        if (r.esfera === 'uniao') ligarPontos(r);
     } catch (e) { $('resCiclo').innerHTML = mensagemErro(e); }
 }
 
