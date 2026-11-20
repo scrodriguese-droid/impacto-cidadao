@@ -576,7 +576,63 @@ function situacaoDetalhe(d) {
     }
     return `<div id="sitDet">${seletor}<p class="escopo-nota">${nota}</p>${g1}${g2}${uniao ? gavetaReservas() : ''}${notasTecnicas(d, escopo)}</div>`;
 }
+/* ----- Painel analítico: do resultado do governo à dívida (texto gerado com os números que o site já puxa) ----- */
+function painelAnalitico(d) {
+    const uniao = d.esfera === 'uniao', escopo = uniao ? E.escopo : 'ente', sf = d.situacao_fiscal;
+    let prim, nom, juros, rec = null, desp = null, periodo, fonte, atorA, atorB;
+    if (escopo === 'consolidado') {
+        const f = sf && sf.fluxo && sf.fluxo.itens, j = sf && sf.custo && sf.custo.itens.find((i) => i.id === 'juros12');
+        const p = f && f.find((i) => i.id === 'primario'), n = f && f.find((i) => i.id === 'nominal');
+        if (!p || !n || !j || j.valor_rs == null) return '<p class="text-sm text-slate-500">As séries do Banco Central não responderam agora, então o painel não pôde ser montado.</p>';
+        prim = p.valor_rs; nom = n.valor_rs; juros = j.valor_rs; periodo = sf.fluxo.periodo; fonte = 'Banco Central do Brasil (séries do SGS)';
+        atorA = ['Setor público consolidado', 'União, estados, municípios e estatais somados. É o que o Banco Central usa para medir se o conjunto do governo fecha as contas.'];
+        atorB = ['Banco Central do Brasil', 'Guardião da moeda, independente do governo. Não paga salários: fixa a taxa básica de juros (Selic) e divulga as estatísticas da dívida.'];
+    } else {
+        const x = d.deficits, ff = d.fluxo_federal;
+        if (!x || x.primario.valor == null || x.nominal.valor == null) return '<p class="text-sm text-slate-500">Este ente não publicou os resultados do período, então o painel não pôde ser montado.</p>';
+        prim = x.primario.valor; nom = x.nominal.valor; juros = nom - prim; periodo = x.periodo; fonte = 'Tesouro Nacional (SICONFI, RREO)';
+        if (uniao && ff) { rec = ff.receita_primaria; desp = ff.despesa_primaria_paga; }
+        atorA = uniao ? ['Tesouro Nacional', 'É o caixa do Governo Federal. Responde ao Ministério da Fazenda, arrecada os tributos e paga as despesas, de salários a obras.']
+            : [esc(d.instituicao || 'O ente'), 'É o caixa do governo local: arrecada os tributos e paga as despesas, de salários a serviços públicos.'];
+        atorB = uniao ? ['A dívida pública', 'É onde a conta fecha: o que falta é financiado com títulos vendidos ao mercado. O custo desses títulos acompanha a Selic, fixada pelo Banco Central.']
+            : ['A dívida do ente', 'É onde a conta fecha: o que falta é coberto com dívida nova, e os juros dessa dívida entram na conta do ano seguinte.'];
+    }
+    const sinal = (v) => (v >= 0 ? '−' : '+'); // déficit aparece com sinal negativo
+    const linha = (s, rot, v) => `<div class="pa-lin"><span>[${s}] ${rot}</span><b>${brlCurto(Math.abs(v))}</b></div>`;
+    const resultado = -prim; // positivo = superávit
+    let extratoA = '';
+    if (rec != null && desp != null) {
+        const ajuste = resultado - (rec - desp);
+        extratoA = linha('+', 'Receitas primárias (tributos e outras)', rec) + linha('−', 'Despesas primárias pagas', desp)
+            + (Math.abs(ajuste) > 0.005 * rec ? linha(ajuste >= 0 ? '+' : '−', 'Ajustes metodológicos do RREO', ajuste) : '');
+    }
+    extratoA += `<div class="pa-tot"><span>[=] Resultado primário</span><b>${resultado < 0 ? '−' : '+'} ${brlCurto(Math.abs(resultado))}</b></div>`;
+    const leituraA = prim > 0
+        ? `Nesse período, o governo fechou com um <b>déficit primário de ${brlCurto(prim)}</b>: a arrecadação não cobriu os gastos do dia a dia, sem contar os juros.`
+        : `Nesse período, o governo fechou com um <b>superávit primário de ${brlCurto(-prim)}</b>: arrecadou mais do que gastou no dia a dia, sem contar os juros.`;
+    const extratoB = linha(prim >= 0 ? '+' : '−', prim >= 0 ? 'O déficit primário' : 'O superávit primário', prim) + linha('+', 'O peso dos juros da dívida', juros)
+        + `<div class="pa-tot"><span>[=] ${nom >= 0 ? 'Necessidade de financiamento (déficit nominal)' : 'Superávit nominal'}</span><b>${nom >= 0 ? '' : '− '}${brlCurto(Math.abs(nom))}</b></div>`;
+    let leituraB;
+    if (nom <= 0) leituraB = `O resultado final foi <b>positivo em ${brlCurto(-nom)}</b>, mesmo depois de pagar os juros: a conta não precisou de dívida nova.`;
+    else if (prim <= 0) leituraB = `Sem os juros, as contas fecharam no azul. Mas os juros de ${brlCurto(juros)} bastaram para criar uma <b>necessidade de financiamento de ${brlCurto(nom)}</b>: todo o déficit vem da dívida antiga.`;
+    else leituraB = `Para pagar o que faltou, o governo precisou se financiar com dívida nova:<b>${brlCurto(nom)}</b>. Desse total, <b>${Math.round(juros / nom * 100)}%</b> são os juros da dívida já existente.`;
+    const diverge = escopo === 'consolidado' && Math.abs(prim + juros - nom) > 0.03 * Math.abs(nom);
+    return `<p class="pa-periodo"><b>Período analisado:</b> ${esc(periodo || '')} · Fonte: ${esc(fonte)}</p>
+        <article class="pa-bloco"><p class="pa-tag">Causa · a ótica acima da linha</p>
+            <h3 class="pa-ator">O ator: ${atorA[0]}</h3><p class="pa-ctx">${atorA[1]}</p>
+            <div class="pa-extrato"><p class="pa-ext-t">O extrato do ator</p>${extratoA}</div>
+            <p class="pa-leit"><span>Leitura automática</span>${leituraA}</p></article>
+        <article class="pa-bloco"><p class="pa-tag">Consequência · a ótica abaixo da linha</p>
+            <h3 class="pa-ator">O ator: ${atorB[0]}</h3><p class="pa-ctx">${atorB[1]}</p>
+            <div class="pa-extrato"><p class="pa-ext-t">O extrato do ator</p>${extratoB}</div>
+            <p class="pa-leit"><span>Leitura automática</span>${leituraB}</p>
+            ${diverge ? '<p class="pa-nota">A soma das duas linhas difere do nominal informado: o Banco Central apura cada série por métodos próprios, e pequenas diferenças são esperadas.</p>' : ''}</article>
+        <div class="pa-sintese"><p class="pa-tag">A síntese · o cabo de guerra</p>
+            <p>Quando o governo gasta mais do que arrecada, precisa se financiar com dívida, e os juros tornam essa dívida mais cara. Os juros acompanham a Selic, fixada pelo Banco Central para conter a inflação. Quem defende mais ajuste das contas diz que equilibrá-las abre espaço para juros menores. Quem defende mais gasto público diz que os juros altos são parte do problema e que cortar despesa atinge serviços essenciais. O ciclo alimenta a necessidade de financiamento acima, e o debate é sobre por onde interrompê-lo.</p></div>`;
+}
 function repintarSituacao() {
+    const pa = $('painelAn');
+    if (pa && E.dados) pa.innerHTML = painelAnalitico(E.dados);
     const alvo = $('sitDet');
     if (!alvo || !E.dados) return;
     alvo.outerHTML = situacaoDetalhe(E.dados);
@@ -1071,7 +1127,10 @@ function nivel1(d) {
         </div>${ESQUEMA_FLUXO}</section>
         <section aria-labelledby="nDet"><h2 id="nDet">Os números por trás</h2>
         <p class="text-sm text-slate-500 mt-2" style="max-width:70ch">Abra uma gaveta por vez: o fluxo do ano (o que entrou e saiu) e o estoque da dívida (o que se acumulou).</p>
-        <div class="mt-4">${situacaoDetalhe(d)}</div></section>`;
+        <div class="mt-4">${situacaoDetalhe(d)}</div></section>
+        <section aria-labelledby="nPA"><h2 id="nPA">O diagnóstico: a causa e a consequência</h2>
+        <p class="text-sm text-slate-500 mt-2" style="max-width:70ch">Como o resultado do governo se transforma em dívida. O texto é gerado com os números acima e muda junto com eles.</p>
+        <div id="painelAn" class="mt-4">${painelAnalitico(d)}</div></section>`;
     const risco = uniao
         ? `<div id="dividaRisco" aria-live="polite"></div><div id="dividaFilme"></div>${rp.risco}`
         : avisoUniao('A análise de risco da dívida é federal.');
