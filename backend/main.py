@@ -56,6 +56,7 @@ import radiografia_periodos
 import maturidade
 import normas
 import orcamento
+import pontos_lei
 import tributos
 import simuladores
 from config import RAIZ, cfg
@@ -1098,6 +1099,19 @@ def orcamento_ciclo(codigo: Annotated[int, Path(ge=1, le=5999999)]) -> dict:
     except Exception as exc:  # noqa: BLE001
         log.warning("Fonte do ciclo orçamentário indisponível: %s", exc)
         raise HTTPException(status_code=503, detail="A fonte dos documentos orçamentários está indisponível no momento.") from exc
+
+
+@router.get("/orcamento/pontos/{tipo}", tags=["orcamento"])
+def orcamento_pontos(tipo: Annotated[str, Path(pattern="^(PPA|LDO|ppa|ldo)$")]) -> dict:
+    """Principais pontos do texto do PPA em vigor ou da LDO do próximo ano, lidos do documento oficial da Câmara."""
+    try:
+        r = pontos_lei.pontos(tipo)
+    except Exception as exc:  # noqa: BLE001
+        log.warning("Pontos da lei indisponíveis: %s", exc)
+        raise HTTPException(status_code=503, detail="O documento da lei está indisponível no momento.") from exc
+    if not r:
+        raise HTTPException(status_code=404, detail="Não foi possível ler os pontos deste documento agora.")
+    return r
 
 
 @router.get("/orcamento/imposto/{codigo}", tags=["orcamento"])
