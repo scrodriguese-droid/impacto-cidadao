@@ -424,6 +424,7 @@ a.chip-link:hover { background: var(--ativo); color: var(--ativo-fg); }
 .cartaz-dica-t .dica-leg { font-size: .74rem; opacity: .85; }
 .cartaz-dica-t .fx { font: 400 1.05rem/1.3 Georgia, 'Times New Roman', serif; text-align: center; padding: .7rem .4rem; border-top: 1px solid currentColor; border-bottom: 1px solid currentColor; overflow-x: auto; }
 .cartaz-dica-t .fx sub { font-size: .7em; line-height: 0; }
+.fx-col { font-size: 2.1em; line-height: 1; font-weight: 300; vertical-align: middle; margin: 0 .05rem; }
 .fx-frac { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; margin: 0 .15rem; }
 .fx-frac > span:first-child { border-bottom: 1px solid currentColor; padding: 0 .25rem .1rem; }
 .fx-frac > span:last-child { padding: .1rem .25rem 0; }

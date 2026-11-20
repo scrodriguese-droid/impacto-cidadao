@@ -693,8 +693,58 @@ function repintarSituacao() {
 const NIVEL_LRF = {
     ok: 'Dentro do limite', alerta: 'Em alerta', prudencial: 'Acima do limite prudencial', acima_limite: 'Acima do limite legal', indefinido: 'Sem limite informado',
 };
-const cartaz = (rotulo, grande, sub, nota, alerta, dica) => `<div class="cartaz${alerta ? ' cartaz-alerta' : ''}${dica ? ' cartaz-dica' : ''}"${dica ? ' tabindex="0" aria-describedby="dicaCartaz"' : ''}><p class="cartaz-rotulo">${rotulo}</p><p class="cartaz-num">${grande}</p>
-    <p class="cartaz-sub">${sub}</p>${nota ? `<p class="cartaz-nota">${nota}</p>` : ''}${dica ? `<div class="cartaz-dica-t" id="dicaCartaz" role="tooltip">${dica}</div>` : ''}</div>`;
+let dicaSeq = 0;
+const cartaz = (rotulo, grande, sub, nota, alerta, dica) => {
+    const id = dica ? `dicaCartaz${++dicaSeq}` : '';
+    return `<div class="cartaz${alerta ? ' cartaz-alerta' : ''}${dica ? ' cartaz-dica' : ''}"${dica ? ` tabindex="0" aria-describedby="${id}"` : ''}><p class="cartaz-rotulo">${rotulo}</p><p class="cartaz-num">${grande}</p>
+    <p class="cartaz-sub">${sub}</p>${nota ? `<p class="cartaz-nota">${nota}</p>` : ''}${dica ? `<div class="cartaz-dica-t" id="${id}" role="tooltip">${dica}</div>` : ''}</div>`;
+};
+/* O balão abre para o lado e para cima/baixo onde houver espaço (medido ao passar o mouse ou focar) */
+function posicionarDica(ev) {
+    const card = ev.target.closest && ev.target.closest('.cartaz-dica'); if (!card) return;
+    const t = card.querySelector('.cartaz-dica-t'); if (!t) return;
+    // posição fixa, medida na tela: embaixo do quadro se couber, senão em cima, senão encostada na borda; nunca fora da área do conteúdo
+    const c = card.getBoundingClientRect(), w = t.offsetWidth, h = t.offsetHeight, vw = window.innerWidth, vh = window.innerHeight;
+    const area = (document.getElementById('conteudo') || document.body).getBoundingClientRect();
+    const minX = Math.max(8, area.left), maxX = Math.min(vw - 8, area.right);
+    let x = c.left + w > maxX ? c.right - w : c.left;                                   // alinha à esquerda do quadro; se estourar, à direita
+    x = Math.max(minX, Math.min(x, maxX - w));
+    let y = c.bottom + 8;
+    if (y + h > vh - 8) y = c.top - h - 8 >= 8 ? c.top - h - 8 : Math.max(8, vh - h - 8);
+    t.style.position = 'fixed'; t.style.left = `${x}px`; t.style.top = `${y}px`; t.style.right = 'auto'; t.style.bottom = 'auto';
+}
+document.addEventListener('mouseover', posicionarDica);
+document.addEventListener('focusin', posicionarDica);
+/* Quadro "Superávit que trava a dívida": h = d · (r − q) ÷ (1 + q). Devolve o quadro pronto, com os números de hoje no balão (null se faltar dado). */
+function cartazSuperavit(m, custoReal, g) {
+    const dL = m.dlsp_pib ? m.dlsp_pib.valor : null, dB = m.dbgg_pib ? m.dbgg_pib.valor : null;
+    const d = dL != null ? dL : dB;
+    if (d == null || g == null) return '';
+    const base = dL != null ? 'dívida líquida' : 'dívida bruta';
+    const fator = ((custoReal - g) / 100) / (1 + g / 100);          // quanto a dívida cresce sozinha por ano, em proporção dela mesma
+    const h = d * fator, hB = dB != null ? dB * fator : null;       // % do PIB
+    const pib = m.pib_rs ? m.pib_rs.valor : null;
+    const bi = (p) => (pib == null ? '' : `R$ ${Math.round(p / 100 * pib / 1e9).toLocaleString('pt-BR')} bilhões`);
+    const res = m.primario12 ? -m.primario12.valor : null;         // série do BCB: positivo = déficit; aqui positivo = superávit
+    const falta = res != null ? h - res : null;
+    const num = (v, dec = 1) => pc(Math.abs(v), dec);
+    const trava = h > 0;
+    const desafio = trava
+        ? `<p><b>O tamanho do desafio:</b> com o juro real em ${num(custoReal)}% e o PIB crescendo ${num(g)}%, o governo precisaria entregar um superávit primário de cerca de <b>${num(h)}% do PIB</b> todos os anos${pib != null ? ` (cerca de <b>${bi(h)}</b>)` : ''} apenas para manter a ${base} parada no mesmo patamar.${hB != null && dL != null ? ` Se a conta for feita sobre a dívida bruta (${num(dB)}% do PIB), o esforço sobe para ${num(hB)}% do PIB${pib != null ? ` (${bi(hB)})` : ''}.` : ''}</p>`
+        : `<p><b>O tamanho do desafio:</b> com o juro real (${num(custoReal)}%) abaixo do crescimento do PIB (${num(g)}%), a ${base} cai sozinha: o governo poderia até ter déficit primário de ${num(h)}% do PIB por ano sem que ela aumentasse.</p>`;
+    const porque = trava && res != null
+        ? (falta > 0
+            ? `<p><b>Por que a dívida continua subindo:</b> hoje o governo entrega um ${res >= 0 ? 'superávit' : 'déficit'} primário de ${num(res, 2)}% do PIB, e não um superávit de ${num(h)}%. A diferença, de ${num(falta)} p.p. do PIB por ano, é o que empurra a relação dívida/PIB para cima.</p>`
+            : `<p><b>Situação hoje:</b> o governo entrega um superávit primário de ${num(res, 2)}% do PIB, acima dos ${num(h)}% necessários. Nessas condições a dívida tende a cair em proporção do PIB.</p>`)
+        : '';
+    const dica = `<p class="dica-tit">Quanto o governo precisa economizar por ano para travar a dívida</p>
+        <p class="fx" role="img" aria-label="h é igual a d vezes, entre colchetes, r menos q dividido por um mais q">h = d · <span class="fx-col">[</span><span class="fx-frac"><span>r − q</span><span>1 + q</span></span><span class="fx-col">]</span></p>
+        <p>Com os números de hoje: <i>r</i> = ${num(custoReal)}%, <i>q</i> = ${num(g)}%, <i>d</i> = ${num(d)}% do PIB (${base}). Então <i>h</i> = ${num(d)}% × (${num(custoReal)}% − ${num(g)}%) ÷ (1 + ${num(g)}%) ≈ <b>${trava ? '' : '−'}${num(h)}% do PIB</b>.</p>
+        ${desafio}${porque}
+        <p class="dica-leg"><i>h</i>: resultado primário necessário · <i>d</i>: dívida/PIB · <i>r</i>: custo real da dívida · <i>q</i>: crescimento real do PIB. Conta simplificada: supõe que <i>r</i> e <i>q</i> ficam constantes.</p>`;
+    const nota = res != null ? `Hoje: ${res >= 0 ? 'superávit' : 'déficit'} primário de ${num(res, 2)}% do PIB${pib != null && trava ? ` · ${bi(h)} por ano` : ''}.` : (pib != null && trava ? `${bi(h)} por ano.` : '');
+    return cartaz('Superávit que trava a dívida', `${trava ? '' : '−'}${num(h)}% do PIB`, `por ano, em média, para manter a ${base} (${num(d)}% do PIB) parada`, nota, falta != null && falta > 0, dica);
+}
 /* Explicação que aparece ao passar o mouse (ou focar) no quadro do custo real da dívida. A fórmula é montada em HTML, sem biblioteca de matemática. */
 const DICA_DIVIDA = `<p class="dica-tit">Cálculo da dívida em relação ao tamanho do país</p>
     <p class="fx" role="img" aria-label="d t é igual a d t menos 1 vezes um mais i, dividido por um mais q vezes um mais pi, menos h, menos s">d<sub>t</sub> = d<sub>t−1</sub> · <span class="fx-frac"><span>1 + i</span><span>(1 + q)(1 + π)</span></span> − h − s</p>
@@ -1067,6 +1117,7 @@ async function carregarDividaRisco() {
                 ${cartaz('Prazo médio', `${pc(e.atual.prazo_medio_anos)} anos`, 'até o vencimento, da dívida em mercado', ant ? `Um ano antes: ${pc(ant.prazo_medio_anos)} anos.` : '')}
                 ${cartaz('Vence em 12 meses', pct(e.atual.curto_pct), 'da dívida precisa ser renovada no próximo ano', ant ? `Um ano antes: ${pct(ant.curto_pct)}.` : '')}
                 ${cartaz('Custo real', `${pc(c.real)}% ao ano`, `contra um PIB que cresce ${g != null ? pc(g) + '%' : '—'}`, g != null ? `Diferença: ${pc(c.real - g)} p.p. Positiva, a dívida cresce sozinha antes do resultado primário.` : '', g != null && c.real > g, DICA_DIVIDA)}
+                ${cartazSuperavit(m, c.real, g)}
                 ${cartaz('Atrelada à Selic', pct(selic), 'da dívida em mercado muda de custo quando o Banco Central mexe nos juros', '')}
             </div>
             <p class="mt-4"><a class="inline-block px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold" href="divida-risco.html">Dissecar a dívida: prazo, custo e simulador <i class="fa-solid fa-arrow-right ml-1" aria-hidden="true"></i></a></p>`;
