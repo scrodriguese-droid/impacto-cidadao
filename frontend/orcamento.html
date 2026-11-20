@@ -16,6 +16,26 @@
         body { font-family: 'Inter', system-ui, sans-serif; }
         :focus-visible { outline: 2px solid #A92823; outline-offset: 2px; }
         .barra { transition: width .6s ease; }
+        /* fundamentos: a LRF, só com tipografia, caixas e uma tabela */
+        .lrf { border-top: 4px solid var(--fg); padding-top: 1rem; }
+        .lrf-kicker { font: 800 .68rem/1.3 var(--fonte-texto); letter-spacing: .14em; text-transform: uppercase; color: var(--vermelho); }
+        .lrf-titulo { font-family: var(--fonte-titulo); font-size: clamp(1.6rem, 3.4vw, 2.4rem); line-height: 1.05; text-transform: uppercase; margin-top: .3rem; }
+        .lrf-titulo span { font-size: .55em; color: var(--muted); white-space: nowrap; }
+        .lrf-lead { max-width: 70ch; margin-top: .6rem; font-size: .95rem; line-height: 1.55; }
+        .lrf-bloco { margin-top: 1.8rem; padding-bottom: .35rem; border-bottom: 2px solid var(--fg); font: 800 .78rem/1.3 var(--fonte-texto); letter-spacing: .12em; text-transform: uppercase; }
+        .lrf-bloco b { display: inline-block; min-width: 1.5rem; margin-right: .5rem; padding: .1rem .35rem; background: var(--fg); color: var(--papel); text-align: center; }
+        .lrf-grade { display: grid; gap: .9rem; margin-top: .9rem; }
+        @media (min-width: 860px) { .lrf-grade { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+        .lrf-cx { border: 2px solid var(--line); padding: .9rem 1rem; font-size: .88rem; line-height: 1.55; }
+        .lrf-cx--regra { border-left: 6px solid var(--vermelho); }
+        .lrf-cx h4 { font: 800 .8rem/1.3 var(--fonte-texto); letter-spacing: .08em; text-transform: uppercase; margin-bottom: .45rem; }
+        .lrf-cx ul { list-style: none; padding: 0; display: grid; gap: .55rem; }
+        .lrf-tab-wrap { overflow-x: auto; margin-top: .9rem; }
+        .lrf-tab { width: 100%; min-width: 34rem; border-collapse: collapse; border: 2px solid var(--line); font-size: .86rem; line-height: 1.55; }
+        .lrf-tab th, .lrf-tab td { text-align: left; vertical-align: top; padding: .6rem .8rem; border-bottom: 1px solid var(--line); }
+        .lrf-tab thead th { background: var(--fg); color: var(--papel); font: 800 .68rem/1.3 var(--fonte-texto); letter-spacing: .12em; text-transform: uppercase; }
+        .lrf-tab tbody th { font: 800 .74rem/1.3 var(--fonte-texto); letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; }
+        .lrf-nota { margin-top: .6rem; font-size: .8rem; color: var(--muted); max-width: 80ch; }
     </style>
     <link rel="stylesheet" href="assets/brutalista.css">
 </head>
@@ -27,6 +47,55 @@
 <main id="conteudo" class="max-w-4xl mx-auto px-4 sm:px-6 pt-6 pb-10 flex-grow w-full">
     <h1 class="text-2xl font-extrabold tracking-tight">Leis do orçamento: PPA, LDO e LOA</h1>
     <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Em que fase do planejamento o governo está e o que isso muda na prática. Fontes oficiais, sem estimativas nossas.</p>
+
+    <!-- ========================= A. FUNDAMENTOS: A LRF ========================= -->
+    <section class="lrf mt-6" aria-labelledby="tLrf">
+        <p class="lrf-kicker">Introdução · as regras do jogo</p>
+        <h2 id="tLrf" class="lrf-titulo">Lei de Responsabilidade Fiscal <span>(Lei Complementar 101/2000)</span></h2>
+        <p class="lrf-lead">É o manual de regras que vale para União, estados e municípios: limita gastos e dívida e prevê consequências para quem não cumpre. Entender por que ela existe ajuda a ler o resto da página.</p>
+
+        <h3 class="lrf-bloco"><b>1</b> O problema: por que o Brasil precisou dela</h3>
+        <div class="lrf-grade">
+            <article class="lrf-cx"><h4>Bancos estaduais</h4>
+                <p>Até os anos 1990, vários estados tinham banco próprio (como o Banespa, em São Paulo, e o Banerj, no Rio). Um governo sem caixa podia pedir empréstimo ao seu banco. Quando o banco não conseguia cobrir o prejuízo, a conta acabava socorrida com dinheiro federal. Em 1996, o Proes levou muitos deles à privatização ou à extinção.</p></article>
+            <article class="lrf-cx"><h4>Ciclo eleitoral e dívida</h4>
+                <p>Havia casos de aumento de despesa com pessoal e de obras iniciadas sem caixa em anos de eleição, e de títulos de dívida estaduais emitidos para rolar dívidas antigas. Quem assumia depois herdava a folha de pagamento e os fornecedores a pagar.</p></article>
+            <article class="lrf-cx"><h4>Renegociação com a União</h4>
+                <p>Em 1997–1999, em meio às crises internacionais (Ásia, 1997; Rússia, 1998), a União assumiu e refinanciou as dívidas dos estados, em geral em 30 anos (Lei 9.496/1997), pedindo ajuste fiscal em troca. A LRF, de 2000, deixou essas regras permanentes e as estendeu a todos os entes.</p></article>
+        </div>
+
+        <h3 class="lrf-bloco"><b>2</b> As regras: o que mudou na prática</h3>
+        <div class="lrf-grade">
+            <article class="lrf-cx lrf-cx--regra"><h4>Gastos e salários</h4>
+                <ul>
+                    <li><b>Compensação.</b> Criar uma despesa fixa ou dar isenção de imposto exige estimar o impacto e indicar de onde vem o dinheiro: cortar em outra área ou aumentar a receita (arts. 14 e 17).</li>
+                    <li><b>Limite da folha.</b> A despesa com pessoal não pode passar de 50% da receita corrente líquida na União e de 60% em estados e municípios (art. 19).</li>
+                    <li><b>Fim de mandato.</b> Nos últimos 180 dias, é nulo o ato que aumenta a despesa com pessoal. Nos dois últimos quadrimestres, não se pode assumir obrigação que não possa ser paga no mesmo ano (arts. 21 e 42).</li>
+                </ul></article>
+            <article class="lrf-cx lrf-cx--regra"><h4>Endividamento</h4>
+                <ul>
+                    <li><b>Teto da dívida.</b> O Senado fixa os limites. Hoje, a dívida consolidada líquida pode chegar a 200% da receita corrente líquida nos estados e a 120% nos municípios (Resolução do Senado 40/2001).</li>
+                    <li><b>Sem empréstimo entre entes.</b> A lei veda que um ente empreste a outro, como a União a um estado (art. 35). Leis posteriores criaram regimes específicos de renegociação, como o Regime de Recuperação Fiscal (Lei Complementar 159/2017).</li>
+                </ul></article>
+            <article class="lrf-cx lrf-cx--regra"><h4>Metas e bloqueio</h4>
+                <ul>
+                    <li><b>Meta fiscal.</b> A LDO traz o Anexo de Metas Fiscais, com a meta de resultado primário: receitas menos despesas, sem contar os juros (art. 4º).</li>
+                    <li><b>Contingenciamento.</b> Se a receita ficar abaixo do necessário para cumprir a meta, os Poderes devem limitar empenhos e pagamentos nos 30 dias seguintes (art. 9º). Algumas despesas, como as obrigatórias e o pagamento da dívida, ficam de fora.</li>
+                    <li><b>Regra de ouro.</b> Não se endividar para pagar despesa corrente está na Constituição (art. 167, III), não na LRF.</li>
+                </ul></article>
+        </div>
+
+        <h3 class="lrf-bloco"><b>3</b> A punição: o que acontece a quem descumpre</h3>
+        <div class="lrf-tab-wrap"><table class="lrf-tab">
+            <thead><tr><th scope="col">Tipo</th><th scope="col">Quem sofre</th><th scope="col">Consequências previstas</th></tr></thead>
+            <tbody>
+                <tr><th scope="row">Institucional</th><td>O ente: estado, município ou União</td>
+                    <td>Enquanto estiver acima dos limites, fica impedido de receber transferências voluntárias, de obter garantias e de contratar novos empréstimos, salvo para refinanciar a dívida ou reduzir a despesa com pessoal (arts. 23 e 31).</td></tr>
+                <tr><th scope="row">Pessoal</th><td>O governante e os gestores (prefeito, governador, presidente, secretários)</td>
+                    <td>Multa de 30% dos vencimentos anuais, por infração administrativa (Lei 10.028/2000). Crimes contra as finanças públicas, com pena de detenção ou reclusão (Código Penal, arts. 359-A a 359-H). Crime de responsabilidade, que pode levar à perda do cargo e à inabilitação por até 5 anos para função pública. Condenações e contas rejeitadas por irregularidade insanável também podem gerar inelegibilidade (Lei da Ficha Limpa).</td></tr>
+            </tbody></table></div>
+        <p class="lrf-nota">As penas dependem de decisão do Tribunal de Contas, do Legislativo ou da Justiça, caso a caso. Fonte: <a class="underline" target="_blank" rel="noopener" href="https://www.planalto.gov.br/ccivil_03/leis/lcp/lcp101.htm">Lei Complementar 101/2000, no Planalto</a>.</p>
+    </section>
 
     <div class="sticky top-16 z-30 -mx-4 sm:mx-0 px-4 sm:px-0 py-2 mt-3 bg-slate-50/90 dark:bg-slate-900/90 backdrop-blur">
         <div class="flex flex-wrap items-center gap-x-2 gap-y-2 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 shadow-sm text-sm">
