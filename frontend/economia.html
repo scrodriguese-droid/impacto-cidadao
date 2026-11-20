@@ -41,6 +41,11 @@
         .primario-seta { margin-left: .4rem; }
         .primario-det[open] .primario-seta { display: inline-block; transform: rotate(180deg); }
         .primario-corpo { margin-top: .5rem; }
+        /* indicadores do confronto: nome em cima, número grande logo abaixo e a explicação por último (uma coluna por indicador) */
+        .radar-confronto .radar-itens li, .radar-confronto .primario-sum { grid-template-columns: minmax(0, 1fr); gap: .35rem; }
+        .radar-confronto .radar-item-nome { font: 800 .74rem/1.3 var(--fonte-texto); letter-spacing: .08em; text-transform: uppercase; }
+        .radar-confronto .radar-item-valor { text-align: left; font-size: 2.1rem; }
+        .radar-confronto .radar-item-nota { max-width: 46ch; }
     </style>
     <link rel="stylesheet" href="assets/brutalista.css">
 </head>
