@@ -39,6 +39,10 @@
         .lrf-tab tbody th span { display: block; margin-top: .2rem; font-weight: 600; letter-spacing: 0; color: var(--muted); text-transform: none; }
         .lrf-dilema { margin-top: 1.4rem; padding: 1rem 1.1rem; border: 2px solid var(--fg); }
         .lrf-dilema p:last-child { margin-top: .4rem; font-size: .95rem; line-height: 1.55; max-width: 80ch; }
+        .ciclo-anat { display: grid; gap: .7rem; align-content: start; font-size: .82rem; line-height: 1.5; padding-top: .7rem; border-top: 1px solid var(--line); }
+        .ciclo-anat dt { font: 800 .64rem/1.3 var(--fonte-texto); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+        .ciclo-anat ul { list-style: none; padding: 0; margin-top: .4rem; display: grid; gap: .4rem; }
+        .ciclo-anat li { padding-left: .6rem; border-left: 4px solid var(--vermelho); }
         .lrf-tab-wrap { overflow-x: auto; margin-top: .9rem; }
         .lrf-tab { width: 100%; min-width: 34rem; border-collapse: collapse; border: 2px solid var(--line); font-size: .86rem; line-height: 1.55; }
         .lrf-tab th, .lrf-tab td { text-align: left; vertical-align: top; padding: .6rem .8rem; border-bottom: 1px solid var(--line); }
@@ -178,7 +182,7 @@
     <!-- ========================= B. CICLO ========================= -->
     <section class="mt-6" aria-labelledby="tCiclo">
         <h2 id="tCiclo" class="text-xl font-bold flex items-center"><i class="fa-solid fa-rotate text-brand-600 mr-2.5" aria-hidden="true"></i>Onde estamos no ciclo orçamentário</h2>
-        <p class="text-sm text-slate-500 dark:text-slate-400">Qual lei está em execução, qual está sendo votada agora e o que isso muda na prática.</p>
+        <p class="text-sm text-slate-500 dark:text-slate-400">Qual lei está em execução, qual está sendo votada agora e como funciona cada instrumento.</p>
         <div id="resCiclo" class="mt-3" aria-live="polite"></div>
     </section>
 
@@ -274,57 +278,58 @@ const ESTADO_COR = {
 };
 const IC_TIPO = { PPA: 'fa-binoculars', LDO: 'fa-list-check', LOA: 'fa-file-invoice-dollar' };
 
-/* Os três instrumentos de planejamento (Constituição, art. 165): cada um com função, foco e o que se vê na prática */
-const INSTRUMENTOS = [
-    { tipo: 'PPA', nome: 'Plano Plurianual', ic: 'fa-binoculars', lema: 'O plano de médio prazo',
-      linhas: [
-        ['Duração', '4 anos. Começa no 2º ano de um mandato e vai até o fim do 1º ano do mandato seguinte, o que faz o plano atravessar a troca de governos.'],
-        ['Foco', 'Programas de longo prazo e as despesas de capital (obras e equipamentos) e outras que decorrem delas. Define metas, quantitativas e qualitativas, para cada programa.'],
-        ['Na prática', 'Serve de moldura para as leis seguintes: um investimento que dure mais de um ano não pode começar sem estar previsto no PPA. Como as metas são de 4 anos, é comum haver distância entre o que foi planejado e o que de fato se executa, e essa é uma crítica frequente ao instrumento.'],
-      ] },
-    { tipo: 'LDO', nome: 'Lei de Diretrizes Orçamentárias', ic: 'fa-list-check', lema: 'As regras do orçamento do ano seguinte',
-      linhas: [
-        ['Função', 'Fixa os parâmetros gerais que orientam a elaboração do orçamento do ano seguinte. É a ponte entre o PPA e a LOA.'],
-        ['Objetivo', 'Estabelece as metas e as prioridades fiscais, como a meta de resultado primário. Com isso, ajusta o que se quer fazer à realidade da arrecadação e do caixa do Estado.'],
-        ['Na prática', 'Deve ser votada antes do recesso de meio de ano. Traz, por exemplo, as regras para bloquear despesas se a receita ficar abaixo do previsto e as orientações para o Congresso e o Executivo na LOA.'],
-      ] },
-    { tipo: 'LOA', nome: 'Lei Orçamentária Anual', ic: 'fa-file-invoice-dollar', lema: 'O orçamento que vai para a execução',
-      linhas: [
-        ['Função', 'É o instrumento prático de execução financeira: estima a receita do ano e autoriza as despesas. Por isso é o centro das negociações entre Executivo e Congresso.'],
-        ['Emendas', 'O Congresso pode alterar o projeto por emendas parlamentares. As individuais e as de bancada são de execução obrigatória e, depois de aprovadas na LOA, o Executivo as executa.'],
-      ],
-      partes: [
-        ['Orçamento Fiscal', 'Os três Poderes da União (Executivo, Legislativo e Judiciário), com a administração indireta, os fundos e as fundações mantidos pelo poder público.'],
-        ['Orçamento da Seguridade Social', 'As ações e entidades da Previdência Social, da Assistência Social e da Saúde: ministérios, fundos, fundações e órgãos da administração indireta ligados a essas funções.'],
-        ['Orçamento de Investimento das Estatais', 'As empresas em que a União, direta ou indiretamente, detém a maioria do capital social com direito a voto.'],
-      ] },
-];
-function instrumentosOrcamento() {
-    const corpo = (i) => `<dl class="mt-2 space-y-2 text-sm">${i.linhas.map(([k, v]) => `<div><dt class="text-xs font-bold uppercase tracking-wider text-slate-500">${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>
-        ${i.partes ? `<p class="mt-3 text-xs font-bold uppercase tracking-wider text-slate-500">A LOA tem três orçamentos dentro dela</p>
-            <ol class="mt-1 space-y-2 text-sm">${i.partes.map(([k, v], n) => `<li class="pl-3 border-l-4 border-slate-300 dark:border-slate-600"><b>${n + 1}. ${esc(k)}.</b> ${esc(v)}</li>`).join('')}</ol>` : ''}`;
-    return `<div class="mt-4"><p class="font-bold text-sm">Entenda cada instrumento</p>
-        <div class="mt-2 space-y-2">${INSTRUMENTOS.map((i) => `<details class="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-3">
-            <summary class="cursor-pointer font-semibold"><i class="fa-solid ${i.ic} mr-1.5 text-slate-400" aria-hidden="true"></i>${esc(i.tipo)} · ${esc(i.nome)} <span class="font-normal text-slate-500">· ${esc(i.lema)}</span></summary>${corpo(i)}</details>`).join('')}</div></div>`;
+/* Anatomia de cada instrumento (Constituição, art. 165), dentro do mesmo cartão do estado de tramitação.
+   Cada item é [rótulo, texto] ou [rótulo, texto, lista de [nome, texto]]. */
+const ANATOMIA = {
+    PPA: [
+        ['O que é', 'O mapa estratégico de longo prazo. Define os grandes programas, as metas e as despesas de capital (obras e equipamentos).'],
+        ['A regra de tempo', 'Dura 4 anos: começa no 2º ano de um mandato e vai até o fim do 1º ano do mandato seguinte, o que dá continuidade ao planejamento na troca de governos.'],
+        ['Na prática', 'Um investimento que dure mais de um ano não pode começar sem estar previsto no PPA. Como as metas são de 4 anos, é comum haver distância entre o planejado e o executado, e essa é uma crítica frequente ao instrumento.'],
+    ],
+    LDO: [
+        ['O que é', 'O elo entre o plano e a execução. Fixa as regras e as metas fiscais para montar e executar o orçamento do ano seguinte.'],
+        ['A regra de tempo', 'É votada a cada ano e deve ser aprovada até o recesso de julho.'],
+        ['O coração da lei: os anexos', 'Dois anexos concentram o controle das contas.', [
+            ['Anexo de Metas Fiscais', 'Define a meta de resultado primário (receitas menos despesas, sem os juros). A LOA tem de ser compatível com ela.'],
+            ['Anexo de Riscos Fiscais', 'Avalia o que pode desviar as contas, como ações judiciais e queda de receita, e as providências caso aconteça.'],
+        ]],
+        ['Na prática', 'Autoriza contratações e reajustes de pessoal, traz a projeção usada para o salário mínimo e as regras de bloqueio de verbas.'],
+    ],
+    LOA: [
+        ['O que é', 'O orçamento propriamente dito: estima a receita e fixa (autoriza) a despesa do ano. A LOA não cria dinheiro.'],
+        ['A regra de tempo', 'Vale de 1º de janeiro a 31 de dezembro de cada ano e tem de respeitar o PPA e a LDO.'],
+        ['O coração da lei: três orçamentos em um', 'A LOA reúne três orçamentos.', [
+            ['Fiscal', 'Os três Poderes da União, com a administração indireta, os fundos e as fundações mantidos pelo poder público.'],
+            ['Seguridade Social', 'Previdência, assistência social e saúde: ministérios, fundos, fundações e órgãos ligados a essas funções.'],
+            ['Investimento das Estatais', 'As empresas em que a União detém, direta ou indiretamente, a maioria do capital com direito a voto.'],
+        ]],
+        ['Emendas', 'O Congresso pode alterar o projeto por emendas parlamentares. As individuais e as de bancada são de execução obrigatória.'],
+        ['Na prática', 'É a lei que autoriza os gastos que chegam ao dia a dia, como a verba da saúde e da educação.'],
+    ],
+};
+function anatomiaCiclo(tipo) {
+    const itens = ANATOMIA[tipo];
+    if (!itens) return '<div></div>';
+    return `<dl class="ciclo-anat">${itens.map(([rot, txt, sub]) => `<div><dt>${esc(rot)}</dt><dd>${esc(txt)}</dd>
+        ${sub ? `<ul>${sub.map(([n, x]) => `<li><b>${esc(n)}.</b> ${esc(x)}</li>`).join('')}</ul>` : ''}</div>`).join('')}</dl>`;
 }
 
 function linhaDoTempo(r) {
     const nos = r.linha_do_tempo.map((n) => {
         const [chip, ponto] = ESTADO_COR[n.estado] || ESTADO_COR.sem_fonte;
-        const def = (r.tipos.find((t) => t.tipo === n.tipo) || {}).sentido;
-        // cinco linhas fixas por etapa (cabeçalho, definição, situação, detalhe, link): assim as três colunas se alinham
+        // cinco linhas por cartão (cabeçalho, estado, situação, anatomia, link): assim as três colunas se alinham
         return `<li class="ciclo-no">
             <div class="ciclo-cab"><p class="font-bold"><i class="fa-solid ${IC_TIPO[n.tipo] || 'fa-file'} mr-1.5 text-slate-400" aria-hidden="true"></i>${esc(n.tipo)} <span class="font-normal text-slate-500 text-sm">${esc(n.periodo)}</span></p>
                 <span class="ciclo-ponto ${ponto}" aria-hidden="true"></span></div>
-            <p class="ciclo-def text-xs text-slate-500 dark:text-slate-400">${def ? `<b>O que é:</b> ${esc(def)}` : ''}</p>
             <div><span class="ciclo-chip inline-block px-2.5 py-1 rounded-full text-[11px] font-bold ${chip}">${esc(n.estado_rotulo)}</span></div>
             <p class="ciclo-det text-xs text-slate-600 dark:text-slate-400">${n.detalhe ? esc(n.detalhe) : ''}</p>
+            ${anatomiaCiclo(n.tipo)}
             <p class="ciclo-link text-xs">${n.url_tramitacao ? `<a class="underline text-brand-700 dark:text-brand-400" target="_blank" rel="noopener" href="${esc(urlSegura(n.url_tramitacao))}">${esc(n.proposicao)} na Câmara</a>` : ''}</p></li>`;
     });
     return `<div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/40 p-4">
         <p class="font-bold"><i class="fa-solid fa-calendar-days mr-1.5 text-brand-600" aria-hidden="true"></i>Linha do tempo · ${esc(r.agora.rotulo)}</p>
         <ol class="ciclo mt-3">${nos.join('')}</ol>
-        <p class="mt-3 text-sm"><b>Momento:</b> ${esc(r.momento)}</p>${instrumentosOrcamento()}</div>`;
+        <p class="mt-3 text-sm"><b>Momento:</b> ${esc(r.momento)}</p></div>`;
 }
 
 function barra(p, cor = 'bg-brand-500') { return `<div class="mt-1 h-2.5 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden"><div class="h-full ${cor}" style="width:${Math.max(1, Math.min(100, p))}%"></div></div>`; }
