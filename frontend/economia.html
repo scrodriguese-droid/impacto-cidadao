@@ -577,8 +577,8 @@ function situacaoDetalhe(d) {
     return `<div id="sitDet">${seletor}<p class="escopo-nota">${nota}</p>${g1}${g2}${uniao ? gavetaReservas() : ''}${notasTecnicas(d, escopo)}</div>`;
 }
 /* ----- Painel analítico: do resultado do governo à dívida (texto gerado com os números que o site já puxa) ----- */
-function painelAnalitico(d) {
-    const uniao = d.esfera === 'uniao', escopo = uniao ? E.escopo : 'ente', sf = d.situacao_fiscal;
+function painelAnalitico(d, escopoPedido) {
+    const uniao = d.esfera === 'uniao', escopo = uniao ? (escopoPedido || E.escopo) : 'ente', sf = d.situacao_fiscal;
     let prim, nom, juros, rec = null, desp = null, periodo, fonte, atorA, atorB, pPib = null, nPib = null;
     if (escopo === 'consolidado') {
         const f = sf && sf.fluxo && sf.fluxo.itens, j = sf && sf.custo && sf.custo.itens.find((i) => i.id === 'juros12');
@@ -643,8 +643,6 @@ function painelAnalitico(d) {
             <p>Quando o governo gasta mais do que arrecada, precisa se financiar com dívida, e os juros tornam essa dívida mais cara. Os juros acompanham a Selic, fixada pelo Banco Central para conter a inflação. Quem defende mais ajuste das contas diz que equilibrá-las abre espaço para juros menores. Quem defende mais gasto público diz que os juros altos são parte do problema e que cortar despesa atinge serviços essenciais. O ciclo alimenta a necessidade de financiamento acima, e o debate é sobre por onde interrompê-lo.</p></div>`;
 }
 function repintarSituacao() {
-    const pa = $('painelAn');
-    if (pa && E.dados) pa.innerHTML = painelAnalitico(E.dados);
     const alvo = $('sitDet');
     if (!alvo || !E.dados) return;
     alvo.outerHTML = situacaoDetalhe(E.dados);
@@ -1071,12 +1069,13 @@ async function carregarDividaFilme() {
         const completos = r.anos.filter((x) => x.completo);
         let ano = (completos[completos.length - 1] || r.anos[r.anos.length - 1]).ano, modo = 'filme';
         const opcoes = r.anos.slice().reverse().map((x) => `<option value="${x.ano}">${x.ano}${x.completo ? '' : ` (até ${x.ate_rotulo.split(' de ')[0]})`}</option>`).join('');
-        alvo.innerHTML = `<h2>A dinâmica da dívida: o filme contra a fotografia</h2>
-            <p class="text-sm text-slate-500 mt-2" style="max-width:72ch">Entenda se a dívida subiu porque o governo gastou demais ou porque os juros pesaram. A <b>fotografia</b> mostra quanto se deve hoje; o <b>filme</b> mostra o que fez esse número mudar.</p>
+        alvo.innerHTML = `<h2>A dinâmica da dívida: o filme, a fotografia e o diagnóstico</h2>
+            <p class="text-sm text-slate-500 mt-2" style="max-width:72ch">Entenda se a dívida subiu porque o governo gastou demais ou porque os juros pesaram. A <b>fotografia</b> mostra quanto se deve hoje; o <b>filme</b> mostra o que fez esse número mudar; o <b>diagnóstico</b> liga a causa (o resultado do governo) à consequência (a dívida).</p>
             <div class="fm-controles">
                 <div class="fm-modos" role="group" aria-label="Modo de visualização">
                     <button type="button" data-fmodo="foto" aria-pressed="false">A fotografia (estoque)</button>
-                    <button type="button" data-fmodo="filme" aria-pressed="true">O filme (fluxo)</button></div>
+                    <button type="button" data-fmodo="filme" aria-pressed="true">O filme (fluxo)</button>
+                    <button type="button" data-fmodo="diag" aria-pressed="false">O diagnóstico (causa e consequência)</button></div>
                 <label class="fm-ano">Ano <select id="fmAno">${opcoes}</select></label></div>
             <div id="fmCorpo" class="mt-4" aria-live="polite"></div>
             <details class="sanfona sanfona--leve mt-4"><summary><i class="fa-solid fa-circle-info" aria-hidden="true"></i> Ver a fórmula macroeconômica e a metodologia</summary>
@@ -1085,9 +1084,21 @@ async function carregarDividaFilme() {
                 <p class="ficha-nota mt-2">${esc(r.metodo.cambio)}</p>
                 <p class="ficha-nota mt-2">${esc(r.metodo.sinais)} Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(r.fonte.url))}">${esc(r.fonte.nome)}</a>, ${esc(r.fonte.periodo)}.</p></details>`;
         const corpo = $('fmCorpo');
+        let escopoPa = E.escopo === 'consolidado' ? 'consolidado' : 'uniao';
+        const diagnosticoDivida = () => {
+            if (!E.dados) return '<p class="text-sm text-slate-500">Os dados do ente ainda não carregaram.</p>';
+            const seg = E.dados.esfera === 'uniao' ? `<div class="escopo-seg" role="radiogroup" aria-label="Escopo dos números">${[['uniao', 'Governo Federal (União)'], ['consolidado', 'Setor Público Consolidado']]
+                .map(([id, rot]) => `<button type="button" role="radio" aria-checked="${escopoPa === id}" data-pa-escopo="${id}">${rot}</button>`).join('')}</div>` : '';
+            return `<p class="text-sm text-slate-500" style="max-width:70ch">Como o resultado do governo se transforma em dívida. O texto é gerado com os números do Tesouro e do Banco Central e muda junto com eles.</p>${seg}<div class="mt-4">${painelAnalitico(E.dados, escopoPa)}</div>`;
+        };
+        corpo.addEventListener('click', (ev) => {
+            const b = ev.target.closest('[data-pa-escopo]');
+            if (b) { escopoPa = b.dataset.paEscopo; corpo.innerHTML = diagnosticoDivida(); }
+        });
         const pintar = () => {
             const a = r.anos.find((x) => x.ano === ano);
-            corpo.innerHTML = modo === 'filme' ? filmeExtrato(a) : filmeFoto(r, a);
+            alvo.querySelector('.fm-ano').hidden = modo === 'diag';
+            corpo.innerHTML = modo === 'filme' ? filmeExtrato(a) : modo === 'foto' ? filmeFoto(r, a) : diagnosticoDivida();
             alvo.querySelectorAll('[data-fmodo]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.fmodo === modo)));
         };
         $('fmAno').value = String(ano);
@@ -1147,10 +1158,7 @@ function nivel1(d) {
         ${ESQUEMA_FLUXO}</section>
         <section aria-labelledby="nDet"><h2 id="nDet">Os números por trás</h2>
         <p class="text-sm text-slate-500 mt-2" style="max-width:70ch">Abra uma gaveta por vez: o fluxo do ano (o que entrou e saiu) e o estoque da dívida (o que se acumulou).</p>
-        <div class="mt-4">${situacaoDetalhe(d)}</div></section>
-        <section aria-labelledby="nPA"><h2 id="nPA">O diagnóstico: a causa e a consequência</h2>
-        <p class="text-sm text-slate-500 mt-2" style="max-width:70ch">Como o resultado do governo se transforma em dívida. O texto é gerado com os números acima e muda junto com eles.</p>
-        <div id="painelAn" class="mt-4">${painelAnalitico(d)}</div></section>`;
+        <div class="mt-4">${situacaoDetalhe(d)}</div></section>`;
     const risco = uniao
         ? `<div id="dividaRisco" aria-live="polite"></div><div id="dividaFilme"></div>${rp.risco}`
         : avisoUniao('A análise de risco da dívida é federal.');
