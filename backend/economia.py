@@ -242,6 +242,7 @@ def _pessoal(ente: int, ano: int) -> dict | None:
                 "limite_prudencial": _valor(linhas, "LimitePrudencialDespesaComPessoalTotal", "% sobre a RCL"),
                 "limite_alerta": _valor(linhas, "LimiteDeAlertaDespesaComPessoalTotal", "% sobre a RCL"),
                 "rcl": _num(_valor(linhas, "ReceitaCorrenteLiquidaLimiteLegal", "Valor")),
+                "rcl_12m": _num(_valor(linhas, "ReceitaCorrenteLiquida", "Valor")) or None,  # RCL dos últimos 12 meses (RGF Anexo 01)
                 "referencia": f"{quad}º quadrimestre de {ano_rgf}",
             }
     return None
