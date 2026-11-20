@@ -147,6 +147,40 @@ const ESTADO_COR = {
 };
 const IC_TIPO = { PPA: 'fa-binoculars', LDO: 'fa-list-check', LOA: 'fa-file-invoice-dollar' };
 
+/* Os três instrumentos de planejamento (Constituição, art. 165): cada um com função, foco e o que se vê na prática */
+const INSTRUMENTOS = [
+    { tipo: 'PPA', nome: 'Plano Plurianual', ic: 'fa-binoculars', lema: 'O plano de médio prazo',
+      linhas: [
+        ['Duração', '4 anos. Começa no 2º ano de um mandato e vai até o fim do 1º ano do mandato seguinte, o que faz o plano atravessar a troca de governos.'],
+        ['Foco', 'Programas de longo prazo e as despesas de capital (obras e equipamentos) e outras que decorrem delas. Define metas, quantitativas e qualitativas, para cada programa.'],
+        ['Na prática', 'Serve de moldura para as leis seguintes: um investimento que dure mais de um ano não pode começar sem estar previsto no PPA. Como as metas são de 4 anos, é comum haver distância entre o que foi planejado e o que de fato se executa, e essa é uma crítica frequente ao instrumento.'],
+      ] },
+    { tipo: 'LDO', nome: 'Lei de Diretrizes Orçamentárias', ic: 'fa-list-check', lema: 'As regras do orçamento do ano seguinte',
+      linhas: [
+        ['Função', 'Fixa os parâmetros gerais que orientam a elaboração do orçamento do ano seguinte. É a ponte entre o PPA e a LOA.'],
+        ['Objetivo', 'Estabelece as metas e as prioridades fiscais, como a meta de resultado primário. Com isso, ajusta o que se quer fazer à realidade da arrecadação e do caixa do Estado.'],
+        ['Na prática', 'Deve ser votada antes do recesso de meio de ano. Traz, por exemplo, as regras para bloquear despesas se a receita ficar abaixo do previsto e as orientações para o Congresso e o Executivo na LOA.'],
+      ] },
+    { tipo: 'LOA', nome: 'Lei Orçamentária Anual', ic: 'fa-file-invoice-dollar', lema: 'O orçamento que vai para a execução',
+      linhas: [
+        ['Função', 'É o instrumento prático de execução financeira: estima a receita do ano e autoriza as despesas. Por isso é o centro das negociações entre Executivo e Congresso.'],
+        ['Emendas', 'O Congresso pode alterar o projeto por emendas parlamentares. As individuais e as de bancada são de execução obrigatória e, depois de aprovadas na LOA, o Executivo as executa.'],
+      ],
+      partes: [
+        ['Orçamento Fiscal', 'Os três Poderes da União (Executivo, Legislativo e Judiciário), com a administração indireta, os fundos e as fundações mantidos pelo poder público.'],
+        ['Orçamento da Seguridade Social', 'As ações e entidades da Previdência Social, da Assistência Social e da Saúde: ministérios, fundos, fundações e órgãos da administração indireta ligados a essas funções.'],
+        ['Orçamento de Investimento das Estatais', 'As empresas em que a União, direta ou indiretamente, detém a maioria do capital social com direito a voto.'],
+      ] },
+];
+function instrumentosOrcamento() {
+    const corpo = (i) => `<dl class="mt-2 space-y-2 text-sm">${i.linhas.map(([k, v]) => `<div><dt class="text-xs font-bold uppercase tracking-wider text-slate-500">${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>
+        ${i.partes ? `<p class="mt-3 text-xs font-bold uppercase tracking-wider text-slate-500">A LOA tem três orçamentos dentro dela</p>
+            <ol class="mt-1 space-y-2 text-sm">${i.partes.map(([k, v], n) => `<li class="pl-3 border-l-4 border-slate-300 dark:border-slate-600"><b>${n + 1}. ${esc(k)}.</b> ${esc(v)}</li>`).join('')}</ol>` : ''}`;
+    return `<div class="mt-4"><p class="font-bold text-sm">Entenda cada instrumento</p>
+        <div class="mt-2 space-y-2">${INSTRUMENTOS.map((i) => `<details class="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-3">
+            <summary class="cursor-pointer font-semibold"><i class="fa-solid ${i.ic} mr-1.5 text-slate-400" aria-hidden="true"></i>${esc(i.tipo)} · ${esc(i.nome)} <span class="font-normal text-slate-500">· ${esc(i.lema)}</span></summary>${corpo(i)}</details>`).join('')}</div></div>`;
+}
+
 function linhaDoTempo(r) {
     const nos = r.linha_do_tempo.map((n) => {
         const [chip, ponto] = ESTADO_COR[n.estado] || ESTADO_COR.sem_fonte;
@@ -163,7 +197,7 @@ function linhaDoTempo(r) {
     return `<div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/40 p-4">
         <p class="font-bold"><i class="fa-solid fa-calendar-days mr-1.5 text-brand-600" aria-hidden="true"></i>Linha do tempo · ${esc(r.agora.rotulo)}</p>
         <ol class="ciclo mt-3">${nos.join('')}</ol>
-        <p class="mt-3 text-sm"><b>Momento:</b> ${esc(r.momento)}</p></div>`;
+        <p class="mt-3 text-sm"><b>Momento:</b> ${esc(r.momento)}</p>${instrumentosOrcamento()}</div>`;
 }
 
 function barra(p, cor = 'bg-brand-500') { return `<div class="mt-1 h-2.5 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden"><div class="h-full ${cor}" style="width:${Math.max(1, Math.min(100, p))}%"></div></div>`; }
