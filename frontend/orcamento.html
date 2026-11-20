@@ -64,9 +64,10 @@
         .meta-sub { font-size: .85rem; font-weight: 600; }
         .meta-txt { margin-top: .5rem; font-size: .82rem; line-height: 1.5; }
         .meta-estado { display: inline-block; margin-top: .45rem; padding: .3rem .55rem; font: 800 .68rem/1.2 var(--fonte-texto); letter-spacing: .1em; text-transform: uppercase; border: 2px solid var(--fg); }
-        .meta-estado--fora { background: var(--vermelho); color: #fff; border-color: var(--vermelho); }
-        .meta-estado--atencao { border-style: dashed; }
-        .meta-estado--ok { background: var(--fg); color: var(--papel); }
+        /* escala do veredicto: caixa de cor sólida (vermelho escuro = fora da regra, amarelo = alerta, verde = cumprida) */
+        .meta-estado--fora { background: #8f0f1a; color: #fff; border-color: #8f0f1a; }
+        .meta-estado--atencao { background: #f5c400; color: #1a1a1a; border-color: #f5c400; }
+        .meta-estado--ok { background: #1f7a3d; color: #fff; border-color: #1f7a3d; }
         .meta-esc { position: relative; height: 1.5rem; margin-top: 1rem; border: 2px solid var(--line); }
         .meta-faixa { position: absolute; top: 0; bottom: 0; background: color-mix(in srgb, var(--fg) 16%, transparent); }
         .meta-marca { position: absolute; top: -.35rem; bottom: -.35rem; width: 0; border-left: 3px solid var(--fg); transform: translateX(-1.5px); }
