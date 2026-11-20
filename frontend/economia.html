@@ -579,12 +579,12 @@ function situacaoDetalhe(d) {
 /* ----- Painel analítico: do resultado do governo à dívida (texto gerado com os números que o site já puxa) ----- */
 function painelAnalitico(d) {
     const uniao = d.esfera === 'uniao', escopo = uniao ? E.escopo : 'ente', sf = d.situacao_fiscal;
-    let prim, nom, juros, rec = null, desp = null, periodo, fonte, atorA, atorB;
+    let prim, nom, juros, rec = null, desp = null, periodo, fonte, atorA, atorB, pPib = null, nPib = null;
     if (escopo === 'consolidado') {
         const f = sf && sf.fluxo && sf.fluxo.itens, j = sf && sf.custo && sf.custo.itens.find((i) => i.id === 'juros12');
         const p = f && f.find((i) => i.id === 'primario'), n = f && f.find((i) => i.id === 'nominal');
         if (!p || !n || !j || j.valor_rs == null) return '<p class="text-sm text-slate-500">As séries do Banco Central não responderam agora, então o painel não pôde ser montado.</p>';
-        prim = p.valor_rs; nom = n.valor_rs; juros = j.valor_rs; periodo = sf.fluxo.periodo; fonte = 'Banco Central do Brasil (séries do SGS)';
+        prim = p.valor_rs; nom = n.valor_rs; juros = j.valor_rs; pPib = p.pct_pib; nPib = n.pct_pib; periodo = sf.fluxo.periodo; fonte = 'Banco Central do Brasil (séries do SGS)';
         atorA = ['Setor público consolidado', 'União, estados, municípios e estatais somados. É o que o Banco Central usa para medir se o conjunto do governo fecha as contas.'];
         atorB = ['Banco Central do Brasil', 'Guardião da moeda, independente do governo. Não paga salários: fixa a taxa básica de juros (Selic) e divulga as estatísticas da dívida.'];
     } else {
@@ -606,26 +606,38 @@ function painelAnalitico(d) {
         extratoA = linha('+', 'Receitas primárias (tributos e outras)', rec) + linha('−', 'Despesas primárias pagas', desp)
             + (Math.abs(ajuste) > 0.005 * rec ? linha(ajuste >= 0 ? '+' : '−', 'Ajustes metodológicos do RREO', ajuste) : '');
     }
-    extratoA += `<div class="pa-tot"><span>[=] Resultado primário</span><b>${resultado < 0 ? '−' : '+'} ${brlCurto(Math.abs(resultado))}</b></div>`;
+    extratoA += `<div class="pa-tot"><span>[=] Resultado primário</span><b>${resultado < 0 ? '−' : '+'} ${brlCurto(Math.abs(resultado))}${pPib != null ? ` <small>(${pc(Math.abs(pPib), 2)}% do PIB)</small>` : ''}</b></div>`;
     const leituraA = prim > 0
         ? `Nesse período, o governo fechou com um <b>déficit primário de ${brlCurto(prim)}</b>: a arrecadação não cobriu os gastos do dia a dia, sem contar os juros.`
         : `Nesse período, o governo fechou com um <b>superávit primário de ${brlCurto(-prim)}</b>: arrecadou mais do que gastou no dia a dia, sem contar os juros.`;
     const extratoB = linha(prim >= 0 ? '+' : '−', prim >= 0 ? 'O déficit primário' : 'O superávit primário', prim) + linha('+', 'O peso dos juros da dívida', juros)
-        + `<div class="pa-tot"><span>[=] ${nom >= 0 ? 'Necessidade de financiamento (déficit nominal)' : 'Superávit nominal'}</span><b>${nom >= 0 ? '' : '− '}${brlCurto(Math.abs(nom))}</b></div>`;
+        + `<div class="pa-tot"><span>[=] ${nom >= 0 ? 'Necessidade de financiamento (déficit nominal)' : 'Superávit nominal'}</span><b>${nom >= 0 ? '' : '− '}${brlCurto(Math.abs(nom))}${nPib != null ? ` <small>(${pc(Math.abs(nPib), 2)}% do PIB)</small>` : ''}</b></div>`;
     let leituraB;
     if (nom <= 0) leituraB = `O resultado final foi <b>positivo em ${brlCurto(-nom)}</b>, mesmo depois de pagar os juros: a conta não precisou de dívida nova.`;
     else if (prim <= 0) leituraB = `Sem os juros, as contas fecharam no azul. Mas os juros de ${brlCurto(juros)} bastaram para criar uma <b>necessidade de financiamento de ${brlCurto(nom)}</b>: todo o déficit vem da dívida antiga.`;
-    else leituraB = `Para pagar o que faltou, o governo precisou se financiar com dívida nova:<b>${brlCurto(nom)}</b>. Desse total, <b>${Math.round(juros / nom * 100)}%</b> são os juros da dívida já existente.`;
+    else leituraB = `O resultado final foi uma <b>necessidade de financiamento de ${brlCurto(nom)}</b>: o que faltou depois de pagar as despesas e os juros.`;
+    const selic = sf && sf.custo && (sf.custo.itens.find((i) => i.id === 'selic') || {}).pct;
+    const fn = ((d.nivel2 && d.nivel2.despesas && d.nivel2.despesas.funcoes) || []).filter((f) => f.nome !== 'Encargos especiais').slice(0, 3);
+    const gastos = fn.length ? `<h4 class="pa-micro">Onde mais se gastou?</h4>
+        <ol class="pa-lista">${fn.map((f) => `<li><span>${esc(f.nome)}</span><b>${brlCurto(f.valor)} <small>· ${pc(f.pct, 1)}% da despesa total</small></b></li>`).join('')}</ol>
+        <p class="pa-nota">Despesa liquidada ${escopo === 'ente' ? 'do ente' : 'do Governo Federal'} por função, acumulada até o ${esc((d.periodo && d.periodo.rotulo) || 'último bimestre')}. Ficam de fora os “Encargos especiais”, que incluem, entre outras coisas, o serviço da dívida.</p>` : '';
+    const porqueA = escopo === 'ente' ? '' : `<h4 class="pa-micro">Por que as despesas obrigatórias pesam tanto?</h4>
+        <p class="pa-par">Grande parte da despesa federal já tem destino definido pela Constituição ou por lei: aposentadorias, benefícios assistenciais, salários e pisos de saúde e educação. Esses gastos crescem por regras próprias, como reajustes automáticos e mais beneficiários, e não dependem da decisão anual do governo. Quem defende rever essas regras diz que, sem isso, a despesa cresce mais rápido que a economia e pressiona o resultado. Quem defende mantê-las diz que são direitos garantidos e que o ajuste poderia vir mais da receita, como a revisão de benefícios fiscais.</p>`;
+    const share = nom > 0 ? Math.min(100, Math.round(juros / nom * 100)) : 0;
+    const bola = nom <= 0 ? '' : `<h4 class="pa-micro">Como essa conta é financiada</h4>
+        <p class="pa-par">Quando as despesas e os juros passam da receita, o Tesouro vende títulos públicos a investidores e usa esse dinheiro para pagar o que falta. Esses títulos viram dívida, e a dívida passa a render juros nos anos seguintes.</p>
+        <h4 class="pa-micro">A dinâmica da bola de neve</h4>
+        <p class="pa-par">${prim > 0 ? `Neste período, <b>${share}%</b> da necessidade de financiamento (${brlCurto(juros)}) foram juros da dívida já existente, e ${100 - share}% (${brlCurto(prim)}) vieram do déficit primário.` : `Neste período, os juros (${brlCurto(juros)}) foram maiores que o saldo positivo do primário.`} Por isso a dívida pode crescer mesmo com o primário zerado: se os juros pagos superam o crescimento da economia, a dívida aumenta em proporção ao PIB.${selic != null ? ` Os juros acompanham a Selic, hoje em ${pc(selic, 2)}% ao ano (meta definida pelo Banco Central).` : ''} Quem defende o ajuste fiscal vê nessa dinâmica um motivo para reduzir déficits. Quem critica a política de juros altos vê nela o custo de manter a Selic elevada.</p>`;
     const diverge = escopo === 'consolidado' && Math.abs(prim + juros - nom) > 0.03 * Math.abs(nom);
     return `<p class="pa-periodo"><b>Período analisado:</b> ${esc(periodo || '')} · Fonte: ${esc(fonte)}</p>
         <article class="pa-bloco"><p class="pa-tag">Causa · a ótica acima da linha</p>
             <h3 class="pa-ator">O ator: ${atorA[0]}</h3><p class="pa-ctx">${atorA[1]}</p>
-            <div class="pa-extrato"><p class="pa-ext-t">O extrato do ator</p>${extratoA}</div>
-            <p class="pa-leit"><span>Leitura automática</span>${leituraA}</p></article>
+            <div class="pa-extrato"><p class="pa-ext-t">O extrato do ator</p>${extratoA}</div>${gastos}
+            <p class="pa-leit"><span>Leitura automática</span>${leituraA}</p>${porqueA}</article>
         <article class="pa-bloco"><p class="pa-tag">Consequência · a ótica abaixo da linha</p>
             <h3 class="pa-ator">O ator: ${atorB[0]}</h3><p class="pa-ctx">${atorB[1]}</p>
             <div class="pa-extrato"><p class="pa-ext-t">O extrato do ator</p>${extratoB}</div>
-            <p class="pa-leit"><span>Leitura automática</span>${leituraB}</p>
+            <p class="pa-leit"><span>Leitura automática</span>${leituraB}</p>${bola}
             ${diverge ? '<p class="pa-nota">A soma das duas linhas difere do nominal informado: o Banco Central apura cada série por métodos próprios, e pequenas diferenças são esperadas.</p>' : ''}</article>
         <div class="pa-sintese"><p class="pa-tag">A síntese · o cabo de guerra</p>
             <p>Quando o governo gasta mais do que arrecada, precisa se financiar com dívida, e os juros tornam essa dívida mais cara. Os juros acompanham a Selic, fixada pelo Banco Central para conter a inflação. Quem defende mais ajuste das contas diz que equilibrá-las abre espaço para juros menores. Quem defende mais gasto público diz que os juros altos são parte do problema e que cortar despesa atinge serviços essenciais. O ciclo alimenta a necessidade de financiamento acima, e o debate é sobre por onde interrompê-lo.</p></div>`;
