@@ -247,7 +247,7 @@ select[class], input[class][type="text"], input[class][type="search"], input[cla
 }
 /* botões, chips e etiquetas-link: contorno completo, como etiqueta */
 button[class], label[class*="rounded"], a[class*="rounded-xl"], a[class*="rounded-lg"] { border: 1px solid var(--line) !important; background: transparent !important; }
-button[class*="bg-brand-600"], button[class*="bg-brand-700"] { border-color: var(--vermelho) !important; background: var(--vermelho) !important; }
+button[class*="bg-brand-600"], button[class*="bg-brand-700"], a[class*="bg-brand-600"], a[class*="bg-brand-700"] { border-color: var(--vermelho) !important; background: var(--vermelho) !important; }
 button[data-membros], button[data-limpar], button[data-pol], button[data-fechar-pol], button[data-fechar-membros], button[data-acao] { border: 0 !important; background: transparent !important; }
 /* linhas de filtro: mais ar entre os controles */
 .flex.flex-wrap.items-center.gap-2 { gap: .9rem 1.2rem; }
