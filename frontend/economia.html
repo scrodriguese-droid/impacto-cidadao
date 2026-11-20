@@ -714,7 +714,7 @@ function blocoAnual(dz) {
             <span class="radar-item-nota"><b class="radar-seta radar-seta--${i.status}">${marca} ${esc(i.rotulo)}</b>${antes}${inicio}</span></li>`;
     }).join('');
     return `<p class="radar-pergunta radar-pergunta--anual">Pobreza e desigualdade · dados anuais</p>
-        <ul class="radar-itens">${itens}</ul>
+        <ul class="radar-itens radar-cards">${itens}</ul>
         <p class="ficha-nota">Saem uma vez por ano, com atraso; a seta compara com o ano anterior.
             <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(dz.fonte.url))}">Ficha do IBGE ↗</a></p>`;
 }
@@ -737,7 +737,7 @@ function painelSocial(sc) {
     return `<section class="radar-social"><p class="radar-pergunta">Economia e vida da população · dados de ${esc(sc.referencia.slice(5, 7))}/${esc(sc.referencia.slice(0, 4))}</p>
         <h3 class="radar-secao-h">Trabalho, renda, preços e crescimento</h3>
         <p class="radar-legenda">Como a economia está entregando em relação a 12 meses antes. ↑ melhorou · → estável · ↓ piorou (a seta indica se o quadro melhorou ou piorou, não se o número subiu ou caiu).</p>
-        <ul class="radar-itens">${itens}</ul>${blocoAnual(sc.desigualdade)}</section>`;
+        <ul class="radar-itens radar-cards">${itens}</ul>${blocoAnual(sc.desigualdade)}</section>`;
 }
 /* Linha do tempo da dívida e dos juros: UM gráfico em três faixas alinhadas, na mesma ordem do confronto logo acima
    (política fiscal, o ponto de encontro, política monetária), com as normas marcadas direto na linha e um cartão por marco.
