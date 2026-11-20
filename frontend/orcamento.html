@@ -233,6 +233,7 @@
                 </ul>
                 <p class="lrf-rodape"><sup>*</sup> A Lei de Responsabilidade Fiscal (LRF) não pune o presidente pelo simples fato de haver déficit, mas sim por descumprir a lei orçamentária sem tomar as providências exigidas.</p></article>
         </div>
+        <div id="lrfRcl" class="cartazes mt-4" style="max-width:420px"></div>
 
         <h3 class="lrf-bloco"><b>3</b> A punição: o que acontece a quem descumpre</h3>
         <div class="lrf-tab-wrap"><table class="lrf-tab">
@@ -342,6 +343,21 @@
 <script src="assets/comum.js"></script>
 <script>
 renderLayout('orcamento');
+
+// Receita corrente líquida da União (RGF, últimos 12 meses): a base de cálculo dos limites da LRF
+(async () => {
+    const alvo = document.getElementById('lrfRcl');
+    try {
+        const d = await api('/api/economia/1');
+        const p = d && d.nivel1 && d.nivel1.lrf_pessoal;
+        const v = p && (p.rcl_12m || p.rcl);
+        if (!v) { alvo.remove(); return; }
+        const n = Number(v), curto = n >= 1e12 ? `R$ ${(n / 1e12).toLocaleString('pt-BR', { maximumFractionDigits: 2 })} tri` : `R$ ${(n / 1e9).toLocaleString('pt-BR', { maximumFractionDigits: 2 })} bi`;
+        alvo.innerHTML = `<div class="cartaz"><p class="cartaz-rotulo">Receita corrente líquida da União</p><p class="cartaz-num">${esc(curto)}</p>
+            <p class="cartaz-sub">últimos 12 meses</p>
+            <p class="cartaz-nota">É a receita que serve de base para os limites da LRF, como o da folha de pessoal. Relatório de Gestão Fiscal, Poder Executivo, ${esc(p.referencia)}.</p></div>`;
+    } catch (e) { alvo.remove(); }
+})();
 
 const ESFERAS = [
     { id: 'municipio', rotulo: 'Município', icone: 'fa-city' },

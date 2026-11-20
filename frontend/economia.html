@@ -1055,11 +1055,6 @@ function nivel1(d) {
         ? cartaz(`Resultado primário${gl('DEFICIT_PRIMARIO')}`, brlCurto(Math.abs(prim.valor)), prim.valor >= 0 ? 'Déficit' : 'Superávit',
             'Receitas menos gastos, sem contar juros e amortização da dívida.', prim.valor >= 0)
         : cartaz('Resultado primário', '—', 'Indisponível neste período.', '');
-    const rclV = p && (p.rcl_12m || p.rcl);
-    const cRcl = rclV
-        ? cartaz(`Receita corrente líquida${gl('RCL')}`, brlCurto(rclV), 'últimos 12 meses',
-            `É a receita que serve de base para limites e pisos, como o da folha de pessoal e o da saúde. Lei de Responsabilidade Fiscal, Poder Executivo, ${esc(p.referencia)}.`)
-        : '';
     const cPib = sf && sf.pib
         ? cartaz('PIB, 12 meses', brlCurto(sf.pib.valor_rs), `até ${esc(sf.pib.data.slice(5, 7))}/${esc(sf.pib.data.slice(0, 4))}`,
             'Soma de tudo o que o país produz em um ano (bens e serviços). É a régua das contas públicas: dívida, déficit e juros em % do PIB mostram o tamanho do problema em relação à riqueza do país. Valor derivado de séries do Banco Central.')
@@ -1068,7 +1063,7 @@ function nivel1(d) {
     const rp = uniao ? radarPartes(sf && sf.diagnostico) : null;
     const termometro = `<section aria-labelledby="n1"><h2 id="n1">As contas estão em dia?</h2>
         <p class="text-sm text-slate-500 mt-2" style="max-width:70ch">Estes números respondem à pergunta. Abaixo deles, o que significam e o detalhe de cada um.</p>
-        <div class="cartazes mt-4">${cDivida}${cLrf}${cPrim}${cRcl}${cPib}</div></section>
+        <div class="cartazes mt-4">${cDivida}${cLrf}${cPrim}${cPib}</div></section>
         <section aria-labelledby="nDef"><h2 id="nDef">Déficit primário × déficit nominal</h2>
         <div class="def-duo mt-3">
             <div><p class="def-rot">Primário</p><p>Receitas menos despesas, <b>sem contar os juros</b> da dívida. Mostra se o governo fecha as contas do dia a dia.</p></div>
