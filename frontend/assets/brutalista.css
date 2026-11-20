@@ -427,9 +427,19 @@ a.chip-link:hover { background: var(--ativo); color: var(--ativo-fg); }
 .radar-pergunta--anual { margin-top: 1.8rem; }
 /* confronto política fiscal × política monetária */
 .radar-secao-h { font-family: var(--fonte-titulo); font-size: clamp(1.35rem, 2.4vw, 1.9rem); line-height: 1.1; letter-spacing: 0; text-transform: uppercase; margin-top: .3rem; }
-.radar-confronto { display: grid; gap: 2.2rem 2rem; margin-top: .4rem; }
-@media (min-width: 900px) { .radar-confronto { grid-template-columns: 1fr 1fr; } }
-.radar-lado { border-top: 3px solid var(--line); padding-top: .9rem; }
+/* grade de linhas contínuas: cada divisória atravessa os dois lados e cada par de indicadores fica no mesmo eixo (subgrid) */
+.radar-confronto { display: grid; gap: 2.2rem 0; margin-top: .4rem; }
+@media (min-width: 900px) {
+    .radar-confronto { grid-template-columns: 1fr 1fr; gap: 0; }
+    .radar-confronto > .radar-lado { display: grid; grid-row: span var(--n); grid-template-rows: subgrid; }
+    .radar-confronto > .radar-lado:first-child > * { padding-right: 1.4rem; }
+    .radar-confronto > .radar-lado:last-child > * { padding-left: 1.4rem; }
+}
+.cf-cab { border-top: 3px solid var(--line); padding: .9rem 0 1rem; }
+.cf-cel { border-top: 1px solid var(--line); padding: 1rem 0 1.1rem; display: flex; flex-direction: column; gap: .35rem; min-width: 0; }
+.cf-pe { margin-top: auto; padding-top: .55rem; display: flex; flex-wrap: wrap; align-items: center; gap: .35rem .6rem; font-size: .78rem; line-height: 1.4; color: var(--muted); }
+.cf-status { font: 800 .66rem/1 var(--fonte-texto); letter-spacing: .08em; text-transform: uppercase; border: 1.5px solid var(--line); padding: .3rem .5rem; color: var(--fg); }
+.cf-status--piora { background: var(--vermelho); border-color: var(--vermelho); color: #fff; }
 .radar-confronto > .radar-lado { margin-top: 0 !important; }   /* a regra global "section + section" empurrava a 2ª coluna */
 .radar-social { margin-top: 2rem; border-top: 3px solid var(--line); padding-top: .9rem; }
 .radar-conexao { border: 3px solid var(--line); margin-top: 1.8rem; padding: 1.1rem 1.3rem 1.3rem; }
