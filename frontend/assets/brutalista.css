@@ -247,7 +247,7 @@ select[class], input[class][type="text"], input[class][type="search"], input[cla
 }
 /* botões, chips e etiquetas-link: contorno completo, como etiqueta */
 button[class], label[class*="rounded"], a[class*="rounded-xl"], a[class*="rounded-lg"] { border: 1px solid var(--line) !important; background: transparent !important; }
-button[class*="bg-brand-600"], button[class*="bg-brand-700"] { border-color: var(--vermelho) !important; background: var(--vermelho) !important; }
+button[class*="bg-brand-600"], button[class*="bg-brand-700"], a[class*="bg-brand-600"], a[class*="bg-brand-700"] { border-color: var(--vermelho) !important; background: var(--vermelho) !important; }
 button[data-membros], button[data-limpar], button[data-pol], button[data-fechar-pol], button[data-fechar-membros], button[data-acao] { border: 0 !important; background: transparent !important; }
 /* linhas de filtro: mais ar entre os controles */
 .flex.flex-wrap.items-center.gap-2 { gap: .9rem 1.2rem; }
@@ -448,11 +448,17 @@ a.chip-link:hover { background: var(--ativo); color: var(--ativo-fg); }
 .radar-conexao-colunas h4 span { color: inherit; font-weight: 600; letter-spacing: .04em; }
 .radar-conexao-colunas .radar-pontos { border-top: 0; margin-top: .5rem; padding-top: 0; }
 .radar-visoes { margin-top: 1.8rem; border-top: 3px solid var(--line); padding-top: .9rem; }
-.radar-visoes-colunas { display: grid; margin-top: 1rem; border: 2px solid var(--line); }
-@media (min-width: 900px) { .radar-visoes-colunas { grid-template-columns: 1fr 1fr; } .radar-leitura + .radar-leitura { border-left: 1px solid var(--line); } }
+/* as duas leituras: um seletor com o mesmo peso para as duas, e uma de cada vez na tela */
+.radar-troca { display: flex; flex-wrap: wrap; align-items: stretch; gap: 0; margin-top: 1rem; }
+.radar-troca-rot { display: flex; align-items: center; padding: 0 1rem 0 0; font: 800 .66rem/1.2 var(--fonte-texto); letter-spacing: .1em; text-transform: uppercase; }
+.radar-troca button { flex: 1 1 14rem; min-height: 2.9rem; padding: .6rem 1rem; margin-right: -2px; border: 2px solid var(--line); background: transparent; color: var(--fg); cursor: pointer;
+    font: 800 .7rem/1.25 var(--fonte-texto); letter-spacing: .08em; text-transform: uppercase; }
+.radar-troca button:hover { background: var(--papel-2); }
+.radar-troca button[aria-pressed="true"] { background: var(--ativo); color: var(--ativo-fg); }
+.radar-troca button:focus-visible { outline: 3px solid var(--vermelho); outline-offset: -3px; }
+.radar-visoes-colunas { display: grid; margin-top: .9rem; border: 2px solid var(--line); }
 .radar-leitura { padding: 1rem 1.2rem 1.2rem; font-size: .92rem; line-height: 1.5; }
-.radar-leitura + .radar-leitura { border-top: 1px solid var(--line); }
-@media (min-width: 900px) { .radar-leitura + .radar-leitura { border-top: 0; } }
+.radar-leitura[hidden] { display: none; }
 .radar-leitura p { margin-top: .5rem; }
 .radar-leitura-rot { font: 800 .66rem/1.2 var(--fonte-texto); letter-spacing: .1em; text-transform: uppercase; margin-top: .9rem !important; }
 .radar-leitura .radar-pontos { border-top: 0; margin-top: .4rem; padding-top: 0; }
@@ -1025,6 +1031,15 @@ details.conceito h5 { font: 800 .7rem/1.3 var(--fonte-texto); letter-spacing: .1
 .ftabs button i { color: inherit !important; }
 .ftabs button[aria-selected="true"] { background: var(--ativo) !important; color: var(--ativo-fg) !important; }
 .ftabs button:focus-visible { outline: 3px solid var(--vermelho); outline-offset: -3px; }
+/* sub-abas de “Risco e dívida”: mais leves que as abas de cima, para não parecerem outro nível de página */
+.rsubs { display: flex; flex-wrap: wrap; gap: .5rem; padding-bottom: 1.1rem; border-bottom: 1px solid var(--line); margin-bottom: 1.6rem; }
+.rsubs button { flex: 1 1 12rem; min-height: 2.9rem; padding: .6rem 1rem; border: 2px solid var(--line); background: transparent; color: var(--fg); cursor: pointer;
+    font: 800 .7rem/1.25 var(--fonte-texto); letter-spacing: .08em; text-transform: uppercase; text-align: left; }
+.rsubs button:hover { background: var(--papel-2); }
+.rsubs button[aria-selected="true"] { background: var(--ativo); color: var(--ativo-fg); }
+.rsubs button:focus-visible { outline: 3px solid var(--vermelho); outline-offset: 2px; }
+.rsub-painel[hidden] { display: none !important; }
+.rsub-painel:focus-visible { outline: none; }
 .fpainel { padding-top: 1.6rem; }
 .fpainel[hidden] { display: none !important; }
 .fpainel:focus-visible { outline: none; }

@@ -224,8 +224,7 @@ function blocoCusto() {
                     <button type="button" data-cen="hoje" class="px-3 py-1.5 rounded-full border border-slate-300 dark:border-slate-600 font-semibold">Valores de hoje</button>
                     <button type="button" data-cen="a" class="px-3 py-1.5 rounded-full border border-slate-300 dark:border-slate-600 font-semibold">r de 1% e g de 3%</button>
                     <button type="button" data-cen="b" class="px-3 py-1.5 rounded-full border border-slate-300 dark:border-slate-600 font-semibold">r de 6,5% e g de 1%</button></div>
-                <p id="simTexto" class="text-sm font-semibold mt-3" aria-live="polite"></p>
-                <div class="grafico" style="height:220px"><canvas id="gSim" role="img" aria-label="Trajetória simulada da dívida em proporção do PIB"></canvas></div>`)}
+                <p id="simTexto" class="text-sm font-semibold mt-3" aria-live="polite"></p>`)}
         </div>
         ${blocoLeiloes()}
         <details class="mt-4 text-xs text-slate-500" style="max-width:80ch"><summary class="cursor-pointer font-semibold underline">Como calculamos</summary>
@@ -241,8 +240,6 @@ function atualizarSim() {
     $('vp').textContent = `${SIM.p >= 0 ? 'superávit' : 'déficit'} de ${n1(Math.abs(SIM.p))}% do PIB`;
     const v = simular(d0, SIM.r, SIM.g, SIM.p), fim = v[v.length - 1];
     $('simTexto').textContent = `Se esses valores se mantivessem por 10 anos, a dívida iria de ${n1(d0)}% para ${n1(fim)}% do PIB (${fim >= d0 ? '+' : '−'}${n1(Math.abs(fim - d0))} p.p.).`;
-    desenharGrafico('gSim', { type: 'line', data: { labels: v.map((_, i) => (i === 0 ? 'hoje' : `+${i}`)), datasets: [{ label: 'Dívida, % do PIB', data: v, borderColor: '#A92823', backgroundColor: 'rgba(169,40,35,.15)', fill: true, tension: .2, pointRadius: 2 }] },
-        options: { plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => `${n1(c.parsed.y)}% do PIB` } } }, scales: { y: { title: { display: true, text: '% do PIB' } }, x: { title: { display: true, text: 'anos a partir de hoje' } } } } });
 }
 function ligarSim() {
     const r = $('sr'); if (!r) return;
