@@ -97,7 +97,69 @@ const APROFUNDAR = {
     ],
 };
 
+/* ---------- Voltar e posição da página ----------
+   1) Botão "Voltar" no topo de toda página (menos o início): volta à tela de onde o leitor veio, se for do próprio
+      site; senão, à tela "mãe" (a aba da área, ou o início).
+   2) Ao voltar (botão do site ou do navegador), a página reabre no ponto em que o leitor estava, e não no topo.
+      Guardamos a rolagem de cada endereço na sessão; como muitas telas montam o conteúdo depois de carregar,
+      esperamos a página ficar alta o bastante antes de rolar. */
+function ligarVoltar(paginaAtual) {
+    if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+    const chave = 'ic-rolagem:' + location.pathname + location.search;
+    const guardar = () => { try { sessionStorage.setItem(chave, String(Math.round(window.scrollY))); } catch (_) { /* sem sessionStorage, volta ao topo */ } };
+    addEventListener('pagehide', guardar);
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') guardar(); });
+    document.addEventListener('click', (e) => { if (e.target.closest && e.target.closest('a[href]')) guardar(); }, true);
+
+    // reabre no ponto guardado, quando se chega por "voltar/avançar" ou pelo botão do site
+    let alvo = 0;
+    try {
+        const nav = performance.getEntriesByType('navigation')[0];
+        const veioDeVoltar = (nav && nav.type === 'back_forward') || sessionStorage.getItem('ic-voltando') === location.pathname + location.search;
+        sessionStorage.removeItem('ic-voltando');
+        if (veioDeVoltar && !location.hash) alvo = Number(sessionStorage.getItem(chave)) || 0;
+    } catch (_) { alvo = 0; }
+    if (alvo > 0) {
+        let feito = false;
+        const parar = () => { feito = true; };
+        for (const ev of ['wheel', 'touchstart', 'keydown', 'mousedown']) addEventListener(ev, parar, { once: true, passive: true });
+        const inicio = Date.now();
+        const tentar = () => {
+            if (feito) return;
+            const alturaOk = document.documentElement.scrollHeight >= alvo + innerHeight - 4;
+            if (alturaOk) { scrollTo({ top: alvo, behavior: 'instant' }); if (Math.abs(window.scrollY - alvo) < 3 && Date.now() - inicio > 600) return; }
+            if (Date.now() - inicio < 8000) setTimeout(tentar, 150);
+        };
+        tentar();
+    }
+
+    if (paginaAtual === 'inicio') return;
+    const principal = document.querySelector('main');
+    if (!principal || document.getElementById('voltar')) return;
+    let mae = 'index.html';
+    for (const lista of Object.values(APROFUNDAR)) {
+        const item = lista.find((x) => x.id === paginaAtual);
+        if (item) mae = (SUBNAVEGACAO.orcamento.find((s) => s.id === item.pai) || {}).href || mae;
+    }
+    const botao = document.createElement('a');
+    botao.id = 'voltar'; botao.href = mae;
+    botao.className = 'inline-flex items-center gap-2 text-sm font-bold underline';
+    botao.style.cssText = 'margin-bottom:.25rem';
+    botao.innerHTML = '<span aria-hidden="true">←</span> Voltar';
+    botao.addEventListener('click', (e) => {
+        try {
+            if (document.referrer && new URL(document.referrer).origin === location.origin && history.length > 1) {
+                const r = new URL(document.referrer);
+                sessionStorage.setItem('ic-voltando', r.pathname + r.search);
+                e.preventDefault(); history.back();
+            }
+        } catch (_) { /* segue o link da tela mãe */ }
+    });
+    principal.insertBefore(botao, principal.firstChild);
+}
+
 function renderLayout(paginaAtual) {
+    ligarVoltar(paginaAtual);
     // post-its do editor (conta de editor, notas coladas nas páginas): assets/postit.js
     window.__PAGINA = paginaAtual;
     if (!document.querySelector('script[data-postit]')) {
