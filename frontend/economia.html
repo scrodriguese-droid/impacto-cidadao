@@ -1116,9 +1116,9 @@ async function carregarDividaRisco() {
             <div class="cartazes mt-4">
                 ${cartaz('Prazo médio', `${pc(e.atual.prazo_medio_anos)} anos`, 'até o vencimento, da dívida em mercado', ant ? `Um ano antes: ${pc(ant.prazo_medio_anos)} anos.` : '')}
                 ${cartaz('Vence em 12 meses', pct(e.atual.curto_pct), 'da dívida precisa ser renovada no próximo ano', ant ? `Um ano antes: ${pct(ant.curto_pct)}.` : '')}
-                ${cartaz('Custo real', `${pc(c.real)}% ao ano`, `contra um PIB que cresce ${g != null ? pc(g) + '%' : '—'}`, g != null ? `Diferença: ${pc(c.real - g)} p.p. Positiva, a dívida cresce sozinha antes do resultado primário.` : '', g != null && c.real > g, DICA_DIVIDA)}
-                ${cartazSuperavit(m, c.real, g)}
                 ${cartaz('Atrelada à Selic', pct(selic), 'da dívida em mercado muda de custo quando o Banco Central mexe nos juros', '')}
+                ${cartaz('Custo real',`${pc(c.real)}% ao ano`, `contra um PIB que cresce ${g != null ? pc(g) + '%' : '—'}`, g != null ? `Diferença: ${pc(c.real - g)} p.p. Positiva, a dívida cresce sozinha antes do resultado primário.` : '', g != null && c.real > g, DICA_DIVIDA)}
+                ${cartazSuperavit(m, c.real, g)}
             </div>
             <p class="mt-4"><a class="inline-block px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold" href="divida-risco.html">Dissecar a dívida: prazo, custo e simulador <i class="fa-solid fa-arrow-right ml-1" aria-hidden="true"></i></a></p>`;
     } catch (err) {
