@@ -124,15 +124,66 @@
     <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Em que fase do planejamento o governo está e o que isso muda na prática. Fontes oficiais, sem estimativas nossas.</p>
 
     <nav class="abas-orc" role="tablist" aria-label="Seções da página">
-        <button type="button" role="tab" id="tab-regras" aria-controls="aba-regras" data-aba="regras">1 · As regras do jogo</button>
-        <button type="button" role="tab" id="tab-votacao" aria-controls="aba-votacao" data-aba="votacao">2 · Orçamento em votação</button>
+        <button type="button" role="tab" id="tab-regras" aria-controls="aba-regras" data-aba="regras">1 · Arcabouço orçamentário</button>
+        <button type="button" role="tab" id="tab-votacao" aria-controls="aba-votacao" data-aba="votacao">2 · Ciclo orçamentário</button>
         <button type="button" role="tab" id="tab-radar" aria-controls="aba-radar" data-aba="radar">3 · Radar fiscal</button>
     </nav>
 
     <div id="aba-regras" role="tabpanel" aria-labelledby="tab-regras">
+    <!-- ========================= 0. ARCABOUÇO: O TRIPÉ PPA-LDO-LOA ========================= -->
+    <section class="lrf mt-6" aria-labelledby="tArc">
+        <p class="lrf-kicker">Base constitucional · Constituição, arts. 165 a 169</p>
+        <h2 id="tArc" class="lrf-titulo">O tripé PPA, LDO e LOA</h2>
+        <p class="lrf-lead">É o instrumento central de planejamento e execução financeira do Estado brasileiro. Na economia do setor público ele não funciona isolado: é uma espécie de &ldquo;sistema operacional&rdquo; dentro do qual as demais regras fiscais, as políticas econômicas e as restrições constitucionais se materializam.</p>
+
+        <h3 class="lrf-bloco"><b>1</b> As três leis, em uma linha cada</h3>
+        <div class="lrf-grade">
+            <article class="lrf-cx"><h4>PPA &middot; o plano</h4>
+                <p>Plano Plurianual. Fixa por quatro anos as diretrizes, os objetivos e as metas da administração, em especial para as despesas de capital e os programas de duração continuada.</p></article>
+            <article class="lrf-cx"><h4>LDO &middot; a ponte</h4>
+                <p>Lei de Diretrizes Orçamentárias. Escolhe, a cada ano, as prioridades do PPA que entram no orçamento seguinte e traz as metas fiscais, como o resultado primário, às quais a LOA precisa se ajustar.</p></article>
+            <article class="lrf-cx"><h4>LOA &middot; o orçamento</h4>
+                <p>Lei Orçamentária Anual. Estima a receita e autoriza a despesa do ano, dentro da meta da LDO e do que o PPA previu. Autoriza gastos; não cria dinheiro.</p></article>
+        </div>
+        <p class="lrf-nota">Onde cada uma está hoje, e o que cada uma traz, está na aba &ldquo;2 &middot; Ciclo orçamentário&rdquo;.</p>
+
+        <h3 class="lrf-bloco"><b>2</b> Duas camadas de regras</h3>
+        <div class="lrf-tab-wrap"><table class="lrf-tab">
+            <thead><tr><th scope="col">Camada</th><th scope="col">Normas</th><th scope="col">Papel</th></tr></thead>
+            <tbody>
+                <tr><th scope="row">Constitucional</th><td>PPA, LDO e LOA (art. 165); regra de ouro (art. 167, III); vinculações de receita para saúde, educação e seguridade; repartição de receitas com estados e municípios.</td><td>Cria o instrumento e define o que não pode ser ignorado: a base sobre a qual tudo o mais opera.</td></tr>
+                <tr><th scope="row">Infraconstitucional</th><td>Lei de Responsabilidade Fiscal (Lei Complementar 101/2000) e Novo Arcabouço Fiscal (Lei Complementar 200/2023).</td><td>Impõem limites a gastos e dívida e operam por dentro do tripé: a meta fiscal é escrita na LDO, e a LOA tem de caber nela.</td></tr>
+            </tbody></table></div>
+        <p class="lrf-nota">As regras fiscais podem mudar por lei complementar, como mudaram em 2023. O tripé e as vinculações estão na Constituição, e mudá-los exige emenda constitucional.</p>
+
+        <h3 class="lrf-bloco"><b>3</b> Como o tripé se liga ao resto da economia</h3>
+        <div class="lrf-grade lrf-grade--2">
+            <article class="lrf-cx lrf-cx--regra"><h4>Política fiscal e dívida</h4>
+                <ul>
+                    <li><b>Meta com força de lei.</b> A meta de resultado primário (superávit ou déficit) é fixada a cada ano na LDO, no Anexo de Metas Fiscais, e a LOA precisa ser montada dentro dela.</li>
+                    <li><b>Endividamento.</b> A LOA traz as operações de crédito previstas para o ano. A regra de ouro veda operações de crédito acima das despesas de capital, salvo autorização do Congresso por maioria absoluta (art. 167, III).</li>
+                </ul></article>
+            <article class="lrf-cx lrf-cx--regra"><h4>Política monetária</h4>
+                <ul>
+                    <li><b>Premissas.</b> A receita da LOA é estimada com projeções de crescimento do PIB, inflação e Selic. O Banco Central tem autonomia para fixar a Selic (Lei Complementar 179/2021). Se os juros ficam acima do previsto, a despesa com juros da dívida sobe e a arrecadação pode ficar abaixo do planejado.</li>
+                    <li><b>Demanda.</b> O tamanho do impulso fiscal influencia a demanda e, por essa via, a inflação que o Banco Central busca controlar. Economistas divergem sobre a intensidade desse efeito.</li>
+                </ul></article>
+            <article class="lrf-cx lrf-cx--regra"><h4>Políticas públicas e pacto federativo</h4>
+                <ul>
+                    <li><b>Vinculações.</b> Antes de a LDO e a LOA escolherem prioridades, a Constituição já reserva parte da arrecadação para saúde, educação e seguridade social.</li>
+                    <li><b>Transferências.</b> O orçamento federal organiza o repasse de impostos da União a estados e municípios, como os fundos de participação (FPE e FPM) e o Fundeb, e o PPA exige a regionalização das metas.</li>
+                </ul></article>
+            <article class="lrf-cx lrf-cx--regra"><h4>Planejamento e rigidez</h4>
+                <ul>
+                    <li><b>Pouca margem.</b> A maior parte da despesa federal é obrigatória por lei ou pela Constituição (benefícios previdenciários, salários, pisos de saúde e educação), o que deixa pouco espaço de escolha na LDO e na LOA. A proporção varia a cada ano: veja o Raio-X do Orçamento, da Câmara.</li>
+                    <li><b>Emendas impositivas.</b> As emendas individuais (Emenda Constitucional 86/2015) e de bancada (EC 100/2019) são de execução obrigatória. Para defensores, aproximam o recurso das demandas locais; para críticos, pulverizam o planejamento estratégico do Executivo.</li>
+                </ul></article>
+        </div>
+    </section>
+
     <!-- ========================= A. FUNDAMENTOS: A LRF ========================= -->
-    <section class="lrf mt-6" aria-labelledby="tLrf">
-        <p class="lrf-kicker">Introdução · as regras do jogo</p>
+    <section class="lrf mt-8" aria-labelledby="tLrf">
+        <p class="lrf-kicker">Regra infraconstitucional · as regras do jogo</p>
         <h2 id="tLrf" class="lrf-titulo">Lei de Responsabilidade Fiscal <span>(Lei Complementar 101/2000)</span></h2>
         <p class="lrf-lead">É o manual de regras que vale para União, estados e municípios: limita gastos e dívida e prevê consequências para quem não cumpre. Entender por que ela existe ajuda a ler o resto da página.</p>
 
