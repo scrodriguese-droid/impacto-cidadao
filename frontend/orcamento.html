@@ -79,6 +79,15 @@
         .meta-chip--meta { border-left: 3px dashed var(--fg); width: 0; height: .8rem; }
         .meta-chip--real { border-left: 5px solid var(--vermelho); width: 0; height: .8rem; }
         .meta-nota { margin-top: .7rem; font-size: .76rem; line-height: 1.5; color: var(--muted); max-width: 80ch; }
+        .abas-orc { display: flex; flex-wrap: wrap; gap: 0; margin-top: 1.1rem; border-bottom: 3px solid var(--fg); }
+        .abas-orc button { flex: 1 1 auto; padding: .65rem .9rem; font: 800 .74rem/1.2 var(--fonte-texto); letter-spacing: .08em; text-transform: uppercase; text-align: left; border: 2px solid var(--line); border-bottom: 0; margin-right: -2px; background: transparent; color: var(--muted); cursor: pointer; }
+        .abas-orc button[aria-selected="true"] { background: var(--fg); color: var(--papel); border-color: var(--fg); }
+        .abas-orc button:focus-visible { outline: 3px solid var(--vermelho); outline-offset: 2px; }
+        .art-card[hidden], .art-mais[hidden], [role="tabpanel"][hidden] { display: none !important; }
+        .filtro-art { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .7rem; }
+        .filtro-art button { padding: .35rem .7rem; font: 800 .68rem/1.2 var(--fonte-texto); letter-spacing: .08em; text-transform: uppercase; border: 2px solid var(--line); background: transparent; color: var(--fg); cursor: pointer; }
+        .filtro-art button[aria-pressed="true"] { background: var(--fg); color: var(--papel); border-color: var(--fg); }
+        .art-mais { margin-top: .8rem; padding: .55rem .9rem; font: 800 .72rem/1.2 var(--fonte-texto); letter-spacing: .08em; text-transform: uppercase; border: 2px solid var(--fg); background: transparent; color: var(--fg); cursor: pointer; }
         .lrf-tab-wrap { overflow-x: auto; margin-top: .9rem; }
         .lrf-tab { width: 100%; min-width: 34rem; border-collapse: collapse; border: 2px solid var(--line); font-size: .86rem; line-height: 1.55; }
         .lrf-tab th, .lrf-tab td { text-align: left; vertical-align: top; padding: .6rem .8rem; border-bottom: 1px solid var(--line); }
@@ -97,6 +106,13 @@
     <h1 class="text-2xl font-extrabold tracking-tight">Leis do orçamento: PPA, LDO e LOA</h1>
     <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Em que fase do planejamento o governo está e o que isso muda na prática. Fontes oficiais, sem estimativas nossas.</p>
 
+    <nav class="abas-orc" role="tablist" aria-label="Seções da página">
+        <button type="button" role="tab" id="tab-regras" aria-controls="aba-regras" data-aba="regras">1 · As regras do jogo</button>
+        <button type="button" role="tab" id="tab-votacao" aria-controls="aba-votacao" data-aba="votacao">2 · Orçamento em votação</button>
+        <button type="button" role="tab" id="tab-radar" aria-controls="aba-radar" data-aba="radar">3 · Radar fiscal</button>
+    </nav>
+
+    <div id="aba-regras" role="tabpanel" aria-labelledby="tab-regras">
     <!-- ========================= A. FUNDAMENTOS: A LRF ========================= -->
     <section class="lrf mt-6" aria-labelledby="tLrf">
         <p class="lrf-kicker">Introdução · as regras do jogo</p>
@@ -195,6 +211,9 @@
         <p class="lrf-nota">Os números e o texto das regras estão em fontes oficiais: <a class="underline" target="_blank" rel="noopener" href="https://www.planalto.gov.br/ccivil_03/leis/lcp/lcp200.htm">Lei Complementar 200/2023</a> e, para a composição do orçamento, o <a class="underline" target="_blank" rel="noopener" href="https://www2.camara.leg.br/orcamento-da-uniao/raio-x-do-orcamento">Raio-X do Orçamento, da Câmara dos Deputados</a>.</p>
     </section>
 
+    </div>
+
+    <div id="aba-votacao" role="tabpanel" aria-labelledby="tab-votacao" hidden>
     <div class="sticky top-16 z-30 -mx-4 sm:mx-0 px-4 sm:px-0 py-2 mt-3 bg-slate-50/90 dark:bg-slate-900/90 backdrop-blur">
         <div class="flex flex-wrap items-center gap-x-2 gap-y-2 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 shadow-sm text-sm">
             <i class="fa-solid fa-location-dot text-rose-500" aria-hidden="true"></i>
@@ -222,6 +241,9 @@
         <div id="resCiclo" class="mt-3" aria-live="polite"></div>
     </section>
 
+    </div>
+
+    <div id="aba-radar" role="tabpanel" aria-labelledby="tab-radar" hidden>
     <!-- ========================= C. RADAR DO AJUSTE FISCAL ========================= -->
     <section id="radar-ajuste" class="mt-10 scroll-mt-24" aria-labelledby="tRadar">
         <div id="resRadar" aria-live="polite">
@@ -229,6 +251,7 @@
             <p class="text-sm text-slate-500 mt-2"><i class="fa-solid fa-spinner fa-spin mr-1.5" aria-hidden="true"></i>Carregando…</p>
         </div>
     </section>
+    </div>
 </main>
 
 <div id="rodape"></div>
@@ -531,7 +554,57 @@ function atualizar() {
 }
 atualizar();
 
+/* ---------- abas: aprender (regras), acompanhar a votação, radar fiscal ---------- */
+const ABAS = ['regras', 'votacao', 'radar'];
+function abrirAba(nome, atualizarHash) {
+    if (!ABAS.includes(nome)) nome = 'regras';
+    ABAS.forEach((a) => {
+        const sel = a === nome;
+        $('tab-' + a).setAttribute('aria-selected', String(sel));
+        $('tab-' + a).tabIndex = sel ? 0 : -1;
+        $('aba-' + a).hidden = !sel;
+    });
+    if (atualizarHash) { try { history.replaceState(null, '', '#' + nome); } catch (e) { /* sem histórico */ } }
+}
+document.querySelectorAll('.abas-orc button').forEach((b, i, todos) => {
+    b.addEventListener('click', () => abrirAba(b.dataset.aba, true));
+    b.addEventListener('keydown', (e) => {
+        const d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+        if (!d) return;
+        const alvo = todos[(i + d + todos.length) % todos.length];
+        alvo.focus(); abrirAba(alvo.dataset.aba, true); e.preventDefault();
+    });
+});
+abrirAba((location.hash || '').slice(1).replace('radar-ajuste', 'radar'), false);
+
 /* ---------- C. radar do ajuste fiscal (conteúdo editável em assets/ajuste-fiscal.json) ---------- */
+/* tema de cada artigo, para o filtro rápido (classificação nossa, só para organizar a leitura) */
+const TEMAS = [['todos', 'Todos'], ['limite', 'Limite de gastos'], ['tributos', 'Tributos'], ['servidores', 'Funcionalismo e previdência'], ['outros', 'Demais temas']];
+const TEMA_ART = { 1: 'limite', 3: 'limite', 6: 'limite', 13: 'limite', 14: 'limite', 15: 'limite', 16: 'limite', 2: 'tributos', 4: 'tributos', 9: 'tributos',
+    7: 'servidores', 8: 'servidores', 12: 'servidores' };
+const ART_VISIVEIS = 4;
+function ligarFiltroArtigos() {
+    const cards = [...document.querySelectorAll('#resRadar .art-card')];
+    const chips = [...document.querySelectorAll('#resRadar .filtro-art button')];
+    const mais = document.getElementById('artMais');
+    let tema = 'todos', aberto = false;
+    const aplicar = () => {
+        let n = 0, ocultos = 0;
+        cards.forEach((c) => {
+            const ok = tema === 'todos' || c.dataset.tema === tema;
+            const corte = tema === 'todos' && !aberto && n >= ART_VISIVEIS;
+            if (ok) n++;
+            c.hidden = !ok || corte;
+            if (ok && corte) ocultos++;
+        });
+        mais.hidden = !ocultos;
+        mais.textContent = `Ver os restantes ${ocultos} artigos do projeto`;
+        chips.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.tema === tema)));
+    };
+    chips.forEach((b) => b.addEventListener('click', () => { tema = b.dataset.tema; aplicar(); }));
+    mais.addEventListener('click', () => { aberto = true; aplicar(); });
+    aplicar();
+}
 function desenharRadar(d) {
     const dataBR = d.atualizado_em ? d.atualizado_em.split('-').reverse().join('/') : '—';
     const gatilho = `<div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5">
@@ -543,9 +616,9 @@ function desenharRadar(d) {
         alterado: ['Alterado no Senado', 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'],
         removido: ['Fora do texto do Senado', 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300'],
     };
-    const artigos = d.artigos.map((a) => {
+    const artigos = d.artigos.map((a, i) => {
         const [rot, cor] = SELO[a.senado.estado] || SELO.mantido;
-        return `<article class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5">
+        return `<article data-tema="${TEMA_ART[parseInt(a.n, 10)] || 'outros'}" data-i="${i}" class="art-card rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5">
             <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
                 <h4 class="font-bold"><span class="text-brand-700 dark:text-brand-400">Art. ${esc(a.n)}</span> · ${esc(a.titulo)}</h4>
                 <span class="rounded-full ${cor}" style="display:inline-block !important;font-size:.58rem !important;padding:.1rem .5rem !important;line-height:1.3 !important;border-width:1px !important">${esc(rot)}</span></div>
@@ -606,7 +679,9 @@ function desenharRadar(d) {
         <div class="mt-4">${gatilho}</div>
         <h3 class="bolso-titulo">O que diz cada artigo</h3>
         ${d.artigos_nota ? `<p class="text-xs text-slate-500 mt-1" style="max-width:70ch">${esc(d.artigos_nota)}</p>` : ''}
+        <div class="filtro-art" role="group" aria-label="Filtrar artigos por tema">${TEMAS.map(([k, r]) => `<button type="button" data-tema="${k}" aria-pressed="false">${r}</button>`).join('')}</div>
         <div class="space-y-3 mt-3">${artigos}</div>
+        <button type="button" id="artMais" class="art-mais" hidden></button>
         ${emHtml}
         <h3 class="bolso-titulo">Termômetro no Congresso: onde está a lei?</h3>
         <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5">
@@ -614,6 +689,7 @@ function desenharRadar(d) {
             <ol class="mt-4 space-y-3">${etapas}</ol>
             <p class="text-xs mt-4 text-slate-600 dark:text-slate-400" role="note"><b>Nota:</b> ${esc(d.congresso.nota)}</p>${fonte}</div>
         ${faq ? `<h3 class="bolso-titulo">Perguntas frequentes</h3><div class="space-y-3 mt-3">${faq}</div>` : ''}`;
+    ligarFiltroArtigos();
 }
 fetch('assets/ajuste-fiscal.json', { cache: 'no-cache' }).then((r) => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
     .then(desenharRadar)
