@@ -203,9 +203,51 @@ function selecionarFtab(id, { foco = false, url = true } = {}) {
     if (id === 'cenario' && !window.__dimensoes) { window.__dimensoes = true; montarDimensoes('dimensoes'); }   // só monta com a aba visível (os gráficos medem o espaço)
     if (url) { try { history.replaceState(null, '', location.pathname + location.search + '#' + id); } catch (e) { /* sem histórico: segue sem */ } }
 }
+/* Sub-abas de “Risco e dívida”: o risco hoje, a dinâmica (o filme) e o histórico com o debate.
+   O conteúdo é montado depois, com os dados; esta função só alterna o que já está na tela. */
+const RSUBS = ['hoje', 'dinamica', 'historia'];
+const RSUB_ALIAS = { conexao: 'hoje', radar: 'hoje', linhaTempo: 'historia' };
+function selecionarRsub(id, { foco = false } = {}) {
+    if (!RSUBS.includes(id)) id = 'hoje';
+    E.rsub = id;
+    RSUBS.forEach((t) => {
+        const b = $('rs-b-' + t), p = $('rs-' + t);
+        if (!b || !p) return;
+        const on = t === id;
+        b.setAttribute('aria-selected', String(on)); b.tabIndex = on ? 0 : -1; p.hidden = !on;
+        if (on && foco) b.focus();
+    });
+}
 if (ABA_FISCAL) {
     const h = location.hash.slice(1);
+    E.rsub = RSUB_ALIAS[h] || 'hoje';
     selecionarFtab(FTAB_ALIAS[h] || h, { url: false });
+    const fpRisco = $('fp-risco');
+    fpRisco.addEventListener('click', (ev) => {
+        const b = ev.target.closest('[data-rsub]');
+        if (b) {
+            selecionarRsub(b.dataset.rsub);
+            if (b.tagName === 'A') {   // atalhos dentro do texto: troca de sub-aba e leva até o trecho
+                ev.preventDefault();
+                const alvo = $(b.getAttribute('href').slice(1));
+                if (alvo) alvo.scrollIntoView({ block: 'start', behavior: 'instant' });   // sem rolagem suave: a página muda de altura ao trocar de sub-aba
+            }
+            return;
+        }
+        const l = ev.target.closest('[data-leitura]');   // seletor das duas leituras econômicas (mesmo peso, uma de cada vez)
+        if (l) {
+            const caixa = l.closest('.radar-visoes');
+            caixa.querySelectorAll('[data-leitura]').forEach((x) => x.setAttribute('aria-pressed', String(x === l)));
+            caixa.querySelectorAll('[data-leitura-painel]').forEach((p) => { p.hidden = p.dataset.leituraPainel !== l.dataset.leitura; });
+        }
+    });
+    fpRisco.addEventListener('keydown', (ev) => {
+        const b = ev.target.closest('button[data-rsub]');
+        if (!b) return;
+        const i = RSUBS.indexOf(E.rsub);
+        const novo = { ArrowRight: (i + 1) % RSUBS.length, ArrowLeft: (i + RSUBS.length - 1) % RSUBS.length, Home: 0, End: RSUBS.length - 1 }[ev.key];
+        if (novo != null) { ev.preventDefault(); selecionarRsub(RSUBS[novo], { foco: true }); }
+    });
     document.querySelector('.ftabs').addEventListener('click', (ev) => { const b = ev.target.closest('[data-ftab]'); if (b) selecionarFtab(b.dataset.ftab); });
     document.querySelector('.ftabs').addEventListener('keydown', (ev) => {
         const i = FTABS.indexOf(E.ftab);
@@ -689,14 +731,17 @@ function faixaConexao(cx, comHistoria) {
             <div><h4>O que as contas mostram <span>(fatos)</span></h4><ul class="radar-pontos">${cx.fatos.map((t) => `<li>${esc(t)}</li>`).join('')}</ul></div>
             <div><h4>Como se costuma explicar <span>(interpretação)</span></h4><ul class="radar-pontos">${cx.interpretacao.map((t) => `<li>${esc(t)}</li>`).join('')}</ul></div>
         </div>
-        ${comHistoria ? '<p class="radar-conexao-segue"><a class="underline" href="#linhaTempo">Como esses números chegaram até aqui: a linha do tempo desde 2011 ↓</a></p>' : ''}</div>`;
+        ${comHistoria ? '<p class="radar-conexao-segue"><a class="underline" href="#linhaTempo" data-rsub="historia">Como esses números chegaram até aqui: a linha do tempo desde 2011 →</a></p>' : ''}</div>`;
 }
-/* Duas leituras econômicas, lado a lado e atribuídas: argumento, números que a sustentam e a objeção da outra */
+/* Duas leituras econômicas, atribuídas: argumento, números que a sustentam e a objeção da outra.
+   Uma de cada vez, com o mesmo peso e o mesmo formato; o ponto em que concordam fica sempre à vista. */
 function visoes(v) {
-    const cartao = (l) => `<div class="radar-leitura"><h4>${esc(l.nome)}</h4><p>${esc(l.argumento)}</p>
+    const cartao = (l, i) => `<div class="radar-leitura" data-leitura-painel="${i}"${i ? ' hidden' : ''}><h4>${esc(l.nome)}</h4><p>${esc(l.argumento)}</p>
         <p class="radar-leitura-rot">Números que a sustentam</p><ul class="radar-pontos">${l.numeros.map((t) => `<li>${esc(t)}</li>`).join('')}</ul>
         <p class="radar-leitura-rot">Objeção da outra leitura</p><p>${esc(l.objecao)}</p></div>`;
+    const botoes = v.leituras.map((l, i) => `<button type="button" data-leitura="${i}" aria-pressed="${i === 0}">${esc(l.nome)}</button>`).join('');
     return `<div class="radar-visoes"><h3 class="radar-secao-h">${esc(v.titulo)}</h3><p class="radar-legenda">${esc(v.intro)}</p>
+        <div class="radar-troca" role="group" aria-label="Escolha a leitura que quer ver"><span class="radar-troca-rot">Selecione a leitura</span>${botoes}</div>
         <div class="radar-visoes-colunas">${v.leituras.map(cartao).join('')}</div>
         <p class="radar-conjunto">${esc(v.concordam)}</p></div>`;
 }
@@ -946,7 +991,7 @@ function perspectivaHistorica(h) {
     return `<section class="lt" id="linhaTempo" aria-labelledby="ltTitulo">
         <p class="radar-pergunta">Perspectiva histórica · de onde vieram os números de cima</p>
         <h3 class="radar-secao-h" id="ltTitulo">Linha do tempo da dívida e dos juros (${esc(h.inicio.slice(0, 4))} – ${esc(ate)})</h3>
-        <p class="lt-sub">Os mesmos números do confronto acima, vistos desde ${esc(h.inicio.slice(0, 4))}, ao lado das regras e dos choques de cada época. <a class="underline" href="#conexao">↑ Voltar aos números de hoje</a></p>
+        <p class="lt-sub">Os mesmos números do confronto da aba “O risco hoje”, vistos desde ${esc(h.inicio.slice(0, 4))}, ao lado das regras e dos choques de cada época. <a class="underline" href="#conexao" data-rsub="hoje">← Voltar aos números de hoje</a></p>
         <figure class="lt-grafico">
             <div class="lt-largo">${graficoLinhaTempo(h, false)}</div>
             <div class="lt-estreito">${graficoLinhaTempo(h, true)}</div>
@@ -973,24 +1018,26 @@ function radarPartes(dg) {
     if (!dg || !dg.fiscal) {
         const aviso = `<div class="radar-aviso" role="status"><b>Radar econômico indisponível agora.</b>
             Ele usa séries do Banco Central e do IBGE, que podem não ter respondido. Atualize a página em alguns minutos; os números das outras abas seguem valendo.</div>`;
-        return { risco: aviso, cenario: aviso };
+        return { hoje: aviso, historia: aviso, cenario: aviso };
     }
     const c = dg.confronto;
     const historia = perspectivaHistorica(dg.historico);
+    // O confronto fica em “O risco hoje”; a linha do tempo e as duas leituras vão para “Histórico e debate”
     const confronto = c ? `<div class="radar" id="radar">
             <h2>Por trás do número: quem decide o quê</h2>
             <p class="radar-sub">${esc(dg.subtitulo)}. A dívida é o ponto onde duas decisões se encontram: o que o governo arrecada e gasta, e os juros que o Banco Central define.</p>
             <div class="radar-confronto">${colunaConfronto(c.fiscal)}${colunaConfronto(c.monetaria)}</div>
             <p class="ficha-nota mt-2">↑ melhorou · → estável · ↓ piorou, sempre em comparação com 12 meses antes. Fonte dos números: Banco Central (despesa primária: SICONFI).</p>
-            ${faixaConexao(c.conexao, !!historia)}</div>${historia}${visoes(c.visoes)}`
-        : `<div class="radar-aviso" role="status"><b>O confronto entre política fiscal e monetária não carregou.</b> Atualize a página em alguns minutos.</div>${historia}`;
+            ${faixaConexao(c.conexao, !!historia)}</div>`
+        : `<div class="radar-aviso" role="status"><b>O confronto entre política fiscal e monetária não carregou.</b> Atualize a página em alguns minutos.</div>`;
+    const debate = c ? historia + visoes(c.visoes) : historia;
     const como = (itens) => `<details class="sanfona sanfona--leve mt-4"><summary>Como classificamos</summary>${itens}
         <p class="ficha-nota mt-2">Os limites são escolhas do projeto, não verdades universais, e a tendência compara cada indicador com 12 meses antes.</p></details>`;
     const cenario = dg.social
         ? painelSocial(dg.social) + como(criterioRadar('Economia e vida da população', dg.social))
         : `<div class="radar-aviso" role="status"><b>O painel de economia e vida da população não carregou.</b>
             Ele usa dados do IBGE, que não responderam. Atualize a página em alguns minutos.</div>`;
-    return { risco: confronto + como(criterioRadar('Situação fiscal', dg.fiscal)), cenario };
+    return { hoje: confronto + como(criterioRadar('Situação fiscal', dg.fiscal)), historia: debate, cenario };
 }
 
 /* Dívida pública dissecada: prazo, custo e indexadores (resumo; a página divida-risco.html tem o detalhe) */
@@ -1160,7 +1207,13 @@ function nivel1(d) {
         <p class="text-sm text-slate-500 mt-2" style="max-width:70ch">Abra uma gaveta por vez: o fluxo do ano (o que entrou e saiu) e o estoque da dívida (o que se acumulou).</p>
         <div class="mt-4">${situacaoDetalhe(d)}</div></section>`;
     const risco = uniao
-        ? `<div id="dividaRisco" aria-live="polite"></div><div id="dividaFilme"></div>${rp.risco}`
+        ? `<div class="rsubs" role="tablist" aria-label="Três visões do risco e da dívida">
+            <button type="button" role="tab" id="rs-b-hoje" aria-controls="rs-hoje" data-rsub="hoje"><span>1 · O risco hoje</span></button>
+            <button type="button" role="tab" id="rs-b-dinamica" aria-controls="rs-dinamica" data-rsub="dinamica"><span>2 · A dinâmica: o filme</span></button>
+            <button type="button" role="tab" id="rs-b-historia" aria-controls="rs-historia" data-rsub="historia"><span>3 · Histórico e debate</span></button></div>
+            <div class="rsub-painel space-y-10" id="rs-hoje" role="tabpanel" aria-labelledby="rs-b-hoje" tabindex="0"><div id="dividaRisco" aria-live="polite"></div>${rp.hoje}</div>
+            <div class="rsub-painel space-y-10" id="rs-dinamica" role="tabpanel" aria-labelledby="rs-b-dinamica" tabindex="0" hidden><div id="dividaFilme"></div></div>
+            <div class="rsub-painel space-y-10" id="rs-historia" role="tabpanel" aria-labelledby="rs-b-historia" tabindex="0" hidden>${rp.historia}</div>`
         : avisoUniao('A análise de risco da dívida é federal.');
     const cenario = uniao ? rp.cenario : avisoUniao('Desemprego, renda e inflação são medidos para o país.');
     return { termometro, risco, cenario };
@@ -1237,7 +1290,7 @@ function desenhar() {
     if (!ABA_FISCAL) $('secCalc').classList.toggle('hidden', !d);
     if (ABA_FISCAL) {
         const f = d ? nivel1(d) : { termometro: '', risco: '', cenario: '' };
-        $('pTermometro').innerHTML = f.termometro; $('pRisco').innerHTML = f.risco; $('pCenario').innerHTML = f.cenario;
+        $('pTermometro').innerHTML = f.termometro; $('pRisco').innerHTML = f.risco; $('pCenario').innerHTML = f.cenario; selecionarRsub(E.rsub);
         if (d && d.esfera === 'uniao') { carregarReservas(); carregarDividaRisco(); carregarDividaFilme(); }
         return;
     }
