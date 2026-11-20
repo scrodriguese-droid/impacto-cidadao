@@ -52,6 +52,7 @@
 
 <main id="conteudo" class="max-w-6xl mx-auto px-4 sm:px-6 pt-6 pb-10 flex-grow w-full space-y-10">
     <header>
+        <a id="voltar" href="economia.html?aba=fiscal" class="inline-flex items-center gap-2 text-sm font-bold underline mb-3"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Voltar</a>
         <h1 class="text-2xl font-extrabold tracking-tight">Dissecando a dívida pública</h1>
         <p class="text-sm text-slate-500 dark:text-slate-400 mt-1" style="max-width:72ch">O tamanho da dívida em relação ao PIB é só o começo. O risco de uma crise fiscal depende também de <b>quando a dívida vence</b> e de <b>quanto custa carregá-la</b>. Aqui estão os dois fatores, com os números oficiais de hoje.</p>
         <p id="referencias" class="text-xs text-slate-500 mt-2" aria-live="polite"></p>
@@ -66,6 +67,8 @@
 <script src="assets/comum.js"></script>
 <script>
 renderLayout('divida-risco');
+/* Voltar: à tela de onde veio, se for do próprio site; senão, à Saúde fiscal */
+$('voltar').addEventListener('click', (e) => { try { if (document.referrer && new URL(document.referrer).origin === location.origin && history.length > 1) { e.preventDefault(); history.back(); } } catch (_) {} });
 
 /* ---------- utilidades ---------- */
 const reais = (n) => {
