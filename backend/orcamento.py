@@ -21,6 +21,7 @@ from datetime import date, datetime, timezone
 from typing import Any
 
 import economia
+import lei_x_realidade
 from config import RAIZ
 from fontes import ClienteHTTP, ErroFonte
 
@@ -112,6 +113,10 @@ def _documento(p: dict, tipo: str, ref: str, n_alteracoes: int) -> dict:
         "apresentada_em": (det.get("dataApresentacao") or "")[:10] or None,
         "ultima_movimentacao": (st.get("dataHora") or "")[:10] or None,
         "despacho": despacho[:300] or None,
+        "ementa": (det.get("ementa") or p.get("ementa") or "")[:600] or None,
+        "orgao": st.get("siglaOrgao") or None,
+        "tramitacao": st.get("descricaoTramitacao") or None,
+        "regime": st.get("regime") or None,
         "url_texto": det.get("urlInteiroTeor") or st.get("url"),
         "url_tramitacao": f"https://www.camara.leg.br/propostas-legislativas/{p['id']}",
         "alteracoes_no_congresso": n_alteracoes,
@@ -321,7 +326,17 @@ def _estado_doc(doc: dict | None) -> str:
 
 def _no(tipo: str, nome: str, periodo: str, estado: str, detalhe: str | None, doc: dict | None = None) -> dict:
     return {"tipo": tipo, "nome": nome, "periodo": periodo, "estado": estado, "estado_rotulo": ESTADOS[estado], "detalhe": detalhe,
-            "proposicao": doc["proposicao"] if doc else None, "url_tramitacao": doc["url_tramitacao"] if doc else None}
+            "proposicao": doc["proposicao"] if doc else None, "url_tramitacao": doc["url_tramitacao"] if doc else None,
+            "projeto": _projeto(doc)}
+
+
+def _projeto(doc: dict | None) -> dict | None:
+    """O que a página mostra do projeto de lei (no lugar de mandar o leitor ao texto): só campos curtos e já filtrados."""
+    if not doc:
+        return None
+    return {"proposicao": doc["proposicao"], "ementa": doc.get("ementa"), "apresentada_em": doc.get("apresentada_em"),
+            "situacao": doc.get("situacao"), "orgao": doc.get("orgao"), "ultima_movimentacao": doc.get("ultima_movimentacao"),
+            "despacho": doc.get("despacho"), "virou_lei": doc.get("virou_lei"), "lei": doc.get("lei")}
 
 
 def _mov(doc: dict) -> str:
@@ -418,6 +433,7 @@ def painel_ciclo(ente: int, base: dict) -> dict:
                          "São a proposta: o Congresso pode alterá-la.",
             }
         base["proposta"] = proposta
+        base["comparacao_lei"] = {"meta_primaria": lei_x_realidade.meta_primaria(ano)}
     else:
         din = _dotacao_inicial(ente)
         ref = din["ano"] if din else ano

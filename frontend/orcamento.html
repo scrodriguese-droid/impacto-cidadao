@@ -43,6 +43,41 @@
         .ciclo-anat dt { font: 800 .64rem/1.3 var(--fonte-texto); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
         .ciclo-anat ul { list-style: none; padding: 0; margin-top: .4rem; display: grid; gap: .4rem; }
         .ciclo-anat li { padding-left: .6rem; border-left: 4px solid var(--vermelho); }
+        .ciclo-cab { display: block !important; margin: 0; min-height: 1.6rem; }
+        .ciclo-estado { display: flex; align-items: center; gap: .5rem; margin: 0; font: 800 .72rem/1.2 var(--fonte-texto); letter-spacing: .1em; text-transform: uppercase; padding: .45rem .6rem; border: 2px solid var(--line); }
+        .ciclo-dot { flex: none; display: inline-block; width: .65rem !important; height: .65rem !important; border-radius: 0; background: #64748b; }
+        .ciclo-dot--em_execucao { background: #059669; }
+        .ciclo-dot--aprovada { background: #2563eb; }
+        .ciclo-dot--em_tramitacao { background: #d97706; }
+        .ciclo-sit { display: grid; gap: .55rem; align-content: start; }
+        .ciclo-det { margin: 0; font-size: .76rem; line-height: 1.45; color: var(--muted); }
+        .ciclo-proj { display: grid; gap: .4rem; margin: 0; padding-top: .55rem; border-top: 1px solid var(--line); font-size: .78rem; line-height: 1.45; }
+        .ciclo-proj dt { font: 800 .62rem/1.3 var(--fonte-texto); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+        .meta-h { margin-top: 1rem; font: 800 .8rem/1.3 var(--fonte-texto); letter-spacing: .08em; text-transform: uppercase; }
+        .meta-h span { font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--muted); }
+        .meta-grade { display: grid; gap: .8rem; margin-top: .6rem; }
+        @media (min-width: 760px) { .meta-grade { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+        .meta-col { margin: 0 !important; border: 2px solid var(--line); padding: .8rem .95rem; }
+        .meta-rot { font: 800 .64rem/1.3 var(--fonte-texto); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+        .meta-num { margin-top: .35rem; font-family: var(--fonte-titulo); font-size: 2rem; line-height: 1.05; }
+        .meta-num small { font: 600 .75rem/1 var(--fonte-texto); }
+        .meta-sub { font-size: .85rem; font-weight: 600; }
+        .meta-txt { margin-top: .5rem; font-size: .82rem; line-height: 1.5; }
+        .meta-estado { display: inline-block; margin-top: .45rem; padding: .3rem .55rem; font: 800 .68rem/1.2 var(--fonte-texto); letter-spacing: .1em; text-transform: uppercase; border: 2px solid var(--fg); }
+        .meta-estado--fora { background: var(--vermelho); color: #fff; border-color: var(--vermelho); }
+        .meta-estado--atencao { border-style: dashed; }
+        .meta-estado--ok { background: var(--fg); color: var(--papel); }
+        .meta-esc { position: relative; height: 1.5rem; margin-top: 1rem; border: 2px solid var(--line); }
+        .meta-faixa { position: absolute; top: 0; bottom: 0; background: color-mix(in srgb, var(--fg) 16%, transparent); }
+        .meta-marca { position: absolute; top: -.35rem; bottom: -.35rem; width: 0; border-left: 3px solid var(--fg); transform: translateX(-1.5px); }
+        .meta-marca--meta { border-left-style: dashed; }
+        .meta-marca--real { border-left-color: var(--vermelho); border-left-width: 5px; transform: translateX(-2.5px); }
+        .meta-leg { display: flex; flex-wrap: wrap; gap: .3rem 1.2rem; margin-top: .55rem; font-size: .76rem; color: var(--muted); }
+        .meta-chip { display: inline-block; width: .8rem; height: .8rem; margin-right: .35rem; vertical-align: -1px; }
+        .meta-chip--faixa { background: color-mix(in srgb, var(--fg) 16%, transparent); border: 1px solid var(--line); }
+        .meta-chip--meta { border-left: 3px dashed var(--fg); width: 0; height: .8rem; }
+        .meta-chip--real { border-left: 5px solid var(--vermelho); width: 0; height: .8rem; }
+        .meta-nota { margin-top: .7rem; font-size: .76rem; line-height: 1.5; color: var(--muted); max-width: 80ch; }
         .lrf-tab-wrap { overflow-x: auto; margin-top: .9rem; }
         .lrf-tab { width: 100%; min-width: 34rem; border-collapse: collapse; border: 2px solid var(--line); font-size: .86rem; line-height: 1.55; }
         .lrf-tab th, .lrf-tab td { text-align: left; vertical-align: top; padding: .6rem .8rem; border-bottom: 1px solid var(--line); }
@@ -314,22 +349,64 @@ function anatomiaCiclo(tipo) {
         ${sub ? `<ul>${sub.map(([n, x]) => `<li><b>${esc(n)}.</b> ${esc(x)}</li>`).join('')}</ul>` : ''}</div>`).join('')}</dl>`;
 }
 
+const ORGAOS = { CMO: 'Comissão Mista de Orçamento', MESA: 'Mesa do Congresso Nacional', PLEN: 'Plenário' };
+const dataBr = (iso) => (iso && iso.length >= 10 ? `${iso.slice(8, 10)}/${iso.slice(5, 7)}/${iso.slice(0, 4)}` : '');
+/* Dados do projeto de lei, já filtrados, para o leitor não precisar abrir o texto: o que faz, quando entrou e onde está */
+function projetoCiclo(p) {
+    if (!p) return '';
+    const linhas = [
+        ['O que o projeto faz', p.ementa],
+        ['Entrou em', dataBr(p.apresentada_em)],
+        p.virou_lei ? null : ['Onde está', p.orgao ? (ORGAOS[p.orgao] ? `${ORGAOS[p.orgao]} (${p.orgao})` : p.orgao) : ''],
+        p.virou_lei ? null : ['Último andamento', [dataBr(p.ultima_movimentacao), p.despacho].filter(Boolean).join(': ')],
+    ].filter((x) => x && x[1]);
+    return linhas.length ? `<dl class="ciclo-proj">${linhas.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>` : '';
+}
+/* A lei contra a realidade: a meta escrita na LDO ao lado do que as contas do país mostram */
+const TOM_META = { atingida: 'ok', na_faixa: 'atencao', abaixo: 'fora' };
+function comparacaoMeta(c) {
+    if (!c) return '';
+    const L = c.lei, R = c.realidade;
+    const sinal = (v) => `${v > 0 ? '+' : v < 0 ? '−' : ''}${Math.abs(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`;
+    const bi = (v) => `R$ ${v.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} bi`;
+    const MIN = -1, MAX = 1.0, pos = (v) => Math.max(0, Math.min(100, ((v - MIN) / (MAX - MIN)) * 100));
+    const gauge = `<div class="meta-esc" role="img" aria-label="Escala de resultado primário em % do PIB: faixa da lei de ${sinal(L.inferior_pib)} a ${sinal(L.superior_pib)}, meta de ${sinal(L.meta_pib)}; resultado de 12 meses em ${sinal(R.resultado_pib)}.">
+        <span class="meta-faixa" style="left:${pos(L.inferior_pib)}%;width:${pos(L.superior_pib) - pos(L.inferior_pib)}%"></span>
+        <span class="meta-marca meta-marca--meta" style="left:${pos(L.meta_pib)}%"></span>
+        <span class="meta-marca meta-marca--real" style="left:${pos(R.resultado_pib)}%"></span></div>
+        <p class="meta-leg"><span><i class="meta-chip meta-chip--faixa"></i>Faixa da lei: ${sinal(L.inferior_pib)} a ${sinal(L.superior_pib)}</span>
+        <span><i class="meta-chip meta-chip--meta"></i>Meta: ${sinal(L.meta_pib)}</span>
+        <span><i class="meta-chip meta-chip--real"></i>Resultado em 12 meses: ${sinal(R.resultado_pib)}</span></p>`;
+    return `<div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/40 p-4 mt-4">
+        <p class="font-bold"><i class="fa-solid fa-scale-balanced mr-1.5 text-brand-600" aria-hidden="true"></i>A lei contra a realidade</p>
+        <p class="text-sm text-slate-500 dark:text-slate-400">O que a lei exige, ao lado do que as contas do país mostram.</p>
+        <h3 class="meta-h">1 · Meta de resultado primário <span>(as contas do dia a dia, sem os juros)</span></h3>
+        <div class="meta-grade">
+            <section class="meta-col"><p class="meta-rot">O que a lei exige · ${esc(L.nome)}</p>
+                <p class="meta-num">${sinal(L.meta_pib)} <small>do PIB</small></p><p class="meta-sub">Superávit de ${bi(L.meta_bi)}</p>
+                <p class="meta-txt">Faixa de tolerância: de ${sinal(L.inferior_pib)} a ${sinal(L.superior_pib)} do PIB (${bi(L.inferior_bi)} a ${bi(L.superior_bi)}). Vale para o ${esc(L.escopo)}.</p></section>
+            <section class="meta-col"><p class="meta-rot">A realidade · acumulado em 12 meses até ${esc(R.referencia)}</p>
+                <p class="meta-num">${esc(R.quem.charAt(0).toUpperCase() + R.quem.slice(1))} de ${sinal(Math.abs(R.resultado_pib)).replace(/^[+−]/, '')} <small>do PIB</small></p>
+                <p class="meta-estado meta-estado--${TOM_META[c.estado] || 'atencao'}">${esc(c.rotulo)}</p>
+                <p class="meta-txt">${esc(c.leitura)}</p></section></div>
+        ${gauge}
+        <p class="meta-nota">${esc(c.nota)} Fontes: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(L.url))}">${esc(L.nome)}</a> e <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(R.url))}">Banco Central (SGS 5783)</a>.</p></div>`;
+}
+
 function linhaDoTempo(r) {
     const nos = r.linha_do_tempo.map((n) => {
-        const [chip, ponto] = ESTADO_COR[n.estado] || ESTADO_COR.sem_fonte;
-        // cinco linhas por cartão (cabeçalho, estado, situação, anatomia, link): assim as três colunas se alinham
+        // cinco linhas por cartão (nome, estado, situação e projeto, anatomia, fonte): assim as três colunas se alinham
         return `<li class="ciclo-no">
-            <div class="ciclo-cab"><p class="font-bold"><i class="fa-solid ${IC_TIPO[n.tipo] || 'fa-file'} mr-1.5 text-slate-400" aria-hidden="true"></i>${esc(n.tipo)} <span class="font-normal text-slate-500 text-sm">${esc(n.periodo)}</span></p>
-                <span class="ciclo-ponto ${ponto}" aria-hidden="true"></span></div>
-            <div><span class="ciclo-chip inline-block px-2.5 py-1 rounded-full text-[11px] font-bold ${chip}">${esc(n.estado_rotulo)}</span></div>
-            <p class="ciclo-det text-xs text-slate-600 dark:text-slate-400">${n.detalhe ? esc(n.detalhe) : ''}</p>
+            <p class="ciclo-cab font-bold"><i class="fa-solid ${IC_TIPO[n.tipo] || 'fa-file'} mr-1.5 text-slate-400" aria-hidden="true"></i>${esc(n.tipo)} <span class="font-normal text-slate-500 text-sm">${esc(n.periodo)}</span></p>
+            <p class="ciclo-estado"><span class="ciclo-dot ciclo-dot--${esc(n.estado)}" aria-hidden="true"></span>${esc(n.estado_rotulo)}</p>
+            <div class="ciclo-sit">${n.detalhe ? `<p class="ciclo-det">${esc(n.detalhe)}</p>` : ''}${projetoCiclo(n.projeto)}</div>
             ${anatomiaCiclo(n.tipo)}
-            <p class="ciclo-link text-xs">${n.url_tramitacao ? `<a class="underline text-brand-700 dark:text-brand-400" target="_blank" rel="noopener" href="${esc(urlSegura(n.url_tramitacao))}">${esc(n.proposicao)} na Câmara</a>` : ''}</p></li>`;
+            <p class="ciclo-link text-xs">${n.url_tramitacao ? `Fonte: <a class="underline text-brand-700 dark:text-brand-400" target="_blank" rel="noopener" href="${esc(urlSegura(n.url_tramitacao))}">${esc(n.proposicao)}, na Câmara</a>` : ''}</p></li>`;
     });
     return `<div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/40 p-4">
         <p class="font-bold"><i class="fa-solid fa-calendar-days mr-1.5 text-brand-600" aria-hidden="true"></i>Linha do tempo · ${esc(r.agora.rotulo)}</p>
         <ol class="ciclo mt-3">${nos.join('')}</ol>
-        <p class="mt-3 text-sm"><b>Momento:</b> ${esc(r.momento)}</p></div>`;
+        <p class="mt-3 text-sm"><b>Momento:</b> ${esc(r.momento)}</p></div>${comparacaoMeta((r.comparacao_lei || {}).meta_primaria)}`;
 }
 
 function barra(p, cor = 'bg-brand-500') { return `<div class="mt-1 h-2.5 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden"><div class="h-full ${cor}" style="width:${Math.max(1, Math.min(100, p))}%"></div></div>`; }
