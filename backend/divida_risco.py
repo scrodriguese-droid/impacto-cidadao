@@ -52,7 +52,7 @@ def risco() -> dict[str, Any]:
     # As séries do BCB ficam numa linha só (sequenciais), porque o BCB bloqueia muitos pedidos ao mesmo tempo.
     def serie_bcb() -> tuple[list | None, dict[str, dict | None]]:
         ipca12 = tentar("IPCA em 12 meses", lambda: macro.serie("ipca12")["pontos"])
-        chaves = ("selic", "ipca12", "dbgg_pib", "primario12", "nominal12", "juros12")
+        chaves = ("selic", "ipca12", "dbgg_pib", "primario12", "nominal12", "juros12", "dlsp_pib", "dlsp_rs")
         return ipca12, {c: ultimo(c) for c in chaves}
 
     def ultimo(chave: str) -> dict | None:
@@ -94,8 +94,12 @@ def risco() -> dict[str, Any]:
     saida["macro"] = {
         "selic": ultimos["selic"], "ipca12": ultimos["ipca12"], "dbgg_pib": ultimos["dbgg_pib"],
         "primario12": ultimos["primario12"], "nominal12": ultimos["nominal12"], "juros12": ultimos["juros12"],
-        "pib4": None,
+        "pib4": None, "dlsp_pib": ultimos["dlsp_pib"],
     }
+    # PIB em reais (12 meses), derivado do saldo da dívida líquida em R$ ÷ em % do PIB, como em macro.py; só vale se as duas séries têm a mesma data
+    dl_pct, dl_rs = ultimos["dlsp_pib"], ultimos["dlsp_rs"]
+    if dl_pct and dl_rs and dl_pct["data"] == dl_rs["data"] and dl_pct["valor"]:
+        saida["macro"]["pib_rs"] = {"valor": dl_rs["valor"] * 1e6 / (dl_pct["valor"] / 100), "data": dl_pct["data"]}
     if pib:
         ks = sorted(pib["acum4"])
         saida["macro"]["pib4"] = {"valor": pib["acum4"][ks[-1]]["valor"], "ref": pib["acum4"][ks[-1]]["ref"]}
