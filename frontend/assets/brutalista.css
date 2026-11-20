@@ -1150,3 +1150,10 @@ details.sanfona.sanfona--leve { border-top: 1px solid var(--line); border-bottom
 .pa-lista b { white-space: nowrap; } .pa-lista small, .pa-tot small { font-weight: 600; font-size: .75rem; }
 @media (min-width: 900px) { .def-trio { grid-template-columns: repeat(3, 1fr); } .def-trio > div + div { border-left: 1px solid var(--line); } }
 .def-duo.def-trio + p + .esq { margin-top: 1rem; }
+
+/* Indicadores em cartões (economia e vida da população): nome, número grande e a leitura, em grade */
+.radar-itens.radar-cards { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 0; border-top: 3px solid var(--line); border-left: 1px solid var(--line); }
+.radar-itens.radar-cards li, .radar-itens.radar-cards li:first-child { display: flex; flex-direction: column; gap: .4rem; padding: 1.1rem 1.2rem 1.2rem; border: 0; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.radar-cards .radar-item-nome { order: 1; font-size: .72rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+.radar-cards .radar-item-valor { order: 2; text-align: left; font-size: 2.4rem; white-space: normal; }
+.radar-cards .radar-item-nota { order: 3; max-width: none; }
