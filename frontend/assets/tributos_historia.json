@@ -220,5 +220,153 @@
         "marco": "Reforma tributária sobre o consumo (Emenda 132/2023): IBS e CBS substituem PIS, Cofins, IPI, ICMS e ISS, em transição gradual."
       }
     ]
+  },
+  "regime": {
+    "titulo": "O regime fiscal desde o Plano Real",
+    "intro": "Além da carga tributária, mudaram as regras do jogo: o regime fiscal, os juros e o comportamento da dívida. Escolha um período para ver a radiografia dele. A faixa vermelha no gráfico mostra onde ele fica na linha do tempo.",
+    "seletor": "Selecione o período",
+    "fontes": "Referências: Lopreato (2015) e Giambiagi e Além (2015). A radiografia descreve fatos, regras e números, sem avaliar os governos.",
+    "periodos": [
+      {
+        "id": "fhc1",
+        "rotulo": "1995–1998 · FHC I",
+        "anos": "1995–1998",
+        "de": 1995,
+        "ate": 1999,
+        "nome": "FHC I: a estabilização e o seu custo",
+        "orientacao_t": "Os pilares do governo (orientação política)",
+        "orientacao": "Norteado pela redução do papel estrutural do Estado na economia, pelo controle rígido das finanças de estados e municípios e pela subordinação implícita da política fiscal à sustentabilidade da dívida pública (Lopreato, 2015).",
+        "colunas": [
+          {
+            "titulo": "1. Conjuntura e reformas",
+            "itens": [
+              [
+                "O Plano Real (1994)",
+                "Focado na estabilização contra a inflação inercial e na contenção dos déficits públicos acumulados."
+              ],
+              [
+                "Consenso de Washington",
+                "Abertura comercial e financeira, desregulamentação dos mercados e amplas privatizações."
+              ],
+              [
+                "Choques externos",
+                "Desaceleração a partir de 1997, por causa das crises da Ásia (1997) e da Rússia (1998)."
+              ]
+            ]
+          },
+          {
+            "titulo": "2. O comportamento da dívida",
+            "itens": [
+              [
+                "Fim da senhoriagem",
+                "Com a queda drástica da inflação, o Estado perdeu a arrecadação do “imposto inflacionário”."
+              ],
+              [
+                "A conta dos “esqueletos”",
+                "Incorporação formal de passivos ocultos de gestões anteriores e de custos de saneamento previstos no Plano Brady."
+              ],
+              [
+                "Política monetária rígida",
+                "A Selic ficou em média em 33% ao ano (21% descontada a inflação) entre 1995 e 1998, o que expandiu a dívida interna (Giambiagi e Além, 2015)."
+              ],
+              [
+                "Reservas internacionais",
+                "Chegaram ao pico de US$ 60,11 bilhões em 1996 e caíram para US$ 44,55 bilhões em 1998, sob a pressão da crise do balanço de pagamentos."
+              ]
+            ]
+          }
+        ],
+        "extra": {
+          "titulo": "A mecânica de arrecadação (controle fiscal)",
+          "texto": "Criação do Fundo Social de Emergência (FSE) e aplicação do Imposto Provisório sobre Movimentação Financeira (IPMF), venda de grandes empresas estatais e renegociação das dívidas dos estados."
+        }
+      },
+      {
+        "id": "fhc2",
+        "rotulo": "1999–2002 · FHC II",
+        "anos": "1999–2002",
+        "de": 1999,
+        "ate": 2003,
+        "nome": "FHC II: a mudança de arcabouço",
+        "orientacao_t": "Os pilares do governo (orientação política)",
+        "orientacao": "Diante da deterioração das contas externas e do esgotamento do modelo de câmbio fixo, o governo reformulou todo o arcabouço macroeconômico.",
+        "colunas": [
+          {
+            "titulo": "1. Conjuntura e reformas",
+            "itens": [
+              [
+                "O tripé macroeconômico",
+                "Câmbio flutuante, metas de inflação e metas de superávit primário, no lugar do câmbio fixo (ancorado)."
+              ],
+              [
+                "Lei de Responsabilidade Fiscal (2000)",
+                "A Lei Complementar nº 101/2000 criou restrições permanentes a gastos, regras de endividamento para estados e municípios e a meta de resultado primário (gastar menos do que arrecada, antes dos juros)."
+              ],
+              [
+                "Pacote do FMI",
+                "Acordo de socorro financeiro de US$ 42 bilhões, assinado em novembro de 1998."
+              ]
+            ]
+          },
+          {
+            "titulo": "2. O comportamento da dívida",
+            "itens": [
+              [
+                "A trajetória da Selic",
+                "Permaneceu elevada: média de 19% ao ano (10% descontada a inflação) entre 1999 e 2002, o que seguiu alimentando a expansão da dívida interna."
+              ],
+              [
+                "Reservas internacionais",
+                "Caíram bastante, até o mínimo de US$ 33 bilhões em 2000."
+              ],
+              [
+                "Pressões e o pico do período",
+                "A crise de energia (o “apagão”) e a desvalorização cambial pressionaram as contas. A dívida líquida do setor público (DLSP) chegou a 60,4% do PIB em 2002, o ponto mais alto do período."
+              ]
+            ]
+          }
+        ],
+        "extra": null
+      },
+      {
+        "id": "lula",
+        "rotulo": "2003 em diante · Consolidação e inflexão",
+        "anos": "2003–2014",
+        "de": 2003,
+        "ate": 2015,
+        "nome": "Dos superávits à inflexão do resultado",
+        "orientacao_t": "A dinâmica do resultado primário (receita maior que despesa)",
+        "orientacao": "O período teve duas fases opostas: a adoção rigorosa de superávits primários, que reverteu a trajetória da dívida, e uma queda rápida do resultado nos anos seguintes.",
+        "colunas": [
+          {
+            "titulo": "1. Consolidação (2003–2012)",
+            "itens": [
+              [
+                "Controle da dívida",
+                "Superávits primários contínuos permitiram reduzir a dívida líquida (DLSP) de 60,4% do PIB em 2002 para 38,5% em 2008."
+              ],
+              [
+                "O ponto mais alto do superávit",
+                "Em 2011, o resultado primário do setor público foi de R$ 128,71 bilhões (3,11% do PIB)."
+              ]
+            ]
+          },
+          {
+            "titulo": "2. A inflexão (a partir de 2012)",
+            "itens": [
+              [
+                "A queda do superávit",
+                "De 3,11% do PIB em 2011 para 2,39% em 2012 (R$ 104,95 bilhões)."
+              ],
+              [
+                "O resultado negativo",
+                "Em 2014, o resultado primário entrou em campo negativo: déficit de R$ 32,53 bilhões (0,63% do PIB), o fim da sequência de superávits da década anterior."
+              ]
+            ]
+          }
+        ],
+        "extra": null
+      }
+    ]
   }
 }

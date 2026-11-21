@@ -712,6 +712,36 @@ function ligarGovernos(raiz) {
     }));
 }
 
+/* Regime fiscal desde o Plano Real: mestre-detalhe. Os botões escolhem o período e um único painel troca o miolo, sem a página descer ou subir. */
+function regimeHtml(r) {
+    const botoes = r.periodos.map((p, k) => `<button type="button" data-rf="${k}" aria-pressed="${k === 0}" aria-controls="rfPainel">${esc(p.rotulo)}</button>`).join('');
+    return `<section class="rf" aria-label="${esc(r.titulo)}">
+        <h3 class="rf-t">${esc(r.titulo)}</h3><p class="tl-mudanca" style="max-width:70ch">${esc(r.intro)}</p>
+        <div class="rf-sel" role="group" aria-label="${esc(r.seletor)}"><span>${esc(r.seletor)}</span>${botoes}</div>
+        <div id="rfPainel" class="rf-painel" aria-live="polite"></div>
+        <p class="ficha-nota">${esc(r.fontes)}</p></section>`;
+}
+function rfConteudo(p) {
+    const cols = p.colunas.map((c) => `<div class="rf-col"><h5>${esc(c.titulo)}</h5>
+        <ul>${c.itens.map(([a, t]) => `<li><b>${esc(a)}</b> ${esc(t)}</li>`).join('')}</ul></div>`).join('');
+    return `<p class="rf-kicker">Radiografia do período: ${esc(p.anos)}</p><h4 class="rf-nome">${esc(p.nome)}</h4>
+        <p class="rf-rot">${esc(p.orientacao_t)}</p><p class="rf-orient">${esc(p.orientacao)}</p>
+        <div class="rf-cols">${cols}</div>
+        ${p.extra ? `<div class="rf-extra"><p class="rf-rot">${esc(p.extra.titulo)}</p><p>${esc(p.extra.texto)}</p></div>` : ''}`;
+}
+function ligarRegime(r, marcarNoGrafico) {
+    const painel = $('rfPainel'), botoes = document.querySelectorAll('[data-rf]');
+    if (!painel) return;
+    const mostrar = (k) => {
+        const p = r.periodos[k];
+        painel.innerHTML = rfConteudo(p);
+        botoes.forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.rf === k)));
+        marcarNoGrafico(p.de, p.ate);
+    };
+    botoes.forEach((b) => b.addEventListener('click', () => mostrar(+b.dataset.rf)));
+    mostrar(0);
+}
+
 function painelHistoria() {
     const hist = G.hist;
     const listaTempo = `<ol class="tl">${hist.eras.map((e) => `<li class="tl-era"><div><p class="tl-anos">${esc(e.anos)}</p><p class="tl-nome">${esc(e.nome)}</p></div>
@@ -736,9 +766,14 @@ function painelHistoria() {
     const pontos = hist.marcos.map((m, k) => `<g class="tg-marco" data-marco="${k}" tabindex="0" role="button" aria-label="${m.ano}: ${esc(m.titulo)}"><circle cx="${X(m.ano).toFixed(1)}" cy="${Y(valorEm(m.ano)).toFixed(1)}" r="14" class="tg-alvo"/><circle cx="${X(m.ano).toFixed(1)}" cy="${Y(valorEm(m.ano)).toFixed(1)}" r="6" class="tg-ponto"/></g>`).join('');
     $('painel').innerHTML = `<h2 class="text-lg font-bold">${esc(hist.titulo)}</h2>
         <p class="text-sm mt-1" style="max-width:70ch">${esc(hist.intro)}</p>
-        <div class="tg"><svg viewBox="0 0 ${W} ${H}" role="group" aria-label="Carga tributária brasileira em % do PIB, de 1889 a hoje (valores aproximados)">${faixas}${eixoY}${eixoX}<path class="tg-area" d="${area}"/><path class="tg-linha" d="${caminho}"/>${pontos}</svg>
+        <div class="tg"><svg viewBox="0 0 ${W} ${H}" role="group" aria-label="Carga tributária brasileira em % do PIB, de 1889 a hoje (valores aproximados)">${faixas}${eixoY}${eixoX}<rect id="tgPer" class="tg-per" x="0" y="${MT}" width="0" height="${H - MB - MT}" aria-hidden="true"/><path class="tg-area" d="${area}"/><path class="tg-linha" d="${caminho}"/>${pontos}</svg>
             <p class="ficha-nota">${esc(hist.curva_nota)}</p><div id="tgPainel" class="tg-painel" aria-live="polite"></div></div>
+        ${hist.regime ? regimeHtml(hist.regime) : ''}
         <details class="sanfona mt-3"><summary>Ver em lista <span class="sanfona-sub">as quatro eras, uma abaixo da outra</span></summary>${listaTempo}</details>`;
+    if (hist.regime) ligarRegime(hist.regime, (de, ate) => {
+        const per = $('tgPer'); if (!per) return;
+        per.setAttribute('x', X(de).toFixed(1)); per.setAttribute('width', (X(Math.min(ate, X1)) - X(de)).toFixed(1));
+    });
     const painel = $('tgPainel');
     const marcarSel = (el) => document.querySelectorAll('.tg-faixa,.tg-marco').forEach((n) => n.classList.toggle('sel', n === el));
     const eraDoAno = (a) => Math.max(0, FAIXAS.findIndex(([x, y]) => a >= x && a < y));

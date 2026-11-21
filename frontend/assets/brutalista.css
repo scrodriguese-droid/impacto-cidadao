@@ -1046,6 +1046,31 @@ details.conceito h5 { font: 800 .7rem/1.3 var(--fonte-texto); letter-spacing: .1
 .tg-marco:hover .tg-ponto, .tg-marco:focus-visible .tg-ponto, .tg-marco.sel .tg-ponto { fill: var(--vermelho); stroke: var(--vermelho); }
 .tg-faixa:focus-visible rect { stroke: var(--vermelho); stroke-width: 2; }
 .tg-painel { margin-top: .6rem; padding: 1rem 1.1rem; border: 1px solid var(--line); min-height: 11rem; }
+.tg-per { fill: color-mix(in srgb, var(--vermelho) 30%, transparent); stroke: var(--vermelho); stroke-width: 1.5; pointer-events: none; }
+
+/* regime fiscal desde o Plano Real (mestre-detalhe: botões escolhem o período, um painel troca o miolo) */
+.rf { margin-top: 1.6rem; padding-top: 1rem; border-top: 3px solid var(--line); }
+.rf-t { font-family: var(--fonte-titulo); font-size: 1.6rem; line-height: 1.05; text-transform: uppercase; margin-bottom: .5rem; }
+.rf-sel { display: flex; flex-wrap: wrap; gap: .4rem; align-items: center; margin: 1.1rem 0 .8rem; }
+.rf-sel > span { font: 800 .68rem/1 var(--fonte-texto); letter-spacing: .12em; text-transform: uppercase; margin-right: .3rem; }
+.rf-sel button { font: 700 .74rem/1.2 var(--fonte-texto); padding: .6rem .8rem; border: 2px solid var(--line); background: transparent; color: var(--fg); cursor: pointer; }
+.rf-sel button[aria-pressed="true"] { background: var(--ativo) !important; color: var(--ativo-fg) !important; }
+.rf-painel { border: 2px solid var(--line); padding: 1.1rem 1.2rem 1.2rem; }
+.rf-kicker { font: 800 .68rem/1.3 var(--fonte-texto); letter-spacing: .14em; text-transform: uppercase; color: var(--vermelho); }
+.dark .rf-kicker { color: #E5584F; }
+.rf-nome { font-family: var(--fonte-titulo); font-size: 1.7rem; line-height: 1.05; text-transform: uppercase; margin: .25rem 0 .9rem; }
+.rf-rot { font: 800 .7rem/1.3 var(--fonte-texto); letter-spacing: .1em; text-transform: uppercase; }
+.rf-orient { font-size: .92rem; line-height: 1.5; margin-top: .25rem; max-width: 74ch; }
+.rf-cols { display: grid; gap: .9rem; margin-top: 1rem; }
+@media (min-width: 760px) { .rf-cols { grid-template-columns: 1fr 1fr; } }
+.rf-col { border: 1px solid var(--line); padding: .8rem .95rem 1rem; }
+.rf-col h5 { font: 800 .72rem/1.3 var(--fonte-texto); letter-spacing: .1em; text-transform: uppercase; padding-bottom: .5rem; border-bottom: 2px solid var(--line); margin-bottom: .6rem; }
+.rf-col ul { list-style: none; padding: 0; margin: 0; display: grid; gap: .65rem; }
+.rf-col li { font-size: .86rem; line-height: 1.5; padding-left: 1rem; position: relative; }
+.rf-col li::before { content: "•"; position: absolute; left: 0; color: var(--vermelho); font-weight: 800; }
+.rf-col li b { display: block; font-weight: 800; margin-bottom: .1rem; }
+.rf-extra { margin-top: .9rem; padding-left: .8rem; border-left: 4px solid var(--vermelho); font-size: .86rem; line-height: 1.5; }
+.rf-extra p + p, .rf-extra .rf-rot + p { margin-top: .2rem; }
 
 /* ---------- Saúde fiscal em abas: um eixo por vez ---------- */
 .ftabs { display: flex; gap: 0; padding-right: 2px; border-bottom: 3px solid var(--line); overflow-x: auto; scrollbar-width: thin; }
