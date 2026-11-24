@@ -769,7 +769,7 @@ function painelHistoria() {
     const faixas = FAIXAS.map(([a, b], k) => `<g class="tg-faixa" data-era="${k}" tabindex="0" role="button" aria-label="${esc(hist.eras[k].nome)}, ${esc(hist.eras[k].anos)}"><rect x="${X(a)}" y="${MT}" width="${X(b) - X(a)}" height="${H - MB - MT}"/><text x="${(X(a) + X(b)) / 2}" y="${MT + 12}" text-anchor="middle">${k + 1}</text></g>`).join('');
     const eixoY = [0, 10, 20, 30].map((v) => `<line class="tg-grade" x1="${ML}" x2="${W - MR}" y1="${Y(v)}" y2="${Y(v)}"/><text class="tg-eixo" x="${ML - 6}" y="${Y(v) + 3}" text-anchor="end">${v}%</text>`).join('');
     const eixoX = [1900, 1930, 1964, 1988, 2023].map((a) => `<text class="tg-eixo" x="${X(a)}" y="${H - 10}" text-anchor="middle">${a}</text>`).join('');
-    const pontos = hist.marcos.map((m, k) => `<g class="tg-marco" data-marco="${k}" tabindex="0" role="button" aria-label="${m.ano}: ${esc(m.titulo)}"><circle cx="${X(m.ano).toFixed(1)}" cy="${Y(valorEm(m.ano)).toFixed(1)}" r="8" class="tg-alvo"/><circle cx="${X(m.ano).toFixed(1)}" cy="${Y(valorEm(m.ano)).toFixed(1)}" r="6" class="tg-ponto"/></g>`).join('');
+    const pontos = hist.marcos.map((m, k) => `<g class="tg-marco" data-marco="${k}" tabindex="0" role="button" aria-label="${m.ano}: ${esc(m.titulo)}"><title>${m.ano}: ${esc(m.curto || m.titulo)}</title><circle cx="${X(m.ano).toFixed(1)}" cy="${Y(valorEm(m.ano)).toFixed(1)}" r="8" class="tg-alvo"/><circle cx="${X(m.ano).toFixed(1)}" cy="${Y(valorEm(m.ano)).toFixed(1)}" r="6" class="tg-ponto"/><text class="tg-ano" x="${X(m.ano).toFixed(1)}" y="${(Y(valorEm(m.ano)) - 13).toFixed(1)}" text-anchor="middle">${m.ano}</text></g>`).join('');
     // camada 1: escolher a era (botões + faixas do gráfico, sempre sincronizados); camada 2: ler a era; camada 3: lupa de 1990 em diante
     const trilho = hist.eras.map((e, k) => `<button type="button" class="hx-era" data-era="${k}" aria-pressed="false"><span class="hx-n">Era ${k + 1}</span><span class="hx-a">${esc(e.anos)}</span><span class="hx-nm">${esc(e.nome)}</span><span class="hx-c">≈ ${esc(e.carga)}% do PIB</span></button>`).join('');
     const temLupa = !!(hist.governos || hist.regime);
@@ -780,6 +780,7 @@ function painelHistoria() {
         <div class="hx-eras" role="group" aria-label="Escolha uma era">${trilho}</div>
         <div class="tg"><svg viewBox="0 0 ${W} ${H}" role="group" aria-label="Carga tributária brasileira em % do PIB, de 1889 a hoje (valores aproximados)">${faixas}${eixoY}${eixoX}<rect id="tgPer" class="tg-per" x="0" y="${MT}" width="0" height="${H - MB - MT}" aria-hidden="true"/><path class="tg-area" d="${area}"/><path class="tg-linha" d="${caminho}"/>${pontos}</svg>
             <p class="ficha-nota">${esc(hist.curva_nota)}</p>
+            <div id="tgChips" class="hx-chips" role="group" aria-label="Marcos desta era"></div>
             <div id="tgMarco" class="hx-marco" aria-live="polite"></div></div>
         <div id="tgPainel" aria-live="polite"></div>
         ${temLupa ? `<section class="hx-lupa" aria-labelledby="lupaT"><h2 id="lupaT">De 1990 até hoje, de perto</h2>
@@ -788,19 +789,21 @@ function painelHistoria() {
             <div id="lupaCorpo" class="hx-corpo"></div></section>` : ''}
         <details class="sanfona sanfona--leve mt-8"><summary>Prefere ler tudo em sequência? Ver as quatro eras em lista</summary>${listaTempo}</details>`;
 
-    const painel = $('tgPainel'), marcoEl = $('tgMarco'), per = $('tgPer');
+    const painel = $('tgPainel'), marcoEl = $('tgMarco'), chipsEl = $('tgChips'), per = $('tgPer');
     const marcarPeriodo = (de, ate) => {
         if (de == null) { per.setAttribute('width', '0'); return; }
         per.setAttribute('x', X(de).toFixed(1)); per.setAttribute('width', (X(Math.min(ate, X1)) - X(de)).toFixed(1));
     };
     const eraDoAno = (a) => Math.max(0, FAIXAS.findIndex(([x, y]) => a >= x && a < y));
-    const DICA = '<span class="hx-marco-dica">Os pontos do gráfico são marcos. Clique em um para ver o que mudou naquele ano.</span>';
+    const DICA = '<span class="hx-marco-dica">Escolha um marco acima, ou clique num ponto do gráfico, para ver o que mudou naquele ano.</span>';
     let eraSel = -1;
     const mostrarEra = (k) => {
         const e = hist.eras[k];
         eraSel = k;
         document.querySelectorAll('.tg-faixa').forEach((n) => n.classList.toggle('sel', +n.dataset.era === k));
         document.querySelectorAll('.hx-era').forEach((n) => n.setAttribute('aria-pressed', String(+n.dataset.era === k)));
+        document.querySelectorAll('.tg-marco').forEach((n) => n.classList.toggle('fora', eraDoAno(hist.marcos[+n.dataset.marco].ano) !== k));
+        chipsEl.innerHTML = `<span class="hx-chips-t">Marcos desta era</span>${hist.marcos.map((m, i) => [m, i]).filter(([m]) => eraDoAno(m.ano) === k).map(([m, i]) => `<button type="button" class="hx-chip" data-marco="${i}" aria-pressed="false" title="${esc(m.titulo)}"><b>${m.ano}</b> ${esc(m.curto || m.titulo)}</button>`).join('')}`;
         painel.innerHTML = `<article class="hx-det">
             <header class="hx-det-h"><p class="tl-anos">${esc(e.anos)}</p><p class="tl-nome">${esc(e.nome)}</p><p class="tl-frase">${esc(e.frase)}</p>
                 <div class="tl-carga"><span class="tl-barra" role="img" aria-label="${esc(e.carga_nota)}"><i style="width:${Math.round(e.carga / 35 * 100)}%"></i></span><span>Carga: <b>${esc(e.carga_nota)}</b></span></div>
@@ -811,11 +814,15 @@ function painelHistoria() {
                 <p class="tl-marco">${esc(e.marco)}</p>
                 <p class="hx-rot hx-rot-2">Tributos em cena</p><div class="tl-chips">${e.siglas.map((x) => `<b>${esc(x)}</b>`).join('')}</div></div></article>`;
     };
-    const mostrarMarco = (k) => {
+    const rotuloMarco = (i) => `<b>${hist.marcos[i].ano}</b> ${esc(hist.marcos[i].curto || hist.marcos[i].titulo)}`;
+    const mostrarMarco = (k, rolar) => {
         const m = hist.marcos[k];
-        document.querySelectorAll('.tg-marco').forEach((n) => n.classList.toggle('sel', +n.dataset.marco === k));
         if (eraDoAno(m.ano) !== eraSel) mostrarEra(eraDoAno(m.ano));
-        marcoEl.innerHTML = `<b class="hx-marco-ano">${m.ano}</b><div><p><strong>${esc(m.titulo)}.</strong> ${esc(m.texto)}</p>${m.itens ? `<ul class="hx-marco-itens">${m.itens.map(([r, t]) => `<li><b>${esc(r)}</b>${esc(t)}</li>`).join('')}</ul>` : ''}</div>`;
+        document.querySelectorAll('.tg-marco').forEach((n) => n.classList.toggle('sel', +n.dataset.marco === k));
+        chipsEl.querySelectorAll('.hx-chip').forEach((n) => n.setAttribute('aria-pressed', String(+n.dataset.marco === k)));
+        const nav = `<nav class="hx-marco-nav" aria-label="Marcos vizinhos">${k > 0 ? `<button type="button" data-marco-ir="${k - 1}" class="hx-ant">← ${rotuloMarco(k - 1)}</button>` : '<span></span>'}${k < hist.marcos.length - 1 ? `<button type="button" data-marco-ir="${k + 1}" class="hx-prox">${rotuloMarco(k + 1)} →</button>` : '<span></span>'}</nav>`;
+        marcoEl.innerHTML = `<b class="hx-marco-ano">${m.ano}</b><div><p><strong>${esc(m.titulo)}.</strong> ${esc(m.texto)}</p>${m.itens ? `<ul class="hx-marco-itens">${m.itens.map(([r, t]) => `<li><b>${esc(r)}</b>${esc(t)}</li>`).join('')}</ul>` : ''}${nav}</div>`;
+        if (rolar && chipsEl.getBoundingClientRect().top > innerHeight - 220) chipsEl.scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
     };
     const escolherEra = (k) => {
         document.querySelectorAll('.tg-marco').forEach((n) => n.classList.remove('sel'));
@@ -825,7 +832,11 @@ function painelHistoria() {
     const ligar = (sel, fn) => document.querySelectorAll(sel).forEach((n) => { const f = () => fn(n); n.addEventListener('click', f); n.addEventListener('keydown', (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); f(); } }); });
     ligar('.tg-faixa', (n) => escolherEra(+n.dataset.era));
     ligar('.hx-era', (n) => escolherEra(+n.dataset.era));
-    ligar('.tg-marco', (n) => mostrarMarco(+n.dataset.marco));
+    ligar('.tg-marco', (n) => mostrarMarco(+n.dataset.marco, true));
+    [chipsEl, marcoEl].forEach((c) => c.addEventListener('click', (ev) => {
+        const b = ev.target.closest('[data-marco], [data-marco-ir]');
+        if (b) mostrarMarco(+(b.dataset.marco ?? b.dataset.marcoIr), true);
+    }));
     escolherEra(0);
 
     if (temLupa) {
