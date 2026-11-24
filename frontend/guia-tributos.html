@@ -795,7 +795,7 @@ function painelHistoria() {
         per.setAttribute('x', X(de).toFixed(1)); per.setAttribute('width', (X(Math.min(ate, X1)) - X(de)).toFixed(1));
     };
     const eraDoAno = (a) => Math.max(0, FAIXAS.findIndex(([x, y]) => a >= x && a < y));
-    const DICA = '<span class="hx-marco-dica">Escolha um marco acima, ou clique num ponto do gráfico, para ver o que mudou naquele ano.</span>';
+    const DICA = '<p class="mc-dica">Escolha um marco acima, ou clique num ponto do gráfico, para ver o que mudou naquele ano.</p>';
     let eraSel = -1;
     const mostrarEra = (k) => {
         const e = hist.eras[k];
@@ -814,14 +814,29 @@ function painelHistoria() {
                 <p class="tl-marco">${esc(e.marco)}</p>
                 <p class="hx-rot hx-rot-2">Tributos em cena</p><div class="tl-chips">${e.siglas.map((x) => `<b>${esc(x)}</b>`).join('')}</div></div></article>`;
     };
-    const rotuloMarco = (i) => `<b>${hist.marcos[i].ano}</b> ${esc(hist.marcos[i].curto || hist.marcos[i].titulo)}`;
+    const rotuloMarco = (i) => `<b>${hist.marcos[i].ano}</b>${esc(hist.marcos[i].curto || hist.marcos[i].titulo)}`;
+    // itens com o mesmo prefixo antes de ": " (ex.: "Collor I: ...") viram grupos com subtítulo; prefixo isolado fica no rótulo
+    const fichasMarco = (itens) => {
+        const pre = (r) => (r.includes(': ') ? r.split(': ')[0] : null);
+        const n = {}; itens.forEach(([r]) => { const g = pre(r); if (g) n[g] = (n[g] || 0) + 1; });
+        let atual = null;
+        return itens.map(([r, t]) => {
+            const g = pre(r) && n[pre(r)] > 1 ? pre(r) : null;
+            const cab = g && g !== atual ? `<div class="mc-g">${esc(g)}</div>` : '';
+            atual = g;
+            return `${cab}<div class="mc-i"><dt>${esc(g ? r.slice(g.length + 2) : r)}</dt><dd>${esc(t)}</dd></div>`;
+        }).join('');
+    };
     const mostrarMarco = (k, rolar) => {
         const m = hist.marcos[k];
         if (eraDoAno(m.ano) !== eraSel) mostrarEra(eraDoAno(m.ano));
         document.querySelectorAll('.tg-marco').forEach((n) => n.classList.toggle('sel', +n.dataset.marco === k));
         chipsEl.querySelectorAll('.hx-chip').forEach((n) => n.setAttribute('aria-pressed', String(+n.dataset.marco === k)));
-        const nav = `<nav class="hx-marco-nav" aria-label="Marcos vizinhos">${k > 0 ? `<button type="button" data-marco-ir="${k - 1}" class="hx-ant">← ${rotuloMarco(k - 1)}</button>` : '<span></span>'}${k < hist.marcos.length - 1 ? `<button type="button" data-marco-ir="${k + 1}" class="hx-prox">${rotuloMarco(k + 1)} →</button>` : '<span></span>'}</nav>`;
-        marcoEl.innerHTML = `<b class="hx-marco-ano">${m.ano}</b><div><p><strong>${esc(m.titulo)}.</strong> ${esc(m.texto)}</p>${m.itens ? `<ul class="hx-marco-itens">${m.itens.map(([r, t]) => `<li><b>${esc(r)}</b>${esc(t)}</li>`).join('')}</ul>` : ''}${nav}</div>`;
+        const ant = k > 0 ? `<button type="button" class="mc-btn mc-ant" data-marco-ir="${k - 1}" aria-label="Marco anterior: ${hist.marcos[k - 1].ano}, ${esc(hist.marcos[k - 1].curto || hist.marcos[k - 1].titulo)}"><span class="mc-nl">← Anterior</span><span class="mc-nv">${rotuloMarco(k - 1)}</span></button>` : '<span></span>';
+        const prox = k < hist.marcos.length - 1 ? `<button type="button" class="mc-btn mc-prox" data-marco-ir="${k + 1}" aria-label="Próximo marco: ${hist.marcos[k + 1].ano}, ${esc(hist.marcos[k + 1].curto || hist.marcos[k + 1].titulo)}"><span class="mc-nl">Próximo →</span><span class="mc-nv">${rotuloMarco(k + 1)}</span></button>` : '<span></span>';
+        marcoEl.innerHTML = `<article class="mc"><header class="mc-h"><b class="mc-ano">${m.ano}</b><div><p class="mc-k">Marco ${k + 1} de ${hist.marcos.length} · Era ${eraDoAno(m.ano) + 1}</p><h3 class="mc-t">${esc(m.titulo)}</h3></div></header>
+            <div class="mc-c"><p class="mc-lead">${esc(m.texto)}</p>${m.itens ? `<dl class="mc-itens">${fichasMarco(m.itens)}</dl>` : ''}</div>
+            <nav class="mc-nav" aria-label="Marcos vizinhos">${ant}${prox}</nav></article>`;
         if (rolar && chipsEl.getBoundingClientRect().top > innerHeight - 220) chipsEl.scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
     };
     const escolherEra = (k) => {
