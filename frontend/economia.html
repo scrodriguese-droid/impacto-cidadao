@@ -1168,6 +1168,22 @@ function filmeFoto(r, a) {
         <p class="fm-txt">É o que o setor público deve (passivos) menos o que tem em caixa e reservas (ativos), numa data. Mostra o tamanho do buraco, mas não explica por que ele mudou: para isso, veja o filme.</p></div>
         <ul class="fm-hist" aria-label="Saldo da dívida líquida no fim de cada ano">${linhas}</ul>`;
 }
+/* Texto que explica cada modo da dinâmica da dívida, com a fórmula montada em HTML */
+const EXPLICA_DIVIDA = {
+    foto: `<p class="fm-ex-t">Estoque da dívida</p>
+        <p>O tamanho líquido da dívida hoje, descontando o que o governo já tem guardado em caixa e reservas, dado pela fórmula:</p>
+        <p class="fm-fx" role="img" aria-label="D t é igual a passivos menos ativos">D<sub>t</sub> = Passivos − Ativos</p>
+        <p>A conta patrimonial serve para medir a solvência e a posição financeira real do governo em um dia específico.</p>`,
+    filme: `<p class="fm-ex-t">Estoque da dívida + fluxo do caixa</p>
+        <p>Como o estoque de ontem se transformou no estoque de hoje, através dos fluxos de juros e do resultado primário do ano, dado pela fórmula:</p>
+        <p class="fm-fx" role="img" aria-label="D t é igual a D t menos 1, mais J t, menos SP t">D<sub>t</sub> = D<sub>t−1</sub> + J<sub>t</sub> − SP<sub>t</sub></p>
+        <p>A conta dinâmica serve para diagnóstico, gestão do orçamento e planejamento futuro ao longo do ano. Ela é usada para:</p>
+        <ul>
+            <li><b>Entender o que explica o aumento da dívida.</b> Quando a dívida sobe R$ 1 trilhão em um ano, o estoque (passivos − ativos) mostra o valor final, mas não diz por quê. A equação dinâmica abre a conta e responde: foi o resultado do governo no dia a dia (<i>SP<sub>t</sub></i>) ou foi o peso da taxa de juros definida pelo Banco Central (<i>J<sub>t</sub></i>)?</li>
+            <li><b>Definir metas fiscais (LDO e Orçamento).</b> É essa conta que o Ministério da Fazenda e o Congresso usam para calcular qual precisa ser a meta de superávit primário do ano seguinte para impedir que a dívida vire uma bola de neve.</li>
+            <li><b>Simular cenários futuros.</b> Permite projetar como a dívida vai se comportar nos próximos anos se a Selic cair ou se a economia crescer mais rápido.</li></ul>
+        <p class="ficha-nota">Versão simplificada: a conta completa também inclui câmbio e outros ajustes patrimoniais (veja a fórmula no fim desta seção).</p>`,
+};
 async function carregarDividaFilme() {
     const alvo = $('dividaFilme'); if (!alvo) return;
     alvo.innerHTML = '<p class="text-sm text-slate-500"><i class="fa-solid fa-spinner fa-spin mr-1.5" aria-hidden="true"></i>Carregando a dinâmica da dívida…</p>';
@@ -1182,10 +1198,11 @@ async function carregarDividaFilme() {
             <p class="text-sm text-slate-500 mt-2" style="max-width:72ch">Entenda se a dívida subiu porque o governo gastou demais ou porque os juros pesaram. A <b>fotografia</b> mostra quanto se deve hoje; o <b>filme</b> mostra o que fez esse número mudar; o <b>diagnóstico</b> liga a causa (o resultado do governo) à consequência (a dívida).</p>
             <div class="fm-controles">
                 <div class="fm-modos" role="group" aria-label="Modo de visualização">
-                    <button type="button" data-fmodo="foto" aria-pressed="false">A fotografia (estoque)</button>
-                    <button type="button" data-fmodo="filme" aria-pressed="true">O filme (fluxo)</button>
+                    <button type="button" data-fmodo="foto" aria-pressed="false">Estoque da dívida</button>
+                    <button type="button" data-fmodo="filme" aria-pressed="true">Estoque da dívida + fluxo do caixa</button>
                     <button type="button" data-fmodo="diag" aria-pressed="false">O diagnóstico (causa e consequência)</button></div>
                 <label class="fm-ano">Ano <select id="fmAno">${opcoes}</select></label></div>
+            <div id="fmExplica" class="fm-ex" hidden></div>
             <div id="fmCorpo" class="mt-4" aria-live="polite"></div>
             <details class="sanfona sanfona--leve mt-4"><summary><i class="fa-solid fa-circle-info" aria-hidden="true"></i> Ver a fórmula macroeconômica e a metodologia</summary>
                 <p class="fm-formula">Fotografia: DLSP<sub>t</sub> = Passivos<sub>t</sub> − Ativos<sub>t</sub><br>Filme: DLSP<sub>t</sub> = DLSP<sub>t−1</sub> − PRIM<sub>t</sub> + JUR<sub>t</sub> + AP<sub>t</sub></p>
@@ -1207,6 +1224,7 @@ async function carregarDividaFilme() {
         const pintar = () => {
             const a = r.anos.find((x) => x.ano === ano);
             alvo.querySelector('.fm-ano').hidden = modo === 'diag';
+            const ex = $('fmExplica'); ex.innerHTML = EXPLICA_DIVIDA[modo] || ''; ex.hidden = !EXPLICA_DIVIDA[modo];
             corpo.innerHTML = modo === 'filme' ? filmeExtrato(a) : modo === 'foto' ? filmeFoto(r, a) : diagnosticoDivida();
             alvo.querySelectorAll('[data-fmodo]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.fmodo === modo)));
         };
