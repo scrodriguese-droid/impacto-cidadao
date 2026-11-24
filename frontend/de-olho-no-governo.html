@@ -546,7 +546,10 @@ function diaPresidente(d, aberto) {
 async function carregarPresidente() {
     try {
         const a = await api('/api/governismo/agenda-presidente');
-        $('presidente').innerHTML = `<div class="space-y-3">${a.dias.map((d, i) => diaPresidente(d, i === 0)).join('')}</div>
+        const velha = a.desatualizada
+            ? `<p class="mb-3 rounded-lg border border-amber-400 bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 px-3 py-2 text-sm"><i class="fa-solid fa-triangle-exclamation mr-1" aria-hidden="true"></i>
+                <b>Agenda possivelmente desatualizada.</b> O último dia publicado que conseguimos ler é ${esc(fmtData(a.periodo.ate))}${a.atraso_dias > 1 ? ` (há ${a.atraso_dias} dias)` : ''}; o Planalto pode já ter publicado dias mais novos. <button type="button" onclick="carregarPresidente()" class="underline">Tentar de novo</button></p>` : '';
+        $('presidente').innerHTML = `${velha}<div class="space-y-3">${a.dias.map((d, i) => diaPresidente(d, i === 0)).join('')}</div>
             <details class="mt-3 text-xs text-slate-500"><summary class="cursor-pointer font-semibold"><i class="fa-solid fa-circle-info mr-1" aria-hidden="true"></i>Como ler esta agenda e de onde vêm os dados</summary>
                 <ul class="mt-2 list-disc pl-5 space-y-1">${a.notas.map((n) => `<li>${esc(n)}</li>`).join('')}
                     <li>Mostramos de ${esc(fmtData(a.periodo.de))} a ${esc(fmtData(a.periodo.ate))}. Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(a.fonte.url))}">${esc(a.fonte.nome)}</a> · <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(a.e_agendas))}">e-Agendas (CGU)</a>. Consultado em ${esc(fmtDataHora(a.consultado_em))}.</li></ul></details>`;
