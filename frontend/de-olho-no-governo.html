@@ -52,6 +52,42 @@
         .vazio-sess { padding: .6rem 0; font-size: .85rem; color: var(--muted); }
         .cab-casa { display: flex; align-items: baseline; justify-content: space-between; gap: .5rem; }
         .cab-casa small { font-size: .72rem; font-weight: 600; color: var(--muted); text-transform: none; letter-spacing: 0; }
+
+        /* Agenda do Presidente: faixa por dia, linha do tempo e deslocamentos em segundo plano */
+        main details.dia-pres.dia-pres { border: 0 !important; padding: 0; }
+        main details.dia-pres.dia-pres > summary { display: flex; flex-wrap: wrap; align-items: baseline; gap: .2rem .9rem; padding: .7rem .9rem; background: var(--papel-2); border-left: 4px solid var(--vermelho);
+            text-decoration: none; text-transform: none; letter-spacing: 0; font-size: .8rem; font-weight: 400; cursor: pointer; }
+        main details.dia-pres > summary::before { content: none !important; }
+        main details.dia-pres > summary::after { content: "+"; margin-left: auto; font-weight: 800; font-size: 1.1rem; line-height: 1; }
+        main details.dia-pres[open] > summary::after { content: "\2212"; }
+        .dia-nome { font-weight: 800; font-size: .92rem; text-transform: uppercase; letter-spacing: .04em; }
+        .dia-conta, .dia-local { font-size: .78rem; color: var(--muted); font-weight: 600; }
+        .pres-topo { padding: .8rem .2rem .2rem; }
+        .pres-nota { font-size: .78rem; color: var(--muted); }
+        .pres-nota i { margin-right: .4rem; }
+        .pres-congresso { display: flex; gap: .6rem; align-items: flex-start; padding: .6rem .8rem; border-left: 4px solid var(--vermelho); background: color-mix(in srgb, var(--vermelho) 9%, transparent); font-size: .86rem; }
+        .pres-congresso i { margin-top: .2rem; color: var(--vermelho); }
+        .area-bar { display: flex; height: 6px; margin-top: .8rem; overflow: hidden; background: var(--papel-2); }
+        .area-bar span { display: block; height: 100%; }
+        .area-leg { display: flex; flex-wrap: wrap; gap: .2rem 1rem; margin-top: .4rem; font-size: .74rem; color: var(--muted); }
+        .area-leg i { display: inline-block; width: .6rem; height: .6rem; margin-right: .3rem; vertical-align: baseline; }
+        .pres-ol { list-style: none; margin: .5rem 0 0; padding: 0; }
+        .pres-li { display: grid; grid-template-columns: 4rem minmax(0, 1fr); gap: 0 .9rem; padding: .75rem .2rem; border-bottom: 1px solid var(--papel-2); }
+        .pres-li:last-child { border-bottom: 0; }
+        .pres-hora { font-weight: 800; font-size: .95rem; font-variant-numeric: tabular-nums; line-height: 1.3; }
+        .pres-hora span { display: block; font-weight: 400; font-size: .68rem; color: var(--muted); }
+        .pres-corpo { border-left: 2px solid var(--papel-2); padding-left: .9rem; }
+        .pres-li--cong .pres-corpo { border-left: 4px solid var(--vermelho); padding-left: calc(.9rem - 2px); }
+        main .pres-corpo details.mais > summary { text-transform: none; letter-spacing: 0; font-weight: 500; font-size: .76rem; text-decoration: none; color: var(--muted); padding: .25rem 0 0; }
+        main .pres-corpo details.mais > summary:hover { color: var(--fg); }
+        .pres-titulo { font-size: .92rem; line-height: 1.35; }
+        .pres-cargo { color: var(--muted); }
+        .pres-meta { margin-top: .2rem; font-size: .76rem; color: var(--muted); }
+        .pres-cong-rot { color: var(--vermelho); text-transform: uppercase; letter-spacing: .05em; font-size: .68rem; }
+        .pres-li--desl .pres-hora, .pres-li--desl .pres-titulo { color: var(--muted); }
+        .pres-li--desl .pres-hora { font-weight: 600; }
+        .pres-li--desl .pres-titulo, .pres-li--desl .pres-titulo b { font-size: .84rem; font-weight: 500; }
+        .pres-li--desl { padding-top: .4rem; padding-bottom: .4rem; }
     </style>
     <link rel="stylesheet" href="assets/brutalista.css">
 </head>
@@ -200,7 +236,7 @@
     </section>
     </div>
 
-    <section aria-labelledby="h-notas" class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5">
+    <section id="sec-notas" aria-labelledby="h-notas" class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5">
         <h2 id="h-notas" class="font-bold">Como ler estes números</h2>
         <ul id="notas" class="mt-2 text-sm text-slate-600 dark:text-slate-400 list-disc pl-5 space-y-1.5"></ul>
     </section>
@@ -246,6 +282,7 @@ function selecionarAba(id, { foco = false, url = true, rolar = false } = {}) {
         $('p-' + t).hidden = !on;
         if (on && foco) b.focus();
     });
+    $('sec-notas').hidden = !['termometro', 'pautas', 'deputado'].includes(id);   // as notas explicam governismo, fidelidade e presença: só cabem nas abas de votação
     if (url) { try { history.replaceState(null, '', location.pathname + location.search + '#' + id); } catch (e) { /* sem histórico: segue sem */ } }
     if (rolar) $('t-' + id).scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
@@ -626,50 +663,51 @@ async function carregarDinamica() {
 }
 
 // ---------------------------------------------------------------- agenda do Presidente
-const ETIQUETA = {
-    congresso: ['Congresso', 'bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border-amber-400'],
-    cerimonias: ['Cerimônia ou assinatura', 'text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600'],
-    fora: ['Fora de Brasília', 'text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600'],
-};
 // cores só distinguem as áreas na barra; não têm significado político
 const AREA_CORES = ['#1f6fb2', '#d95f02', '#1b9e77', '#7570b3', '#c2185b', '#5c8a1e', '#a67c00', '#12879a'];
-const chip = (txt, cls) => `<span class="ml-1 px-1.5 py-0.5 rounded border text-[10px] font-semibold ${cls}">${esc(txt)}</span>`;
 
+// Topo do dia: o que importa para quem acompanha o Congresso (reuniões com as Casas) e, só quando há mais de uma área, a divisão do dia.
 function focoDoDia(d) {
     const total = d.areas.reduce((s, a) => s + a.n, 0);
-    const barra = total ? `<div class="flex h-2.5 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-700" role="img" aria-label="Áreas dos compromissos: ${d.areas.map((a) => `${esc(a.area)} ${a.n}`).join(', ')}">
-            ${d.areas.map((a, i) => `<div style="width:${100 * a.n / total}%;background:${AREA_CORES[i % AREA_CORES.length]}" title="${esc(a.area)}: ${a.n}"></div>`).join('')}</div>
-        <p class="mt-1.5 text-xs text-slate-600 dark:text-slate-400 flex flex-wrap gap-x-4 gap-y-1">${d.areas.map((a, i) => `<span><span class="inline-block w-2.5 h-2.5 rounded-sm align-middle" style="background:${AREA_CORES[i % AREA_CORES.length]}"></span> ${esc(a.area)}${a.n > 1 ? ` (${a.n})` : ''}</span>`).join('')}</p>` : '';
-    const sobrou = d.compromissos.length - d.compromissos.filter((c) => c.area).length;
+    const cor = (i) => AREA_CORES[i % AREA_CORES.length];
+    const areas = d.areas.length > 1 ? `<div class="area-bar" role="img" aria-label="Áreas dos compromissos: ${d.areas.map((a) => `${esc(a.area)} ${a.n}`).join(', ')}">
+            ${d.areas.map((a, i) => `<span style="width:${100 * a.n / total}%;background:${cor(i)}" title="${esc(a.area)}: ${a.n}"></span>`).join('')}</div>
+        <p class="area-leg">${d.areas.map((a, i) => `<span><i style="background:${cor(i)}"></i>${esc(a.area)}${a.n > 1 ? ` (${a.n})` : ''}</span>`).join('')}</p>` : '';
     const congresso = d.com_congresso.length
-        ? `<p class="mt-3 inline-flex items-start gap-2 rounded-lg border border-amber-400 bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 px-3 py-2 text-sm"><i class="fa-solid fa-handshake mt-0.5" aria-hidden="true"></i>
+        ? `<p class="pres-congresso"><i class="fa-solid fa-handshake" aria-hidden="true"></i>
             <span><b>Articulação com o Congresso:</b> ${d.com_congresso.map(esc).join('; ')}. Compare com a <a class="underline" href="#h-agenda">pauta do Plenário</a>.</span></p>`
-        : '<p class="mt-3 text-xs text-slate-500"><i class="fa-regular fa-circle mr-1" aria-hidden="true"></i>Nenhuma reunião com presidentes das Casas ou líderes do Congresso registrada nesta data.</p>';
-    return `<div class="mt-3"><p class="text-xs font-semibold text-slate-500 uppercase">Foco do dia</p><div class="mt-1.5">${barra || '<p class="text-xs text-slate-500">Compromissos sem ministério citado no título.</p>'}</div>
-        ${sobrou && total ? `<p class="mt-1 text-[11px] text-slate-500">${sobrou} ${sobrou === 1 ? 'compromisso não cita' : 'compromissos não citam'} um ministério no título.</p>` : ''}${congresso}</div>`;
+        : '<p class="pres-nota"><i class="fa-regular fa-circle" aria-hidden="true"></i>Nenhuma reunião com presidentes das Casas ou líderes do Congresso registrada nesta data.</p>';
+    return `<div class="pres-topo">${congresso}${areas}</div>`;
 }
 
+// Partida e chegada são deslocamento, não agenda de trabalho: ficam em segundo plano.
+const ehDeslocamento = (c) => !c.pessoa && /^(partida|chegada)\b/i.test(c.titulo || '');
+
 function compromisso(c, mostrarLocal) {
-    const etiq = (c.categorias || []).filter((k) => ETIQUETA[k]).map((k) => chip(ETIQUETA[k][0], ETIQUETA[k][1])).join('');
-    const quem = c.pessoa ? `<b>${esc(c.pessoa)}</b> <span class="text-slate-600 dark:text-slate-400">· ${esc(c.cargo)}</span>` : `<b>${esc(c.titulo)}</b>`;
+    const cats = c.categorias || [];
+    const quem = c.pessoa ? `<b>${esc(c.pessoa)}</b> <span class="pres-cargo">· ${esc(c.cargo)}</span>` : `<b>${esc(c.titulo)}</b>`;
+    const meta = [c.area ? esc(c.area) : '', cats.includes('cerimonias') ? 'Cerimônia ou assinatura' : '', cats.includes('congresso') ? '<b class="pres-cong-rot">Congresso</b>' : '',
+        mostrarLocal && c.local ? `<span><i class="fa-solid fa-location-dot" aria-hidden="true"></i> ${esc(c.local)}</span>` : ''].filter(Boolean);
+    const limpa = (t) => String(t || '').replace(/[;,\s]+$/, '');   // a fonte deixa ";" no fim de alguns nomes
     const n = c.acompanhantes.length;
-    const acomp = n ? `<details class="mt-1"><summary class="cursor-pointer text-xs text-slate-600 dark:text-slate-400"><i class="fa-solid fa-user-group mr-1" aria-hidden="true"></i>+${n} ${n === 1 ? 'participante' : 'participantes'}
-            <span class="hidden sm:inline">(${c.acompanhantes.slice(0, 3).map((x) => esc(String(x.nome).replace(/^(Embaixador|Embaixadora|Ministro|Ministra|Secretário|Secretária|Senador|Senadora|Deputado|Deputada)\s+/, ''))).join(', ')}${n > 3 ? '…' : ''})</span></summary>
-        <ul class="mt-1 space-y-0.5 text-xs text-slate-600 dark:text-slate-400">${c.acompanhantes.map((x) => `<li><b>${esc(x.nome)}</b>${x.cargo ? ` · ${esc(x.cargo)}` : ''}</li>`).join('')}</ul></details>` : '';
-    return `<li class="grid grid-cols-[3.5rem_1fr] gap-3 py-2 border-t border-slate-100 dark:border-slate-700 first:border-0">
-        <p class="text-sm font-bold tabular-nums">${esc(c.inicio || '—')}${c.fim ? `<span class="block text-[11px] font-normal text-slate-500">até ${esc(c.fim)}</span>` : ''}</p>
-        <div class="min-w-0"><p class="text-sm">${quem}</p>
-            <p class="mt-0.5 flex flex-wrap items-center gap-y-1">${c.area ? `<span class="px-1.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-[11px] font-semibold">${esc(c.area)}</span>` : ''}${etiq}${mostrarLocal && c.local ? `<span class="ml-2 text-[11px] text-slate-500"><i class="fa-solid fa-location-dot mr-0.5" aria-hidden="true"></i>${esc(c.local)}</span>` : ''}</p>
-            ${acomp}</div></li>`;
+    const acomp = n ? `<details class="mais"><summary><i class="fa-solid fa-user-group mr-1" aria-hidden="true"></i>+${n} ${n === 1 ? 'participante' : 'participantes'}
+            <span class="hidden sm:inline">(${c.acompanhantes.slice(0, 3).map((x) => esc(limpa(x.nome).replace(/^(Embaixador|Embaixadora|Ministro|Ministra|Secretário|Secretária|Senador|Senadora|Deputado|Deputada)\s+/, ''))).join(', ')}${n > 3 ? '…' : ''})</span></summary>
+        <ul class="mt-1 space-y-0.5 text-xs">${c.acompanhantes.map((x) => `<li><b>${esc(limpa(x.nome))}</b>${x.cargo ? ` · ${esc(limpa(x.cargo))}` : ''}</li>`).join('')}</ul></details>` : '';
+    return `<li class="pres-li${cats.includes('congresso') ? ' pres-li--cong' : ''}${ehDeslocamento(c) ? ' pres-li--desl' : ''}">
+        <p class="pres-hora">${esc(c.inicio || '—')}${c.fim ? `<span>até ${esc(c.fim)}</span>` : ''}</p>
+        <div class="pres-corpo"><p class="pres-titulo">${quem}</p>
+            ${meta.length ? `<p class="pres-meta">${meta.join('<span aria-hidden="true"> · </span>')}</p>` : ''}${acomp}</div></li>`;
 }
 
 function diaPresidente(d, aberto) {
     const n = d.compromissos.length;
-    const lista = n ? `${focoDoDia(d)}<ol class="mt-4">${d.compromissos.map((c) => compromisso(c, !d.local_comum)).join('')}</ol>`
-        : '<p class="mt-2 text-sm text-slate-500">Nenhum compromisso público registrado neste dia.</p>';
-    return `<details class="${cartao} p-4" ${aberto ? 'open' : ''}><summary class="cursor-pointer font-semibold">${esc(diaSemana(d.data))}
-        <span class="text-xs font-normal text-slate-500">· ${n} ${n === 1 ? 'compromisso' : 'compromissos'}</span>
-        ${d.local_comum ? `<span class="ml-2 text-xs font-normal text-slate-600 dark:text-slate-400"><i class="fa-solid fa-location-dot mr-0.5" aria-hidden="true"></i>${esc(d.local_comum)}</span>` : ''}</summary>${lista}</details>`;
+    const viagem = d.compromissos.some((c) => (c.categorias || []).includes('fora'));
+    const lista = n ? `${focoDoDia(d)}<ol class="pres-ol">${d.compromissos.map((c) => compromisso(c, !d.local_comum)).join('')}</ol>`
+        : '<p class="pres-nota" style="padding:.8rem .2rem">Nenhum compromisso público registrado neste dia.</p>';
+    return `<details class="dia-pres" ${aberto ? 'open' : ''}><summary><span class="dia-nome">${esc(diaSemana(d.data))}</span>
+        <span class="dia-conta">${n} ${n === 1 ? 'compromisso' : 'compromissos'}</span>
+        ${d.local_comum ? `<span class="dia-local"><i class="fa-solid fa-location-dot" aria-hidden="true"></i> ${esc(d.local_comum)}</span>` : ''}
+        ${viagem ? '<span class="dia-local"><i class="fa-solid fa-plane" aria-hidden="true"></i> inclui viagem</span>' : ''}</summary>${lista}</details>`;
 }
 async function carregarPresidente() {
     try {
@@ -677,7 +715,7 @@ async function carregarPresidente() {
         const velha = a.desatualizada
             ? `<p class="mb-3 rounded-lg border border-amber-400 bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 px-3 py-2 text-sm"><i class="fa-solid fa-triangle-exclamation mr-1" aria-hidden="true"></i>
                 <b>Agenda possivelmente desatualizada.</b> O último dia publicado que conseguimos ler é ${esc(fmtData(a.periodo.ate))}${a.atraso_dias > 1 ? ` (há ${a.atraso_dias} dias)` : ''}; o Planalto pode já ter publicado dias mais novos. <button type="button" onclick="carregarPresidente()" class="underline">Tentar de novo</button></p>` : '';
-        $('presidente').innerHTML = `${velha}<div class="space-y-3">${a.dias.map((d, i) => diaPresidente(d, i === 0)).join('')}</div>
+        $('presidente').innerHTML = `${velha}<div class="space-y-4">${a.dias.map((d, i) => diaPresidente(d, i === 0)).join('')}</div>
             <details class="mt-3 text-xs text-slate-500"><summary class="cursor-pointer font-semibold"><i class="fa-solid fa-circle-info mr-1" aria-hidden="true"></i>Como ler esta agenda e de onde vêm os dados</summary>
                 <ul class="mt-2 list-disc pl-5 space-y-1">${a.notas.map((n) => `<li>${esc(n)}</li>`).join('')}
                     <li>Mostramos de ${esc(fmtData(a.periodo.de))} a ${esc(fmtData(a.periodo.ate))}. Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(a.fonte.url))}">${esc(a.fonte.nome)}</a> · <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(a.e_agendas))}">e-Agendas (CGU)</a>. Consultado em ${esc(fmtDataHora(a.consultado_em))}.</li></ul></details>`;
