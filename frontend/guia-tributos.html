@@ -815,7 +815,7 @@ function painelHistoria() {
         const m = hist.marcos[k];
         document.querySelectorAll('.tg-marco').forEach((n) => n.classList.toggle('sel', +n.dataset.marco === k));
         if (eraDoAno(m.ano) !== eraSel) mostrarEra(eraDoAno(m.ano));
-        marcoEl.innerHTML = `<b class="hx-marco-ano">${m.ano}</b><span><strong>${esc(m.titulo)}.</strong> ${esc(m.texto)}</span>`;
+        marcoEl.innerHTML = `<b class="hx-marco-ano">${m.ano}</b><div><p><strong>${esc(m.titulo)}.</strong> ${esc(m.texto)}</p>${m.itens ? `<ul class="hx-marco-itens">${m.itens.map(([r, t]) => `<li><b>${esc(r)}</b>${esc(t)}</li>`).join('')}</ul>` : ''}</div>`;
     };
     const escolherEra = (k) => {
         document.querySelectorAll('.tg-marco').forEach((n) => n.classList.remove('sel'));
