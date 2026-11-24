@@ -1243,16 +1243,6 @@ button.hx-era[aria-pressed="true"] { background: var(--ativo) !important; color:
 .hx-nm { font: 700 .76rem/1.25 var(--fonte-texto); }
 .hx-c { font: 600 .68rem/1.2 var(--fonte-texto); opacity: .75; }
 @media (max-width: 760px) { .hx-eras { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-.hx-marco { display: flex; gap: .9rem; align-items: baseline; margin-top: .5rem; padding: .7rem .95rem; min-height: 3.9rem; border-left: 4px solid var(--vermelho); background: var(--papel-2); font-size: .86rem; line-height: 1.5; }
-.hx-marco-ano { font-family: var(--fonte-titulo); font-weight: 400; font-size: 1.5rem; line-height: 1; color: var(--vermelho); flex: none; }
-.dark .hx-marco-ano { color: #E5584F; }
-.hx-marco > div { min-width: 0; }
-.hx-marco-itens { list-style: none; margin: .7rem 0 0; padding: 0; display: grid; gap: .6rem 1.2rem; }
-@media (min-width: 900px) { .hx-marco-itens { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-.hx-marco-itens li { padding-top: .5rem; border-top: 1px solid var(--line); font-size: .84rem; line-height: 1.5; }
-.hx-marco-itens b { display: block; font: 800 .66rem/1.3 var(--fonte-texto); letter-spacing: .12em; text-transform: uppercase; color: var(--vermelho); margin-bottom: .15rem; }
-.dark .hx-marco-itens b { color: #E5584F; }
-.hx-marco-dica { color: var(--muted); align-self: center; }
 .hx-det { display: grid; margin-top: 1rem; border: 2px solid var(--line); }
 .hx-det-h, .hx-det-c { padding: 1.1rem 1.2rem 1.25rem; }
 .hx-det-h { background: color-mix(in srgb, var(--papel-2) 55%, var(--papel)); border-bottom: 2px solid var(--line); }
@@ -1297,12 +1287,33 @@ button.hx-chip { display: inline-flex; gap: .4rem; align-items: baseline; min-he
 button.hx-chip b { font-family: var(--fonte-titulo); font-weight: 400; font-size: 1.05rem; line-height: 1; letter-spacing: .02em; }
 button.hx-chip:hover { background: var(--papel-2) !important; color: var(--fg) !important; }
 button.hx-chip[aria-pressed="true"] { background: var(--ativo) !important; color: var(--ativo-fg) !important; }
-.hx-marco { margin-top: .6rem; background: color-mix(in srgb, var(--papel-2) 50%, var(--papel)); }
-.hx-marco-itens b, .hx-marco-itens li > b { color: color-mix(in srgb, var(--vermelho) 80%, #000); }
-.dark .hx-marco-itens b { color: #F0746B; }
-.hx-marco-nav { display: flex; justify-content: space-between; flex-wrap: wrap; gap: .6rem; margin-top: 1rem; padding-top: .8rem; border-top: 2px solid var(--line); }
-.hx-marco-nav button { display: inline-flex; gap: .4rem; align-items: baseline; padding: .55rem .8rem; font: 700 .76rem/1.2 var(--fonte-texto); letter-spacing: 0; text-transform: none; color: var(--fg); cursor: pointer; background: transparent !important; border: 2px solid var(--line) !important; box-shadow: none !important; }
-.hx-marco-nav button b { font-family: var(--fonte-titulo); font-weight: 400; font-size: 1rem; line-height: 1; }
-.hx-marco-nav button:hover { background: var(--ativo) !important; color: var(--ativo-fg) !important; }
-.hx-prox { margin-left: auto; }
+
+/* ---------- Cartão do marco (abre abaixo do gráfico): cabeçalho, resumo, fichas em linhas e navegação ---------- */
+.hx-marco { margin-top: .7rem; scroll-margin-top: 1rem; }
+.mc-dica { padding: 1rem 1.1rem; border: 2px dashed var(--line); color: var(--muted); font-size: .88rem; line-height: 1.5; }
+.mc { border: 2px solid var(--line); background: var(--papel); }
+.mc-h { display: flex; gap: 1.1rem; align-items: center; padding: 1rem 1.25rem; background: color-mix(in srgb, var(--papel-2) 60%, var(--papel)); border-bottom: 2px solid var(--line); }
+.mc-ano { font-family: var(--fonte-titulo); font-weight: 400; font-size: 3.1rem; line-height: .9; color: var(--vermelho); flex: none; }
+.dark .mc-ano { color: #E5584F; }
+.mc-k { font: 800 .64rem/1.3 var(--fonte-texto); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.mc-t { font-family: var(--fonte-titulo); font-weight: 400 !important; font-size: 1.7rem; line-height: 1.05; letter-spacing: .005em; text-transform: uppercase; margin-top: .2rem; }
+.mc-c { padding: 1.1rem 1.25rem 1.3rem; }
+.mc-lead { font-size: 1rem; line-height: 1.6; max-width: 68ch; }
+@media (max-width: 640px) { .mc-h { gap: .8rem; padding: .85rem 1rem; } .mc-ano { font-size: 2.4rem; } .mc-t { font-size: 1.35rem; } .mc-c { padding: 1rem 1rem 1.1rem; } }
+.mc-itens { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 1.1rem 0 0; border-top: 2px solid var(--line); border-left: 1px solid var(--line); }
+@media (max-width: 640px) { .mc-itens { grid-template-columns: 1fr; } }
+.mc-g { grid-column: 1 / -1; padding: .65rem .95rem .5rem; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); background: color-mix(in srgb, var(--papel-2) 60%, var(--papel)); font: 800 .7rem/1.3 var(--fonte-texto); letter-spacing: .14em; text-transform: uppercase; color: color-mix(in srgb, var(--vermelho) 80%, #000); }
+.dark .mc-g { color: #F0746B; }
+.mc-i { padding: .8rem .95rem .9rem; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.mc-i dt { font: 800 .7rem/1.4 var(--fonte-texto); letter-spacing: .1em; text-transform: uppercase; margin-bottom: .3rem; }
+.mc-i dd { margin: 0; font-size: .88rem; line-height: 1.55; }
+.mc-nav { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; border-top: 2px solid var(--line); background: var(--line); }
+.mc-nav > span { background: var(--papel); }
+button.mc-btn { display: grid; gap: .1rem; align-content: center; min-height: 3.4rem; padding: .65rem 1rem; text-align: left; color: var(--fg); cursor: pointer; text-transform: none; letter-spacing: 0; background: var(--papel) !important; border: 0 !important; box-shadow: none !important; }
+button.mc-btn:hover { background: var(--ativo) !important; color: var(--ativo-fg) !important; }
+button.mc-btn.mc-prox { text-align: right; }
+.mc-nl { font: 800 .62rem/1.2 var(--fonte-texto); letter-spacing: .14em; text-transform: uppercase; opacity: .7; }
+.mc-nv { font: 600 .84rem/1.25 var(--fonte-texto); }
+.mc-nv b { font-family: var(--fonte-titulo); font-weight: 400; font-size: 1.15rem; letter-spacing: .02em; margin-right: .3rem; }
+@media (max-width: 480px) { .mc-nv b { display: block; margin: 0; } }
 
