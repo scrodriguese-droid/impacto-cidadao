@@ -176,21 +176,33 @@ def _coletar() -> dict:
     }
 
 
+DEFASAGEM_MAX_DIAS = 3        # fim de semana + segunda de manhã: até 3 dias sem publicação é normal
+
+
+def avisar_defasagem(valor: dict, hoje: date, fonte_caiu: bool = False) -> dict:
+    """Cópia da agenda com `desatualizada` (a tela avisa) quando veio do guardado por falha da fonte
+    ou quando o dia mais recente publicado está há mais de DEFASAGEM_MAX_DIAS dias."""
+    ultimo = date.fromisoformat(valor["periodo"]["ate"])
+    atraso = (hoje - ultimo).days
+    return {**valor, "desatualizada": fonte_caiu or atraso > DEFASAGEM_MAX_DIAS, "atraso_dias": max(atraso, 0)}
+
+
 def agenda() -> dict:
-    chave = date.today().isoformat()
+    hoje = date.today()
+    chave = hoje.isoformat()
     agora = time.time()
     if chave in _cache and agora - _cache[chave][0] < TTL_S:
-        return _cache[chave][1]
+        return avisar_defasagem(_cache[chave][1], hoje)
     with _trava:
         agora = time.time()
         if chave in _cache and agora - _cache[chave][0] < TTL_S:
-            return _cache[chave][1]
+            return avisar_defasagem(_cache[chave][1], hoje)
         try:
             valor = _coletar()
         except Exception:
-            if _cache:  # fonte caiu: melhor o último valor lido que nada
-                return max(_cache.values(), key=lambda v: v[0])[1]
+            if _cache:  # fonte caiu: melhor o último valor lido que nada, mas avisando que está velho
+                return avisar_defasagem(max(_cache.values(), key=lambda v: v[0])[1], hoje, fonte_caiu=True)
             raise
         valor["consultado_em"] = datetime.now().isoformat(timespec="seconds")
         _cache[chave] = (agora, valor)
-        return valor
+        return avisar_defasagem(valor, hoje)

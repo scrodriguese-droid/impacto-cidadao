@@ -53,3 +53,14 @@ def test_area_vem_do_nome_do_ministerio():
     assert ap.area("Ministra da Casa Civil, Miriam Belchior") == "Casa Civil"
     assert ap.area("Chefe do Gabinete Pessoal do Presidente da República, Oswaldo Malatesta") == "Gabinete Pessoal"
     assert ap.area("Audiência com representantes do setor") is None
+
+
+def test_aviso_de_defasagem():
+    from datetime import date
+    v = {"periodo": {"de": "2026-11-23", "ate": "2026-11-24"}}
+    assert ap.avisar_defasagem(v, date(2026, 11, 24))["desatualizada"] is False
+    assert ap.avisar_defasagem(v, date(2026, 11, 27))["desatualizada"] is False      # 3 dias: ainda normal
+    velho = ap.avisar_defasagem(v, date(2026, 11, 28))                                # 4 dias: avisa
+    assert velho["desatualizada"] is True and velho["atraso_dias"] == 4
+    assert ap.avisar_defasagem(v, date(2026, 11, 24), fonte_caiu=True)["desatualizada"] is True
+    assert "desatualizada" not in v                                                   # não altera o guardado
