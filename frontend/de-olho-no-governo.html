@@ -15,6 +15,14 @@
     <style>
         body { font-family: 'Inter', system-ui, sans-serif; }
         :focus-visible { outline: 2px solid #A92823; outline-offset: 2px; }
+        /* ementas longas ocupam no máximo duas linhas; o texto completo abre na aba lateral */
+        .clamp2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .etiq { display: inline-block; padding: .05rem .45rem; border: 1px solid currentColor; font-size: .66rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; white-space: nowrap; cursor: help; }
+        .etiq--nao { opacity: .75; }
+        .rosto { object-fit: cover; object-position: top; background: #cbd5e1; flex-shrink: 0; border: 2px solid currentColor; }
+        .rosto-vazio { display: inline-flex; align-items: center; justify-content: center; background: #e2e8f0; color: #94a3b8; flex-shrink: 0; border: 2px solid currentColor; }
+        .mais > summary { cursor: pointer; font-size: .78rem; padding: .35rem 0; }
+        [role="tabpanel"][hidden] { display: none; }
     </style>
     <link rel="stylesheet" href="assets/brutalista.css">
 </head>
@@ -30,11 +38,21 @@
         <p id="consulta" class="text-[11px] text-slate-400 mt-2"></p>
     </header>
 
+    <!-- uma coisa de cada vez: cada aba mostra um assunto, em vez de uma página sem fim -->
+    <div class="ftabs" role="tablist" aria-label="Assuntos desta página">
+        <button type="button" role="tab" id="t-mesa" aria-controls="p-mesa" data-aba="mesa"><i class="fa-solid fa-calendar-days" aria-hidden="true"></i><span>Na mesa</span></button>
+        <button type="button" role="tab" id="t-presidente" aria-controls="p-presidente" data-aba="presidente"><i class="fa-solid fa-landmark-flag" aria-hidden="true"></i><span>Presidente</span></button>
+        <button type="button" role="tab" id="t-quem" aria-controls="p-quem" data-aba="quem"><i class="fa-solid fa-chess" aria-hidden="true"></i><span>Quem manda</span></button>
+        <button type="button" role="tab" id="t-termometro" aria-controls="p-termometro" data-aba="termometro"><i class="fa-solid fa-gauge-high" aria-hidden="true"></i><span>Termômetro</span></button>
+        <button type="button" role="tab" id="t-pautas" aria-controls="p-pautas" data-aba="pautas"><i class="fa-solid fa-fire" aria-hidden="true"></i><span>Como votaram</span></button>
+        <button type="button" role="tab" id="t-deputado" aria-controls="p-deputado" data-aba="deputado"><i class="fa-solid fa-user-check" aria-hidden="true"></i><span>Seu deputado</span></button>
+    </div>
+
     <!-- 1. O que está na mesa -->
+    <div id="p-mesa" role="tabpanel" aria-labelledby="t-mesa" class="space-y-10" hidden>
     <section aria-labelledby="h-agenda">
         <h2 id="h-agenda" class="text-xl font-bold"><i class="fa-solid fa-calendar-days mr-2 text-slate-400" aria-hidden="true"></i>O que está na mesa</h2>
-        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Pauta do Plenário da Câmara e do Senado nos próximos dias. Só projetos de peso (PEC, PLP, PL, MPV e PDL): requerimentos, homenagens e sessões solenes ficam de fora.</p>
-        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Clique no nome de um projeto para ver, numa aba lateral, o que ele faz, quem assina, onde está e por onde já passou.</p>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Pauta do Plenário nos próximos dias, só com projetos de peso (PEC, PLP, PL, MPV e PDL). <b>Clique no nome de um projeto</b> para ver, numa aba lateral, o que ele faz, quem assina, onde está e por onde já passou.</p>
         <div id="agenda" class="mt-4" role="status"><p class="text-sm text-slate-500">Carregando a agenda oficial…</p></div>
 
         <details class="mt-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
@@ -64,15 +82,19 @@
             </div>
         </details>
     </section>
+    </div>
 
     <!-- 1d. Agenda do Presidente -->
+    <div id="p-presidente" role="tabpanel" aria-labelledby="t-presidente" class="space-y-10" hidden>
     <section aria-labelledby="h-presidente">
         <h2 id="h-presidente" class="text-xl font-bold"><i class="fa-solid fa-landmark-flag mr-2 text-slate-400" aria-hidden="true"></i>A agenda do Presidente</h2>
         <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Autoridades do Executivo são obrigadas por lei (Lei 12.813/2013) a publicar seus compromissos. Aqui estão os últimos dias publicados pelo Palácio do Planalto: com quem o Presidente se reúne e onde. Em semanas de votação importante, vale olhar se aparecem os presidentes das Casas e os líderes do Congresso.</p>
         <div id="presidente" class="mt-4" role="status"><p class="text-sm text-slate-500">Carregando a agenda oficial…</p></div>
     </section>
+    </div>
 
     <!-- 1b. Quem dá as cartas -->
+    <div id="p-quem" role="tabpanel" aria-labelledby="t-quem" class="space-y-10" hidden>
     <section aria-labelledby="h-lideres">
         <h2 id="h-lideres" class="text-xl font-bold"><i class="fa-solid fa-chess mr-2 text-slate-400" aria-hidden="true"></i>Quem dá as cartas?</h2>
         <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Enquanto 513 deputados e 81 senadores votam, são os líderes que negociam o que entra na pauta e orientam como as bancadas devem votar. Nomes e cargos da base oficial, sem comentário político.</p>
@@ -83,7 +105,8 @@
     <section aria-labelledby="h-dinamica">
         <h2 id="h-dinamica" class="text-xl font-bold"><i class="fa-solid fa-people-group mr-2 text-slate-400" aria-hidden="true"></i>Quem está junto com quem</h2>
         <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Na lista de líderes nem todo partido aparece sozinho: muitos atuam em <b>federações</b> ou <b>blocos</b>. Aqui estão os partidos que compõem cada um, com o tamanho na Câmara e no Senado.</p>
-        <div id="dinamica" class="mt-4" role="status"><p class="text-sm text-slate-500">Carregando federações e blocos…</p></div>
+        <details class="sanfona mt-4"><summary>Ver federações, blocos e partidos sozinhos</summary>
+            <div id="dinamica" class="mt-3" role="status"><p class="text-sm text-slate-500">Carregando federações e blocos…</p></div></details>
 
         <details class="mt-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
             <summary class="cursor-pointer font-semibold">Federação, bloco e partido sozinho: qual é a diferença?</summary>
@@ -113,17 +136,20 @@
             </div>
         </details>
     </section>
-
+    </div>
 
     <!-- 2. Termômetro e quem é quem -->
+    <div id="p-termometro" role="tabpanel" aria-labelledby="t-termometro" class="space-y-10" hidden>
     <section aria-labelledby="h-termo">
         <h2 id="h-termo" class="text-xl font-bold"><i class="fa-solid fa-gauge-high mr-2 text-slate-400" aria-hidden="true"></i>O termômetro da Câmara</h2>
         <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Quão difícil tem sido para o Governo aprovar o que quer: em que fração dos votos nominais os deputados seguiram a orientação do Governo, contando abstenção, obstrução e falta contra.</p>
         <div id="termoEstado" class="mt-3" role="status"><p class="text-sm text-slate-500">Carregando votações…</p></div>
         <div id="termo"></div>
     </section>
+    </div>
 
     <!-- 3. Deputado -->
+    <div id="p-deputado" role="tabpanel" aria-labelledby="t-deputado" class="space-y-10" hidden>
     <section aria-labelledby="h-dep">
         <h2 id="h-dep" class="text-xl font-bold"><i class="fa-solid fa-user-check mr-2 text-slate-400" aria-hidden="true"></i>E o seu deputado?</h2>
         <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Procure por nome, partido ou estado (ex.: “SP”) para ver o governismo, a fidelidade ao partido, a presença e as últimas votações importantes.</p>
@@ -134,13 +160,16 @@
         <div id="resultadosDep" class="mt-3 flex flex-wrap gap-2" role="list"></div>
         <div id="perfil" class="mt-4" aria-live="polite"></div>
     </section>
+    </div>
 
     <!-- 4. Pautas quentes -->
+    <div id="p-pautas" role="tabpanel" aria-labelledby="t-pautas" class="space-y-10" hidden>
     <section aria-labelledby="h-pautas">
         <h2 id="h-pautas" class="text-xl font-bold"><i class="fa-solid fa-fire mr-2 text-slate-400" aria-hidden="true"></i>Pautas quentes: como cada partido votou</h2>
         <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Votações recentes de projetos de peso em que o Governo orientou “Sim” ou “Não”. Em cada uma, a barra mostra a parcela dos votos “Sim” e “Não” de cada partido.</p>
         <div id="pautas" class="mt-4 space-y-4" role="status"><p class="text-sm text-slate-500">Carregando votações…</p></div>
     </section>
+    </div>
 
     <section aria-labelledby="h-notas" class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5">
         <h2 id="h-notas" class="font-bold">Como ler estes números</h2>
@@ -156,6 +185,7 @@
 <script>
 renderLayout('de-olho');
 
+const FOTO_CAMARA = 'https://www.camara.leg.br/internet/deputado/bandep/{}.jpg';   // mesmo padrão da foto oficial usada no backend
 const num = (n) => Number(n).toLocaleString('pt-BR');
 const pc = (v) => (v == null ? '—' : Number(v).toLocaleString('pt-BR', { maximumFractionDigits: 0 }) + '%');
 const COR_GOV = '#A92823', COR_FID = '#0d9488', COR_PRES = '#475569';
@@ -169,6 +199,27 @@ const FAIXA = {
 const rotFaixa = (f) => (f && FAIXA[f] ? FAIXA[f].rot : '');
 const hora = (iso) => (iso || '').slice(11, 16).replace(':', 'h');
 const diaSemana = (iso) => { const d = new Date(iso.slice(0, 10) + 'T00:00:00'); return d.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit' }); };
+
+// ---------------------------------------------------------------- abas
+// Cada assunto ganha a sua aba; o endereço guarda a aba (#quem) e os links antigos (#h-agenda...) continuam valendo.
+const ABAS = ['mesa', 'presidente', 'quem', 'termometro', 'pautas', 'deputado'];
+const ABA_ALIAS = { 'h-agenda': 'mesa', agenda: 'mesa', 'h-presidente': 'presidente', 'h-lideres': 'quem', 'h-dinamica': 'quem', lideres: 'quem',
+    'h-termo': 'termometro', 'h-pautas': 'pautas', 'h-dep': 'deputado', dep: 'deputado' };
+function abaDoEndereco() {
+    const h = decodeURIComponent(location.hash.replace('#', ''));
+    return ABAS.includes(h) ? h : ABA_ALIAS[h] || 'mesa';
+}
+function selecionarAba(id, { foco = false, url = true, rolar = false } = {}) {
+    if (!ABAS.includes(id)) id = 'mesa';
+    ABAS.forEach((t) => {
+        const on = t === id, b = $('t-' + t);
+        b.setAttribute('aria-selected', String(on)); b.tabIndex = on ? 0 : -1;
+        $('p-' + t).hidden = !on;
+        if (on && foco) b.focus();
+    });
+    if (url) { try { history.replaceState(null, '', location.pathname + location.search + '#' + id); } catch (e) { /* sem histórico: segue sem */ } }
+    if (rolar) $('t-' + id).scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
 const corta = (t, n) => { t = String(t || '').trim(); return t.length > n ? t.slice(0, n).replace(/\s+\S*$/, '') + '…' : t; };
 
 let RES = null, PAUTAS = null;
@@ -199,28 +250,51 @@ function explicaSessao(tipo, deliberativa) {
 const nomeProjeto = (i) => (i.apelido ? `<b>${esc(i.apelido)}</b> <span class="text-slate-500">· ${esc(i.proposicao)}</span>` : `<b>${esc(i.proposicao)}</b>`);
 const botaoProjeto = (rot, html) => `<button type="button" data-projeto="${esc(rot)}" class="text-left underline decoration-dotted underline-offset-2 hover:text-brand-700 dark:hover:text-brand-400" title="Entender este projeto">${html}</button>`;
 
-function itemPauta(i) {
+// Etiquetas curtas no lugar de três linhas de regimento por projeto: o texto oficial e a tradução ficam no balão (title) e em “Como a pauta é decidida”.
+const etiq = (txt, dica, extra = '') => `<span class="etiq ${extra}" title="${esc(dica)}">${esc(txt)}</span>`;
+function etiquetasPauta(i) {
+    const out = [];
+    const vazio = (t) => !t || /^[\s\-–—.]*$/.test(t);   // o Senado manda "-" quando não há situação
+    i = { ...i, situacao: vazio(i.situacao) ? '' : i.situacao, apreciacao: vazio(i.apreciacao) ? '' : i.apreciacao, regime: vazio(i.regime) ? '' : i.regime };
     const reg = explicaRegime(i.regime), sit = explicaSituacao(i.situacao);
-    return `<li class="py-2 border-t border-slate-100 dark:border-slate-700 first:border-0">
-        <p class="text-sm">${botaoProjeto(i.proposicao, nomeProjeto(i))}</p>
-        <p class="text-xs text-slate-600 dark:text-slate-400 mt-0.5">${esc(corta(i.ementa, 260))}</p>
-        ${i.apreciacao ? `<p class="text-[11px] text-slate-500 mt-0.5">${esc(i.apreciacao)}</p>` : ''}
-        ${i.regime ? `<p class="text-[11px] text-slate-500 mt-0.5">${esc(i.regime)}${reg ? ' — ' + esc(reg) : ''}</p>` : ''}
-        ${i.situacao ? `<p class="text-[11px] text-slate-500 mt-0.5">${esc(corta(i.situacao, 120))}${sit ? ' — ' + esc(sit) : ''}</p>` : ''}</li>`;
+    const dicaReg = [i.regime, reg].filter(Boolean).join(' — ');
+    if (/urgência/i.test(i.regime || '')) out.push(etiq('Urgência', dicaReg));
+    else if (/prioridade/i.test(i.regime || '')) out.push(etiq('Prioridade', dicaReg));
+    else if (/especial/i.test(i.regime || '')) out.push(etiq('Rito especial', dicaReg));
+    const dicaSit = [i.situacao, sit].filter(Boolean).join(' — ');
+    if (/encerramento da ordem do dia/i.test(i.situacao || '')) out.push(etiq('Não votado', dicaSit, 'etiq--nao'));
+    else if (/aprovad/i.test(i.situacao || '')) out.push(etiq('Aprovado', dicaSit));
+    else if (/retirad/i.test(i.situacao || '')) out.push(etiq('Retirado', dicaSit, 'etiq--nao'));
+    else if (i.situacao) out.push(etiq(corta(i.situacao, 40), dicaSit, 'etiq--nao'));
+    if (i.apreciacao) out.push(etiq(corta(i.apreciacao, 40), 'Fase da apreciação no Plenário', 'etiq--nao'));
+    return out.length ? `<p class="mt-1.5 flex flex-wrap gap-1.5">${out.join('')}</p>` : '';
 }
+function itemPauta(i) {
+    return `<li class="py-2.5 border-t border-slate-100 dark:border-slate-700 first:border-0">
+        <p class="text-sm leading-snug">${botaoProjeto(i.proposicao, nomeProjeto(i))}</p>
+        <p class="clamp2 text-xs text-slate-600 dark:text-slate-400 mt-0.5">${esc(i.ementa || '')}</p>
+        ${etiquetasPauta(i)}</li>`;
+}
+// Mostra os primeiros itens e guarda o resto atrás de um “mostrar mais”, para a lista não engolir a página.
+function listaCompacta(itens, render, visiveis = 4, rotulo = 'projetos') {
+    const topo = itens.slice(0, visiveis), resto = itens.slice(visiveis);
+    return `<ul>${topo.map(render).join('')}</ul>${resto.length ? `<details class="mais"><summary>Mostrar mais ${resto.length} ${resto.length === 1 ? rotulo.replace(/s$/, '') : rotulo}</summary><ul>${resto.map(render).join('')}</ul></details>` : ''}`;
+}
+const diaCurto = (iso) => new Date(iso.slice(0, 10) + 'T00:00:00').toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' }).replace('.', '');
+const cabSessao = (quando, tipo, expl) => `<p class="text-xs font-bold uppercase tracking-wide text-slate-600 dark:text-slate-300">${esc(quando)} · ${esc(tipo)}${expl ? ` <span class="font-medium normal-case tracking-normal text-slate-500">(${esc(expl)})</span>` : ''}</p>`;
 
 function blocoCamara(c) {
     if (!c) return '<p class="text-sm text-slate-500">Agenda da Câmara indisponível no momento.</p>';
     const comPauta = c.sessoes.filter((s) => s.itens.length);
     let corpo = '';
     if (comPauta.length) {
-        corpo = comPauta.map((s) => `<div class="mt-3"><p class="text-xs font-semibold text-slate-500 uppercase">${esc(diaSemana(s.inicio))}, ${esc(hora(s.inicio))} · ${esc(s.tipo)}${explicaSessao(s.tipo, s.deliberativa) ? ' (' + esc(explicaSessao(s.tipo, s.deliberativa)) + ')' : ''}</p><ul>${s.itens.map(itemPauta).join('')}</ul></div>`).join('');
+        corpo = comPauta.map((s) => `<div class="mt-3">${cabSessao(`${diaCurto(s.inicio)}, ${hora(s.inicio)}`, s.tipo, explicaSessao(s.tipo, s.deliberativa))}${listaCompacta(s.itens, itemPauta)}</div>`).join('');
     } else {
         const outras = c.sessoes.length ? `<p class="text-xs text-slate-500 mt-1">Há ${c.sessoes.length} ${c.sessoes.length > 1 ? 'sessões marcadas' : 'sessão marcada'} (${[...new Set(c.sessoes.map((s) => s.tipo))].map(esc).join(', ')}), sem projetos de peso na pauta.</p>` : '';
         corpo = `<p class="mt-2 text-sm">Nenhuma sessão deliberativa com projetos de peso marcada para os próximos 14 dias.</p>${outras}`;
         if (c.ultima_deliberativa) {
             const u = c.ultima_deliberativa;
-            corpo += `<div class="mt-3"><p class="text-xs font-semibold text-slate-500 uppercase">Última pauta deliberativa · ${esc(fmtData(u.inicio))} (já passou)</p><ul>${u.itens.slice(0, 5).map(itemPauta).join('')}</ul></div>`;
+            corpo += `<div class="mt-3"><p class="text-xs font-bold uppercase tracking-wide text-slate-600 dark:text-slate-300">Última pauta deliberativa · ${esc(fmtData(u.inicio))} (já passou)</p>${listaCompacta(u.itens.slice(0, 8), itemPauta, 3)}</div>`;
         }
     }
     return corpo;
@@ -229,13 +303,21 @@ function blocoCamara(c) {
 function blocoSenado(s) {
     if (!s) return '<p class="text-sm text-slate-500">Agenda do Senado indisponível no momento.</p>';
     const sess = s.sessoes.filter((x) => x.situacao !== 'Cancelada');
-    let corpo = sess.length ? sess.map((x) => `<div class="mt-3"><p class="text-xs font-semibold text-slate-500 uppercase">${esc(diaSemana(x.data))}, ${esc((x.hora || '').replace(':', 'h'))} · ${esc(x.tipo)}${explicaSessao(x.tipo) ? ' (' + esc(explicaSessao(x.tipo)) + ')' : ''}${x.pauta_confirmada ? '' : ' · pauta ainda não confirmada'}</p>
-        ${x.materias.length ? `<ul>${x.materias.map(itemPauta).join('')}</ul>` : '<p class="text-xs text-slate-500 mt-1">Sem projetos de peso na pauta até agora.</p>'}</div>`).join('')
-        : '<p class="mt-2 text-sm">Nenhuma sessão marcada para os próximos dias.</p>';
+    const comPauta = sess.filter((x) => x.materias.length), vazias = sess.filter((x) => !x.materias.length);
+    // sessões sem projeto de peso (discursos, debates, homenagens) viram uma linha só, em vez de nove blocos vazios
+    let corpo = comPauta.map((x) => `<div class="mt-3">${cabSessao(`${diaCurto(x.data)}, ${(x.hora || '').replace(':', 'h')}`, x.tipo, explicaSessao(x.tipo))}${listaCompacta(x.materias, itemPauta)}</div>`).join('');
+    if (!sess.length) corpo = '<p class="mt-2 text-sm">Nenhuma sessão marcada para os próximos dias.</p>';
+    else if (!comPauta.length) corpo = '<p class="mt-2 text-sm">Nenhum projeto de peso na pauta do Senado até agora.</p>';
+    if (vazias.length) {
+        corpo += `<details class="mais mt-3"><summary>${vazias.length} ${vazias.length === 1 ? 'sessão' : 'sessões'} sem projetos de peso (discursos, debates ou homenagens)</summary>
+            <ul class="text-xs text-slate-600 dark:text-slate-400 divide-y divide-slate-100 dark:divide-slate-700">${vazias.map((x) => `<li class="py-1.5"><b>${esc(diaCurto(x.data))}, ${esc((x.hora || '').replace(':', 'h'))}</b> · ${esc(x.tipo)}${x.pauta_confirmada ? '' : ' · pauta ainda não confirmada'}</li>`).join('')}</ul></details>`;
+    }
     if (s.ultimas_votacoes.length) {
-        corpo += `<div class="mt-4"><p class="text-xs font-semibold text-slate-500 uppercase">Últimas votações nominais abertas</p><ul>${s.ultimas_votacoes.map((v) => `<li class="py-2 border-t border-slate-100 dark:border-slate-700 first:border-0">
-            <p class="text-sm">${botaoProjeto(v.proposicao, `<b>${esc(v.proposicao)}</b>`)} <span class="text-slate-500">· ${esc(fmtData(v.data))} · ${esc(v.resultado || '')} (${num(v.sim)} sim × ${num(v.nao)} não)</span></p>
-            <p class="text-xs text-slate-600 dark:text-slate-400 mt-0.5">${esc(corta(v.ementa, 220))}</p></li>`).join('')}</ul></div>`;
+        const voto = (v) => `<li class="py-2.5 border-t border-slate-100 dark:border-slate-700 first:border-0">
+            <p class="text-sm leading-snug">${botaoProjeto(v.proposicao, `<b>${esc(v.proposicao)}</b>`)} <span class="text-slate-500">· ${esc(fmtData(v.data))}</span></p>
+            <p class="mt-1 flex flex-wrap gap-1.5">${etiq(v.resultado || 'Votado', 'Resultado da votação nominal no Plenário do Senado')}<span class="text-xs text-slate-600 dark:text-slate-400">${num(v.sim)} sim × ${num(v.nao)} não</span></p>
+            <p class="clamp2 text-xs text-slate-600 dark:text-slate-400 mt-1">${esc(v.ementa || '')}</p></li>`;
+        corpo += `<div class="mt-5"><p class="text-xs font-bold uppercase tracking-wide text-slate-600 dark:text-slate-300">Últimas votações nominais abertas</p>${listaCompacta(s.ultimas_votacoes, voto, 3, 'votações')}</div>`;
     }
     return corpo;
 }
@@ -335,8 +417,8 @@ function buscar() {
     if (!RES || q.length < 2) { alvo.innerHTML = ''; return; }
     const achados = RES.deputados.filter((d) => norm(d.nome).includes(q) || norm(d.partido) === q || norm(d.uf) === q)
         .sort((a, b) => (b.ativo - a.ativo) || a.nome.localeCompare(b.nome, 'pt-BR'));
-    alvo.innerHTML = achados.length ? achados.slice(0, 24).map((d) => `<button type="button" role="listitem" data-dep="${d.id}" class="px-3 py-1.5 rounded-lg border ${selecionado === d.id ? 'border-brand-700 bg-brand-50 dark:bg-slate-700' : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800'} text-sm text-left hover:bg-slate-100 dark:hover:bg-slate-700">
-        <b>${esc(d.nome)}</b> <span class="text-xs text-slate-500">${esc(d.partido)}-${esc(d.uf)}${d.ativo ? '' : ' · fora do exercício'}</span></button>`).join('')
+    alvo.innerHTML = achados.length ? achados.slice(0, 24).map((d) => `<button type="button" role="listitem" data-dep="${d.id}" class="flex items-center gap-3 p-2 pr-4 rounded-lg border ${selecionado === d.id ? 'border-brand-700 bg-brand-50 dark:bg-slate-700' : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800'} text-sm text-left hover:bg-slate-100 dark:hover:bg-slate-700">
+        ${rosto(FOTO_CAMARA.replace('{}', d.id), 'w-12 h-14')}<span><b class="block leading-tight">${esc(d.nome)}</b> <span class="text-xs text-slate-500">${esc(d.partido)}-${esc(d.uf)}${d.ativo ? '' : ' · fora do exercício'}</span></span></button>`).join('')
         + (achados.length > 24 ? `<p class="w-full text-xs text-slate-500">Mostrando 24 de ${num(achados.length)}: refine a busca.</p>` : '')
         : '<p class="text-sm text-slate-500">Nenhum deputado encontrado nesse período.</p>';
 }
@@ -352,13 +434,12 @@ async function abrirPerfil(id) {
         if (RES) { q.set('desde', RES.periodo.desde); q.set('ate', RES.periodo.ate); }
         const d = await api(`/api/governismo/deputados/${id}?` + q);
         const det = d.detalhe, tot = d.votacoes || 1;
-        const foto = d.foto ? `<img src="${esc(urlSegura(d.foto))}" alt="Foto de ${esc(d.nome)}" class="w-20 h-24 rounded-lg object-cover bg-slate-200" loading="lazy">`
-            : '<span class="w-20 h-24 rounded-lg bg-slate-200 dark:bg-slate-700 flex items-center justify-center" aria-hidden="true"><i class="fa-solid fa-user text-slate-400 text-2xl"></i></span>';
+        const foto = rosto(d.foto, 'w-28 h-36 sm:w-36 sm:h-44', `Foto de ${d.nome}`);
         const metrica = (rot, v, cor, dica) => `<div title="${esc(dica)}"><p class="text-xs font-semibold text-slate-500">${rot}</p><p class="text-2xl font-extrabold">${pc(v)}</p>${barra(v, cor)}</div>`;
         const seg = (n, cls, rot) => `<div class="${cls}" style="width:${100 * n / tot}%" title="${rot}: ${num(n)}"></div>`;
         $('perfil').innerHTML = `<article class="${cartao} p-5">
-            <div class="flex gap-4 items-start">${foto}
-                <div class="min-w-0"><h3 class="text-lg font-extrabold">${esc(d.nome)}</h3>
+            <div class="flex gap-5 items-center">${foto}
+                <div class="min-w-0"><h3 class="text-xl sm:text-2xl font-extrabold leading-tight">${esc(d.nome)}</h3>
                     <p class="text-sm text-slate-600 dark:text-slate-400">Deputado(a) federal · ${esc(d.partido)}-${esc(d.uf)}${d.ativo ? '' : ' · fora do exercício'}</p>
                     <p class="text-xs text-slate-500 mt-1">Votos registrados de ${esc(fmtData(d.primeiro_voto))} a ${esc(fmtData(d.ultimo_voto))} · <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(d.url))}">página oficial</a></p></div></div>
             <div class="mt-4 grid sm:grid-cols-3 gap-4">
@@ -392,7 +473,7 @@ document.addEventListener('click', (ev) => {
     const d = ev.target.closest && ev.target.closest('[data-dep]');
     if (d) { abrirPerfil(Number(d.dataset.dep)); return; }
     const p = ev.target.closest && ev.target.closest('[data-partido]');
-    if (p) { $('buscaDep').value = p.dataset.partido; buscar(); $('h-dep').scrollIntoView({ behavior: 'smooth' }); }
+    if (p) { $('buscaDep').value = p.dataset.partido; buscar(); selecionarAba('deputado', { rolar: true }); }
 });
 
 // ---------------------------------------------------------------- pautas quentes
@@ -413,7 +494,9 @@ function cartaoPauta(p, aberta) {
 async function carregarPautas() {
     try {
         PAUTAS = await api('/api/governismo/pautas');
-        $('pautas').innerHTML = PAUTAS.pautas.map((p, i) => cartaoPauta(p, i === 0)).join('') +
+        const primeiras = PAUTAS.pautas.slice(0, 5), resto = PAUTAS.pautas.slice(5);
+        $('pautas').innerHTML = primeiras.map((p, i) => cartaoPauta(p, i === 0)).join('') +
+            (resto.length ? `<details class="mais"><summary>Mostrar mais ${resto.length} votações</summary><div class="mt-3 space-y-4">${resto.map((p) => cartaoPauta(p, false)).join('')}</div></details>` : '') +
             `<p class="text-xs text-slate-500">${esc(PAUTAS.nota)}</p>`;
     } catch (e) {
         $('pautas').innerHTML = mensagemErro(e);
@@ -421,15 +504,25 @@ async function carregarPautas() {
 }
 
 // ---------------------------------------------------------------- líderes
-function cartaoLider(x) {
-    const foto = x.foto ? `<img src="${esc(urlSegura(x.foto))}" alt="" class="w-12 h-14 rounded-lg object-cover bg-slate-200 shrink-0" loading="lazy" onerror="this.style.visibility='hidden'">`
-        : '<span class="w-12 h-14 rounded-lg bg-slate-200 dark:bg-slate-700 shrink-0" aria-hidden="true"></span>';
+// O rosto de quem decide é parte da informação: fotos grandes, e um ícone no lugar se a imagem oficial falhar.
+function fotoFalhou(img) {
+    const s = document.createElement('span');
+    s.className = img.className.replace('rosto', 'rosto-vazio'); s.setAttribute('aria-hidden', 'true');
+    s.innerHTML = '<i class="fa-solid fa-user text-2xl"></i>';
+    img.replaceWith(s);
+}
+const rosto = (url, cls, alt = '') => url
+    ? `<img src="${esc(urlSegura(url))}" alt="${esc(alt)}" class="rosto ${cls}" loading="lazy" onerror="fotoFalhou(this)">`
+    : `<span class="rosto-vazio ${cls}" aria-hidden="true"><i class="fa-solid fa-user text-2xl"></i></span>`;
+function cartaoLider(x, grande) {
+    const foto = rosto(x.foto, grande ? 'w-28 h-36 sm:w-32 sm:h-40' : 'w-24 h-28', `Foto de ${x.nome}`);
     const sigla = [x.partido, x.uf].filter(Boolean).join('-');
     const nome = x.url ? `<a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(x.url))}">${esc(x.nome)}</a>` : esc(x.nome);
-    return `<div class="flex gap-3 items-center">${foto}
-        <div class="min-w-0"><p class="text-[11px] font-semibold text-slate-500 uppercase">${esc(x.cargo || '')}</p>
-            <p class="text-sm font-bold">${nome}${sigla ? ` <span class="font-medium text-slate-500">(${esc(sigla)})</span>` : ''}</p>
-            ${x.desde ? `<p class="text-[11px] text-slate-500">no cargo desde ${esc(fmtData(x.desde))}</p>` : ''}</div></div>`;
+    return `<div class="flex gap-4 items-center">${foto}
+        <div class="min-w-0"><p class="text-[11px] font-semibold text-slate-500 uppercase leading-tight">${esc(x.cargo || '')}</p>
+            <p class="${grande ? 'text-lg' : 'text-sm'} font-bold leading-snug mt-0.5">${nome}</p>
+            ${sigla ? `<p class="text-xs font-semibold text-slate-600 dark:text-slate-300">${esc(sigla)}</p>` : ''}
+            ${x.desde ? `<p class="text-[11px] text-slate-500 mt-0.5">no cargo desde ${esc(fmtData(x.desde))}</p>` : ''}</div></div>`;
 }
 function listaGrupos(gs) {
     return `<ul class="mt-2 divide-y divide-slate-100 dark:divide-slate-700">${gs.map((g) => `<li class="py-2 flex flex-wrap items-baseline justify-between gap-x-4 text-sm">
@@ -441,13 +534,12 @@ async function carregarLideres() {
         const l = await api('/api/governismo/liderancas');
         const pres = l.presidentes || {};
         const donos = [pres.camara && { ...pres.camara, cargo: 'Presidente da Câmara dos Deputados' }, pres.senado && { ...pres.senado, cargo: 'Presidente do Senado Federal' }].filter(Boolean);
-        const bloco = (titulo, sub, itens) => itens.length ? `<article class="${cartao} p-4"><h3 class="font-bold">${titulo}</h3><p class="text-xs text-slate-500 mt-0.5">${sub}</p>
-            <div class="mt-3 space-y-3">${itens.map(cartaoLider).join('')}</div></article>` : '';
-        $('lideres').innerHTML = `<div class="grid md:grid-cols-3 gap-4">
-            ${bloco('No comando das Casas', 'Decidem o que vai a votação e o que fica parado. Sem a aprovação deles, nenhum projeto avança.', donos)}
-            ${bloco('Os articuladores do Governo', 'Negociam com o Congresso os votos para aprovar o que o Presidente quer.', l.governo)}
-            ${bloco('Oposição e minoria', 'Fazem o trabalho inverso: articulam os votos contrários ao Governo.', l.oposicao)}</div>
-            ${l.maioria.length ? `<div class="mt-4 ${cartao} p-4"><h3 class="font-bold">Maioria</h3><div class="mt-3 grid sm:grid-cols-2 gap-3">${l.maioria.map(cartaoLider).join('')}</div></div>` : ''}
+        const bloco = (titulo, sub, itens, colunas, grande) => itens.length ? `<div class="mt-8 first:mt-0"><h3 class="font-bold text-base">${titulo}</h3><p class="text-xs text-slate-500 mt-0.5">${sub}</p>
+            <div class="mt-3 grid gap-x-8 gap-y-5 ${colunas}">${itens.map((x) => cartaoLider(x, grande)).join('')}</div></div>` : '';
+        $('lideres').innerHTML = `${bloco('No comando das Casas', 'Decidem o que vai a votação e o que fica parado. Sem a aprovação deles, nenhum projeto avança.', donos, 'md:grid-cols-2', true)}
+            ${bloco('Os articuladores do Governo', 'Negociam com o Congresso os votos para aprovar o que o Presidente quer.', l.governo, 'sm:grid-cols-2 lg:grid-cols-3')}
+            ${bloco('Oposição e minoria', 'Fazem o trabalho inverso: articulam os votos contrários ao Governo.', l.oposicao, 'sm:grid-cols-2 lg:grid-cols-3')}
+            ${bloco('Maioria', 'Cargos de liderança da maioria, conforme a base oficial.', l.maioria, 'sm:grid-cols-2 lg:grid-cols-3')}
             <details class="mt-4 ${cartao} p-4"><summary class="cursor-pointer font-semibold">Líderes dos partidos e blocos na Câmara (${l.camara.length}) e no Senado (${l.senado.length})</summary>
                 <p class="mt-2 text-xs text-slate-500">São eles que participam da reunião semanal de líderes e emitem a “orientação de bancada”: a indicação aos deputados de votar Sim ou Não. Ordenado pelo tamanho da bancada.</p>
                 <h4 class="mt-3 text-sm font-bold">Câmara dos Deputados</h4>${listaGrupos(l.camara)}
@@ -628,6 +720,21 @@ document.addEventListener('click', (ev) => {
     if (ev.target.closest && ev.target.closest('[data-fechar-gaveta]')) fecharGaveta();
 });
 document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') fecharGaveta(); });
+
+// abas: clique, setas/Home/End no teclado e mudança de endereço (inclusive os links antigos como #h-agenda)
+document.querySelector('.ftabs').addEventListener('click', (ev) => { const b = ev.target.closest('[data-aba]'); if (b) selecionarAba(b.dataset.aba); });
+document.querySelector('.ftabs').addEventListener('keydown', (ev) => {
+    const i = ABAS.findIndex((t) => $('t-' + t).getAttribute('aria-selected') === 'true');
+    const novo = { ArrowRight: (i + 1) % ABAS.length, ArrowLeft: (i + ABAS.length - 1) % ABAS.length, Home: 0, End: ABAS.length - 1 }[ev.key];
+    if (novo != null) { ev.preventDefault(); selecionarAba(ABAS[novo], { foco: true }); }
+});
+window.addEventListener('hashchange', () => {
+    const alvo = decodeURIComponent(location.hash.replace('#', ''));
+    selecionarAba(abaDoEndereco(), { url: false });
+    const el = alvo && !ABAS.includes(alvo) ? document.getElementById(alvo) : null;
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
+selecionarAba(abaDoEndereco(), { url: false });
 
 carregarAgenda();
 carregarLideres();
