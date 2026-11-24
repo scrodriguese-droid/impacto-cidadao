@@ -23,6 +23,35 @@
         .rosto-vazio { display: inline-flex; align-items: center; justify-content: center; background: #e2e8f0; color: #94a3b8; flex-shrink: 0; border: 2px solid currentColor; }
         .mais > summary { cursor: pointer; font-size: .78rem; padding: .35rem 0; }
         [role="tabpanel"][hidden] { display: none; }
+
+        /* Nome de projeto dentro de um texto: link sublinhado, sem a caixa preta que o tema põe em todo <button> */
+        main button.lk-proj { border: 0 !important; padding: 0; text-transform: none; letter-spacing: 0; font-size: inherit; font-weight: inherit; text-align: left; text-decoration: underline dotted; text-underline-offset: 3px; }
+        main button.lk-proj:hover { background: transparent !important; color: var(--vermelho) !important; }
+
+        /* Linha de projeto na pauta: a linha inteira é o botão que abre a aba lateral */
+        .pi-lista { list-style: none; margin: 0; padding: 0; }
+        main button.pi { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: .8rem; align-items: start; width: 100%; padding: .85rem .5rem .85rem 0; margin: 0; border: 0 !important; border-bottom: 1px solid var(--papel-2) !important;
+            text-align: left; text-transform: none; letter-spacing: 0; font-size: .86rem; font-weight: 400; line-height: 1.4; }
+        .pi-lista > li:last-child > button.pi { border-bottom: 0 !important; }
+        main button.pi:hover { background: color-mix(in srgb, var(--fg) 7%, transparent) !important; color: var(--fg) !important; }
+        main button.pi:hover .pi-ap { color: var(--vermelho); }
+        .pi-topo { display: flex; flex-wrap: wrap; align-items: center; gap: .3rem .6rem; }
+        .pi-num { font-weight: 800; font-size: .72rem; letter-spacing: .06em; color: var(--vermelho); }
+        .pi-ap { display: block; font-weight: 800; font-size: 1rem; line-height: 1.25; margin-top: .15rem; }
+        .pi-ementa { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-top: .25rem; color: var(--muted); font-size: .82rem; line-height: 1.45; }
+        .pi-ementa--so { color: var(--fg); font-size: .9rem; margin-top: .3rem; }   /* sem apelido, a ementa é o título */
+        .pi-seta { align-self: center; font-size: .7rem; opacity: .35; }
+        main button.pi:hover .pi-seta { opacity: 1; }
+
+        /* Cabeçalho de sessão: dia e hora em destaque, o resto em segundo plano */
+        .sess { display: flex; flex-wrap: wrap; align-items: baseline; gap: .15rem .7rem; margin-top: 1.5rem; padding: .5rem .7rem; background: var(--papel-2); border-left: 4px solid var(--vermelho); }
+        .sess:first-child { margin-top: .9rem; }
+        .sess-dia { font-weight: 800; font-size: .86rem; text-transform: uppercase; letter-spacing: .04em; }
+        .sess-tipo { font-size: .78rem; font-weight: 600; }
+        .sess-nota { font-size: .72rem; color: var(--muted); margin-left: auto; }
+        .vazio-sess { padding: .6rem 0; font-size: .85rem; color: var(--muted); }
+        .cab-casa { display: flex; align-items: baseline; justify-content: space-between; gap: .5rem; }
+        .cab-casa small { font-size: .72rem; font-weight: 600; color: var(--muted); text-transform: none; letter-spacing: 0; }
     </style>
     <link rel="stylesheet" href="assets/brutalista.css">
 </head>
@@ -248,7 +277,7 @@ function explicaSessao(tipo, deliberativa) {
     return '';
 }
 const nomeProjeto = (i) => (i.apelido ? `<b>${esc(i.apelido)}</b> <span class="text-slate-500">· ${esc(i.proposicao)}</span>` : `<b>${esc(i.proposicao)}</b>`);
-const botaoProjeto = (rot, html) => `<button type="button" data-projeto="${esc(rot)}" class="text-left underline decoration-dotted underline-offset-2 hover:text-brand-700 dark:hover:text-brand-400" title="Entender este projeto">${html}</button>`;
+const botaoProjeto = (rot, html) => `<button type="button" data-projeto="${esc(rot)}" class="lk-proj" title="Entender este projeto">${html}</button>`;
 
 // Etiquetas curtas no lugar de três linhas de regimento por projeto: o texto oficial e a tradução ficam no balão (title) e em “Como a pauta é decidida”.
 const etiq = (txt, dica, extra = '') => `<span class="etiq ${extra}" title="${esc(dica)}">${esc(txt)}</span>`;
@@ -267,34 +296,41 @@ function etiquetasPauta(i) {
     else if (/retirad/i.test(i.situacao || '')) out.push(etiq('Retirado', dicaSit, 'etiq--nao'));
     else if (i.situacao) out.push(etiq(corta(i.situacao, 40), dicaSit, 'etiq--nao'));
     if (i.apreciacao) out.push(etiq(corta(i.apreciacao, 40), 'Fase da apreciação no Plenário', 'etiq--nao'));
-    return out.length ? `<p class="mt-1.5 flex flex-wrap gap-1.5">${out.join('')}</p>` : '';
+    return out.length ? `<span class="inline-flex flex-wrap gap-1.5">${out.join('')}</span>` : '';
 }
 function itemPauta(i) {
-    return `<li class="py-2.5 border-t border-slate-100 dark:border-slate-700 first:border-0">
-        <p class="text-sm leading-snug">${botaoProjeto(i.proposicao, nomeProjeto(i))}</p>
-        <p class="clamp2 text-xs text-slate-600 dark:text-slate-400 mt-0.5">${esc(i.ementa || '')}</p>
-        ${etiquetasPauta(i)}</li>`;
+    return linhaProjeto(i.proposicao, i.apelido, i.ementa, etiquetasPauta(i));
+}
+// Uma linha de projeto: número (rótulo) + etiquetas na primeira linha, apelido em destaque e a ementa em duas linhas.
+// A linha inteira abre a aba lateral; o texto oficial completo está lá.
+function linhaProjeto(prop, apelido, ementa, etiquetas, extraTopo = '') {
+    return `<li><button type="button" class="pi" data-projeto="${esc(prop)}" title="Entender este projeto">
+        <span><span class="pi-topo"><span class="pi-num">${esc(prop)}</span>${etiquetas}${extraTopo}</span>
+            ${apelido ? `<span class="pi-ap">${esc(apelido)}</span>` : ''}
+            <span class="pi-ementa${apelido ? '' : ' pi-ementa--so'}">${esc(ementa || '')}</span></span>
+        <i class="fa-solid fa-chevron-right pi-seta" aria-hidden="true"></i></button></li>`;
 }
 // Mostra os primeiros itens e guarda o resto atrás de um “mostrar mais”, para a lista não engolir a página.
 function listaCompacta(itens, render, visiveis = 4, rotulo = 'projetos') {
     const topo = itens.slice(0, visiveis), resto = itens.slice(visiveis);
-    return `<ul>${topo.map(render).join('')}</ul>${resto.length ? `<details class="mais"><summary>Mostrar mais ${resto.length} ${resto.length === 1 ? rotulo.replace(/s$/, '') : rotulo}</summary><ul>${resto.map(render).join('')}</ul></details>` : ''}`;
+    return `<ul class="pi-lista">${topo.map(render).join('')}</ul>${resto.length ? `<details class="mais"><summary>Mostrar mais ${resto.length} ${resto.length === 1 ? rotulo.replace(/s$/, '') : rotulo}</summary><ul class="pi-lista">${resto.map(render).join('')}</ul></details>` : ''}`;
 }
 const diaCurto = (iso) => new Date(iso.slice(0, 10) + 'T00:00:00').toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' }).replace('.', '');
-const cabSessao = (quando, tipo, expl) => `<p class="text-xs font-bold uppercase tracking-wide text-slate-600 dark:text-slate-300">${esc(quando)} · ${esc(tipo)}${expl ? ` <span class="font-medium normal-case tracking-normal text-slate-500">(${esc(expl)})</span>` : ''}</p>`;
+// Cabeçalho de sessão: "ter 24/11 · 14h16" em destaque; tipo da sessão ao lado; o significado ("dia de votar") à direita.
+const cabSessao = (dia, horaTxt, tipo, expl) => `<div class="sess"><span class="sess-dia">${esc(dia)}${horaTxt ? ` · ${esc(horaTxt)}` : ''}</span><span class="sess-tipo">${esc(tipo)}</span>${expl ? `<span class="sess-nota">${esc(expl)}</span>` : ''}</div>`;
 
 function blocoCamara(c) {
     if (!c) return '<p class="text-sm text-slate-500">Agenda da Câmara indisponível no momento.</p>';
     const comPauta = c.sessoes.filter((s) => s.itens.length);
     let corpo = '';
     if (comPauta.length) {
-        corpo = comPauta.map((s) => `<div class="mt-3">${cabSessao(`${diaCurto(s.inicio)}, ${hora(s.inicio)}`, s.tipo, explicaSessao(s.tipo, s.deliberativa))}${listaCompacta(s.itens, itemPauta)}</div>`).join('');
+        corpo = comPauta.map((s) => `<div>${cabSessao(diaCurto(s.inicio), hora(s.inicio), s.tipo, explicaSessao(s.tipo, s.deliberativa))}${listaCompacta(s.itens, itemPauta)}</div>`).join('');
     } else {
         const outras = c.sessoes.length ? `<p class="text-xs text-slate-500 mt-1">Há ${c.sessoes.length} ${c.sessoes.length > 1 ? 'sessões marcadas' : 'sessão marcada'} (${[...new Set(c.sessoes.map((s) => s.tipo))].map(esc).join(', ')}), sem projetos de peso na pauta.</p>` : '';
         corpo = `<p class="mt-2 text-sm">Nenhuma sessão deliberativa com projetos de peso marcada para os próximos 14 dias.</p>${outras}`;
         if (c.ultima_deliberativa) {
             const u = c.ultima_deliberativa;
-            corpo += `<div class="mt-3"><p class="text-xs font-bold uppercase tracking-wide text-slate-600 dark:text-slate-300">Última pauta deliberativa · ${esc(fmtData(u.inicio))} (já passou)</p>${listaCompacta(u.itens.slice(0, 8), itemPauta, 3)}</div>`;
+            corpo += `<div>${cabSessao(fmtData(u.inicio), '', 'Última pauta deliberativa', 'já passou')}${listaCompacta(u.itens.slice(0, 8), itemPauta, 3)}</div>`;
         }
     }
     return corpo;
@@ -305,31 +341,31 @@ function blocoSenado(s) {
     const sess = s.sessoes.filter((x) => x.situacao !== 'Cancelada');
     const comPauta = sess.filter((x) => x.materias.length), vazias = sess.filter((x) => !x.materias.length);
     // sessões sem projeto de peso (discursos, debates, homenagens) viram uma linha só, em vez de nove blocos vazios
-    let corpo = comPauta.map((x) => `<div class="mt-3">${cabSessao(`${diaCurto(x.data)}, ${(x.hora || '').replace(':', 'h')}`, x.tipo, explicaSessao(x.tipo))}${listaCompacta(x.materias, itemPauta)}</div>`).join('');
-    if (!sess.length) corpo = '<p class="mt-2 text-sm">Nenhuma sessão marcada para os próximos dias.</p>';
-    else if (!comPauta.length) corpo = '<p class="mt-2 text-sm">Nenhum projeto de peso na pauta do Senado até agora.</p>';
+    let corpo = comPauta.map((x) => `<div>${cabSessao(diaCurto(x.data), (x.hora || '').replace(':', 'h'), x.tipo, explicaSessao(x.tipo))}${listaCompacta(x.materias, itemPauta)}</div>`).join('');
+    if (!sess.length) corpo = '<p class="vazio-sess">Nenhuma sessão marcada para os próximos dias.</p>';
+    else if (!comPauta.length) corpo = '<p class="vazio-sess">Nenhum projeto de peso na pauta do Senado até agora.</p>';
     if (vazias.length) {
         corpo += `<details class="mais mt-3"><summary>${vazias.length} ${vazias.length === 1 ? 'sessão' : 'sessões'} sem projetos de peso (discursos, debates ou homenagens)</summary>
             <ul class="text-xs text-slate-600 dark:text-slate-400 divide-y divide-slate-100 dark:divide-slate-700">${vazias.map((x) => `<li class="py-1.5"><b>${esc(diaCurto(x.data))}, ${esc((x.hora || '').replace(':', 'h'))}</b> · ${esc(x.tipo)}${x.pauta_confirmada ? '' : ' · pauta ainda não confirmada'}</li>`).join('')}</ul></details>`;
     }
     if (s.ultimas_votacoes.length) {
-        const voto = (v) => `<li class="py-2.5 border-t border-slate-100 dark:border-slate-700 first:border-0">
-            <p class="text-sm leading-snug">${botaoProjeto(v.proposicao, `<b>${esc(v.proposicao)}</b>`)} <span class="text-slate-500">· ${esc(fmtData(v.data))}</span></p>
-            <p class="mt-1 flex flex-wrap gap-1.5">${etiq(v.resultado || 'Votado', 'Resultado da votação nominal no Plenário do Senado')}<span class="text-xs text-slate-600 dark:text-slate-400">${num(v.sim)} sim × ${num(v.nao)} não</span></p>
-            <p class="clamp2 text-xs text-slate-600 dark:text-slate-400 mt-1">${esc(v.ementa || '')}</p></li>`;
-        corpo += `<div class="mt-5"><p class="text-xs font-bold uppercase tracking-wide text-slate-600 dark:text-slate-300">Últimas votações nominais abertas</p>${listaCompacta(s.ultimas_votacoes, voto, 3, 'votações')}</div>`;
+        const voto = (v) => linhaProjeto(v.proposicao, '', v.ementa,
+            etiq(v.resultado || 'Votado', 'Resultado da votação nominal no Plenário do Senado'),
+            `<span class="text-xs" style="color:var(--muted)">${esc(fmtData(v.data))} · ${num(v.sim)} sim × ${num(v.nao)} não</span>`);
+        corpo += `<div>${cabSessao('Últimas votações', '', 'Votações nominais abertas', 'já aconteceram')}${listaCompacta(s.ultimas_votacoes, voto, 3, 'votações')}</div>`;
     }
     return corpo;
 }
 
+const contaPauta = (n) => (n ? `<small>${n} ${n === 1 ? 'projeto na pauta' : 'projetos na pauta'}</small>` : '');
 async function carregarAgenda() {
     try {
         const a = await api('/api/governismo/agenda');
         const erro = a.erros.length ? `<p class="mb-3 text-xs text-amber-700 dark:text-amber-300"><i class="fa-solid fa-triangle-exclamation mr-1" aria-hidden="true"></i>${a.erros.map((e) => esc(e.id === 'camara' ? 'Câmara' : 'Senado')).join(' e ')}: fonte oficial indisponível no momento. <button type="button" onclick="carregarAgenda()" class="underline">Tentar de novo</button></p>` : '';
         $('agenda').innerHTML = `${erro}<div class="grid md:grid-cols-2 gap-4">
-            <article class="${cartao} p-4"><h3 class="font-bold"><i class="fa-solid fa-landmark mr-2 text-slate-400" aria-hidden="true"></i>Câmara dos Deputados</h3>${blocoCamara(a.camara)}
+            <article class="${cartao} p-4"><h3 class="font-bold cab-casa"><span><i class="fa-solid fa-landmark mr-2 text-slate-400" aria-hidden="true"></i>Câmara dos Deputados</span>${contaPauta(a.camara && a.camara.sessoes.reduce((n, s) => n + s.itens.length, 0))}</h3>${blocoCamara(a.camara)}
                 ${a.camara ? `<p class="mt-3 text-[11px] text-slate-400">Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(a.camara.fonte.url))}">${esc(a.camara.fonte.nome)}</a></p>` : ''}</article>
-            <article class="${cartao} p-4"><h3 class="font-bold"><i class="fa-solid fa-landmark-dome mr-2 text-slate-400" aria-hidden="true"></i>Senado Federal</h3>${blocoSenado(a.senado)}
+            <article class="${cartao} p-4"><h3 class="font-bold cab-casa"><span><i class="fa-solid fa-landmark-dome mr-2 text-slate-400" aria-hidden="true"></i>Senado Federal</span>${contaPauta(a.senado && a.senado.sessoes.filter((x) => x.situacao !== 'Cancelada').reduce((n, x) => n + x.materias.length, 0))}</h3>${blocoSenado(a.senado)}
                 ${a.senado ? `<p class="mt-3 text-[11px] text-slate-400">Fonte: <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(a.senado.fonte.url))}">${esc(a.senado.fonte.nome)}</a></p>` : ''}</article></div>
             <p class="mt-2 text-xs text-slate-500">${esc(a.nota)} Consultado em ${esc(fmtDataHora(a.consultado_em))}.</p>`;
     } catch (e) {
