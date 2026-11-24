@@ -1,6 +1,6 @@
 {
   "titulo": "Como chegamos até aqui",
-  "intro": "A carga tributária de hoje não foi desenhada de uma vez. Cada época trocou a fonte do dinheiro, e cada troca mexeu em quem manda e em quem fica com a sobra. Clique nas faixas e nos pontos do gráfico.",
+  "intro": "A carga tributária de hoje não foi desenhada de uma vez. Cada época trocou a fonte do dinheiro, e cada troca mexeu em quem manda e em quem fica com a sobra. Escolha uma era abaixo.",
   "curva": [[1889, 7], [1930, 7], [1964, 16.5], [1975, 25], [1988, 25], [2000, 31], [2023, 32]],
   "curva_nota": "Valores aproximados, para dar a ordem de grandeza. Não são a série oficial de cada ano.",
   "marcos": [
@@ -223,7 +223,7 @@
   },
   "regime": {
     "titulo": "O regime fiscal desde o Plano Real",
-    "intro": "Além da carga tributária, mudaram as regras do jogo: o regime fiscal, os juros e o comportamento da dívida. Escolha um período para ver a radiografia dele. A faixa vermelha no gráfico mostra onde ele fica na linha do tempo.",
+    "intro": "Além da carga tributária, mudaram as regras do jogo: o regime fiscal, os juros e o comportamento da dívida. Escolha um período para ver a radiografia dele. A régua vermelha mostra onde ele fica na linha do tempo, de 1889 a hoje.",
     "seletor": "Selecione o período",
     "fontes": "Referências: Lopreato (2015) e Giambiagi e Além (2015). A radiografia descreve fatos, regras e números, sem avaliar os governos.",
     "periodos": [
