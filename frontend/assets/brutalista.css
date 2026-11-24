@@ -1050,7 +1050,7 @@ details.conceito h5 { font: 800 .7rem/1.3 var(--fonte-texto); letter-spacing: .1
 
 /* regime fiscal desde o Plano Real (mestre-detalhe: botões escolhem o período, um painel troca o miolo) */
 .rf { margin-top: 1.6rem; padding-top: 1rem; border-top: 3px solid var(--line); }
-.rf-t { font-family: var(--fonte-titulo); font-size: 1.6rem; line-height: 1.05; text-transform: uppercase; margin-bottom: .5rem; }
+.rf-t { font-family: var(--fonte-titulo); font-size: 1.3rem; line-height: 1.1; text-transform: uppercase; margin-bottom: .5rem; letter-spacing: 0; }
 .rf-sel { display: flex; flex-wrap: wrap; gap: .4rem; align-items: center; margin: 1.1rem 0 .8rem; }
 .rf-sel > span { font: 800 .68rem/1 var(--fonte-texto); letter-spacing: .12em; text-transform: uppercase; margin-right: .3rem; }
 .rf-sel button { font: 700 .74rem/1.2 var(--fonte-texto); padding: .6rem .8rem; border: 2px solid var(--line); background: transparent; color: var(--fg); cursor: pointer; }
@@ -1157,7 +1157,7 @@ details.sanfona.sanfona--leve { border-top: 1px solid var(--line); border-bottom
 
 /* ---------- Linha do tempo dos governos (guia-tributos.html, era 1988–hoje) ---------- */
 .gv { margin-top: 1.6rem; padding-top: 1rem; border-top: 3px solid var(--line); }
-.gv-t { font-family: var(--fonte-titulo); font-size: 1.6rem; line-height: 1.05; text-transform: uppercase; margin-bottom: .5rem; }
+.gv-t { font-family: var(--fonte-titulo); font-size: 1.3rem; line-height: 1.1; text-transform: uppercase; margin-bottom: .5rem; }
 .gv-repete { list-style: none; padding: 0; margin: .9rem 0 0; display: grid; gap: 0; border: 2px solid var(--line); }
 .gv-repete li { padding: .7rem .9rem; font-size: .85rem; line-height: 1.45; }
 .gv-repete li + li { border-top: 1px solid var(--line); }
@@ -1222,3 +1222,48 @@ details.sanfona.sanfona--leve { border-top: 1px solid var(--line); border-bottom
 .radar-cards .radar-item-nome { order: 1; font-size: .72rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
 .radar-cards .radar-item-valor { order: 2; text-align: left; font-size: 2.4rem; white-space: normal; }
 .radar-cards .radar-item-nota { order: 3; max-width: none; }
+
+/* ---------- Como chegamos aqui: três camadas (escolher a era > ler a era > lupa de 1990 em diante) ---------- */
+.hx-lead { max-width: 70ch; font-size: .92rem; line-height: 1.55; margin-top: .5rem; }
+.hx-eras { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 2px; margin-top: 1.2rem; border: 2px solid var(--line); background: var(--line); }
+button.hx-era { display: grid; gap: .15rem; align-content: start; text-align: left; padding: .75rem .9rem .8rem; cursor: pointer; color: var(--fg); background: var(--papel) !important; border: 0 !important; box-shadow: none !important; }
+button.hx-era:hover { background: var(--papel-2) !important; }
+button.hx-era[aria-pressed="true"] { background: var(--ativo) !important; color: var(--ativo-fg) !important; }
+.hx-n { font: 800 .6rem/1.2 var(--fonte-texto); letter-spacing: .14em; text-transform: uppercase; opacity: .7; }
+.hx-a { font-family: var(--fonte-titulo); font-size: 1.4rem; line-height: 1; white-space: nowrap; }
+.hx-nm { font: 700 .76rem/1.25 var(--fonte-texto); }
+.hx-c { font: 600 .68rem/1.2 var(--fonte-texto); opacity: .75; }
+@media (max-width: 760px) { .hx-eras { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.hx-marco { display: flex; gap: .9rem; align-items: baseline; margin-top: .5rem; padding: .7rem .95rem; min-height: 3.9rem; border-left: 4px solid var(--vermelho); background: var(--papel-2); font-size: .86rem; line-height: 1.5; }
+.hx-marco-ano { font-family: var(--fonte-titulo); font-weight: 400; font-size: 1.5rem; line-height: 1; color: var(--vermelho); flex: none; }
+.dark .hx-marco-ano { color: #E5584F; }
+.hx-marco-dica { color: var(--muted); align-self: center; }
+.hx-det { display: grid; margin-top: 1rem; border: 2px solid var(--line); }
+.hx-det-h, .hx-det-c { padding: 1.1rem 1.2rem 1.25rem; }
+.hx-det-h { background: color-mix(in srgb, var(--papel-2) 55%, var(--papel)); border-bottom: 2px solid var(--line); }
+.hx-det .tl-anos { font-size: 2.5rem; }
+.hx-det .tl-frase { margin-top: .8rem; }
+.hx-det .tl-carga { margin-top: .4rem; }
+@media (min-width: 900px) {
+  .hx-det { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); }
+  .hx-det-h { border-bottom: 0; border-right: 2px solid var(--line); }
+}
+.hx-rot { font: 800 .66rem/1.3 var(--fonte-texto); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.hx-rot-2 { margin-top: 1.1rem; }
+.hx-det-c .tl-pontos { margin-top: .3rem; border-top: 2px solid var(--line); }
+.hx-det-c .tl-marco { margin-top: .9rem; }
+.hx-det-c .tl-chips { margin-top: .4rem; }
+.hx-lupa { margin-top: 3rem; }
+.hx-seg { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2px; margin-top: 1.1rem; border: 2px solid var(--line); background: var(--line); max-width: 44rem; }
+.hx-seg button { display: grid; gap: .15rem; text-align: left; padding: .8rem 1rem; cursor: pointer; color: var(--fg); background: var(--papel) !important; border: 0 !important; box-shadow: none !important; }
+.hx-seg button:hover { background: var(--papel-2) !important; }
+.hx-seg button[aria-pressed="true"] { background: var(--ativo) !important; color: var(--ativo-fg) !important; }
+.hx-seg b { font: 800 .76rem/1.2 var(--fonte-texto); letter-spacing: .08em; text-transform: uppercase; }
+.hx-seg small { font: 500 .72rem/1.3 var(--fonte-texto); opacity: .8; }
+@media (max-width: 560px) { .hx-seg { grid-template-columns: 1fr; } }
+.hx-corpo { margin-top: 1.4rem; }
+.rf-topo { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: .5rem 1.5rem; }
+.rf-regua { width: min(16rem, 100%); font: 600 .62rem/1 var(--fonte-texto); color: var(--muted); display: grid; grid-template-columns: 1fr 1fr; row-gap: .25rem; }
+.rf-regua > div { grid-column: 1 / -1; position: relative; height: .5rem; background: var(--papel-2); }
+.rf-regua i { position: absolute; top: 0; bottom: 0; min-width: 4px; background: var(--vermelho); }
+.rf-regua span:last-child { text-align: right; }
