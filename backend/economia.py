@@ -71,24 +71,39 @@ def _itens(endpoint: str, **params: Any) -> list[dict]:
     return saida
 
 
+# Municípios com menos de 50 mil habitantes podem publicar o RREO e o RGF na versão simplificada (RGF também semestral).
+# O tipo que cada ente usa é descoberto ao procurar o período mais recente e lembrado para as demais consultas.
+_TIPO_RREO: dict[int, str] = {}
+RREO_COMPLETO, RREO_SIMPLIFICADO = "RREO", "RREO Simplificado"
+
+
+def _tipos_rreo(ente: int) -> tuple[str, ...]:
+    if _esfera(ente) != "municipio":   # União e estados só publicam o relatório completo
+        return (RREO_COMPLETO,)
+    conhecido = _TIPO_RREO.get(ente, RREO_COMPLETO)
+    return (conhecido, RREO_SIMPLIFICADO if conhecido == RREO_COMPLETO else RREO_COMPLETO)
+
+
 def _periodo_mais_recente(ente: int) -> tuple[int, int] | None:
-    """(ano, bimestre) mais recente com RREO Anexo 01 publicado."""
+    """(ano, bimestre) mais recente com RREO Anexo 01 publicado, no tipo completo ou no simplificado."""
     hoje = date.today()
-    for ano in (hoje.year, hoje.year - 1, hoje.year - 2):
-        for bim in range(6, 0, -1):
-            try:
-                achado = _http.json(f"{BASE}/rreo", {
-                    "an_exercicio": ano, "nr_periodo": bim, "co_tipo_demonstrativo": "RREO",
-                    "id_ente": ente, "no_anexo": "RREO-Anexo 01", "limit": 1})
-            except ErroFonte:
-                continue
-            if achado.get("items"):
-                return ano, bim
+    for tipo in _tipos_rreo(ente):
+        for ano in (hoje.year, hoje.year - 1, hoje.year - 2):
+            for bim in range(6, 0, -1):
+                try:
+                    achado = _http.json(f"{BASE}/rreo", {
+                        "an_exercicio": ano, "nr_periodo": bim, "co_tipo_demonstrativo": tipo,
+                        "id_ente": ente, "no_anexo": "RREO-Anexo 01", "limit": 1})
+                except ErroFonte:
+                    continue
+                if achado.get("items"):
+                    _TIPO_RREO[ente] = tipo
+                    return ano, bim
     return None
 
 
 def _rreo(ente: int, ano: int, bim: int, anexo: str) -> list[dict]:
-    return _itens("rreo", an_exercicio=ano, nr_periodo=bim, co_tipo_demonstrativo="RREO",
+    return _itens("rreo", an_exercicio=ano, nr_periodo=bim, co_tipo_demonstrativo=_TIPO_RREO.get(ente, RREO_COMPLETO),
                   id_ente=ente, no_anexo=anexo)
 
 
@@ -223,28 +238,34 @@ def _execucao(a1: list[dict]) -> dict:
 
 
 def _pessoal(ente: int, ano: int) -> dict | None:
-    """Despesa com pessoal (RGF, Poder Executivo) no último quadrimestre publicado."""
-    for ano_rgf in (ano, ano - 1):
-        for quad in (3, 2, 1):
-            try:
-                linhas = _itens("rgf", an_exercicio=ano_rgf, in_periodicidade="Q", nr_periodo=quad,
-                                co_tipo_demonstrativo="RGF", id_ente=ente, no_anexo="RGF-Anexo 01", co_poder="E")
-            except ErroFonte:
-                continue
-            if ente == 1:  # o RGF federal traz uma linha por órgão; o limite que interessa é o da União
-                linhas = [r for r in linhas if r.get("rotulo") == "União"]
-            uso = _valor(linhas, "DespesaComPessoalTotal", "% sobre a RCL")
-            if uso is None:
-                continue
-            return {
-                "pct_rcl": uso,
-                "limite_maximo": _valor(linhas, "LimiteMaximoDespesaComPessoalTotal", "% sobre a RCL"),
-                "limite_prudencial": _valor(linhas, "LimitePrudencialDespesaComPessoalTotal", "% sobre a RCL"),
-                "limite_alerta": _valor(linhas, "LimiteDeAlertaDespesaComPessoalTotal", "% sobre a RCL"),
-                "rcl": _num(_valor(linhas, "ReceitaCorrenteLiquidaLimiteLegal", "Valor")),
-                "rcl_12m": _num(_valor(linhas, "ReceitaCorrenteLiquida", "Valor")) or None,  # RCL dos últimos 12 meses (RGF Anexo 01)
-                "referencia": f"{quad}º quadrimestre de {ano_rgf}",
-            }
+    """Despesa com pessoal (RGF, Poder Executivo) no último período publicado: quadrimestral, ou semestral e/ou
+    simplificado (municípios com menos de 50 mil habitantes)."""
+    completo = (("RGF", "Q", (3, 2, 1)), ("RGF", "S", (2, 1)), ("RGF Simplificado", "S", (2, 1)))
+    simples = (("RGF Simplificado", "S", (2, 1)), ("RGF", "S", (2, 1)), ("RGF", "Q", (3, 2, 1)))
+    ordem = simples if _TIPO_RREO.get(ente) == RREO_SIMPLIFICADO else completo
+    for tipo, periodicidade, periodos in ordem:
+        for ano_rgf in (ano, ano - 1):
+            for per in periodos:
+                try:
+                    linhas = _itens("rgf", an_exercicio=ano_rgf, in_periodicidade=periodicidade, nr_periodo=per,
+                                    co_tipo_demonstrativo=tipo, id_ente=ente, no_anexo="RGF-Anexo 01", co_poder="E")
+                except ErroFonte:
+                    continue
+                if ente == 1:  # o RGF federal traz uma linha por órgão; o limite que interessa é o da União
+                    linhas = [r for r in linhas if r.get("rotulo") == "União"]
+                uso = _valor(linhas, "DespesaComPessoalTotal", "% sobre a RCL")   # no simplificado a coluna é "% sobre a RCL Ajustada"
+                if uso is None:
+                    continue
+                return {
+                    "pct_rcl": uso,
+                    "limite_maximo": _valor(linhas, "LimiteMaximoDespesaComPessoalTotal", "% sobre a RCL"),
+                    "limite_prudencial": _valor(linhas, "LimitePrudencialDespesaComPessoalTotal", "% sobre a RCL"),
+                    "limite_alerta": _valor(linhas, "LimiteDeAlertaDespesaComPessoalTotal", "% sobre a RCL"),
+                    "rcl": _num(_valor(linhas, "ReceitaCorrenteLiquidaLimiteLegal", "Valor")),
+                    "rcl_12m": _num(_valor(linhas, "ReceitaCorrenteLiquida", "Valor")) or None,  # RCL dos últimos 12 meses (RGF Anexo 01)
+                    "referencia": f"{per}º {'semestre' if periodicidade == 'S' else 'quadrimestre'} de {ano_rgf}",
+                    "simplificado": tipo == "RGF Simplificado",
+                }
     return None
 
 
@@ -603,6 +624,7 @@ def painel_economia(ente: int) -> dict | None:
         "instituicao": next((r.get("instituicao") for r in a1 if r.get("instituicao")), None),
         "populacao": next((r.get("populacao") for r in a1 if r.get("populacao")), None),
         "periodo": {"ano": ano, "bimestre": bim, "rotulo": f"{bim}º bimestre de {ano}"},
+        "relatorio_simplificado": _TIPO_RREO.get(ente) == RREO_SIMPLIFICADO,
         "nivel1": {
             "balanco": _balanco(a1),
             "lrf_pessoal": pessoal,
