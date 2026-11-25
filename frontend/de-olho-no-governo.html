@@ -88,6 +88,26 @@
         .pres-li--desl .pres-hora { font-weight: 600; }
         .pres-li--desl .pres-titulo, .pres-li--desl .pres-titulo b { font-size: .84rem; font-weight: 500; }
         .pres-li--desl { padding-top: .4rem; padding-bottom: .4rem; }
+
+        /* Termômetro: número grande, barra única de composição e tabelas por faixa */
+        .termo-filtro { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .8rem; margin-top: 1rem; }
+        .termo-conta { font-size: .8rem; color: var(--muted); }
+        .termo-conta b { color: var(--fg); }
+        .termo-card { margin-top: 1rem; padding: 1.5rem 0 1.2rem; border-top: 2px solid var(--line); }
+        .termo-grid { display: grid; gap: 1.4rem 2rem; grid-template-columns: 1fr; }
+        @media (min-width: 720px) { .termo-grid { grid-template-columns: 1.5fr 1fr 1fr; } .termo-grid > div + div { border-left: 1px solid var(--papel-2); padding-left: 1.6rem; } }
+        .termo-rot { font-size: .7rem; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+        .termo-num { font-family: var(--fonte-titulo); font-size: 2.6rem; line-height: 1; margin-top: .35rem; }
+        .termo-num--gov { font-size: 4.6rem; color: var(--vermelho); }
+        .termo-dica { margin-top: .4rem; font-size: .8rem; line-height: 1.4; color: var(--muted); }
+        .termo-dica b { color: var(--fg); }
+        .voto-bar { display: flex; height: 14px; margin-top: 1.5rem; overflow: hidden; border: 1px solid var(--line); }
+        .voto-bar span { display: block; height: 100%; }
+        .voto-leg { display: grid; grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr)); gap: .6rem 1.2rem; margin-top: .9rem; }
+        .voto-leg > div { font-size: .78rem; color: var(--muted); }
+        .voto-leg b { display: block; font-size: 1.15rem; line-height: 1.2; color: var(--fg); font-weight: 800; }
+        .sw { display: inline-block; width: .65rem; height: .65rem; margin-right: .4rem; }
+        .termo-nota { margin-top: 1.2rem; padding-top: .8rem; border-top: 1px solid var(--papel-2); font-size: .76rem; color: var(--muted); }
     </style>
     <link rel="stylesheet" href="assets/brutalista.css">
 </head>
@@ -411,41 +431,46 @@ async function carregarAgenda() {
 }
 
 // ---------------------------------------------------------------- termômetro
+// Cores da composição dos votos: vermelho só para "com o Governo"; o resto em tons neutros (nenhum lado é bom ou ruim).
+const SEG = { gov: 'var(--vermelho)', contra: 'var(--fg)', abst: 'color-mix(in srgb, var(--fg) 50%, transparent)', aus: 'color-mix(in srgb, var(--fg) 20%, transparent)' };
+const NEUTRO = 'color-mix(in srgb, var(--fg) 72%, transparent)', NEUTRO_CLARO = 'color-mix(in srgb, var(--fg) 42%, transparent)';   // tabelas: só o governismo em vermelho
+
 function quadroGlobal() {
     const g = RES.global;
-    const seg = (v, cls, rot) => `<div class="${cls}" style="width:${v || 0}%" title="${rot}: ${pc(v)}"></div>`;
-    return `<div class="${cartao} p-5">
-        <div class="grid sm:grid-cols-4 gap-4">
-            <div class="sm:col-span-2"><p class="text-xs font-semibold text-slate-500">Taxa de governismo da Câmara</p>
-                <p class="text-4xl font-extrabold text-brand-700 dark:text-brand-400">${pc(g.governismo)}</p>
-                <p class="text-xs text-slate-500">dos votos seguiram a orientação do Governo · ${esc(rotFaixa(g.faixa))}</p></div>
-            <div><p class="text-xs font-semibold text-slate-500">Fidelidade média ao partido</p><p class="text-2xl font-extrabold">${pc(g.fidelidade)}</p></div>
-            <div><p class="text-xs font-semibold text-slate-500">Presença nas votações</p><p class="text-2xl font-extrabold">${pc(g.presenca)}</p></div>
+    const parte = (v, cor, rot) => `<span style="width:${v || 0}%;background:${cor}" title="${rot}: ${pc(v)}"></span>`;
+    const leg = (v, cor, rot) => `<div><i class="sw" style="background:${cor}"></i>${rot}<b>${pc(v)}</b></div>`;
+    return `<div class="termo-card">
+        <div class="termo-grid">
+            <div><p class="termo-rot">Taxa de governismo da Câmara</p>
+                <p class="termo-num termo-num--gov">${pc(g.governismo)}</p>
+                <p class="termo-dica">dos votos seguiram a orientação do Governo.${rotFaixa(g.faixa) ? ` <b>${esc(rotFaixa(g.faixa))}.</b>` : ''}</p></div>
+            <div><p class="termo-rot">Fidelidade média ao partido</p>
+                <p class="termo-num termo-num--sec">${pc(g.fidelidade)}</p>
+                <p class="termo-dica">dos votos iguais aos da maioria do próprio partido.</p></div>
+            <div><p class="termo-rot">Presença nas votações</p>
+                <p class="termo-num termo-num--sec">${pc(g.presenca)}</p>
+                <p class="termo-dica">das votações com voto registrado.</p></div>
         </div>
-        <div class="mt-4 flex h-3 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-700" role="img" aria-label="Composição dos votos: ${pc(g.governismo)} com o Governo, ${pc(g.contra)} contra, ${pc(g.abstencao)} abstenção ou obstrução, ${pc(g.ausente)} ausência">
-            ${seg(g.governismo, 'bg-brand-700', 'Com o Governo')}${seg(g.contra, 'bg-slate-500', 'Contra')}${seg(g.abstencao, 'bg-amber-500', 'Abstenção/obstrução')}${seg(g.ausente, 'bg-slate-300 dark:bg-slate-600', 'Ausente')}</div>
-        <p class="mt-2 text-xs text-slate-500 flex flex-wrap gap-x-4 gap-y-1">
-            <span><span class="inline-block w-2.5 h-2.5 rounded-sm bg-brand-700 align-middle"></span> Com o Governo ${pc(g.governismo)}</span>
-            <span><span class="inline-block w-2.5 h-2.5 rounded-sm bg-slate-500 align-middle"></span> Contra ${pc(g.contra)}</span>
-            <span><span class="inline-block w-2.5 h-2.5 rounded-sm bg-amber-500 align-middle"></span> Abstenção/obstrução ${pc(g.abstencao)}</span>
-            <span><span class="inline-block w-2.5 h-2.5 rounded-sm bg-slate-300 dark:bg-slate-600 align-middle"></span> Ausente ${pc(g.ausente)}</span></p>
-        <p class="mt-3 text-xs text-slate-500">Senado: o Senado não publica a orientação do Governo nos dados abertos de votação, então não há taxa de governismo do Senado. Mostramos a agenda e as votações abertas acima.</p></div>`;
+        <div class="voto-bar" role="img" aria-label="Composição dos votos: ${pc(g.governismo)} com o Governo, ${pc(g.contra)} contra, ${pc(g.abstencao)} abstenção ou obstrução, ${pc(g.ausente)} ausência">
+            ${parte(g.governismo, SEG.gov, 'Com o Governo')}${parte(g.contra, SEG.contra, 'Contra')}${parte(g.abstencao, SEG.abst, 'Abstenção/obstrução')}${parte(g.ausente, SEG.aus, 'Ausente')}</div>
+        <div class="voto-leg" data-sem-gl>${leg(g.governismo, SEG.gov, 'Com o Governo')}${leg(g.contra, SEG.contra, 'Contra')}${leg(g.abstencao, SEG.abst, 'Abstenção ou obstrução')}${leg(g.ausente, SEG.aus, 'Ausente')}</div>
+        <p class="termo-nota">Senado: o Senado não publica a orientação do Governo nos dados abertos de votação, então não há taxa de governismo do Senado. Mostramos a agenda e as votações abertas na aba “Na mesa”.</p></div>`;
 }
 
 function tabelaPartidos() {
     const L = RES.limiares;
     const grupos = [['alto', `${L.alto}% ou mais`], ['medio', `${L.baixo}% a ${L.alto - 1}%`], ['baixo', `menos de ${L.baixo}%`]];
     const linha = (p) => `<tr class="border-t border-slate-100 dark:border-slate-700 align-top">
-        <td class="py-2 pr-3 font-semibold whitespace-nowrap"><button type="button" data-partido="${esc(p.sigla)}" class="underline decoration-dotted hover:text-brand-700" title="Ver os deputados do ${esc(p.sigla)}">${esc(p.sigla)}</button>
+        <td class="py-2 pr-3 font-semibold whitespace-nowrap"><button type="button" data-partido="${esc(p.sigla)}" class="lk-proj font-bold" title="Ver os deputados do ${esc(p.sigla)}">${esc(p.sigla)}</button>
             <span class="block text-[11px] font-normal text-slate-500">${num(p.ativos)} em exercício</span></td>
         <td class="py-2 pr-4 min-w-[8rem]"><b>${pc(p.governismo)}</b>${barra(p.governismo, COR_GOV)}</td>
-        <td class="py-2 pr-4 min-w-[7rem]"><b>${pc(p.fidelidade)}</b>${barra(p.fidelidade, COR_FID)}</td>
-        <td class="py-2 pr-4 min-w-[7rem]"><b>${pc(p.coesao)}</b>${barra(p.coesao, COR_FID)}</td>
-        <td class="py-2 min-w-[7rem]"><b>${pc(p.presenca)}</b>${barra(p.presenca, COR_PRES)}</td></tr>`;
+        <td class="py-2 pr-4 min-w-[7rem]"><b>${pc(p.fidelidade)}</b>${barra(p.fidelidade, NEUTRO)}</td>
+        <td class="py-2 pr-4 min-w-[7rem]"><b>${pc(p.coesao)}</b>${barra(p.coesao, NEUTRO)}</td>
+        <td class="py-2 min-w-[7rem]"><b>${pc(p.presenca)}</b>${barra(p.presenca, NEUTRO_CLARO)}</td></tr>`;
     return grupos.map(([f, faixa]) => {
         const ps = RES.partidos.filter((p) => p.faixa === f);
         if (!ps.length) return '';
-        return `<div class="${cartao} p-4 mt-4 overflow-x-auto"><h3 class="font-bold ${FAIXA[f].cls}">${esc(FAIXA[f].rot)} <span class="text-xs font-medium text-slate-500">· taxa de governismo de ${esc(faixa)}</span></h3>
+        return `<div class="${cartao} p-4 mt-4 overflow-x-auto"><h3 class="font-bold ${FAIXA[f].cls}">${esc(FAIXA[f].rot)} <span class="text-xs font-medium text-slate-500">· taxa de governismo de ${esc(faixa)} · ${ps.length} ${ps.length === 1 ? 'partido' : 'partidos'}</span></h3>
             <table class="w-full text-sm mt-2"><thead><tr class="text-left text-xs text-slate-500">
                 <th class="pb-2 pr-3">Partido</th><th class="pb-2 pr-4">Governismo</th><th class="pb-2 pr-4" title="Votos do deputado iguais ao da maioria do próprio partido">Fidelidade ao partido</th><th class="pb-2 pr-4" title="Quão unida é a bancada: 100% = todos votam igual">Coesão da bancada</th><th class="pb-2">Presença</th></tr></thead>
                 <tbody>${ps.map(linha).join('')}</tbody></table></div>`;
@@ -461,8 +486,8 @@ async function carregarResumo(desde, ate) {
         const an = RES.periodo.anos_disponiveis;
         const sel = (id, v) => `<select id="${id}" class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1">${an.map((a) => `<option ${a === v ? 'selected' : ''}>${a}</option>`).join('')}</select>`;
         $('termoEstado').innerHTML = '';
-        $('termo').innerHTML = `<p class="mt-3 text-sm flex flex-wrap items-center gap-2"><label for="grDe">De</label>${sel('grDe', RES.periodo.desde)}<label for="grAte">até</label>${sel('grAte', RES.periodo.ate)}
-            <span class="text-xs text-slate-500">· ${num(RES.votacoes_com_orientacao)} votações em que o Governo orientou “Sim” ou “Não” (de ${num(RES.votacoes_nominais)} nominais no Plenário)</span></p>
+        $('termo').innerHTML = `<div class="termo-filtro"><span class="termo-rot">Período</span><label for="grDe" class="sr-only">De</label>${sel('grDe', RES.periodo.desde)}<span aria-hidden="true">a</span><label for="grAte" class="sr-only">até</label>${sel('grAte', RES.periodo.ate)}
+            <span class="termo-conta"><b>${num(RES.votacoes_com_orientacao)}</b> votações em que o Governo orientou “Sim” ou “Não”, de ${num(RES.votacoes_nominais)} nominais no Plenário.</span></div>
             <div class="mt-3">${quadroGlobal()}</div>
             <h3 class="text-lg font-bold mt-8">Quem é quem na Câmara</h3>
             <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Partidos agrupados pela fatia dos votos que seguiu a orientação do Governo. A faixa descreve o número, não julga o partido. Clique na sigla para ver os deputados.</p>
