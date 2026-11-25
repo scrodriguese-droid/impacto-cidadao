@@ -484,6 +484,12 @@ function conceitosFluxo() {
 }
 function conceitosEstoque() {
     return `<h4 class="sf-gaveta-sub">Entenda cada conceito</h4>
+        ${conceito('Dívida pública', 'o dinheiro que o governo toma emprestado, principalmente emitindo e vendendo títulos públicos no mercado. Quem compra o título empresta ao governo e recebe de volta, mais adiante, com juros.',
+            'cobrir o que falta quando a arrecadação não paga todos os gastos do período (o déficit) e pagar os títulos que vencem, trocando dívida velha por dívida nova. Ela se divide em duas:',
+            `${lista([
+                ['Dívida interna', 'títulos em moeda nacional (reais), negociados no mercado brasileiro.'],
+                ['Dívida externa', 'títulos emitidos em moeda estrangeira e negociados no mercado internacional.'],
+            ])}<p>A dívida bruta e a dívida líquida, logo abaixo, são dois jeitos de medir o tamanho dessa dívida.</p>`)}
         ${conceito('Dívida bruta (Dívida Consolidada Bruta, DCB)', 'a soma de todos os compromissos, títulos emitidos e empréstimos do governo ainda em aberto, sem descontar nenhum caixa ou haver.',
             'mede a exposição total do setor público a credores e investidores. É a medida mais acompanhada pelo mercado e pelas agências de classificação de risco, em geral em proporção do PIB.')}
         ${conceito('Dívida líquida (Dívida Consolidada Líquida, DCL; no Banco Central, DLSP)', 'a dívida bruta menos os haveres e o caixa do Estado, como as reservas cambiais e os depósitos no Banco Central.',
