@@ -170,11 +170,11 @@ def _receitas(a1: list[dict], a3: list[dict], esfera: str = "municipio") -> dict
     grupos = [
         {"id": "proprios", "nome": "Impostos próprios", "valor": r1("Impostos"),
          "detalhe": [{"nome": n, "valor": r3(c)} for n, c in _PROPRIOS_A3[esfera] if r3(c)],
-         "detalhe_periodo": "últimos 12 meses"},
+         "detalhe_periodo": "dos últimos 12 meses"},
         {"id": "transferencias", "nome": "Transferências e repasses",
          "valor": r1("TransferenciasCorrentes") + r1("TransferenciasDeCapital"),
          "detalhe": [{"nome": n, "valor": r3(c)} for n, c in _REPASSES_A3[esfera] if r3(c)],
-         "detalhe_periodo": "últimos 12 meses"},
+         "detalhe_periodo": "dos últimos 12 meses"},
         {"id": "outras", "nome": "Outras receitas",
          "valor": r1("Taxas") + r1("ReceitaDeContribuicoes") + r1("ReceitaPatrimonial") + r1("ReceitaDeServicos")
          + r1("OutrasReceitasCorrentes") + r1("AlienacaoDeBens") + r1("OutrasReceitasDeCapital")
@@ -183,7 +183,7 @@ def _receitas(a1: list[dict], a3: list[dict], esfera: str = "municipio") -> dict
              ("Taxas", r1("Taxas")), ("Contribuições", r1("ReceitaDeContribuicoes")),
              ("Patrimônio e serviços", r1("ReceitaPatrimonial") + r1("ReceitaDeServicos")),
              ("Multas e juros", r1("MultasEJurosDeMora")), ("Venda de bens", r1("AlienacaoDeBens"))) if v],
-         "detalhe_periodo": "acumulado no exercício"},
+         "detalhe_periodo": "acumulados no exercício"},
         {"id": "credito", "nome": "Empréstimos (operações de crédito)", "valor": r1("ReceitasDeOperacoesDeCredito") + r1("OperacoesDeCreditoRefinanciamento"),
          "detalhe": [], "detalhe_periodo": ""},
     ]
@@ -622,7 +622,8 @@ def painel_economia(ente: int) -> dict | None:
         "situacao_fiscal": _situacao_fiscal(ente, esfera, a1, a6, deficits, pessoal, instituicao),
         "esfera": esfera,
         "instituicao": next((r.get("instituicao") for r in a1 if r.get("instituicao")), None),
-        "populacao": next((r.get("populacao") for r in a1 if r.get("populacao")), None),
+        # o SICONFI devolve, para a União (ente 1), um número que não é a população do país (8.569.324); só municípios e estados têm população
+        "populacao": None if esfera == "uniao" else next((r.get("populacao") for r in a1 if r.get("populacao")), None),
         "periodo": {"ano": ano, "bimestre": bim, "rotulo": f"{bim}º bimestre de {ano}"},
         "relatorio_simplificado": _TIPO_RREO.get(ente) == RREO_SIMPLIFICADO,
         "nivel1": {

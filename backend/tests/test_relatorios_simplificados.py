@@ -107,3 +107,28 @@ def test_pessoal_sem_nenhum_rgf_devolve_vazio(monkeypatch):
         raise ErroFonte("fora do ar")
     monkeypatch.setattr(economia, "_itens", itens)
     assert economia._pessoal(PEQUENO, 2026) is None
+
+
+def _painel_com_populacao(monkeypatch, ente):
+    linha = {"cod_conta": "TotalReceitas", "coluna": "Até o Bimestre", "valor": 100.0, "populacao": 8569324, "instituicao": "Ente de teste"}
+    monkeypatch.setattr(economia, "_periodo_mais_recente", lambda e: (2026, 4))
+    monkeypatch.setattr(economia, "_rreo", lambda *a, **k: [linha])
+    monkeypatch.setattr(economia, "_pessoal", lambda *a, **k: None)
+    monkeypatch.setattr(economia, "_situacao_fiscal", lambda *a, **k: None)
+    monkeypatch.setattr(economia, "_fluxo_federal", lambda *a, **k: None)
+    monkeypatch.setattr(economia, "_estoque_federal", lambda *a, **k: None)
+    monkeypatch.setattr(economia, "_ipca_acumulado", lambda ano, mes: None)
+    return economia.painel_economia(ente)
+
+
+def test_uniao_nao_mostra_populacao_porque_o_siconfi_nao_a_traz(monkeypatch):
+    # para o ente 1 a API devolve 8.569.324, que não é a população do Brasil; estados e municípios têm população de verdade
+    assert _painel_com_populacao(monkeypatch, 1)["populacao"] is None
+    assert _painel_com_populacao(monkeypatch, GRANDE)["populacao"] == 8569324
+    assert _painel_com_populacao(monkeypatch, ESTADO)["populacao"] == 8569324
+
+
+def test_periodos_dos_detalhes_leem_bem_na_frase_valores(monkeypatch):
+    p = _painel_com_populacao(monkeypatch, GRANDE)
+    periodos = {g["id"]: g["detalhe_periodo"] for g in p["nivel2"]["receitas"]["grupos"]}
+    assert periodos["proprios"] == "dos últimos 12 meses" and periodos["outras"] == "acumulados no exercício"
