@@ -20,7 +20,7 @@ from datetime import date
 from typing import Any
 
 import macro
-from fontes import DISJUNTOR_BCB, ClienteHTTP, ErroFonte, normalizar
+from fontes import DISJUNTOR_BCB, ClienteHTTP, ErroFonte, normalizar, populacao_brasil
 
 log = logging.getLogger("impacto.economia")
 
@@ -623,7 +623,8 @@ def painel_economia(ente: int) -> dict | None:
         "esfera": esfera,
         "instituicao": next((r.get("instituicao") for r in a1 if r.get("instituicao")), None),
         # o SICONFI devolve, para a União (ente 1), um número que não é a população do país (8.569.324); só municípios e estados têm população
-        "populacao": None if esfera == "uniao" else next((r.get("populacao") for r in a1 if r.get("populacao")), None),
+        # para a União o SICONFI devolve 8.569.324, que não é a população do país: usa-se a estimativa do IBGE
+        "populacao": populacao_brasil() if esfera == "uniao" else next((r.get("populacao") for r in a1 if r.get("populacao")), None),
         "periodo": {"ano": ano, "bimestre": bim, "rotulo": f"{bim}º bimestre de {ano}"},
         "relatorio_simplificado": _TIPO_RREO.get(ente) == RREO_SIMPLIFICADO,
         "nivel1": {

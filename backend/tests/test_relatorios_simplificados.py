@@ -121,11 +121,35 @@ def _painel_com_populacao(monkeypatch, ente):
     return economia.painel_economia(ente)
 
 
-def test_uniao_nao_mostra_populacao_porque_o_siconfi_nao_a_traz(monkeypatch):
-    # para o ente 1 a API devolve 8.569.324, que não é a população do Brasil; estados e municípios têm população de verdade
-    assert _painel_com_populacao(monkeypatch, 1)["populacao"] is None
+def test_uniao_usa_a_populacao_do_ibge_porque_a_do_siconfi_nao_e_a_do_pais(monkeypatch):
+    # para o ente 1 a API do Tesouro devolve 8.569.324, que não é a população do Brasil; estados e municípios têm população de verdade
+    monkeypatch.setattr(economia, "populacao_brasil", lambda: 214211951)
+    assert _painel_com_populacao(monkeypatch, 1)["populacao"] == 214211951
     assert _painel_com_populacao(monkeypatch, GRANDE)["populacao"] == 8569324
     assert _painel_com_populacao(monkeypatch, ESTADO)["populacao"] == 8569324
+
+
+def test_uniao_sem_resposta_do_ibge_fica_sem_populacao_e_nao_usa_o_numero_errado(monkeypatch):
+    monkeypatch.setattr(economia, "populacao_brasil", lambda: None)
+    assert _painel_com_populacao(monkeypatch, 1)["populacao"] is None
+
+
+def test_populacao_brasil_guarda_o_acerto_e_tenta_de_novo_depois_de_falha(monkeypatch):
+    import fontes
+    respostas = iter([None, {"valor": 214211951, "ano": 2026}, {"valor": 1, "ano": 2027}])
+    chamadas = []
+
+    class Falso:
+        def populacao_brasil(self):
+            chamadas.append(1)
+            return next(respostas)
+
+    monkeypatch.setattr(fontes, "_ibge", lambda: Falso())
+    monkeypatch.setattr(fontes, "_POPULACAO_BRASIL", {})
+    assert fontes.populacao_brasil() is None          # falhou: não guarda
+    assert fontes.populacao_brasil() == 214211951     # acertou: guarda
+    assert fontes.populacao_brasil() == 214211951     # não consulta de novo
+    assert len(chamadas) == 2
 
 
 def test_periodos_dos_detalhes_leem_bem_na_frase_valores(monkeypatch):
