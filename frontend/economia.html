@@ -53,6 +53,22 @@
         .funcao-nota { margin-top: auto; padding-top: .7rem; border-top: 1px solid var(--line); font-size: .76rem; line-height: 1.45; color: var(--muted); }
         .funcao-duo .conceito-lista { margin-bottom: 1rem; }
         .funcao-duo ol.conceito-passos { list-style: decimal; margin-left: 1.2rem; }
+        /* Ir mais fundo: telas complementares em cartões, agrupadas por assunto */
+        .mais-fundo { margin-top: 3rem; }
+        .mf-lead { max-width: 70ch; margin-top: .5rem; font-size: .9rem; color: var(--muted); }
+        .mf-grupos { display: grid; gap: 1.6rem; margin-top: 1.2rem; }
+        .mf-rot { padding-bottom: .4rem; border-bottom: 2px solid var(--line); font: 800 .72rem/1.3 var(--fonte-texto); letter-spacing: .14em; text-transform: uppercase; color: var(--vermelho); }
+        .mf-grade { list-style: none; display: grid; gap: .8rem; margin-top: .8rem; padding: 0; grid-template-columns: minmax(0, 1fr); }
+        @media (min-width: 720px) { .mf-grade { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+        .mf-card { display: flex; flex-direction: column; gap: .35rem; height: 100%; padding: .95rem 1rem 1rem; border: 2px solid var(--line); text-decoration: none !important; color: var(--fg); transition: background .15s, color .15s; }
+        .mf-card b { font-size: .95rem; line-height: 1.25; }
+        .mf-desc { font-size: .8rem; line-height: 1.45; color: var(--muted); }
+        .mf-ic { display: inline-flex; align-items: center; justify-content: center; width: 2.1rem; height: 2.1rem; margin-bottom: .3rem; background: var(--fg); color: var(--papel); font-size: .95rem; }
+        .mf-ir { margin-top: auto; padding-top: .6rem; font: 800 .68rem/1 var(--fonte-texto); letter-spacing: .12em; text-transform: uppercase; }
+        .mf-card:hover, .mf-card:focus-visible { background: var(--fg); color: var(--papel); }
+        .mf-card:hover .mf-desc, .mf-card:focus-visible .mf-desc { color: var(--papel); }
+        .mf-card:hover .mf-ic, .mf-card:focus-visible .mf-ic { background: var(--papel); color: var(--fg); }
+        .mf-card:focus-visible { outline: 3px solid var(--vermelho); outline-offset: 3px; }
     </style>
     <link rel="stylesheet" href="assets/brutalista.css">
 </head>
@@ -106,20 +122,6 @@
         </div>
         <div class="fpainel" id="fp-termometro" role="tabpanel" aria-labelledby="ft-termometro" tabindex="0">
             <div id="pTermometro" class="space-y-10"></div>
-            <section id="secMaisFundo" class="mt-10" aria-labelledby="tFundo">
-                <h2 id="tFundo">Ir mais fundo</h2>
-        <details class="sanfona mt-3"><summary>Ferramentas e telas complementares</summary>
-            <ul class="mt-3">
-                <li><a href="guia-tributos.html"><b>Guia de tributos</b><span>O que é tributo, onde você paga, quem fica com o quê e o catálogo completo.</span></a></li>
-                <li><a href="tributos.html"><b>Inventário completo de tributos</b><span>Todas as cobranças, quanto cada uma arrecada e o diagrama de repasses entre os entes.</span></a></li>
-                <li><a href="simuladores.html"><b>Simuladores de IR e MEI</b><span>Calcule o Imposto de Renda e o que paga um microempreendedor.</span></a></li>
-                <li><a href="macro.html"><b>Indicadores econômicos</b><span>Inflação, juros, desemprego e outros números do Banco Central e do IBGE.</span></a></li>
-                <li><a href="divida-historico.html"><b>História da dívida pública</b><span>A trajetória desde 2001 e os marcos que explicam as altas e quedas.</span></a></li>
-                <li><a href="divida-risco.html"><b>Dissecando a dívida pública</b><span>Prazo de vencimento, custo e indexadores: o que decide o risco além do tamanho da dívida.</span></a></li>
-                <li><a href="financiamento.html"><b>Dívida e títulos públicos</b><span>Como o governo se financia e o que são os títulos.</span></a></li>
-                <li><a href="ciclo.html"><b>Ciclo econômico e contas públicas</b><span>Como a economia afeta a arrecadação e o gasto.</span></a></li>
-            </ul></details>
-            </section>
         </div>
         <div class="fpainel" id="fp-risco" role="tabpanel" aria-labelledby="ft-risco" tabindex="0" hidden>
             <div id="pRisco" class="space-y-10"></div>
@@ -133,6 +135,31 @@
             </section>
         </div>
         <div class="fpainel" id="fp-imposto" role="tabpanel" aria-labelledby="ft-imposto" tabindex="0" hidden></div>
+
+        <!-- Telas complementares: o mesmo bloco no fim de qualquer sub-aba -->
+        <section id="secMaisFundo" class="mais-fundo" aria-labelledby="tFundo">
+            <h2 id="tFundo">Ir mais fundo</h2>
+            <p class="mf-lead">Telas complementares para quem quer o detalhe, reunidas por assunto.</p>
+            <div class="mf-grupos">
+                <div class="mf-grupo"><h3 class="mf-rot">Tributos e imposto</h3>
+                    <ul class="mf-grade">
+                        <li><a class="mf-card" href="guia-tributos.html"><span class="mf-ic"><i class="fa-solid fa-book-open" aria-hidden="true"></i></span><b>Guia de tributos</b><span class="mf-desc">O que é tributo, onde você paga, quem fica com o quê e o catálogo completo.</span><span class="mf-ir">Abrir <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span></a></li>
+                        <li><a class="mf-card" href="tributos.html"><span class="mf-ic"><i class="fa-solid fa-table-list" aria-hidden="true"></i></span><b>Inventário completo de tributos</b><span class="mf-desc">Todas as cobranças, quanto cada uma arrecada e o diagrama de repasses entre os entes.</span><span class="mf-ir">Abrir <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span></a></li>
+                        <li><a class="mf-card" href="simuladores.html"><span class="mf-ic"><i class="fa-solid fa-calculator" aria-hidden="true"></i></span><b>Simuladores de IR e MEI</b><span class="mf-desc">Calcule o Imposto de Renda e o que paga um microempreendedor.</span><span class="mf-ir">Abrir <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span></a></li>
+                    </ul></div>
+                <div class="mf-grupo"><h3 class="mf-rot">Dívida pública</h3>
+                    <ul class="mf-grade">
+                        <li><a class="mf-card" href="divida-historico.html"><span class="mf-ic"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i></span><b>História da dívida pública</b><span class="mf-desc">A trajetória desde 2001 e os marcos que explicam as altas e quedas.</span><span class="mf-ir">Abrir <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span></a></li>
+                        <li><a class="mf-card" href="divida-risco.html"><span class="mf-ic"><i class="fa-solid fa-magnifying-glass-chart" aria-hidden="true"></i></span><b>Dissecando a dívida pública</b><span class="mf-desc">Prazo de vencimento, custo e indexadores: o que decide o risco além do tamanho da dívida.</span><span class="mf-ir">Abrir <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span></a></li>
+                        <li><a class="mf-card" href="financiamento.html"><span class="mf-ic"><i class="fa-solid fa-file-invoice-dollar" aria-hidden="true"></i></span><b>Dívida e títulos públicos</b><span class="mf-desc">Como o governo se financia e o que são os títulos.</span><span class="mf-ir">Abrir <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span></a></li>
+                    </ul></div>
+                <div class="mf-grupo"><h3 class="mf-rot">Economia e contas</h3>
+                    <ul class="mf-grade">
+                        <li><a class="mf-card" href="macro.html"><span class="mf-ic"><i class="fa-solid fa-chart-line" aria-hidden="true"></i></span><b>Indicadores econômicos</b><span class="mf-desc">Inflação, juros, desemprego e outros números do Banco Central e do IBGE.</span><span class="mf-ir">Abrir <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span></a></li>
+                        <li><a class="mf-card" href="ciclo.html"><span class="mf-ic"><i class="fa-solid fa-arrows-rotate" aria-hidden="true"></i></span><b>Ciclo econômico e contas públicas</b><span class="mf-desc">Como a economia afeta a arrecadação e o gasto.</span><span class="mf-ir">Abrir <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span></a></li>
+                    </ul></div>
+            </div>
+        </section>
     </div>
     <!-- Calculadora: fica na aba “Meu imposto” da saúde fiscal e, na tela “Entrada e saída”, logo abaixo do painel -->
     <section id="secCalc" class="hidden mt-8" aria-labelledby="tCalc">
