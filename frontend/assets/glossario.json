@@ -238,6 +238,17 @@
       "aliases": [
         "Copom"
       ]
+    },
+    "LIQUIDEZ": {
+      "termo_tecnico": "Liquidez",
+      "nome_cidadao": "Facilidade de virar dinheiro",
+      "explicacao_simples": "Mede o quão rápido, e sem perder valor, um bem ou uma aplicação vira dinheiro vivo. Também se fala em liquidez da economia: a quantidade de dinheiro e de crédito disponível para gastar e emprestar. Com muita liquidez, o crédito fica farto; com pouca, ele encolhe. Não confunda com o conceito liquidez das reservas internacionais.",
+      "icone": "💧",
+      "categoria": "Macroeconomia",
+      "aliases": [
+        "liquidez",
+        "liquidez internacional"
+      ]
     }
   },
   "reservas_e_fmi": {
