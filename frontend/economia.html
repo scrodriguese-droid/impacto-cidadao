@@ -27,18 +27,20 @@
         .dim-lin { display: grid; grid-template-columns: 11rem 1fr; gap: 1rem; border-top: 1px solid var(--line); padding: .9rem 0; margin-top: .8rem; }
         .dim-rot { font: 800 .68rem/1.3 var(--fonte-texto); letter-spacing: .12em; text-transform: uppercase; border-left: 6px solid var(--cor); padding-left: .6rem; }
         @media (max-width: 720px) { .dim-pers { flex-direction: column; } .dim-per { flex: none !important; } .dim-lin { grid-template-columns: 1fr; gap: .4rem; } }
-        /* o <summary> herdava caixa-alta, sublinhado e o "+" globais: aqui ele vira um botão de largura total no rodapé do quadro */
+        /* rodapé do quadro: dois botões simétricos (aprofundar o lado fiscal ou o monetário); só um painel fica aberto por vez */
         .cf-rodape { border-top: 1px solid var(--line); margin-top: 0; padding-top: 1rem; }
-        .cf-rodape .primario-sum { cursor: pointer; list-style: none; display: block; text-transform: none; letter-spacing: 0; font-size: inherit; font-weight: inherit; text-decoration: none !important; padding: 0; }
-        .cf-rodape .primario-sum::before { content: none !important; }
-        .cf-rodape .primario-sum, .cf-rodape .primario-sum * { text-decoration: none !important; }
-        .primario-sum::-webkit-details-marker { display: none; }
-        .primario-conv { display: flex; width: 100%; justify-content: center; align-items: center; gap: .1rem; padding: .7rem 1rem; min-height: 2.75rem;
-            border: 2px solid var(--line); font: 800 .72rem/1.2 var(--fonte-texto); letter-spacing: .08em; text-transform: uppercase; color: var(--fg); transition: background .15s, color .15s; }
-        .primario-sum:hover .primario-conv, .primario-sum:focus-visible .primario-conv { background: var(--fg); color: var(--papel); }
-        .primario-sum:focus-visible { outline: 3px solid var(--vermelho); outline-offset: 4px; }
+        .cf-botoes { display: grid; grid-template-columns: 1fr; }
+        @media (min-width: 720px) { .cf-botoes { grid-template-columns: 1fr 1fr; } .cf-botoes > .cf-btn + .cf-btn { margin-left: -2px; } }
+        .cf-botoes > .cf-btn + .cf-btn { margin-top: -2px; }
+        @media (min-width: 720px) { .cf-botoes > .cf-btn + .cf-btn { margin-top: 0; } }
+        .cf-botoes button.cf-btn { display: flex; justify-content: center; align-items: center; gap: .1rem; width: 100%; min-height: 2.75rem; padding: .7rem 1rem; border: 2px solid var(--line) !important;
+            font: 800 .72rem/1.2 var(--fonte-texto); letter-spacing: .08em; text-transform: uppercase; text-align: center; cursor: pointer; transition: background .15s, color .15s; }
+        .cf-botoes button.cf-btn[aria-expanded="true"] { background: var(--fg) !important; color: var(--papel) !important; }
+        .cf-btn:focus-visible { outline: 3px solid var(--vermelho); outline-offset: 4px; }
         .primario-seta { margin-left: .4rem; }
-        .primario-det[open] .primario-seta { display: inline-block; transform: rotate(180deg); }
+        .cf-btn[aria-expanded="true"] .primario-seta { display: inline-block; transform: rotate(180deg); }
+        .cf-painel { margin-top: 1rem; }
+        .cf-painel[hidden] { display: none; }
         .primario-corpo { margin-top: .5rem; }
         /* indicadores do confronto: nome em cima, número grande logo abaixo e a explicação por último (uma coluna por indicador) */
         .radar-confronto .radar-item-nome { font: 800 .74rem/1.3 var(--fonte-texto); letter-spacing: .08em; text-transform: uppercase; }
@@ -50,6 +52,7 @@
         .funcao-sub { margin: .8rem 0 .2rem; font: 800 .68rem/1.3 var(--fonte-texto); letter-spacing: .1em; text-transform: uppercase; }
         .funcao-nota { margin-top: auto; padding-top: .7rem; border-top: 1px solid var(--line); font-size: .76rem; line-height: 1.45; color: var(--muted); }
         .funcao-duo .conceito-lista { margin-bottom: 1rem; }
+        .funcao-duo ol.conceito-passos { list-style: decimal; margin-left: 1.2rem; }
     </style>
     <link rel="stylesheet" href="assets/brutalista.css">
 </head>
@@ -836,6 +839,28 @@ function itemConfronto(i) {
         <span class="radar-item-nota">${esc(i.detalhe)}</span>
         ${etiqueta || antes ? `<span class="cf-pe">${etiqueta}${antes}</span>` : ''}</div>`;
 }
+/* Gaveta do botão da direita: quem fixa a meta de inflação (CMN) e quem fixa os juros (Copom). Texto fixo. */
+const PAINEL_SELIC = `<h3 class="radar-secao-h">Quem define a meta e quem define os juros</h3>
+    <p class="text-sm text-slate-500 mt-1" style="max-width:70ch">A política monetária brasileira tem dois níveis: quem fixa o objetivo e quem tem autonomia para escolher os meios de alcançá-lo.</p>
+    <div class="def-duo funcao-duo mt-3">
+        <div><p class="def-rot">1 · O formulador · define o alvo</p>
+            <p class="funcao-gancho">Conselho Monetário Nacional (CMN)</p>
+            <p>Órgão máximo do sistema financeiro. Estabelece as diretrizes gerais e fixa o centro da meta de inflação (hoje: 3,0% ao ano, com margem de 1,5 ponto percentual para mais ou para menos).</p>
+            <p class="funcao-sub">Quem compõe o CMN (3 membros)</p>
+            <ol class="conceito-passos" style="margin-top:.3rem">
+                <li>Ministro da Fazenda (presidente)</li>
+                <li>Ministra ou ministro do Planejamento e Orçamento</li>
+                <li>Presidente do Banco Central</li></ol></div>
+        <div><p class="def-rot">2 · O executor · define os juros</p>
+            <p class="funcao-gancho">Banco Central (via Copom)</p>
+            <p>Tem autonomia operacional garantida por lei (Lei Complementar 179/2021) para conduzir a política monetária sem interferência do governo.</p>
+            <p class="funcao-sub">Quem compõe o Copom (9 membros)</p>
+            <ul class="conceito-lista" style="margin-top:.3rem">
+                <li>Presidente do Banco Central.</li>
+                <li>8 diretores. O presidente e os diretores são indicados pelo Presidente da República e aprovados pelo Senado, com mandatos fixos de 4 anos que não coincidem entre si.</li></ul>
+            <p class="funcao-sub">O que faz</p>
+            <p>Reúne-se a cada 45 dias (8 vezes por ano) para avaliar inflação, atividade, câmbio e contas públicas e fixar a taxa Selic.</p></div>
+    </div>`;
 /* Os dois lados lado a lado, com as linhas divisórias atravessando a largura toda: cada indicador fica no mesmo eixo do seu par.
    A grade usa subgrid (as colunas dividem as mesmas linhas); a altura de cada par é a do maior dos dois. */
 function gradeConfronto(f, m) {
@@ -843,9 +868,12 @@ function gradeConfronto(f, m) {
     const lado = (c) => `<section class="radar-lado" style="--n:${n + 1}"><div class="cf-cab"><p class="radar-pergunta">${esc(c.nome)}</p><h3 class="radar-secao-h">${esc(c.quem)}</h3>
         <p class="radar-legenda">${esc(c.papel)}</p></div>${Array.from({ length: n }, (_, k) => itemConfronto(c.itens[k])).join('')}</section>`;
     // clicar abre a evolução desde 2002, por ano e por governo (a série só é buscada na primeira abertura)
-    const rodape = [...f.itens, ...m.itens].some((i) => i.id === 'primario')
-        ? `<div class="cf-rodape"><details class="primario-det"><summary class="primario-sum"><span class="primario-conv"><i class="fa-solid fa-chart-line mr-1" aria-hidden="true"></i>Ver a evolução do resultado primário por ano e por governo <span class="primario-seta" aria-hidden="true">▾</span></span></summary>
-            <div class="primario-corpo"></div></details></div>` : '';
+    const temPrimario = [...f.itens, ...m.itens].some((i) => i.id === 'primario');
+    const rodape = `<div class="cf-rodape"><div class="cf-botoes">
+            ${temPrimario ? '<button type="button" class="cf-btn" data-cf="primario" aria-expanded="false" aria-controls="cf-p-primario"><i class="fa-solid fa-chart-line mr-1" aria-hidden="true"></i>Ver a evolução do primário por governo <span class="primario-seta" aria-hidden="true">▾</span></button>' : '<span></span>'}
+            <button type="button" class="cf-btn" data-cf="selic" aria-expanded="false" aria-controls="cf-p-selic"><i class="fa-solid fa-landmark mr-1" aria-hidden="true"></i>Como se decide a Selic: CMN e Copom <span class="primario-seta" aria-hidden="true">▾</span></button></div>
+        ${temPrimario ? '<div class="cf-painel" id="cf-p-primario" hidden><div class="primario-corpo"></div></div>' : ''}
+        <div class="cf-painel" id="cf-p-selic" hidden>${PAINEL_SELIC}</div></div>`;
     return `<div class="radar-confronto">${lado(f)}${lado(m)}</div>${rodape}`;
 }
 /* Onde as duas políticas se encontram: o déficit nominal é o resultado primário somado aos juros (fatos × interpretação) */
@@ -1015,10 +1043,20 @@ async function abrirPrimario(det) {
         alvo.innerHTML = `${mensagemErro(e)} <p class="mt-2 text-xs">O Banco Central às vezes recusa consultas por alguns minutos. Feche e abra de novo mais tarde.</p>`;
     } finally { PRIMARIO_CARREGANDO = false; }
 }
-document.addEventListener('toggle', (ev) => {
-    const d = ev.target;
-    if (d.matches && d.matches('details.primario-det') && d.open && !d.dataset.carregado) { d.dataset.carregado = '1'; abrirPrimario(d).then(() => { if (!PRIMARIO) delete d.dataset.carregado; }); }
-}, true);
+// Botões do rodapé do confronto: abrem um painel em largura total e fecham o outro (nunca os dois ao mesmo tempo).
+document.addEventListener('click', (ev) => {
+    const b = ev.target.closest && ev.target.closest('button.cf-btn');
+    if (!b) return;
+    const caixa = b.closest('.cf-rodape');
+    const abrir = b.getAttribute('aria-expanded') !== 'true';
+    caixa.querySelectorAll('button.cf-btn').forEach((x) => {
+        const aberto = abrir && x === b;
+        x.setAttribute('aria-expanded', String(aberto));
+        const painel = document.getElementById(x.getAttribute('aria-controls'));
+        if (painel) painel.hidden = !aberto;
+    });
+    if (abrir && b.dataset.cf === 'primario') abrirPrimario(document.getElementById('cf-p-primario'));   // a série só é buscada na primeira abertura
+});
 
 function graficoLinhaTempo(h, compacto) {
     const W = compacto ? 360 : 760, L = compacto ? 32 : 40, R = compacto ? 58 : 78;

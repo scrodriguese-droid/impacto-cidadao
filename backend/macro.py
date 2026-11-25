@@ -990,7 +990,7 @@ def montar_confronto(dg: dict, capacidade: dict | None = None) -> dict:
     return {"fiscal": {"nome": "Política fiscal", "quem": "Governo (Ministério da Fazenda)",
                        "papel": "Arrecada, gasta com serviços públicos e investimentos e se endivida.", "itens": fiscal},
             "monetaria": {"nome": "Política monetária", "quem": "Banco Central (Copom)",
-                          "papel": "Fixa a taxa Selic para manter a inflação dentro da meta.", "itens": monetaria},
+                          "papel": "Fixa a taxa Selic para perseguir a meta de inflação definida pelo CMN.", "itens": monetaria},
             "conexao": conexao,
             "visoes": {"titulo": "Duas leituras sobre o que fazer",
                        "intro": "Economistas discordam sobre o remédio. Estas são as duas leituras mais comuns, com o que cada uma aponta nos números e a "
