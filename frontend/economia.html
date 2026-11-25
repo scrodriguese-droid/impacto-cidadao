@@ -1471,7 +1471,7 @@ function nivel4(d) {
 
 function desenhar() {
     const d = E.dados;
-    $('periodoRotulo').textContent = d ? `${d.instituicao || ''}${d.populacao && d.esfera !== 'uniao' ? ' · ' + Number(d.populacao).toLocaleString('pt-BR') + ' habitantes' : ''} · ${d.periodo.rotulo}${d.relatorio_simplificado ? ' · relatório simplificado' : ''}` : '';
+    $('periodoRotulo').textContent = d ? `${d.instituicao || ''}${d.populacao ? ' · ' + Number(d.populacao).toLocaleString('pt-BR') + ' habitantes' : ''} · ${d.periodo.rotulo}${d.relatorio_simplificado ? ' · relatório simplificado' : ''}` : '';
     const painel = $('painel');
     painel.classList.toggle('hidden', ABA_FISCAL || !d);
     if (!ABA_FISCAL) $('secCalc').classList.toggle('hidden', !d);

@@ -413,9 +413,16 @@ class Ibge:
                 "regiao": (uf.get("regiao") or {}).get("nome", "")}
 
     def populacao(self, codigo: int) -> dict | None:
-        """Estimativa populacional mais recente (SIDRA tabela 6579, variável 9324)."""
+        """Estimativa populacional mais recente do município (SIDRA tabela 6579, variável 9324)."""
+        return self._estimativa(f"n6/{codigo}")
+
+    def populacao_brasil(self) -> dict | None:
+        """Estimativa populacional mais recente do país (a mesma tabela, no nível Brasil)."""
+        return self._estimativa("n1/1")
+
+    def _estimativa(self, nivel: str) -> dict | None:
         try:
-            linhas = self.http.json(f"{self.SIDRA}/t/6579/n6/{codigo}/v/9324/p/last")
+            linhas = self.http.json(f"{self.SIDRA}/t/6579/{nivel}/v/9324/p/last")
         except ErroFonte:
             return None
         if not isinstance(linhas, list) or len(linhas) < 2:
@@ -429,6 +436,19 @@ class Ibge:
 @lru_cache(maxsize=1)
 def _ibge() -> Ibge:
     return Ibge()
+
+
+_POPULACAO_BRASIL: dict[str, int] = {}
+
+
+def populacao_brasil() -> int | None:
+    """População estimada do Brasil (IBGE). Só guarda acerto: se o IBGE não responder, tenta de novo na próxima chamada."""
+    if "valor" not in _POPULACAO_BRASIL:
+        p = _ibge().populacao_brasil()
+        if not p:
+            return None
+        _POPULACAO_BRASIL["valor"] = p["valor"]
+    return _POPULACAO_BRASIL["valor"]
 
 
 @lru_cache(maxsize=1)
