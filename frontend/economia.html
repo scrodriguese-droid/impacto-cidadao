@@ -76,7 +76,8 @@
         <div class="flex flex-wrap items-center gap-x-2 gap-y-2 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 shadow-sm text-sm">
             <i class="fa-solid fa-location-dot text-rose-500" aria-hidden="true"></i>
             <span class="font-medium">Contas de:</span>
-            <div class="relative">
+            <span id="rotuloUniao" class="hidden font-bold">Governo Federal · país inteiro</span>
+            <div class="relative" id="blocoCidade">
                 <button id="btnCidade" type="button" class="inline-flex items-center gap-1.5 font-bold bg-teal-50 dark:bg-teal-950/50 text-teal-800 dark:text-teal-300 border border-teal-200 dark:border-teal-800 rounded-full px-3.5 py-1.5 hover:opacity-90" aria-expanded="false" aria-controls="popCidade">
                     <i class="fa-solid fa-city text-xs" aria-hidden="true"></i><span id="cidadeRotulo">Escolher cidade</span>
                 </button>
@@ -269,6 +270,9 @@ const codigoEnte = () => {
     return E.esfera === 'estado' ? Math.floor(E.municipio.codigo / 100000) : E.municipio.codigo;
 };
 function desenharEsfera() {
+    // na esfera União as contas são as do país: o seletor de cidade não se aplica e só confundiria
+    $('blocoCidade').classList.toggle('hidden', E.esfera === 'uniao');
+    $('rotuloUniao').classList.toggle('hidden', E.esfera !== 'uniao');
     $('segEsfera').innerHTML = ESFERAS.map((x) => `<button type="button" role="radio" aria-checked="${E.esfera === x.id}" data-esfera="${x.id}"
         class="px-3.5 py-2 rounded-xl text-sm font-semibold ${E.esfera === x.id ? 'bg-white dark:bg-slate-700 shadow text-brand-700 dark:text-brand-300' : 'text-slate-500'}">
         <i class="fa-solid ${x.icone} mr-1.5 text-xs" aria-hidden="true"></i>${x.rotulo}</button>`).join('');
@@ -1467,7 +1471,7 @@ function nivel4(d) {
 
 function desenhar() {
     const d = E.dados;
-    $('periodoRotulo').textContent = d ? `${d.instituicao || ''}${d.populacao ? ' · ' + Number(d.populacao).toLocaleString('pt-BR') + ' habitantes' : ''} · ${d.periodo.rotulo}${d.relatorio_simplificado ? ' · relatório simplificado' : ''}` : '';
+    $('periodoRotulo').textContent = d ? `${d.instituicao || ''}${d.populacao && d.esfera !== 'uniao' ? ' · ' + Number(d.populacao).toLocaleString('pt-BR') + ' habitantes' : ''} · ${d.periodo.rotulo}${d.relatorio_simplificado ? ' · relatório simplificado' : ''}` : '';
     const painel = $('painel');
     painel.classList.toggle('hidden', ABA_FISCAL || !d);
     if (!ABA_FISCAL) $('secCalc').classList.toggle('hidden', !d);
