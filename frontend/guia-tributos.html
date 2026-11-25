@@ -748,6 +748,33 @@ function ligarRegime(r, marcarNoGrafico) {
     mostrar(0);
 }
 
+/* Quem comandou a economia (1964 até hoje): presidente e ministros por governo, em quatro fases. Cada governo abre para mostrar o que fez. */
+const equipeDe = (hist, id) => hist.equipes.fases.flatMap((f) => f.governos).find((x) => x.id === id);
+const ministrosHtml = (gv) => gv.ministros.map(([c, n]) => `<span class="qc-m"><em>${esc(c)}</em>${esc(n.join(' · '))}</span>`).join('');
+function equipesHtml(eq) {
+    let k = 0;
+    const fases = eq.fases.map((f) => `<section class="qc-fase"><h4 class="qc-fase-t">${esc(f.nome)}<span>${esc(f.anos)}</span></h4>
+        <p class="qc-fase-p"><strong>${esc(f.tema)}.</strong>${f.lead ? ' ' + esc(f.lead) : ''}</p>
+        <ol class="qc-lista">${f.governos.map((gv) => { const i = k++; return `<li class="qc-card"><h5 class="qc-h"><button type="button" class="qc-cab" aria-expanded="false" aria-controls="qcc${i}">
+            <span class="qc-anos">${esc(gv.anos)}</span>
+            <span class="qc-quem"><small>Presidente</small><b>${esc(gv.presidente)}</b><i>${esc(gv.plano)}</i></span>
+            <span class="qc-mins">${ministrosHtml(gv)}</span></button></h5>
+            <div class="qc-corpo" id="qcc${i}" hidden>${gv.politica.map((t) => `<p>${esc(t)}</p>`).join('')}</div></li>`; }).join('')}</ol></section>`).join('');
+    return `<section class="qc" aria-label="${esc(eq.titulo)}"><p class="tl-mudanca">${esc(eq.intro)}</p>
+        <div class="qc-tools"><button type="button" class="qc-todos" data-qc-todos aria-pressed="false">Abrir todos os governos</button></div>${fases}<p class="ficha-nota">${esc(eq.nota)}</p></section>`;
+}
+function ligarEquipes(raiz) {
+    const abrir = (cab, sim) => { cab.setAttribute('aria-expanded', String(sim)); document.getElementById(cab.getAttribute('aria-controls')).hidden = !sim; };
+    const cabs = [...raiz.querySelectorAll('.qc-cab')], todos = raiz.querySelector('[data-qc-todos]');
+    cabs.forEach((c) => c.addEventListener('click', () => abrir(c, c.getAttribute('aria-expanded') !== 'true')));
+    todos.addEventListener('click', () => {
+        const abrirTodos = todos.getAttribute('aria-pressed') !== 'true';
+        cabs.forEach((c) => abrir(c, abrirTodos));
+        todos.setAttribute('aria-pressed', String(abrirTodos));
+        todos.textContent = abrirTodos ? 'Fechar todos os governos' : 'Abrir todos os governos';
+    });
+}
+
 function painelHistoria() {
     const hist = G.hist;
     const listaTempo = `<ol class="tl">${hist.eras.map((e) => `<li class="tl-era"><div><p class="tl-anos">${esc(e.anos)}</p><p class="tl-nome">${esc(e.nome)}</p></div>
@@ -773,7 +800,7 @@ function painelHistoria() {
     // camada 1: escolher a era (botões + faixas do gráfico, sempre sincronizados); camada 2: ler a era; camada 3: lupa de 1990 em diante
     const trilho = hist.eras.map((e, k) => `<button type="button" class="hx-era" data-era="${k}" aria-pressed="false"><span class="hx-n">Era ${k + 1}</span><span class="hx-a">${esc(e.anos)}</span><span class="hx-nm">${esc(e.nome)}</span><span class="hx-c">≈ ${esc(e.carga)}% do PIB</span></button>`).join('');
     const temLupa = !!(hist.governos || hist.regime);
-    const lupaBotoes = [hist.governos && ['gov', 'Governo por governo', `${hist.governos.periodos.length} períodos, de 1990 a 2026`], hist.regime && ['rf', 'Regime fiscal', 'o que cada fase mudou nas contas']].filter(Boolean)
+    const lupaBotoes = [hist.equipes && ['eq', 'Quem comandou a economia', 'presidentes e ministros, de 1964 a 2026'], hist.governos && ['gov', 'Governo por governo', `${hist.governos.periodos.length} períodos, de 1990 a 2026`], hist.regime && ['rf', 'Regime fiscal', 'o que cada fase mudou nas contas']].filter(Boolean)
         .map(([id, rot, sub], k) => `<button type="button" data-lupa="${id}" aria-pressed="${k === 0}" aria-controls="lupaCorpo"><b>${rot}</b><small>${sub}</small></button>`).join('');
     $('painel').innerHTML = `<h2>${esc(hist.titulo)}</h2>
         <p class="hx-lead">${esc(hist.intro)}</p>
@@ -783,8 +810,8 @@ function painelHistoria() {
             <div id="tgChips" class="hx-chips" role="group" aria-label="Marcos desta era"></div>
             <div id="tgMarco" class="hx-marco" aria-live="polite"></div></div>
         <div id="tgPainel" aria-live="polite"></div>
-        ${temLupa ? `<section class="hx-lupa" aria-labelledby="lupaT"><h2 id="lupaT">De 1990 até hoje, de perto</h2>
-            <p class="hx-lead">O gráfico mostra só a curva. Aqui estão as decisões por trás dela, vistas de dois jeitos.</p>
+        ${temLupa ? `<section class="hx-lupa" aria-labelledby="lupaT"><h2 id="lupaT">De perto: as decisões por trás da curva</h2>
+            <p class="hx-lead">O gráfico mostra só a curva. Aqui estão as decisões por trás dela, vistas de três jeitos.</p>
             <div class="hx-seg" role="group" aria-label="Como olhar o período">${lupaBotoes}</div>
             <div id="lupaCorpo" class="hx-corpo"></div></section>` : ''}
         <details class="sanfona sanfona--leve mt-8"><summary>Prefere ler tudo em sequência? Ver as quatro eras em lista</summary>${listaTempo}</details>`;
@@ -834,7 +861,9 @@ function painelHistoria() {
         chipsEl.querySelectorAll('.hx-chip').forEach((n) => n.setAttribute('aria-pressed', String(+n.dataset.marco === k)));
         const ant = k > 0 ? `<button type="button" class="mc-btn mc-ant" data-marco-ir="${k - 1}" aria-label="Marco anterior: ${hist.marcos[k - 1].ano}, ${esc(hist.marcos[k - 1].curto || hist.marcos[k - 1].titulo)}"><span class="mc-nl">← Anterior</span><span class="mc-nv">${rotuloMarco(k - 1)}</span></button>` : '<span></span>';
         const prox = k < hist.marcos.length - 1 ? `<button type="button" class="mc-btn mc-prox" data-marco-ir="${k + 1}" aria-label="Próximo marco: ${hist.marcos[k + 1].ano}, ${esc(hist.marcos[k + 1].curto || hist.marcos[k + 1].titulo)}"><span class="mc-nl">Próximo →</span><span class="mc-nv">${rotuloMarco(k + 1)}</span></button>` : '<span></span>';
-        marcoEl.innerHTML = `<article class="mc"><header class="mc-h"><b class="mc-ano">${m.ano}</b><div><p class="mc-k">Marco ${k + 1} de ${hist.marcos.length} · Era ${eraDoAno(m.ano) + 1}</p><h3 class="mc-t">${esc(m.titulo)}</h3></div></header>
+        const eqs = (m.equipe || []).map((id) => equipeDe(hist, id)).filter(Boolean);
+        const eqMarco = eqs.length ? `<div class="mc-eq"><p class="mc-eq-t">Quem comandava a economia</p>${eqs.map((gv) => `<div class="mc-eq-g"><span class="mc-eq-p"><em>Presidente</em>${esc(gv.presidente)} <small>${esc(gv.anos)}</small></span>${ministrosHtml(gv)}</div>`).join('')}</div>` : '';
+        marcoEl.innerHTML = `<article class="mc"><header class="mc-h"><b class="mc-ano">${m.ano}</b><div><p class="mc-k">Marco ${k + 1} de ${hist.marcos.length} · Era ${eraDoAno(m.ano) + 1}</p><h3 class="mc-t">${esc(m.titulo)}</h3></div></header>${eqMarco}
             <div class="mc-c"><p class="mc-lead">${esc(m.texto)}</p>${m.itens ? `<dl class="mc-itens">${fichasMarco(m.itens)}</dl>` : ''}</div>
             <nav class="mc-nav" aria-label="Marcos vizinhos">${ant}${prox}</nav></article>`;
         if (rolar && chipsEl.getBoundingClientRect().top > innerHeight - 220) chipsEl.scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
@@ -858,11 +887,12 @@ function painelHistoria() {
         const corpo = $('lupaCorpo');
         const abrirLupa = (id) => {
             document.querySelectorAll('[data-lupa]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.lupa === id)));
-            if (id === 'gov') { corpo.innerHTML = governosHtml(hist.governos); ligarGovernos(corpo); marcarPeriodo(null); }
+            if (id === 'eq') { corpo.innerHTML = equipesHtml(hist.equipes); ligarEquipes(corpo); marcarPeriodo(null); }
+            else if (id === 'gov') { corpo.innerHTML = governosHtml(hist.governos); ligarGovernos(corpo); marcarPeriodo(null); }
             else { corpo.innerHTML = regimeHtml(hist.regime); ligarRegime(hist.regime, marcarPeriodo); }
         };
         document.querySelectorAll('[data-lupa]').forEach((b) => b.addEventListener('click', () => abrirLupa(b.dataset.lupa)));
-        abrirLupa(hist.governos ? 'gov' : 'rf');
+        abrirLupa(hist.equipes ? 'eq' : hist.governos ? 'gov' : 'rf');
     }
 }
 
