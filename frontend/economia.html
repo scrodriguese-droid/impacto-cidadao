@@ -1414,7 +1414,7 @@ function listaGrupo(itens, total) {
 
 function nivel2(d) {
     const r = d.nivel2.receitas, de = d.nivel2.despesas;
-    const tipos = de.tipos.map((t) => ({ ...t, detalhe: t.extra ? [{ nome: 'Só folha e encargos sociais', valor: t.extra.pessoal }] : [], detalhe_periodo: 'acumulado no exercício' }));
+    const tipos = de.tipos.map((t) => ({ ...t, detalhe: t.extra ? [{ nome: 'Só folha e encargos sociais', valor: t.extra.pessoal }] : [], detalhe_periodo: 'acumulados no exercício' }));
     const area = (f) => `<li class="py-2.5"><div class="flex items-baseline justify-between gap-3"><span class="font-medium">${esc(f.nome)}</span>
         <span class="text-sm font-bold whitespace-nowrap">${brlCurto(f.valor)} <span class="text-slate-400 font-normal">· ${pct(f.pct)}</span></span></div><div class="mt-1.5">${barra(f.pct * 2)}</div></li>`;
     return `<section aria-labelledby="n2"><h2 id="n2">Para onde vai o dinheiro</h2>
