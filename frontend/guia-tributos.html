@@ -685,123 +685,58 @@ document.addEventListener('click', (ev) => {
     if (b && G.aba === 'catalogo') { G.tipo = b.dataset.tipo; atualizarCatalogo(false); }
 });
 
-/* ---------- 5. Como chegamos aqui (carga tributária no tempo) ---------- */
-/* Linha do tempo dos governos (1990 até hoje): cartões expansíveis com a mesma matriz de assuntos, para comparar descendo a página */
-function governosHtml(g) {
-    const linhas = g.linhas;
-    const cartoes = g.periodos.map((p, k) => `<li class="gv-card">
-        <h4 class="gv-h"><button type="button" class="gv-cab" aria-expanded="false" aria-controls="gvc${k}">
-            <span class="gv-anos">${esc(p.anos)}</span><span class="gv-quem"><b>${esc(p.nome)}</b><small>${esc(p.tema)}</small></span></button></h4>
-        <div class="gv-corpo" id="gvc${k}" hidden>
-            <p class="gv-carga"><b>Carga tributária:</b> ${esc(p.carga)}</p>
-            <dl class="gv-linhas">${linhas.map((l) => `<div class="gv-linha" data-linha="${esc(l.id)}"><dt>${esc(l.nome)}</dt><dd>${esc(p[l.id])}</dd></div>`).join('')}</dl>
-            <p class="tl-marco gv-marco">${esc(p.marco)}</p></div></li>`).join('');
-    return `<section class="gv" data-filtro="todos" aria-label="${esc(g.titulo)}">
-        <p class="gv-t">${esc(g.titulo)}</p><p class="tl-mudanca">${esc(g.intro)}</p>
-        <ul class="gv-repete">${g.repete.map(([a, b]) => `<li><b>${esc(a)}</b><span>${esc(b)}</span></li>`).join('')}</ul>
-        <div class="gv-comp" role="group" aria-label="Comparar por assunto"><span>Comparar por</span>
-            <button type="button" data-gl="todos" aria-pressed="true">Visão geral</button>
-            ${linhas.map((l) => `<button type="button" data-gl="${esc(l.id)}" aria-pressed="false">${esc(l.nome)}</button>`).join('')}</div>
-        <ol class="gv-lista">${cartoes}</ol><p class="ficha-nota">${esc(g.nota)}</p></section>`;
-}
-function ligarGovernos(raiz) {
-    const gv = raiz.querySelector('.gv'); if (!gv) return;
-    const abrir = (cab, sim) => { cab.setAttribute('aria-expanded', String(sim)); document.getElementById(cab.getAttribute('aria-controls')).hidden = !sim; };
-    gv.querySelectorAll('.gv-cab').forEach((c) => c.addEventListener('click', () => abrir(c, c.getAttribute('aria-expanded') !== 'true')));
-    gv.querySelectorAll('[data-gl]').forEach((b) => b.addEventListener('click', () => {
-        const f = b.dataset.gl;
-        gv.dataset.filtro = f;
-        gv.querySelectorAll('[data-gl]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
-        gv.querySelectorAll('.gv-cab').forEach((c) => abrir(c, f !== 'todos'));   // um assunto só: abre todos os períodos para comparar
-    }));
-}
+/* ---------- 5. Como chegamos aqui: painel macro-histórico integrado ---------- */
+/* Uma linha do tempo só: o gráfico e a trilha escolhem a era; as pílulas escolhem o governo; o painel mostra quem comandava a economia e o que cada gestão fez nos três pilares (fiscal, monetário e orçamentário). */
+const equipeDe = (hist, id) => hist.equipes.fases.flatMap((f) => f.governos).find((x) => x.id === id);
+const ministrosHtml = (gv) => gv.ministros.map(([c, n]) => `<span class="qc-m"><em>${esc(c)}</em>${esc(n.join(' · '))}</span>`).join('');
+const linkar = (t, links) => (links || []).reduce((s, [trecho, url]) => s.replace(esc(trecho), `<a class="px-link" href="${esc(url)}">${esc(trecho)}</a>`), esc(t));
+const GOV_PERIODO = { collor: 0, itamar: 0, 'fhc-i': 1, 'fhc-ii': 1, 'lula-1-2': 2, dilma: 3, temer: 4, bolsonaro: 5, 'lula-3': 6 };
+const RF_PERIODO = { 'fhc-i': 0, 'fhc-ii': 1, 'lula-1-2': 2 };
 
-/* Regime fiscal desde o Plano Real: mestre-detalhe. Os botões escolhem o período e um único painel troca o miolo, sem a página descer ou subir. */
-function regimeHtml(r) {
-    const botoes = r.periodos.map((p, k) => `<button type="button" data-rf="${k}" aria-pressed="${k === 0}" aria-controls="rfPainel">${esc(p.rotulo)}</button>`).join('');
-    return `<section class="rf" aria-label="${esc(r.titulo)}">
-        <h3 class="rf-t">${esc(r.titulo)}</h3><p class="tl-mudanca" style="max-width:70ch">${esc(r.intro)}</p>
-        <div class="rf-sel" role="group" aria-label="${esc(r.seletor)}"><span>${esc(r.seletor)}</span>${botoes}</div>
-        <div id="rfPainel" class="rf-painel" aria-live="polite"></div>
-        <p class="ficha-nota">${esc(r.fontes)}</p></section>`;
-}
 function rfConteudo(p) {
     const cols = p.colunas.map((c) => `<div class="rf-col"><h5>${esc(c.titulo)}</h5>
         <ul>${c.itens.map(([a, t]) => `<li><b>${esc(a)}</b> ${esc(t)}</li>`).join('')}</ul></div>`).join('');
-    const pc = (a) => Math.max(0, Math.min(100, (a - 1889) / (2025 - 1889) * 100)).toFixed(1);
-    const regua = `<div class="rf-regua" role="img" aria-label="Posição do período na linha do tempo, de 1889 a hoje"><div><i style="left:${pc(p.de)}%;width:${(pc(p.ate) - pc(p.de)).toFixed(1)}%"></i></div><span>1889</span><span>hoje</span></div>`;
-    return `<div class="rf-topo"><p class="rf-kicker">Radiografia do período: ${esc(p.anos)}</p>${regua}</div><h4 class="rf-nome">${esc(p.nome)}</h4>
+    return `<h4 class="rf-nome">${esc(p.nome)}</h4>
         <p class="rf-rot">${esc(p.orientacao_t)}</p><p class="rf-orient">${esc(p.orientacao)}</p>
         <div class="rf-cols">${cols}</div>
         ${p.extra ? `<div class="rf-extra"><p class="rf-rot">${esc(p.extra.titulo)}</p><p>${esc(p.extra.texto)}</p></div>` : ''}`;
 }
-function ligarRegime(r, marcarNoGrafico) {
-    const painel = $('rfPainel'), botoes = document.querySelectorAll('[data-rf]');
-    if (!painel) return;
-    const mostrar = (k) => {
-        const p = r.periodos[k];
-        painel.innerHTML = rfConteudo(p);
-        botoes.forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.rf === k)));
-        marcarNoGrafico(p.de, p.ate);
-    };
-    botoes.forEach((b) => b.addEventListener('click', () => mostrar(+b.dataset.rf)));
-    mostrar(0);
-}
 
-/* Quem comandou a economia (1964 até hoje): presidente e ministros por governo, em quatro fases. Cada governo abre para mostrar o que fez. */
-const equipeDe = (hist, id) => hist.equipes.fases.flatMap((f) => f.governos).find((x) => x.id === id);
-const ministrosHtml = (gv) => gv.ministros.map(([c, n]) => `<span class="qc-m"><em>${esc(c)}</em>${esc(n.join(' · '))}</span>`).join('');
-function equipesHtml(eq) {
-    let k = 0;
-    const fases = eq.fases.map((f) => `<section class="qc-fase"><h4 class="qc-fase-t">${esc(f.nome)}<span>${esc(f.anos)}</span></h4>
-        <p class="qc-fase-p"><strong>${esc(f.tema)}.</strong>${f.lead ? ' ' + esc(f.lead) : ''}</p>
-        <ol class="qc-lista">${f.governos.map((gv) => { const i = k++; return `<li class="qc-card"><h5 class="qc-h"><button type="button" class="qc-cab" aria-expanded="false" aria-controls="qcc${i}">
-            <span class="qc-anos">${esc(gv.anos)}</span>
-            <span class="qc-quem"><small>Presidente</small><b>${esc(gv.presidente)}</b><i>${esc(gv.plano)}</i></span>
-            <span class="qc-mins">${ministrosHtml(gv)}</span></button></h5>
-            <div class="qc-corpo" id="qcc${i}" hidden>${gv.politica.map((t) => `<p>${esc(t)}</p>`).join('')}</div></li>`; }).join('')}</ol></section>`).join('');
-    return `<section class="qc" aria-label="${esc(eq.titulo)}"><p class="tl-mudanca">${esc(eq.intro)}</p>
-        <div class="qc-tools"><button type="button" class="qc-todos" data-qc-todos aria-pressed="false">Abrir todos os governos</button></div>${fases}<p class="ficha-nota">${esc(eq.nota)}</p></section>`;
-}
-function ligarEquipes(raiz) {
-    const abrir = (cab, sim) => { cab.setAttribute('aria-expanded', String(sim)); document.getElementById(cab.getAttribute('aria-controls')).hidden = !sim; };
-    const cabs = [...raiz.querySelectorAll('.qc-cab')], todos = raiz.querySelector('[data-qc-todos]');
-    cabs.forEach((c) => c.addEventListener('click', () => abrir(c, c.getAttribute('aria-expanded') !== 'true')));
-    todos.addEventListener('click', () => {
-        const abrirTodos = todos.getAttribute('aria-pressed') !== 'true';
-        cabs.forEach((c) => abrir(c, abrirTodos));
-        todos.setAttribute('aria-pressed', String(abrirTodos));
-        todos.textContent = abrirTodos ? 'Fechar todos os governos' : 'Abrir todos os governos';
-    });
+/* Material de aprofundamento de um governo: resumo da gestão, os cinco assuntos (1990 em diante) e a radiografia do regime fiscal (1995 em diante) */
+function aprofundarHtml(hist, gv) {
+    const partes = [`<details class="sanfona sanfona--leve px-mais"><summary>O que a gestão fez, em resumo</summary><div class="px-fez">${gv.politica.map((t) => `<p>${esc(t)}</p>`).join('')}</div></details>`];
+    const gi = GOV_PERIODO[gv.id], ri = RF_PERIODO[gv.id];
+    if (gi != null && hist.governos) {
+        const g = hist.governos, p = g.periodos[gi];
+        partes.push(`<details class="sanfona sanfona--leve px-mais"><summary>O governo em cinco assuntos: ${esc(p.nome)} (${esc(p.anos)})</summary>
+            <p class="gv-carga"><b>Carga tributária:</b> ${esc(p.carga)}</p>
+            <dl class="gv-linhas">${g.linhas.map((l) => `<div class="gv-linha"><dt>${esc(l.nome)}</dt><dd>${esc(p[l.id])}</dd></div>`).join('')}</dl>
+            <p class="tl-marco">${esc(p.marco)}</p></details>`);
+    }
+    if (ri != null && hist.regime) {
+        const p = hist.regime.periodos[ri];
+        partes.push(`<details class="sanfona sanfona--leve px-mais"><summary>Radiografia do regime fiscal: ${esc(p.rotulo)}</summary><div class="rf-painel">${rfConteudo(p)}</div><p class="ficha-nota">${esc(hist.regime.fontes)}</p></details>`);
+    }
+    return partes.join('');
 }
 
 function painelHistoria() {
     const hist = G.hist;
-    const listaTempo = `<ol class="tl">${hist.eras.map((e) => `<li class="tl-era"><div><p class="tl-anos">${esc(e.anos)}</p><p class="tl-nome">${esc(e.nome)}</p></div>
-        <div><p class="tl-frase">${esc(e.frase)}</p>
-        <div class="tl-carga"><span class="tl-barra" role="img" aria-label="${esc(e.carga_nota)}"><i style="width:${Math.round(e.carga / 35 * 100)}%"></i></span><span>Carga: <b>${esc(e.carga_nota)}</b></span></div>
-        <p class="tl-mudanca">${esc(e.mudanca)}</p>
-        <div class="tl-chips">${e.siglas.map((s) => `<b>${esc(s)}</b>`).join('')}</div>
-        <details class="tl-mais"><summary>Quem ficava com o quê</summary>
-            <ul class="tl-pontos">${e.pontos.map(([k, t]) => `<li><b>${esc(k)}</b><span>${esc(t)}</span></li>`).join('')}</ul>
-            <p class="tl-marco">${esc(e.marco)}</p></details></div></li>`).join('')}</ol>`;
-    const FAIXAS = [[1889, 1930], [1930, 1964], [1964, 1988], [1988, 2025]];
     const W = 800, H = 300, ML = 38, MR = 14, MT = 18, MB = 30, X0 = 1889, X1 = 2025, YM = 36;
     const X = (a) => ML + (a - X0) / (X1 - X0) * (W - ML - MR);
     const Y = (v) => H - MB - v / YM * (H - MB - MT);
     const cv = hist.curva;
     const valorEm = (a) => { for (let k = 1; k < cv.length; k++) if (a <= cv[k][0]) { const [x0, y0] = cv[k - 1], [x1, y1] = cv[k]; return y0 + (y1 - y0) * (a - x0) / (x1 - x0); } return cv[cv.length - 1][1]; };
+    // seis eras: duas anteriores a 1964 (leitura tributária) e quatro com o painel integrado (pílulas + três pilares)
+    const ERAS = [{ ...hist.eras[0], de: 1889, ate: 1930 }, { ...hist.eras[1], de: 1930, ate: 1964 }, ...hist.macro.eras.map((e) => ({ ...e, macro: true }))];
+    const FAIXAS = ERAS.map((e) => [e.de, e.ate]);
     const caminho = cv.map(([a, v], k) => `${k ? 'L' : 'M'}${X(a).toFixed(1)},${Y(v).toFixed(1)}`).join(' ');
     const area = `${caminho} L${X(cv[cv.length - 1][0]).toFixed(1)},${Y(0)} L${X(cv[0][0]).toFixed(1)},${Y(0)} Z`;
-    const faixas = FAIXAS.map(([a, b], k) => `<g class="tg-faixa" data-era="${k}" tabindex="0" role="button" aria-label="${esc(hist.eras[k].nome)}, ${esc(hist.eras[k].anos)}"><rect x="${X(a)}" y="${MT}" width="${X(b) - X(a)}" height="${H - MB - MT}"/><text x="${(X(a) + X(b)) / 2}" y="${MT + 12}" text-anchor="middle">${k + 1}</text></g>`).join('');
+    const faixas = FAIXAS.map(([a, b], k) => `<g class="tg-faixa" data-era="${k}" tabindex="0" role="button" aria-label="${esc(ERAS[k].nome)}, ${esc(ERAS[k].anos)}"><rect x="${X(a)}" y="${MT}" width="${X(b) - X(a)}" height="${H - MB - MT}"/><text x="${(X(a) + X(b)) / 2}" y="${MT + 12}" text-anchor="middle">${k + 1}</text></g>`).join('');
     const eixoY = [0, 10, 20, 30].map((v) => `<line class="tg-grade" x1="${ML}" x2="${W - MR}" y1="${Y(v)}" y2="${Y(v)}"/><text class="tg-eixo" x="${ML - 6}" y="${Y(v) + 3}" text-anchor="end">${v}%</text>`).join('');
-    const eixoX = [1900, 1930, 1964, 1988, 2023].map((a) => `<text class="tg-eixo" x="${X(a)}" y="${H - 10}" text-anchor="middle">${a}</text>`).join('');
+    const eixoX = [1900, 1930, 1964, 1985, 1995, 2011, 2023].map((a) => `<text class="tg-eixo" x="${X(a)}" y="${H - 10}" text-anchor="middle">${a}</text>`).join('');
     const pontos = hist.marcos.map((m, k) => `<g class="tg-marco" data-marco="${k}" tabindex="0" role="button" aria-label="${m.ano}: ${esc(m.titulo)}"><title>${m.ano}: ${esc(m.curto || m.titulo)}</title><circle cx="${X(m.ano).toFixed(1)}" cy="${Y(valorEm(m.ano)).toFixed(1)}" r="8" class="tg-alvo"/><circle cx="${X(m.ano).toFixed(1)}" cy="${Y(valorEm(m.ano)).toFixed(1)}" r="6" class="tg-ponto"/><text class="tg-ano" x="${X(m.ano).toFixed(1)}" y="${(Y(valorEm(m.ano)) - 13).toFixed(1)}" text-anchor="middle">${m.ano}</text></g>`).join('');
-    // camada 1: escolher a era (botões + faixas do gráfico, sempre sincronizados); camada 2: ler a era; camada 3: lupa de 1990 em diante
-    const trilho = hist.eras.map((e, k) => `<button type="button" class="hx-era" data-era="${k}" aria-pressed="false"><span class="hx-n">Era ${k + 1}</span><span class="hx-a">${esc(e.anos)}</span><span class="hx-nm">${esc(e.nome)}</span><span class="hx-c">≈ ${esc(e.carga)}% do PIB</span></button>`).join('');
-    const temLupa = !!(hist.governos || hist.regime);
-    const lupaBotoes = [hist.equipes && ['eq', 'Quem comandou a economia', 'presidentes e ministros, de 1964 a 2026'], hist.governos && ['gov', 'Governo por governo', `${hist.governos.periodos.length} períodos, de 1990 a 2026`], hist.regime && ['rf', 'Regime fiscal', 'o que cada fase mudou nas contas']].filter(Boolean)
-        .map(([id, rot, sub], k) => `<button type="button" data-lupa="${id}" aria-pressed="${k === 0}" aria-controls="lupaCorpo"><b>${rot}</b><small>${sub}</small></button>`).join('');
+    const trilho = ERAS.map((e, k) => `<button type="button" class="hx-era" data-era="${k}" aria-pressed="false"><span class="hx-n">Era ${k + 1}</span><span class="hx-a">${esc(e.anos)}</span><span class="hx-nm">${esc(e.nome)}</span><span class="hx-c">≈ ${Math.floor(valorEm(e.ate))}% do PIB</span></button>`).join('');
     $('painel').innerHTML = `<h2>${esc(hist.titulo)}</h2>
         <p class="hx-lead">${esc(hist.intro)}</p>
         <div class="hx-eras" role="group" aria-label="Escolha uma era">${trilho}</div>
@@ -809,12 +744,7 @@ function painelHistoria() {
             <p class="ficha-nota">${esc(hist.curva_nota)}</p>
             <div id="tgChips" class="hx-chips" role="group" aria-label="Marcos desta era"></div>
             <div id="tgMarco" class="hx-marco" aria-live="polite"></div></div>
-        <div id="tgPainel" aria-live="polite"></div>
-        ${temLupa ? `<section class="hx-lupa" aria-labelledby="lupaT"><h2 id="lupaT">De perto: as decisões por trás da curva</h2>
-            <p class="hx-lead">O gráfico mostra só a curva. Aqui estão as decisões por trás dela, vistas de três jeitos.</p>
-            <div class="hx-seg" role="group" aria-label="Como olhar o período">${lupaBotoes}</div>
-            <div id="lupaCorpo" class="hx-corpo"></div></section>` : ''}
-        <details class="sanfona sanfona--leve mt-8"><summary>Prefere ler tudo em sequência? Ver as quatro eras em lista</summary>${listaTempo}</details>`;
+        <div id="tgPainel" aria-live="polite"></div>`;
 
     const painel = $('tgPainel'), marcoEl = $('tgMarco'), chipsEl = $('tgChips'), per = $('tgPer');
     const marcarPeriodo = (de, ate) => {
@@ -823,14 +753,57 @@ function painelHistoria() {
     };
     const eraDoAno = (a) => Math.max(0, FAIXAS.findIndex(([x, y]) => a >= x && a < y));
     const DICA = '<p class="mc-dica">Escolha um marco acima, ou clique num ponto do gráfico, para ver o que mudou naquele ano.</p>';
-    let eraSel = -1;
+    let eraSel = -1, subSel = null;
+
+    /* --- painel integrado de uma era: equipe como cabeçalho + três pilares, que acompanham a pílula escolhida --- */
+    const corpoMacro = (e, sub) => {
+        const gv = sub ? equipeDe(hist, sub) : null;
+        const pres = (x) => `<span class="mc-eq-p"><em>Presidente</em>${esc(x.presidente)} <small>${esc(x.anos)}</small></span>`;
+        const eq = gv
+            ? `<div class="mc-eq-g">${pres(gv)}${ministrosHtml(gv)}</div><p class="px-plano">${esc(gv.plano)}</p>`
+            : `<div class="mc-eq-g">${e.subs.map((id) => equipeDe(hist, id)).reduce((acc, x) => { const u = acc[acc.length - 1]; if (u && u.presidente === x.presidente) u.anos = `${u.anos.split('–')[0]}–${x.anos.split('–')[1]}`; else acc.push({ presidente: x.presidente, anos: x.anos }); return acc; }, []).map(pres).join('')}</div>`;
+        const colunas = hist.macro.pilares.map(([chave, titulo]) => {
+            const itens = e.pilares[chave] || [];
+            const tem = !gv || itens.some((i) => (i.g || []).includes(sub));
+            return `<section class="px-col"><h4 class="px-col-t">${esc(titulo)}</h4>${tem ? '' : '<p class="px-vazio">Sem mudança própria desta fase neste resumo. Vale o que vem do restante da era.</p>'}
+                <ul>${itens.map((i) => {
+                    const on = gv && (i.g || []).includes(sub), off = gv && i.g && !on;
+                    const tag = i.g ? `<span class="px-tag">${i.g.map((id) => esc(equipeDe(hist, id).pilula)).join(' · ')}</span>` : '';
+                    return `<li class="px-it${on ? ' px-on' : ''}${off ? ' px-off' : ''}">${tag}${linkar(i.t, i.l)}</li>`;
+                }).join('')}</ul></section>`;
+        }).join('');
+        const pontes = `<nav class="px-pontes" aria-label="Para ver as regras de hoje">${hist.macro.pontes.map(([nome, sub2, url]) => `<a class="px-ponte" href="${esc(url)}"><b>${esc(nome)} →</b><span>${esc(sub2)}</span></a>`).join('')}</nav>`;
+        return `<div class="px-eq"><p class="px-eq-t">${gv ? 'Quem comandava a economia' : 'Quem comandou a economia nesta era'}</p>${eq}</div>
+            <div class="px-pil">${colunas}</div>
+            ${gv ? `<div class="px-aprof">${aprofundarHtml(hist, gv)}</div>` : ''}${pontes}`;
+    };
+    const aplicarSub = (sub) => {
+        const e = ERAS[eraSel];
+        if (!e || !e.macro) return;
+        subSel = sub || null;
+        painel.querySelectorAll('.px-pill').forEach((b) => b.setAttribute('aria-pressed', String((b.dataset.sub || null) === subSel)));
+        $('pxCorpo').innerHTML = corpoMacro(e, subSel);
+        const gv = subSel && equipeDe(hist, subSel);
+        if (gv) marcarPeriodo(gv.de, gv.ate); else marcarPeriodo(null);
+    };
+    const painelMacro = (e) => `<article class="px">
+        <header class="px-h"><div><p class="tl-anos">${esc(e.anos)}</p><p class="tl-nome">${esc(e.nome)} · ${esc(e.apelido)}</p></div>
+            <div><p class="tl-frase">${esc(e.frase)}</p><div class="tl-carga"><span class="tl-barra" role="img" aria-label="${esc(e.carga_nota)}"><i style="width:${Math.round(Math.floor(valorEm(e.ate)) / 35 * 100)}%"></i></span><span>Carga: <b>${esc(e.carga_nota)}</b></span></div></div></header>
+        <p class="px-ctx">${esc(e.mudanca)}</p>
+        <div class="px-pills" role="group" aria-label="Escolha um governo ou uma fase"><span class="px-pills-t">Governo ou fase</span>
+            <button type="button" class="px-pill" data-sub="" aria-pressed="true"><b>Toda a era</b><small>${esc(e.anos)}</small></button>
+            ${e.subs.map((id) => { const gv = equipeDe(hist, id); return `<button type="button" class="px-pill" data-sub="${esc(id)}" aria-pressed="false"><b>${esc(gv.pilula)}</b><small>${esc(gv.anos)}</small></button>`; }).join('')}</div>
+        <div id="pxCorpo" class="px-corpo"></div></article>`;
+
     const mostrarEra = (k) => {
-        const e = hist.eras[k];
-        eraSel = k;
+        const e = ERAS[k];
+        eraSel = k; subSel = null;
         document.querySelectorAll('.tg-faixa').forEach((n) => n.classList.toggle('sel', +n.dataset.era === k));
         document.querySelectorAll('.hx-era').forEach((n) => n.setAttribute('aria-pressed', String(+n.dataset.era === k)));
         document.querySelectorAll('.tg-marco').forEach((n) => n.classList.toggle('fora', eraDoAno(hist.marcos[+n.dataset.marco].ano) !== k));
         chipsEl.innerHTML = `<span class="hx-chips-t">Marcos desta era</span>${hist.marcos.map((m, i) => [m, i]).filter(([m]) => eraDoAno(m.ano) === k).map(([m, i]) => `<button type="button" class="hx-chip" data-marco="${i}" aria-pressed="false" title="${esc(m.titulo)}"><b>${m.ano}</b> ${esc(m.curto || m.titulo)}</button>`).join('')}`;
+        if (e.macro) { painel.innerHTML = painelMacro(e); aplicarSub(null); return; }
+        marcarPeriodo(null);
         painel.innerHTML = `<article class="hx-det">
             <header class="hx-det-h"><p class="tl-anos">${esc(e.anos)}</p><p class="tl-nome">${esc(e.nome)}</p><p class="tl-frase">${esc(e.frase)}</p>
                 <div class="tl-carga"><span class="tl-barra" role="img" aria-label="${esc(e.carga_nota)}"><i style="width:${Math.round(e.carga / 35 * 100)}%"></i></span><span>Carga: <b>${esc(e.carga_nota)}</b></span></div>
@@ -855,15 +828,17 @@ function painelHistoria() {
         }).join('');
     };
     const mostrarMarco = (k, rolar) => {
-        const m = hist.marcos[k];
-        if (eraDoAno(m.ano) !== eraSel) mostrarEra(eraDoAno(m.ano));
+        const m = hist.marcos[k], ek = eraDoAno(m.ano);
+        if (ek !== eraSel) mostrarEra(ek);
+        // o marco também escolhe o governo dele dentro da era, quando há pílula correspondente
+        if (ERAS[ek].macro) aplicarSub((m.equipe || []).find((id) => ERAS[ek].subs.includes(id)) || null);
         document.querySelectorAll('.tg-marco').forEach((n) => n.classList.toggle('sel', +n.dataset.marco === k));
         chipsEl.querySelectorAll('.hx-chip').forEach((n) => n.setAttribute('aria-pressed', String(+n.dataset.marco === k)));
         const ant = k > 0 ? `<button type="button" class="mc-btn mc-ant" data-marco-ir="${k - 1}" aria-label="Marco anterior: ${hist.marcos[k - 1].ano}, ${esc(hist.marcos[k - 1].curto || hist.marcos[k - 1].titulo)}"><span class="mc-nl">← Anterior</span><span class="mc-nv">${rotuloMarco(k - 1)}</span></button>` : '<span></span>';
         const prox = k < hist.marcos.length - 1 ? `<button type="button" class="mc-btn mc-prox" data-marco-ir="${k + 1}" aria-label="Próximo marco: ${hist.marcos[k + 1].ano}, ${esc(hist.marcos[k + 1].curto || hist.marcos[k + 1].titulo)}"><span class="mc-nl">Próximo →</span><span class="mc-nv">${rotuloMarco(k + 1)}</span></button>` : '<span></span>';
         const eqs = (m.equipe || []).map((id) => equipeDe(hist, id)).filter(Boolean);
         const eqMarco = eqs.length ? `<div class="mc-eq"><p class="mc-eq-t">Quem comandava a economia</p>${eqs.map((gv) => `<div class="mc-eq-g"><span class="mc-eq-p"><em>Presidente</em>${esc(gv.presidente)} <small>${esc(gv.anos)}</small></span>${ministrosHtml(gv)}</div>`).join('')}</div>` : '';
-        marcoEl.innerHTML = `<article class="mc"><header class="mc-h"><b class="mc-ano">${m.ano}</b><div><p class="mc-k">Marco ${k + 1} de ${hist.marcos.length} · Era ${eraDoAno(m.ano) + 1}</p><h3 class="mc-t">${esc(m.titulo)}</h3></div></header>${eqMarco}
+        marcoEl.innerHTML = `<article class="mc"><header class="mc-h"><b class="mc-ano">${m.ano}</b><div><p class="mc-k">Marco ${k + 1} de ${hist.marcos.length} · Era ${ek + 1}</p><h3 class="mc-t">${esc(m.titulo)}</h3></div></header>${eqMarco}
             <div class="mc-c"><p class="mc-lead">${esc(m.texto)}</p>${m.itens ? `<dl class="mc-itens">${fichasMarco(m.itens)}</dl>` : ''}</div>
             <nav class="mc-nav" aria-label="Marcos vizinhos">${ant}${prox}</nav></article>`;
         if (rolar && chipsEl.getBoundingClientRect().top > innerHeight - 220) chipsEl.scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
@@ -881,19 +856,14 @@ function painelHistoria() {
         const b = ev.target.closest('[data-marco], [data-marco-ir]');
         if (b) mostrarMarco(+(b.dataset.marco ?? b.dataset.marcoIr), true);
     }));
+    painel.addEventListener('click', (ev) => {
+        const b = ev.target.closest('.px-pill');
+        if (!b) return;
+        document.querySelectorAll('.tg-marco').forEach((n) => n.classList.remove('sel'));
+        marcoEl.innerHTML = DICA;
+        aplicarSub(b.dataset.sub);
+    });
     escolherEra(0);
-
-    if (temLupa) {
-        const corpo = $('lupaCorpo');
-        const abrirLupa = (id) => {
-            document.querySelectorAll('[data-lupa]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.lupa === id)));
-            if (id === 'eq') { corpo.innerHTML = equipesHtml(hist.equipes); ligarEquipes(corpo); marcarPeriodo(null); }
-            else if (id === 'gov') { corpo.innerHTML = governosHtml(hist.governos); ligarGovernos(corpo); marcarPeriodo(null); }
-            else { corpo.innerHTML = regimeHtml(hist.regime); ligarRegime(hist.regime, marcarPeriodo); }
-        };
-        document.querySelectorAll('[data-lupa]').forEach((b) => b.addEventListener('click', () => abrirLupa(b.dataset.lupa)));
-        abrirLupa(hist.equipes ? 'eq' : hist.governos ? 'gov' : 'rf');
-    }
 }
 
 (async function iniciar() {
