@@ -1419,6 +1419,7 @@ function nivel2(d) {
         <span class="text-sm font-bold whitespace-nowrap">${brlCurto(f.valor)} <span class="text-slate-400 font-normal">· ${pct(f.pct)}</span></span></div><div class="mt-1.5">${barra(f.pct * 2)}</div></li>`;
     return `<section aria-labelledby="n2"><h2 id="n2">Para onde vai o dinheiro</h2>
         <p class="text-sm text-slate-500 mt-2" style="max-width:70ch">À esquerda, de onde vem o dinheiro; à direita, onde ele é gasto.</p>
+        ${d.relatorio_simplificado ? '<p class="ficha-nota mt-2" style="max-width:70ch">Este município publica os relatórios na versão simplificada (RREO Simplificado e RGF semestral), permitida a quem tem menos de 50 mil habitantes. Os números são os declarados por ele; alguns detalhes que o relatório completo traz podem não aparecer.</p>' : ''}
         <div class="entrada-saida mt-4">
             <div class="es-col"><p class="es-titulo">Entrada <span>De onde vem</span></p>
                 <p class="es-total">${brlCurto(r.total)}</p><p class="ficha-nota">arrecadado no período</p>
@@ -1466,7 +1467,7 @@ function nivel4(d) {
 
 function desenhar() {
     const d = E.dados;
-    $('periodoRotulo').textContent = d ? `${d.instituicao || ''}${d.populacao ? ' · ' + Number(d.populacao).toLocaleString('pt-BR') + ' habitantes' : ''} · ${d.periodo.rotulo}` : '';
+    $('periodoRotulo').textContent = d ? `${d.instituicao || ''}${d.populacao ? ' · ' + Number(d.populacao).toLocaleString('pt-BR') + ' habitantes' : ''} · ${d.periodo.rotulo}${d.relatorio_simplificado ? ' · relatório simplificado' : ''}` : '';
     const painel = $('painel');
     painel.classList.toggle('hidden', ABA_FISCAL || !d);
     if (!ABA_FISCAL) $('secCalc').classList.toggle('hidden', !d);
