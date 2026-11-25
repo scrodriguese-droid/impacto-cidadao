@@ -203,7 +203,7 @@ function selecionarFtab(id, { foco = false, url = true } = {}) {
 }
 /* Sub-abas de “Risco e dívida”: o risco hoje, a dinâmica (o filme) e o histórico com o debate.
    O conteúdo é montado depois, com os dados; esta função só alterna o que já está na tela. */
-const RSUBS = ['hoje', 'dinamica', 'historia'];
+const RSUBS = ['hoje', 'dinamica', 'historia', 'financiamento'];
 const RSUB_ALIAS = { conexao: 'hoje', radar: 'hoje', linhaTempo: 'historia' };
 function selecionarRsub(id, { foco = false } = {}) {
     if (!RSUBS.includes(id)) id = 'hoje';
@@ -455,6 +455,38 @@ const ESQUEMA_FLUXO = `<div class="esq" role="img" aria-label="Receitas primári
     <div class="esq-no"><b>Resultado primário</b><span>mais</span><b>Juros (JLD)</b></div><span class="esq-seta" aria-hidden="true">→</span>
     <div class="esq-no"><b>Déficit nominal</b><span>necessidade de financiamento</span></div><span class="esq-seta" aria-hidden="true">→</span>
     <div class="esq-no esq-no--fim"><b>Estoque da dívida</b><span>bruta (DCB) e líquida (DCL)</span></div></div>`;
+/* ----- Sub-aba “Como o Estado se financia”: texto fixo, não depende dos dados do período ----- */
+const FINANCIAMENTO_ESTADO = `<section aria-labelledby="nFin1"><h2 id="nFin1">Como o Estado financia o déficit</h2>
+    <p class="text-sm text-slate-500 mt-2" style="max-width:70ch">Quando os impostos não cobrem os gastos, o governo pode cortar despesa ou aumentar receita. Se não fizer nenhum dos dois, restam dois caminhos principais para cobrir a falta de caixa.</p>
+    <div class="def-duo mt-3">
+        <div><p class="def-rot">Caminho 1 · Senhoriagem (emissão de moeda)</p>
+            <p>O governo arrecada receita real ao expandir a base monetária, isto é, ao criar dinheiro novo.</p>
+            <p class="mt-2"><b>O risco.</b> Se a emissão supera a demanda real por liquidez, gera inflação: um “imposto inflacionário” que corrói ativos não indexados e salários.</p>
+            <p class="mt-2"><b>Regra no Brasil: vedado.</b> A Constituição (Art. 164) proíbe o Banco Central de financiar o Tesouro diretamente com emissão de moeda.</p></div>
+        <div><p class="def-rot">Caminho 2 · Dívida pública (títulos no mercado)</p>
+            <p>O governo emite e vende títulos públicos a investidores, assumindo o compromisso de devolver o valor com juros no futuro.</p>
+            <p class="mt-2"><b>Como se divide.</b></p>
+            <ul class="conceito-lista" style="margin-top:.3rem">
+                <li><b>Dívida interna.</b> Títulos em real (R$), negociados no mercado doméstico.</li>
+                <li><b>Dívida externa.</b> Títulos em moeda estrangeira, negociados no exterior.</li></ul>
+            <p class="mt-2"><b>Regra no Brasil: caminho padrão.</b> É a via usada hoje pelo Tesouro Nacional para cobrir déficits e rolar vencimentos.</p></div>
+    </div></section>
+    <section aria-labelledby="nFin2"><h2 id="nFin2">O limite da senhoriagem: quando emitir moeda gera inflação?</h2>
+    <p class="text-sm text-slate-500 mt-2" style="max-width:70ch">A fronteira entre a emissão segura e a inflacionária é definida pela demanda real de liquidez da economia: quanto dinheiro a sociedade precisa para fazer suas transações.</p>
+    <div class="def-duo mt-3">
+        <div><p class="def-rot">Emissão não inflacionária · acompanha o crescimento do PIB</p>
+            <p>Quando o PIB cresce, empresas e famílias precisam de mais dinheiro em circulação. O Banco Central pode expandir a base monetária na mesma proporção sem pressionar os preços.</p></div>
+        <div><p class="def-rot">Emissão inflacionária · cobre déficits acima da demanda</p>
+            <p>Quando o Estado emite moeda para tapar déficits além da demanda real por liquidez, há excesso de oferta monetária: gera choque de demanda, perda de valor do dinheiro e aceleração da inflação.</p></div>
+    </div></section>
+    <section aria-labelledby="nFin3"><h2 id="nFin3">A dupla função dos títulos públicos</h2>
+    <p class="text-sm text-slate-500 mt-2" style="max-width:70ch">Na prática, os títulos da dívida não servem apenas para cobrir rombos. Eles conectam as duas engrenagens da macroeconomia.</p>
+    <div class="def-duo mt-3">
+        <div><p class="def-rot">Política fiscal</p><p>Financiamento do déficit público e rolagem dos títulos que vencem, pelo Tesouro Nacional.</p></div>
+        <div><p class="def-rot">Política monetária</p><p>Gestão da liquidez bancária pelo Banco Central, que compra e vende títulos para manter a taxa Selic na meta.</p></div>
+    </div>
+    <p class="text-xs text-slate-500 mt-4" style="max-width:75ch">Para ver quanto esse financiamento pesa hoje nas contas, volte a <a class="underline" href="#conexao" data-rsub="hoje">1 · O risco hoje</a>.</p></section>`;
+
 function conceitosFluxo() {
     return `<h4 class="sf-gaveta-sub">Entenda cada conceito</h4>
         ${conceito('Receita primária', 'tudo o que o governo arrecada e que não vem de operação financeira ou de crédito: tributos, contribuições sociais, taxas e venda de bens e serviços.',
@@ -1297,13 +1329,15 @@ function nivel1(d) {
         <p class="text-sm text-slate-500 mt-2" style="max-width:70ch">Abra uma gaveta por vez: o fluxo do ano (o que entrou e saiu) e o estoque da dívida (o que se acumulou).</p>
         <div class="mt-4">${situacaoDetalhe(d)}</div></section>`;
     const risco = uniao
-        ? `<div class="rsubs" role="tablist" aria-label="Três visões do risco e da dívida">
+        ? `<div class="rsubs" role="tablist" aria-label="Quatro visões do risco e da dívida">
             <button type="button" role="tab" id="rs-b-hoje" aria-controls="rs-hoje" data-rsub="hoje"><span>1 · O risco hoje</span></button>
             <button type="button" role="tab" id="rs-b-dinamica" aria-controls="rs-dinamica" data-rsub="dinamica"><span>2 · A dinâmica: o filme</span></button>
-            <button type="button" role="tab" id="rs-b-historia" aria-controls="rs-historia" data-rsub="historia"><span>3 · Histórico e debate</span></button></div>
+            <button type="button" role="tab" id="rs-b-historia" aria-controls="rs-historia" data-rsub="historia"><span>3 · Histórico e debate</span></button>
+            <button type="button" role="tab" id="rs-b-financiamento" aria-controls="rs-financiamento" data-rsub="financiamento"><span>4 · Como o Estado se financia</span></button></div>
             <div class="rsub-painel space-y-10" id="rs-hoje" role="tabpanel" aria-labelledby="rs-b-hoje" tabindex="0"><div id="dividaRisco" aria-live="polite"></div>${rp.hoje}</div>
             <div class="rsub-painel space-y-10" id="rs-dinamica" role="tabpanel" aria-labelledby="rs-b-dinamica" tabindex="0" hidden><div id="dividaFilme"></div></div>
-            <div class="rsub-painel space-y-10" id="rs-historia" role="tabpanel" aria-labelledby="rs-b-historia" tabindex="0" hidden>${rp.historia}</div>`
+            <div class="rsub-painel space-y-10" id="rs-historia" role="tabpanel" aria-labelledby="rs-b-historia" tabindex="0" hidden>${rp.historia}</div>
+            <div class="rsub-painel space-y-10" id="rs-financiamento" role="tabpanel" aria-labelledby="rs-b-financiamento" tabindex="0" hidden>${FINANCIAMENTO_ESTADO}</div>`
         : avisoUniao('A análise de risco da dívida é federal.');
     const cenario = uniao ? rp.cenario : avisoUniao('Desemprego, renda e inflação são medidos para o país.');
     return { termometro, risco, cenario };
