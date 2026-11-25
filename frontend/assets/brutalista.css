@@ -771,6 +771,12 @@ body.postit-escolhendo, body.postit-escolhendo * { cursor: crosshair !important;
     nav[aria-label="Telas desta área"] > div:first-child > *:nth-last-child(2):nth-child(odd) { border-bottom: 0 !important; }
 }
 
+/* abas da área em telas largas: ocupam a largura toda e, se precisarem quebrar, cada linha se completa (sem item órfão e sem vazio à direita) */
+@media (min-width: 901px) {
+    nav[aria-label="Telas desta área"] > div:first-child { width: 100% !important; }
+    nav[aria-label="Telas desta área"] > div:first-child > a { flex: 1 1 auto; text-align: center; }
+}
+
 /* ---------- Ministérios e verbas ---------- */
 .min-lista { border-top: 3px solid var(--line); }
 .min { border-bottom: 1px solid var(--line); }
