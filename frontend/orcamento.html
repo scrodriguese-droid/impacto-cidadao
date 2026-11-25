@@ -31,6 +31,11 @@
         .lrf-cx h4 { font: 800 .8rem/1.3 var(--fonte-texto); letter-spacing: .08em; text-transform: uppercase; margin-bottom: .45rem; }
         .lrf-cx ul { list-style: none; padding: 0; display: grid; gap: .55rem; }
         .lrf-rodape { margin-top: .8rem; padding-top: .5rem; border-top: 1px solid var(--line); font-size: .78rem; line-height: 1.5; color: var(--muted); }
+        .lrf-bl { display: flex; flex-wrap: wrap; align-items: baseline; gap: .2rem .8rem; margin-top: 1.4rem; padding: .55rem .8rem; background: var(--papel-2); border-left: 4px solid var(--vermelho); }
+        .lrf-bl-n { font: 800 .72rem/1.3 var(--fonte-texto); letter-spacing: .14em; text-transform: uppercase; color: var(--vermelho); }
+        .lrf-bl-t { font: 800 .95rem/1.3 var(--fonte-texto); letter-spacing: .02em; }
+        .lrf-bl-a { margin-left: auto; font-size: .78rem; font-weight: 600; color: var(--muted); }
+        .lrf-bl--neutro { border-left-color: var(--line); }
         .lrf-grade--2 { grid-template-columns: minmax(0, 1fr); }
         @media (min-width: 860px) { .lrf-grade--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
         .lrf-cx p + ul { margin-top: .6rem; }
@@ -212,28 +217,49 @@
                 <p>Em 1997–1999, em meio às crises internacionais (Ásia, 1997; Rússia, 1998), a União assumiu e refinanciou as dívidas dos estados, em geral em 30 anos (Lei 9.496/1997), pedindo ajuste fiscal em troca. A LRF, de 2000, deixou essas regras permanentes e as estendeu a todos os entes.</p></article>
         </div>
 
-        <h3 class="lrf-bloco"><b>2</b> As regras: o que mudou na prática</h3>
-        <div class="lrf-grade">
-            <article class="lrf-cx lrf-cx--regra"><h4>Gastos e salários</h4>
+        <h3 class="lrf-bloco"><b>2</b> As regras: os blocos da lei</h3>
+
+        <!-- BLOCO I -->
+        <div class="lrf-bl"><span class="lrf-bl-n">Bloco I</span><span class="lrf-bl-t">Planejamento e regras de gastos</span><span class="lrf-bl-a">arts. 1º a 28</span></div>
+        <div class="lrf-grade lrf-grade--2">
+            <article class="lrf-cx lrf-cx--regra"><h4>Receita corrente líquida (RCL): a régua da lei</h4>
+                <p>Em vez de medir gastos pelo orçamento bruto (que inclui dinheiro que o governo só recolhe para repassar a outros), a RCL soma apenas as receitas próprias que realmente ficam no cofre daquele ente (União, Estado ou Município) nos últimos 12 meses. Os principais tetos da lei, como o da folha de pessoal e o da dívida, são calculados como uma porcentagem da RCL.</p></article>
+            <article class="lrf-cx lrf-cx--regra"><h4>Anexos da LDO: metas e riscos</h4>
                 <ul>
-                    <li><b>Compensação.</b> Criar uma despesa fixa ou dar isenção de imposto exige estimar o impacto e indicar de onde vem o dinheiro: cortar em outra área ou aumentar a receita (arts. 14 e 17).</li>
-                    <li><b>Limite da folha.</b> A despesa com pessoal não pode passar de 50% da receita corrente líquida na União e de 60% em estados e municípios (art. 19).</li>
-                    <li><b>Fim de mandato.</b> Nos últimos 180 dias, é nulo o ato que aumenta a despesa com pessoal. Nos dois últimos quadrimestres, não se pode assumir obrigação que não possa ser paga no mesmo ano (arts. 21 e 42).</li>
+                    <li><b>Anexo de Metas Fiscais.</b> Obriga o governo a colocar no papel qual será o resultado primário e o tamanho da dívida pelos próximos 3 anos, evitando promessas apenas para o ano atual (art. 4º).</li>
+                    <li><b>Anexo de Riscos Fiscais.</b> É o mapa dos passivos contingentes: obriga o governo a listar processos judiciais, avais e outros riscos que podem estourar o orçamento e a dizer de onde sairá o dinheiro se isso acontecer (art. 4º).</li>
+                </ul></article>
+            <article class="lrf-cx lrf-cx--regra"><h4>Despesas obrigatórias de caráter continuado</h4>
+                <p>São gastos permanentes, como criar um novo benefício social ou um novo cargo público, que se estendem por mais de 2 anos. A LRF proíbe criar esse gasto sem mostrar de onde virá o dinheiro permanente para pagá-lo, cortando outro gasto ou aumentando a receita (arts. 16 e 17). O mesmo vale para dar isenção de imposto (art. 14).</p></article>
+            <article class="lrf-cx lrf-cx--regra"><h4>Teto de gastos com pessoal e “gatilhos”</h4>
+                <ul>
+                    <li><b>Teto.</b> Como a folha de pagamento é rígida (servidor estável não pode ser demitido com facilidade), a lei trava quanto da RCL pode ir para salários: 50% na União e 60% nos estados e municípios, divididos entre Executivo, Legislativo, Judiciário e Ministério Público (arts. 19 e 20).</li>
+                    <li><b>Limite prudencial (95% do teto).</b> É o “sinal amarelo”. Se o Executivo de um estado pode gastar até 49% da RCL com pessoal e chega a 46,55% (95% de 49%), fica proibido de dar reajustes (exceto a revisão geral anual), criar cargos ou pagar horas extras (art. 22).</li>
+                    <li><b>Se estourar 100% do teto.</b> O governo tem 8 meses (2 quadrimestres) para voltar ao limite, cortando pelo menos um terço do excesso nos primeiros 4 meses. Primeiro vêm cargos comissionados e funções de confiança, depois servidores não estáveis e, em último caso, estáveis, nos termos da Constituição (art. 23).</li>
+                </ul></article>
+        </div>
+        <div id="lrfRcl" class="cartazes mt-4" style="max-width:420px"></div>
+
+        <!-- Regras que ainda serão distribuídas pelos demais blocos -->
+        <div class="lrf-bl lrf-bl--neutro"><span class="lrf-bl-t">Outras regras da lei</span></div>
+        <div class="lrf-grade">
+            <article class="lrf-cx lrf-cx--regra"><h4>Fim de mandato</h4>
+                <ul>
+                    <li><b>Últimos 180 dias.</b> É nulo o ato que aumenta a despesa com pessoal.</li>
+                    <li><b>Últimos dois quadrimestres.</b> Não se pode assumir obrigação que não possa ser paga no mesmo ano (arts. 21 e 42).</li>
                 </ul></article>
             <article class="lrf-cx lrf-cx--regra"><h4>Endividamento</h4>
                 <ul>
                     <li><b>Teto da dívida.</b> O Senado fixa os limites. Hoje, a dívida consolidada líquida pode chegar a 200% da receita corrente líquida nos estados e a 120% nos municípios (Resolução do Senado 40/2001).</li>
                     <li><b>Sem empréstimo entre entes.</b> A lei veda que um ente empreste a outro, como a União a um estado (art. 35). Leis posteriores criaram regimes específicos de renegociação, como o Regime de Recuperação Fiscal (Lei Complementar 159/2017).</li>
                 </ul></article>
-            <article class="lrf-cx lrf-cx--regra"><h4>Metas e bloqueio<sup>*</sup></h4>
+            <article class="lrf-cx lrf-cx--regra"><h4>Bloqueio<sup>*</sup></h4>
                 <ul>
-                    <li><b>Meta fiscal.</b> A LDO traz o Anexo de Metas Fiscais, com a meta de resultado primário: receitas menos despesas, sem contar os juros (art. 4º).</li>
                     <li><b>Contingenciamento.</b> Se a receita ficar abaixo do necessário para cumprir a meta, os Poderes devem limitar empenhos e pagamentos nos 30 dias seguintes (art. 9º). Algumas despesas, como as obrigatórias e o pagamento da dívida, ficam de fora.</li>
                     <li><b>Regra de ouro.</b> Não se endividar para pagar despesa corrente está na Constituição (art. 167, III), não na LRF.</li>
                 </ul>
                 <p class="lrf-rodape"><sup>*</sup> A Lei de Responsabilidade Fiscal (LRF) não pune o presidente pelo simples fato de haver déficit, mas sim por descumprir a lei orçamentária sem tomar as providências exigidas.</p></article>
         </div>
-        <div id="lrfRcl" class="cartazes mt-4" style="max-width:420px"></div>
 
         <h3 class="lrf-bloco"><b>3</b> A punição: o que acontece a quem descumpre</h3>
         <div class="lrf-tab-wrap"><table class="lrf-tab">
