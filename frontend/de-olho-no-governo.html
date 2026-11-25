@@ -108,6 +108,32 @@
         .voto-leg b { display: block; font-size: 1.15rem; line-height: 1.2; color: var(--fg); font-weight: 800; }
         .sw { display: inline-block; width: .65rem; height: .65rem; margin-right: .4rem; }
         .termo-nota { margin-top: 1.2rem; padding-top: .8rem; border-top: 1px solid var(--papel-2); font-size: .76rem; color: var(--muted); }
+
+        /* Como votaram: cartão sem caixa, número da proposição em destaque, barras neutras por partido */
+        main details.voto-card.voto-card { border: 0 !important; border-top: 2px solid var(--line) !important; padding: 1rem 0 1.1rem; }
+        main details.voto-card.voto-card > summary { display: block; position: relative; padding: 0 1.8rem 0 0; text-transform: none; letter-spacing: 0; font-weight: 400; font-size: .86rem; text-decoration: none; cursor: pointer; }
+        main details.voto-card > summary::before { content: none !important; }
+        main details.voto-card > summary::after { content: "+"; position: absolute; right: 0; top: 0; font-weight: 800; font-size: 1.2rem; line-height: 1; }
+        main details.voto-card[open] > summary::after { content: "\2212"; }
+        .vc-topo { display: flex; flex-wrap: wrap; align-items: center; gap: .3rem .7rem; }
+        .vc-data { font-size: .76rem; color: var(--muted); }
+        .vc-tit { display: block; margin-top: .25rem; font-size: 1.05rem; font-weight: 800; line-height: 1.25; }
+        .vc-ementa { display: block; margin-top: .25rem; font-size: .84rem; line-height: 1.45; color: var(--muted); }
+        .vc-ementa--so { font-size: .92rem; color: var(--fg); }
+        .vc-meta { display: block; margin-top: .5rem; font-size: .78rem; color: var(--muted); }
+        .vc-meta b { color: var(--fg); }
+        .pv-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr)); gap: .8rem 1.4rem; margin-top: .8rem; }
+        .pv-p p { display: flex; justify-content: space-between; gap: .5rem; font-size: .78rem; }
+        .pv-p p b { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .pv-p p span { color: var(--muted); font-variant-numeric: tabular-nums; }
+        .pv-barra { height: 6px; margin-top: .2rem; background: var(--papel-2); }
+        .pv-barra i { display: block; height: 100%; background: color-mix(in srgb, var(--fg) 72%, transparent); }
+        /* Seu deputado e alianças */
+        @media (min-width: 720px) { .termo-grid--iguais { grid-template-columns: repeat(3, 1fr); } }
+        .termo-num--vermelho { color: var(--vermelho); }
+        main button[data-dep].sel { border-left: 4px solid var(--vermelho) !important; }
+        .sigla-p { font-weight: 800; font-size: .8rem; letter-spacing: .03em; }
+        .sigla-sep { color: var(--muted); }
     </style>
     <link rel="stylesheet" href="assets/brutalista.css">
 </head>
@@ -242,7 +268,7 @@
             <label for="buscaDep" class="sr-only">Buscar deputado</label>
             <input id="buscaDep" type="search" autocomplete="off" placeholder="Nome, partido ou estado…" class="w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-4 py-2.5 text-sm" aria-controls="resultadosDep">
         </div>
-        <div id="resultadosDep" class="mt-3 flex flex-wrap gap-2" role="list"></div>
+        <div id="resultadosDep" class="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3" role="list"></div>
         <div id="perfil" class="mt-4" aria-live="polite"></div>
     </section>
     </div>
@@ -515,9 +541,9 @@ function buscar() {
     if (!RES || q.length < 2) { alvo.innerHTML = ''; return; }
     const achados = RES.deputados.filter((d) => norm(d.nome).includes(q) || norm(d.partido) === q || norm(d.uf) === q)
         .sort((a, b) => (b.ativo - a.ativo) || a.nome.localeCompare(b.nome, 'pt-BR'));
-    alvo.innerHTML = achados.length ? achados.slice(0, 24).map((d) => `<button type="button" role="listitem" data-dep="${d.id}" class="flex items-center gap-3 p-2 pr-4 rounded-lg border ${selecionado === d.id ? 'border-brand-700 bg-brand-50 dark:bg-slate-700' : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800'} text-sm text-left hover:bg-slate-100 dark:hover:bg-slate-700">
+    alvo.innerHTML = achados.length ? achados.slice(0, 24).map((d) => `<button type="button" role="listitem" data-dep="${d.id}" class="flex items-center gap-3 p-2 pr-4 text-sm text-left${selecionado === d.id ? ' sel' : ''}">
         ${rosto(FOTO_CAMARA.replace('{}', d.id), 'w-12 h-14')}<span><b class="block leading-tight">${esc(d.nome)}</b> <span class="text-xs text-slate-500">${esc(d.partido)}-${esc(d.uf)}${d.ativo ? '' : ' · fora do exercício'}</span></span></button>`).join('')
-        + (achados.length > 24 ? `<p class="w-full text-xs text-slate-500">Mostrando 24 de ${num(achados.length)}: refine a busca.</p>` : '')
+        + (achados.length > 24 ? `<p class="col-span-full text-xs text-slate-500">Mostrando 24 de ${num(achados.length)}: refine a busca.</p>` : '')
         : '<p class="text-sm text-slate-500">Nenhum deputado encontrado nesse período.</p>';
 }
 
@@ -533,26 +559,23 @@ async function abrirPerfil(id) {
         const d = await api(`/api/governismo/deputados/${id}?` + q);
         const det = d.detalhe, tot = d.votacoes || 1;
         const foto = rosto(d.foto, 'w-28 h-36 sm:w-36 sm:h-44', `Foto de ${d.nome}`);
-        const metrica = (rot, v, cor, dica) => `<div title="${esc(dica)}"><p class="text-xs font-semibold text-slate-500">${rot}</p><p class="text-2xl font-extrabold">${pc(v)}</p>${barra(v, cor)}</div>`;
-        const seg = (n, cls, rot) => `<div class="${cls}" style="width:${100 * n / tot}%" title="${rot}: ${num(n)}"></div>`;
+        const metrica = (rot, v, cor, dica, vermelho) => `<div title="${esc(dica)}"><p class="termo-rot">${rot}</p><p class="termo-num${vermelho ? ' termo-num--vermelho' : ''}">${pc(v)}</p>${barra(v, cor)}</div>`;
+        const parte = (n, cor, rot) => `<span style="width:${100 * n / tot}%;background:${cor}" title="${rot}: ${num(n)}"></span>`;
+        const leg = (n, cor, rot) => `<div><i class="sw" style="background:${cor}"></i>${rot}<b>${num(n)}</b></div>`;
         $('perfil').innerHTML = `<article class="${cartao} p-5">
             <div class="flex gap-5 items-center">${foto}
                 <div class="min-w-0"><h3 class="text-xl sm:text-2xl font-extrabold leading-tight">${esc(d.nome)}</h3>
                     <p class="text-sm text-slate-600 dark:text-slate-400">Deputado(a) federal · ${esc(d.partido)}-${esc(d.uf)}${d.ativo ? '' : ' · fora do exercício'}</p>
                     <p class="text-xs text-slate-500 mt-1">Votos registrados de ${esc(fmtData(d.primeiro_voto))} a ${esc(fmtData(d.ultimo_voto))} · <a class="underline" target="_blank" rel="noopener" href="${esc(urlSegura(d.url))}">página oficial</a></p></div></div>
-            <div class="mt-4 grid sm:grid-cols-3 gap-4">
-                ${metrica('Taxa de governismo', d.governismo, COR_GOV, `Votou como o Governo orientou em ${num(det.alinhado)} de ${num(d.votacoes)} votações`)}
-                ${metrica('Fidelidade ao partido', d.fidelidade, COR_FID, 'Votos iguais ao da maioria do próprio partido')}
-                ${metrica('Presença', d.presenca, COR_PRES, 'Votações em que registrou voto')}
+            <div class="termo-grid termo-grid--iguais" style="margin-top:1.4rem">
+                ${metrica('Taxa de governismo', d.governismo, COR_GOV, `Votou como o Governo orientou em ${num(det.alinhado)} de ${num(d.votacoes)} votações`, true)}
+                ${metrica('Fidelidade ao partido', d.fidelidade, NEUTRO, 'Votos iguais ao da maioria do próprio partido')}
+                ${metrica('Presença', d.presenca, NEUTRO_CLARO, 'Votações em que registrou voto')}
             </div>
-            <p class="mt-1 text-xs text-slate-500">${esc(rotFaixa(d.faixa))} · em ${num(d.votacoes)} votações com orientação do Governo, no período ${d.periodo.desde}–${d.periodo.ate}.</p>
-            <div class="mt-3 flex h-3 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-700" role="img" aria-label="Com o Governo ${num(det.alinhado)}, contra ${num(det.contra)}, abstenção ou obstrução ${num(det.abstencao)}, ausente ${num(det.ausente)}">
-                ${seg(det.alinhado, 'bg-brand-700', 'Com o Governo')}${seg(det.contra, 'bg-slate-500', 'Contra')}${seg(det.abstencao, 'bg-amber-500', 'Abstenção/obstrução')}${seg(det.ausente, 'bg-slate-300 dark:bg-slate-600', 'Ausente')}</div>
-            <p class="mt-2 text-xs text-slate-500 flex flex-wrap gap-x-4 gap-y-1">
-                <span><span class="inline-block w-2.5 h-2.5 rounded-sm bg-brand-700 align-middle"></span> Com o Governo ${num(det.alinhado)}</span>
-                <span><span class="inline-block w-2.5 h-2.5 rounded-sm bg-slate-500 align-middle"></span> Contra ${num(det.contra)}</span>
-                <span><span class="inline-block w-2.5 h-2.5 rounded-sm bg-amber-500 align-middle"></span> Abstenção/obstrução ${num(det.abstencao)}</span>
-                <span><span class="inline-block w-2.5 h-2.5 rounded-sm bg-slate-300 dark:bg-slate-600 align-middle"></span> Ausente ${num(det.ausente)}</span></p>
+            <p class="mt-2 text-xs text-slate-500">${esc(rotFaixa(d.faixa))} · em ${num(d.votacoes)} votações com orientação do Governo, no período ${d.periodo.desde}–${d.periodo.ate}.</p>
+            <div class="voto-bar" role="img" aria-label="Com o Governo ${num(det.alinhado)}, contra ${num(det.contra)}, abstenção ou obstrução ${num(det.abstencao)}, ausente ${num(det.ausente)}">
+                ${parte(det.alinhado, SEG.gov, 'Com o Governo')}${parte(det.contra, SEG.contra, 'Contra')}${parte(det.abstencao, SEG.abst, 'Abstenção/obstrução')}${parte(det.ausente, SEG.aus, 'Ausente')}</div>
+            <div class="voto-leg" data-sem-gl>${leg(det.alinhado, SEG.gov, 'Com o Governo')}${leg(det.contra, SEG.contra, 'Contra')}${leg(det.abstencao, SEG.abst, 'Abstenção ou obstrução')}${leg(det.ausente, SEG.aus, 'Ausente')}</div>
             ${d.por_ano.length > 1 ? `<p class="mt-3 text-xs text-slate-600 dark:text-slate-400"><b>Governismo por ano:</b> ${d.por_ano.map((a) => `${a.ano}: ${pc(a.governismo)}`).join(' · ')}</p>` : ''}
             <h4 class="mt-5 font-bold text-sm">Como votou nas últimas pautas quentes</h4>
             <ul class="mt-1 text-sm">${d.pautas.map((p) => `<li class="py-2 border-t border-slate-100 dark:border-slate-700 first:border-0 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
@@ -576,17 +599,19 @@ document.addEventListener('click', (ev) => {
 
 // ---------------------------------------------------------------- pautas quentes
 function cartaoPauta(p, aberta) {
-    const titulo = p.apelido || p.proposicao;
-    const chips = p.partidos.map((x) => `<div class="min-w-[7.5rem]"><p class="text-xs font-semibold">${esc(x.sigla)} <span class="font-normal text-slate-500">${pc(x.pct_sim)} sim</span></p>
-        <div class="flex h-2 rounded-full overflow-hidden bg-slate-300 dark:bg-slate-600" role="img" aria-label="${esc(x.sigla)}: ${num(x.sim)} sim, ${num(x.nao)} não"><div style="width:${x.pct_sim}%;background:${COR_FID}"></div></div></div>`).join('');
-    return `<details class="${cartao} p-4" ${aberta ? 'open' : ''}>
-        <summary class="cursor-pointer">
-            <span class="font-bold">${esc(titulo)}</span> <span class="text-xs text-slate-500">${p.apelido ? esc(p.proposicao) + ' · ' : ''}${esc(fmtData(p.data))}</span>
-            <span class="block text-sm text-slate-600 dark:text-slate-400 mt-0.5">${esc(corta(p.ementa || p.descricao, 230))}</span>
-            <span class="block text-xs mt-1"><b>Governo orientou:</b> ${esc(p.orientacao_governo)} · <b>${p.aprovada ? 'Aprovada' : 'Rejeitada'}</b> (${num(p.sim)} sim × ${num(p.nao)} não)</span></summary>
-        <p class="mt-3 text-xs font-semibold text-slate-500 uppercase">Parcela de votos “Sim” por partido <span class="normal-case font-normal">(verde-azulado = sim; cinza = não)</span></p>
-        <div class="mt-2 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">${chips}</div>
-        <p class="mt-3 text-sm">${botaoProjeto(p.proposicao, '<i class="fa-solid fa-circle-info mr-1" aria-hidden="true"></i>Entender este projeto')}</p></details>`;
+    // partidos do mais ao menos "Sim"; barra cheia = todos os votos "Sim", vazio = "Não"
+    const ord = [...p.partidos].sort((a, b) => b.pct_sim - a.pct_sim);
+    const chips = ord.map((x) => `<div class="pv-p"><p><b>${esc(x.sigla)}</b><span>${pc(x.pct_sim)}</span></p>
+        <div class="pv-barra" role="img" aria-label="${esc(x.sigla)}: ${num(x.sim)} sim, ${num(x.nao)} não"><i style="width:${x.pct_sim}%"></i></div></div>`).join('');
+    return `<details class="voto-card" ${aberta ? 'open' : ''}>
+        <summary>
+            <span class="vc-topo"><span class="pi-num">${esc(p.proposicao)}</span><span class="vc-data">${esc(fmtData(p.data))}</span>${etiq(p.aprovada ? 'Aprovada' : 'Rejeitada', 'Resultado da votação no Plenário da Câmara')}</span>
+            ${p.apelido ? `<span class="vc-tit">${esc(p.apelido)}</span>` : ''}
+            <span class="vc-ementa${p.apelido ? '' : ' vc-ementa--so'}">${esc(corta(p.ementa || p.descricao, 230))}</span>
+            <span class="vc-meta">Governo orientou <b>${esc(p.orientacao_governo)}</b> · ${num(p.sim)} sim × ${num(p.nao)} não</span></summary>
+        <p class="termo-rot" style="margin-top:1rem">Parcela de votos “Sim” em cada partido</p>
+        <div class="pv-grid">${chips}</div>
+        <p class="mt-4 text-sm">${botaoProjeto(p.proposicao, '<i class="fa-solid fa-circle-info mr-1" aria-hidden="true"></i>Entender este projeto')}</p></details>`;
 }
 
 async function carregarPautas() {
@@ -651,15 +676,15 @@ async function carregarLideres() {
 
 // ---------------------------------------------------------------- federações e blocos
 function chipsPartidos(ps) {
-    return ps.map((p) => `<span class="px-2 py-0.5 rounded-full border border-slate-300 dark:border-slate-600 text-xs font-semibold">${esc(p)}</span>`).join(' ');
+    return ps.map((p) => `<span class="sigla-p">${esc(p)}</span>`).join('<span class="sigla-sep" aria-hidden="true"> · </span>');
 }
 function cartaoAlianca(x, tipo) {
     const lider = x.lider ? `<p class="text-xs text-slate-600 dark:text-slate-400 mt-2">Líder: <b>${esc(x.lider.nome)}</b> (${esc([x.lider.partido, x.lider.uf].filter(Boolean).join('-'))})</p>` : '';
     return `<article class="${cartao} p-4">
         <p class="text-[11px] font-semibold text-slate-500 uppercase">${tipo}</p>
         <h3 class="font-bold leading-snug">${esc(x.nome)}</h3>
-        <p class="mt-2 flex flex-wrap gap-1.5">${chipsPartidos(x.partidos)}</p>
-        ${x.cadeiras != null ? `<p class="mt-3 text-2xl font-extrabold">${num(x.cadeiras)} <span class="text-sm font-medium text-slate-500">deputados · ${x.percentual.toLocaleString('pt-BR')}% da Câmara</span></p>${barra(x.percentual, COR_FID)}` : ''}
+        <p class="mt-2 leading-relaxed">${chipsPartidos(x.partidos)}</p>
+        ${x.cadeiras != null ? `<div class="mt-3 flex flex-wrap items-baseline gap-x-2"><span class="termo-num">${num(x.cadeiras)}</span><span class="termo-dica" style="margin:0">deputados · ${x.percentual.toLocaleString('pt-BR')}% da Câmara</span></div><div style="margin-top:.5rem">${barra(x.percentual, NEUTRO)}</div>` : ''}
         ${lider}</article>`;
 }
 async function carregarDinamica() {
