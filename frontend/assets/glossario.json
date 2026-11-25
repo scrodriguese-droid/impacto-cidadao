@@ -249,6 +249,18 @@
         "liquidez",
         "liquidez internacional"
       ]
+    },
+    "OPERACOES_COMPROMISSADAS": {
+      "termo_tecnico": "Operações compromissadas (operações de mercado aberto do Banco Central)",
+      "nome_cidadao": "A esponja de dinheiro do Banco Central",
+      "explicacao_simples": "O Banco Central vende títulos públicos aos bancos com o compromisso de recomprá-los depois, por um valor um pouco maior. Enquanto isso, os bancos ficam com os títulos e o Banco Central recolhe os reais, o que reduz o dinheiro disponível; na recompra, o dinheiro volta. É a ferramenta de todo dia para manter a Selic na meta.",
+      "icone": "🧽",
+      "categoria": "Macroeconomia",
+      "aliases": [
+        "operações compromissadas",
+        "operação compromissada",
+        "compromissadas"
+      ]
     }
   },
   "reservas_e_fmi": {

@@ -44,6 +44,12 @@
         .radar-confronto .radar-item-nome { font: 800 .74rem/1.3 var(--fonte-texto); letter-spacing: .08em; text-transform: uppercase; }
         .radar-confronto .radar-item-valor { text-align: left; font-size: 2.1rem; white-space: normal; }
         .radar-confronto .radar-item-nota { max-width: 46ch; }
+        /* Sub-aba “Como o Estado se financia”: cartões de altura igual, com a nota legal sempre no pé do cartão */
+        .funcao-duo > div { display: flex; flex-direction: column; }
+        .funcao-gancho { margin: .1rem 0 .4rem; font-size: 1.05rem; font-weight: 800; line-height: 1.3; }
+        .funcao-sub { margin: .8rem 0 .2rem; font: 800 .68rem/1.3 var(--fonte-texto); letter-spacing: .1em; text-transform: uppercase; }
+        .funcao-nota { margin-top: auto; padding-top: .7rem; border-top: 1px solid var(--line); font-size: .76rem; line-height: 1.45; color: var(--muted); }
+        .funcao-duo .conceito-lista { margin-bottom: 1rem; }
     </style>
     <link rel="stylesheet" href="assets/brutalista.css">
 </head>
@@ -480,11 +486,33 @@ const FINANCIAMENTO_ESTADO = `<section aria-labelledby="nFin1"><h2 id="nFin1">Co
             <p>Quando o Estado emite moeda para tapar déficits além da demanda real por liquidez, há excesso de oferta monetária: gera choque de demanda, perda de valor do dinheiro e aceleração da inflação.</p></div>
     </div></section>
     <section aria-labelledby="nFin3"><h2 id="nFin3">A dupla função dos títulos públicos</h2>
-    <p class="text-sm text-slate-500 mt-2" style="max-width:70ch">Na prática, os títulos da dívida não servem apenas para cobrir rombos. Eles conectam as duas engrenagens da macroeconomia.</p>
-    <div class="def-duo mt-3">
-        <div><p class="def-rot">Política fiscal</p><p>Financiamento do déficit público e rolagem dos títulos que vencem, pelo Tesouro Nacional.</p></div>
-        <div><p class="def-rot">Política monetária</p><p>Gestão da liquidez bancária pelo Banco Central, que compra e vende títulos para manter a taxa Selic na meta.</p></div>
+    <p class="text-sm text-slate-500 mt-2" style="max-width:70ch">Mesma ferramenta, dois donos diferentes: como o mesmo papel financia o orçamento e controla a taxa de juros do país.</p>
+    <div class="def-duo funcao-duo mt-3">
+        <div><p class="def-rot">1 · Função fiscal · Tesouro Nacional</p>
+            <p class="funcao-gancho">“Tapar o buraco do orçamento”</p>
+            <p class="funcao-sub">O problema</p>
+            <p>O governo arrecadou menos impostos do que precisava para pagar salários, aposentadorias, obras ou juros.</p>
+            <p class="funcao-sub">O que o Tesouro faz</p>
+            <p>Cria e vende títulos novos para bancos, fundos e cidadãos, estes pelo Tesouro Direto.</p>
+            <p class="funcao-sub">O efeito</p>
+            <p>O investidor entrega reais hoje para pagar as despesas, e o governo assume uma dívida com juros no futuro.</p></div>
+        <div><p class="def-rot">2 · Função monetária · Banco Central (BCB)</p>
+            <p class="funcao-gancho">“Controlar a torneira do dinheiro e a Selic”</p>
+            <p class="funcao-sub">A mecânica da esponja</p>
+            <p>O título enxuga ou solta reais nos bancos para manter a Selic na meta do Copom.</p>
+            <ul class="conceito-lista" style="margin-top:.5rem">
+                <li><b>Excesso de dinheiro nos bancos.</b> Se sobra caixa, os juros tendem a cair e a inflação a subir. O BC vende títulos (operações compromissadas) e recolhe reais de circulação.</li>
+                <li><b>Falta de dinheiro nos bancos.</b> Se falta liquidez, os juros sobem rápido. O BC compra os títulos de volta e devolve reais ao sistema bancário.</li></ul>
+            <p class="funcao-nota"><b>Nota legal.</b> A Lei de Responsabilidade Fiscal (2000) proíbe o Banco Central de emitir títulos próprios: ele opera usando títulos da carteira do Tesouro.</p></div>
     </div>
+    <p class="def-rot" style="margin-top:1.6rem">Resumo: mesma ferramenta, dois donos diferentes</p>
+    <div class="overflow-x-auto"><table class="radar-tabela" style="max-width:none">
+        <thead><tr><th>Característica</th><th>Função fiscal</th><th>Função monetária</th></tr></thead>
+        <tbody>
+            <tr><th scope="row">Quem opera?</th><td>Tesouro Nacional (Ministério da Fazenda)</td><td>Banco Central (autoridade monetária)</td></tr>
+            <tr><th scope="row">Qual o objetivo?</th><td>Arrecadar dinheiro para pagar despesas e rolar a dívida.</td><td>Controlar a inflação e a Selic, regulando a liquidez.</td></tr>
+            <tr><th scope="row">Ação típica</th><td>Emite títulos novos quando há déficit ou vencimento antigo.</td><td>Compra e vende títulos já existentes diariamente.</td></tr>
+        </tbody></table></div>
     <p class="text-xs text-slate-500 mt-4" style="max-width:75ch">Para ver quanto esse financiamento pesa hoje nas contas, volte a <a class="underline" href="#conexao" data-rsub="hoje">1 · O risco hoje</a>.</p></section>`;
 
 function conceitosFluxo() {
