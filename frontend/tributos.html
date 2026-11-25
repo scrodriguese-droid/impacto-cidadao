@@ -19,6 +19,26 @@
         .sk-t { paint-order: stroke fill; stroke: #fff; stroke-width: 3px; stroke-linejoin: round; }
         .dark .sk-t { stroke: #1e293b; }
         .elo:hover { opacity: .85 !important; }
+
+        /* Filtros: busca com contagem, e duas linhas com rótulo (Tipo e Quem cobra) */
+        .trib-filtros { display: grid; gap: .7rem; }
+        .trib-busca { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem 1rem; }
+        .trib-conta { margin-left: auto; font-size: .8rem; font-weight: 600; color: var(--muted); }
+        .trib-linha { display: grid; grid-template-columns: 6.2rem minmax(0, 1fr); gap: .5rem; align-items: center; }
+        .trib-rot { font: 800 .68rem/1.3 var(--fonte-texto); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+        @media (max-width: 560px) { .trib-linha { grid-template-columns: minmax(0, 1fr); gap: .3rem; } }
+
+        /* Cabeçalho de cada grupo: título em toda a largura e, logo abaixo, as etiquetas */
+        .trib-tags { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .55rem; }
+
+        /* Tabela: o nome do tributo manda; a sigla é só uma etiqueta; linhas com o mesmo filete de ponta a ponta */
+        .trib-tab { border-collapse: collapse; }
+        .trib-tab tbody tr { border-top: 1px solid var(--line); }
+        .trib-tab tbody th, .trib-tab tbody td { border: 0 !important; }
+        .trib-tab tbody th { text-transform: none; letter-spacing: 0; font-size: .92rem; font-weight: 400; }
+        .trib-nome { display: block; font-weight: 800; font-size: .95rem; line-height: 1.3; color: var(--fg); }
+        .trib-sigla { display: inline-block; margin-top: .35rem; padding: .05rem .4rem; background: var(--fg); color: var(--papel); font: 800 .66rem/1.4 var(--fonte-texto); letter-spacing: .08em; }
+        .trib-vazio { font-size: .76rem; color: var(--muted); font-style: italic; }
     </style>
     <link rel="stylesheet" href="assets/brutalista.css">
 </head>
@@ -43,17 +63,19 @@
 
     <!-- ================= TABELA ================= -->
     <div id="painelTabela" class="mt-4">
-        <div class="flex flex-wrap items-center gap-2 text-sm">
-            <div class="relative flex-grow min-w-[12rem] max-w-md">
-                <label for="busca" class="sr-only">Buscar tributo</label>
-                <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400 text-xs" aria-hidden="true"></i>
-                <input id="busca" type="search" maxlength="80" autocomplete="off" placeholder="Buscar: IPTU, combustível, herança…"
-                       class="w-full pl-8 pr-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 focus:outline-none">
+        <div class="trib-filtros text-sm">
+            <div class="trib-busca">
+                <div class="relative flex-grow min-w-[12rem] max-w-md">
+                    <label for="busca" class="sr-only">Buscar tributo</label>
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400 text-xs" aria-hidden="true"></i>
+                    <input id="busca" type="search" maxlength="80" autocomplete="off" placeholder="Buscar: IPTU, combustível, herança…"
+                           class="w-full pl-8 pr-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                </div>
+                <span id="contagem" class="trib-conta" aria-live="polite"></span>
             </div>
-            <div id="chipsTipo" class="flex flex-wrap gap-1.5" role="group" aria-label="Tipo de cobrança"></div>
-            <span id="contagem" class="ml-auto text-xs text-slate-500" aria-live="polite"></span>
+            <div class="trib-linha"><span class="trib-rot" id="rotTipo">Tipo</span><div id="chipsTipo" class="flex flex-wrap gap-1.5" role="group" aria-labelledby="rotTipo"></div></div>
+            <div class="trib-linha"><span class="trib-rot" id="rotEsfera">Quem cobra</span><div id="chipsEsfera" class="flex flex-wrap gap-1.5" role="group" aria-labelledby="rotEsfera"></div></div>
         </div>
-        <div id="chipsEsfera" class="mt-2 flex flex-wrap gap-1.5" role="group" aria-label="Quem cobra"></div>
         <div id="estado" class="mt-4"></div>
         <div id="inventario" class="mt-4 space-y-8"></div>
     </div>
@@ -136,21 +158,22 @@ $('vistaSankey').addEventListener('click', () => { F.vista = 'sankey'; guardar('
 function chips() {
     const chip = (ativo, rot, attr) => `<button type="button" ${attr} aria-pressed="${ativo}" class="px-3 py-1.5 rounded-full text-xs font-semibold border ${ativo
         ? 'bg-brand-600 border-brand-600 text-white' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-brand-400'}">${esc(rot)}</button>`;
-    $('chipsTipo').innerHTML = chip(!F.tipo, 'Todos os tipos', 'data-tipo=""') + TIPOS.map((t) => chip(F.tipo === t, t, `data-tipo="${esc(t)}"`)).join('');
+    $('chipsTipo').innerHTML = chip(!F.tipo, 'Todos', 'data-tipo=""') + TIPOS.map((t) => chip(F.tipo === t, t, `data-tipo="${esc(t)}"`)).join('');
     const esferas = ['Federal', 'Estadual', 'Municipal'];
-    $('chipsEsfera').innerHTML = chip(!F.esfera, 'Quem cobra: todos', 'data-esfera=""') + esferas.map((e) => chip(F.esfera === e, e, `data-esfera="${e}"`)).join('');
+    $('chipsEsfera').innerHTML = chip(!F.esfera, 'Todos', 'data-esfera=""') + esferas.map((e) => chip(F.esfera === e, e, `data-esfera="${e}"`)).join('');
 }
 $('chipsTipo').addEventListener('click', (ev) => { const b = ev.target.closest('[data-tipo]'); if (b) { F.tipo = b.dataset.tipo; chips(); desenhar(); } });
 $('chipsEsfera').addEventListener('click', (ev) => { const b = ev.target.closest('[data-esfera]'); if (b) { F.esfera = b.dataset.esfera; chips(); desenhar(); } });
 $('busca').addEventListener('input', debounce((ev) => { F.q = norm(ev.target.value.trim()); desenhar(); }, 120));
 
+const SEM_DADO = '<span class="trib-vazio" title="Sem valor publicado para este tributo">sem dado</span>';
 function celulaArrecadacao(i) {
-    if (!i.arrec_id) return '<span class="text-slate-400">—</span>';
+    if (!i.arrec_id) return SEM_DADO;
     const fonte = ESTADUAIS.has(i.arrec_id) ? 'estadual' : MUNICIPAIS.has(i.arrec_id) ? 'municipal' : 'federal';
     if ((fonte === 'estadual' || fonte === 'municipal') && !municipio()) return '<span class="text-xs text-slate-400">Escolha a cidade</span>';
     const bloco = A && A[fonte];
     const v = bloco && bloco.valores ? bloco.valores[i.arrec_id] : null;
-    if (v == null) return `<span class="text-slate-400">${A ? '—' : '…'}</span>`;
+    if (v == null) return A ? SEM_DADO : '<span class="trib-vazio">…</span>';
     return `<span class="font-semibold whitespace-nowrap">${esc(reaisCurto(v))}</span>${i.arrec_nota ? `<span class="block text-[11px] text-slate-400 font-normal">${esc(i.arrec_nota)}</span>` : ''}`;
 }
 
@@ -163,16 +186,16 @@ function desenhar() {
         if (!itens.length) return '';
         total += itens.length;
         return `<section aria-labelledby="g-${esc(g.id)}">
-            <div class="flex flex-wrap items-center gap-2"><h2 id="g-${esc(g.id)}" class="text-lg font-bold">${esc(g.titulo)}</h2>
-                <span class="px-2.5 py-1 rounded-full text-[11px] font-bold ${ESFERA_COR[g.esfera] || ESFERA_COR['Variável']}">${esc(g.esfera)}</span>
-                <span class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">${esc(g.tipo)}</span></div>
+            <h2 id="g-${esc(g.id)}" class="text-lg font-bold">${esc(g.titulo)}</h2>
+            <p class="trib-tags"><span class="px-2.5 py-1 rounded-full text-[11px] font-bold ${ESFERA_COR[g.esfera] || ESFERA_COR['Variável']}">${esc(g.esfera)}</span>
+                <span class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">${esc(g.tipo)}</span></p>
             ${g.nota ? `<p class="text-xs text-slate-500 dark:text-slate-400 mt-1">${esc(g.nota)}</p>` : ''}
             <div class="mt-2 overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-                <table class="w-full text-sm"><caption class="sr-only">${esc(g.titulo)}</caption>
+                <table class="trib-tab w-full text-sm"><caption class="sr-only">${esc(g.titulo)}</caption>
                 <thead class="bg-slate-100 dark:bg-slate-700/60 text-left text-xs uppercase tracking-wide text-slate-500 dark:text-slate-300">
                     <tr><th scope="col" class="p-3 w-52">Tributo</th><th scope="col" class="p-3">Onde ou quando é cobrado</th><th scope="col" class="p-3 w-40 text-right">Arrecadado (12 meses)</th><th scope="col" class="p-3 w-44">Base legal</th></tr></thead>
                 <tbody>${itens.map((i) => `<tr class="border-t border-slate-100 dark:border-slate-700 align-top">
-                    <th scope="row" class="p-3 text-left"><span class="font-bold">${esc(i.sigla)}</span><span class="block text-xs font-normal text-slate-500 dark:text-slate-400">${esc(i.nome)}</span></th>
+                    <th scope="row" class="p-3 text-left"><span class="trib-nome">${esc(i.nome)}</span><span class="trib-sigla">${esc(i.sigla)}</span></th>
                     <td class="p-3 text-slate-700 dark:text-slate-300">${esc(i.onde)}</td>
                     <td class="p-3 text-right">${celulaArrecadacao(i)}</td>
                     <td class="p-3 text-xs text-slate-500 dark:text-slate-400">${i.base_legal ? esc(i.base_legal) : '—'}</td></tr>`).join('')}</tbody></table></div>
