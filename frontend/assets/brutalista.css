@@ -1234,15 +1234,16 @@ details.sanfona.sanfona--leve { border-top: 1px solid var(--line); border-bottom
 
 /* ---------- Como chegamos aqui: três camadas (escolher a era > ler a era > lupa de 1990 em diante) ---------- */
 .hx-lead { max-width: 70ch; font-size: .92rem; line-height: 1.55; margin-top: .5rem; }
-.hx-eras { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 2px; margin-top: 1.2rem; border: 2px solid var(--line); background: var(--line); }
-button.hx-era { display: grid; gap: .15rem; align-content: start; text-align: left; padding: .75rem .9rem .8rem; cursor: pointer; color: var(--fg); background: var(--papel) !important; border: 0 !important; box-shadow: none !important; }
+.hx-eras { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2px; margin-top: 1.2rem; border: 2px solid var(--line); background: var(--line); }
+button.hx-era { display: grid; gap: .15rem; align-content: start; text-align: left; padding: .65rem .7rem .7rem; cursor: pointer; color: var(--fg); background: var(--papel) !important; border: 0 !important; box-shadow: none !important; }
 button.hx-era:hover { background: var(--papel-2) !important; }
 button.hx-era[aria-pressed="true"] { background: var(--ativo) !important; color: var(--ativo-fg) !important; }
 .hx-n { font: 800 .6rem/1.2 var(--fonte-texto); letter-spacing: .14em; text-transform: uppercase; opacity: .7; }
-.hx-a { font-family: var(--fonte-titulo); font-size: 1.4rem; line-height: 1; white-space: nowrap; }
+.hx-a { font-family: var(--fonte-titulo); font-size: 1.2rem; line-height: 1; white-space: nowrap; }
 .hx-nm { font: 700 .76rem/1.25 var(--fonte-texto); }
 .hx-c { font: 600 .68rem/1.2 var(--fonte-texto); opacity: .75; }
-@media (max-width: 760px) { .hx-eras { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 640px) { .hx-eras { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (min-width: 1000px) { .hx-eras { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
 .hx-det { display: grid; margin-top: 1rem; border: 2px solid var(--line); }
 .hx-det-h, .hx-det-c { padding: 1.1rem 1.2rem 1.25rem; }
 .hx-det-h { background: color-mix(in srgb, var(--papel-2) 55%, var(--papel)); border-bottom: 2px solid var(--line); }
@@ -1258,20 +1259,6 @@ button.hx-era[aria-pressed="true"] { background: var(--ativo) !important; color:
 .hx-det-c .tl-pontos { margin-top: .3rem; border-top: 2px solid var(--line); }
 .hx-det-c .tl-marco { margin-top: .9rem; }
 .hx-det-c .tl-chips { margin-top: .4rem; }
-.hx-lupa { margin-top: 3rem; }
-.hx-seg { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: 2px; margin-top: 1.1rem; border: 2px solid var(--line); background: var(--line); }
-.hx-seg button { display: grid; gap: .15rem; text-align: left; padding: .8rem 1rem; cursor: pointer; color: var(--fg); background: var(--papel) !important; border: 0 !important; box-shadow: none !important; }
-.hx-seg button:hover { background: var(--papel-2) !important; }
-.hx-seg button[aria-pressed="true"] { background: var(--ativo) !important; color: var(--ativo-fg) !important; }
-.hx-seg b { font: 800 .76rem/1.2 var(--fonte-texto); letter-spacing: .08em; text-transform: uppercase; }
-.hx-seg small { font: 500 .72rem/1.3 var(--fonte-texto); opacity: .8; }
-@media (max-width: 560px) { .hx-seg { grid-template-columns: 1fr; } }
-.hx-corpo { margin-top: 1.4rem; }
-.rf-topo { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: .5rem 1.5rem; }
-.rf-regua { width: min(16rem, 100%); font: 600 .62rem/1 var(--fonte-texto); color: var(--muted); display: grid; grid-template-columns: 1fr 1fr; row-gap: .25rem; }
-.rf-regua > div { grid-column: 1 / -1; position: relative; height: .5rem; background: var(--papel-2); }
-.rf-regua i { position: absolute; top: 0; bottom: 0; min-width: 4px; background: var(--vermelho); }
-.rf-regua span:last-child { text-align: right; }
 
 /* ---------- Marcos do gráfico: foco por era, chips com nome, ano ao passar o mouse, navegação entre marcos ---------- */
 .tg-marco { transition: opacity .2s; }
@@ -1318,38 +1305,8 @@ button.mc-btn.mc-prox { text-align: right; }
 @media (max-width: 480px) { .mc-nv b { display: block; margin: 0; } }
 
 /* ---------- Quem comandou a economia: governos em sanfona + faixa dentro do cartão do marco ---------- */
-.qc-fase { margin-top: 1.8rem; }
-.qc-fase:first-of-type { margin-top: 1.2rem; }
-.qc-fase-t { font-family: var(--fonte-titulo); font-weight: 400 !important; font-size: 1.3rem; line-height: 1.1; letter-spacing: .005em; text-transform: uppercase; padding-bottom: .35rem; border-bottom: 3px solid var(--line); }
-.qc-fase-t span { margin-left: .7rem; font: 800 .7rem/1 var(--fonte-texto); letter-spacing: .12em; color: var(--vermelho); vertical-align: middle; }
-.dark .qc-fase-t span { color: #E5584F; }
-.qc-fase-p { margin-top: .55rem; max-width: 72ch; font-size: .88rem; line-height: 1.55; }
-.qc-lista { list-style: none; margin: .5rem 0 0; padding: 0; }
-.qc-card { border-bottom: 1px solid var(--line); }
-.qc-h { margin: 0; font-weight: inherit; }
-button.qc-cab { width: 100%; display: grid; grid-template-columns: 6.6rem minmax(0, 1fr) minmax(0, 1.5fr) 1.2rem; gap: .4rem 1.1rem; align-items: start; text-align: left; padding: .95rem 0; cursor: pointer; color: var(--fg); text-transform: none; letter-spacing: 0; background: transparent !important; border: 0 !important; box-shadow: none !important; }
-button.qc-cab::after { content: "+"; grid-column: 4; grid-row: 1; justify-self: end; font: 800 1.3rem/1 var(--fonte-texto); }
-button.qc-cab[aria-expanded="true"]::after { content: "−"; }
-button.qc-cab:hover { background: transparent !important; color: var(--fg) !important; }
-.qc-anos { font-family: var(--fonte-titulo); font-size: 1.4rem; line-height: 1; color: var(--vermelho); white-space: nowrap; }
-.dark .qc-anos { color: #E5584F; }
-.qc-quem small, .qc-m em, .mc-eq-p em { display: block; font: 800 .6rem/1.3 var(--fonte-texto); font-style: normal; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
-.qc-quem b { display: block; font-size: 1.02rem; line-height: 1.2; }
-.qc-quem i { display: block; margin-top: .2rem; font: 600 .76rem/1.3 var(--fonte-texto); font-style: normal; color: var(--muted); }
-.qc-mins { display: grid; gap: .4rem; }
+.qc-m em, .mc-eq-p em { display: block; font: 800 .6rem/1.3 var(--fonte-texto); font-style: normal; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
 .qc-m { display: block; font-size: .85rem; line-height: 1.4; }
-.qc-corpo { margin: 0 0 1.2rem 7.7rem; padding-left: 1rem; border-left: 3px solid var(--vermelho); }
-.qc-corpo p { max-width: 70ch; font-size: .9rem; line-height: 1.6; }
-.qc-corpo p + p { margin-top: .6rem; }
-.qc-tools { display: flex; justify-content: flex-end; margin-top: 1.1rem; }
-button.qc-todos { padding: .5rem .85rem; font: 700 .72rem/1.2 var(--fonte-texto); letter-spacing: .02em; text-transform: none; color: var(--fg); cursor: pointer; background: transparent !important; border: 2px solid var(--line) !important; box-shadow: none !important; }
-button.qc-todos:hover { background: var(--ativo) !important; color: var(--ativo-fg) !important; }
-@media (max-width: 760px) {
-  button.qc-cab { grid-template-columns: 5.4rem minmax(0, 1fr) 1.2rem; }
-  button.qc-cab::after { grid-column: 3; }
-  .qc-mins { grid-column: 1 / -1; grid-row: 2; }
-  .qc-corpo { margin-left: 0; }
-}
 .mc-eq { display: grid; gap: .5rem; padding: .8rem 1.25rem .9rem; border-bottom: 2px solid var(--line); }
 .mc-eq-t { font: 800 .62rem/1.3 var(--fonte-texto); letter-spacing: .14em; text-transform: uppercase; color: color-mix(in srgb, var(--vermelho) 80%, #000); }
 .dark .mc-eq-t { color: #F0746B; }
@@ -1358,3 +1315,49 @@ button.qc-todos:hover { background: var(--ativo) !important; color: var(--ativo-
 .mc-eq-p small { font-weight: 500; font-size: .74rem; color: var(--muted); }
 @media (max-width: 640px) { .mc-eq { padding: .8rem 1rem .9rem; } }
 
+/* ---------- Painel integrado de uma era (1964 em diante): pílulas de governo, equipe e os três pilares ---------- */
+.px { border: 2px solid var(--line); margin-top: 1rem; background: var(--papel); }
+.px-h { display: grid; gap: .5rem 1.6rem; padding: 1.1rem 1.25rem 1rem; background: color-mix(in srgb, var(--papel-2) 55%, var(--papel)); border-bottom: 2px solid var(--line); }
+@media (min-width: 900px) { .px-h { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); align-items: center; } }
+.px-h .tl-anos { font-size: 2.5rem; }
+.px-h .tl-frase { margin: 0 0 .4rem; }
+.px-ctx { padding: 1rem 1.25rem 0; max-width: 78ch; font-size: .95rem; line-height: 1.6; }
+.px-pills { display: flex; flex-wrap: wrap; gap: .4rem; align-items: stretch; padding: 1rem 1.25rem 0; }
+.px-pills-t { align-self: center; margin-right: .3rem; font: 800 .66rem/1.3 var(--fonte-texto); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+button.px-pill { display: grid; gap: .1rem; align-content: center; min-height: 2.9rem; padding: .45rem .8rem; text-align: left; color: var(--fg); cursor: pointer; text-transform: none; letter-spacing: 0; background: var(--papel) !important; border: 2px solid var(--line) !important; box-shadow: none !important; }
+button.px-pill b { font: 800 .8rem/1.2 var(--fonte-texto); }
+button.px-pill small { font: 600 .66rem/1.2 var(--fonte-texto); opacity: .75; }
+button.px-pill:hover { background: var(--papel-2) !important; color: var(--fg) !important; }
+button.px-pill[aria-pressed="true"] { background: var(--ativo) !important; color: var(--ativo-fg) !important; }
+.px-corpo { padding: 1rem 1.25rem 1.3rem; }
+.px-eq { display: grid; gap: .5rem; padding: .8rem 1rem .9rem; border: 1px solid var(--line); border-left: 6px solid var(--vermelho); }
+.px-eq-t { font: 800 .62rem/1.3 var(--fonte-texto); letter-spacing: .14em; text-transform: uppercase; color: color-mix(in srgb, var(--vermelho) 80%, #000); }
+.dark .px-eq-t { color: #F0746B; }
+.px-plano { font: 800 .74rem/1.3 var(--fonte-texto); letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+.px-pil { display: grid; gap: 1rem; margin-top: 1rem; }
+@media (min-width: 960px) { .px-pil { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.px-col { border: 1px solid var(--line); padding: .8rem .95rem 1rem; }
+.px-col-t { padding-bottom: .5rem; margin-bottom: .6rem; border-bottom: 2px solid var(--line); font: 800 .7rem/1.3 var(--fonte-texto) !important; letter-spacing: .1em; text-transform: uppercase; }
+.px-col ul { list-style: none; margin: 0; padding: 0; display: grid; gap: .65rem; }
+.px-it { padding-left: .75rem; border-left: 3px solid var(--papel-2); font-size: .86rem; line-height: 1.5; transition: opacity .15s; }
+.px-on { border-left-color: var(--vermelho); font-weight: 600; }
+.px-off { opacity: .42; }
+.px-tag { display: block; margin-bottom: .1rem; font: 800 .58rem/1.3 var(--fonte-texto); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.px-on .px-tag { color: color-mix(in srgb, var(--vermelho) 80%, #000); }
+.dark .px-on .px-tag { color: #F0746B; }
+.px-vazio { margin: 0 0 .6rem; padding: .5rem .65rem; background: var(--papel-2); font-size: .78rem; line-height: 1.45; color: var(--muted); }
+a.px-link { font-weight: 700; text-decoration: underline; text-underline-offset: 2px; }
+.px-aprof { margin-top: 1.1rem; }
+.px-fez p { max-width: 72ch; font-size: .9rem; line-height: 1.6; }
+.px-fez p + p { margin-top: .5rem; }
+.px-mais .gv-carga { margin-top: .6rem; }
+.px-pontes { display: grid; gap: 2px; margin-top: 1.2rem; border: 2px solid var(--line); background: var(--line); }
+@media (min-width: 640px) { .px-pontes { grid-template-columns: 1fr 1fr; } }
+a.px-ponte { display: grid; gap: .15rem; padding: .8rem 1rem; text-decoration: none; color: var(--fg); background: var(--papel); }
+a.px-ponte:hover { background: var(--ativo); color: var(--ativo-fg); }
+a.px-ponte b { font: 800 .8rem/1.3 var(--fonte-texto); letter-spacing: .06em; text-transform: uppercase; }
+a.px-ponte span { font-size: .8rem; line-height: 1.4; opacity: .85; }
+@media (max-width: 640px) { .px-h, .px-ctx, .px-pills, .px-corpo { padding-left: 1rem; padding-right: 1rem; } .px-h .tl-anos { font-size: 2.1rem; } }
+
+
+.px-pil > .px-col { margin-top: 0 !important; }   /* a regra global "section + section" empurrava as colunas 2 e 3 */

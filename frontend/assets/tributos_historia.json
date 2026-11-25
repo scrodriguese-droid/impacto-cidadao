@@ -1,6 +1,6 @@
 {
   "titulo": "Como chegamos até aqui",
-  "intro": "A carga tributária de hoje não foi desenhada de uma vez. Cada época trocou a fonte do dinheiro, e cada troca mexeu em quem manda e em quem fica com a sobra. Escolha uma era abaixo.",
+  "intro": "Como a economia, os impostos, a moeda e as regras do orçamento evoluíram juntos. Cada época trocou a fonte do dinheiro, e cada troca mexeu em quem manda e em quem fica com a sobra. Escolha uma era abaixo.",
   "curva": [[1889, 7], [1930, 7], [1964, 16.5], [1975, 25], [1988, 25], [2000, 31], [2023, 32]],
   "curva_nota": "Valores aproximados, para dar a ordem de grandeza. Não são a série oficial de cada ano.",
   "marcos": [
@@ -21,8 +21,8 @@
     { "ano": 1988, "curto": "Constituição Cidadã", "equipe": ["sarney"], "titulo": "Constituição Cidadã", "texto": "Estados e municípios ficam com quase metade do IR e do IPI (FPE e FPM). A União ganha a conta da Seguridade Social." },
     { "ano": 1990, "curto": "Planos Collor", "equipe": ["collor"], "titulo": "Planos Collor I e II (1990–1991)", "texto": "Para estancar a hiperinflação, o Plano Collor I (março de 1990) combinou um choque monetário sem precedentes com a abertura comercial. Como a inflação voltou a acelerar poucos meses depois, o Plano Collor II (janeiro de 1991) tentou de novo, já em situação de grande desgaste.", "itens": [["Collor I: confisco da liquidez", "O governo bloqueou por 18 meses cerca de 80% do dinheiro em circulação: saldos em conta corrente, aplicações no overnight e poupança acima de 50 mil cruzados novos. A ideia era enxugar a moeda disponível para que pessoas e empresas parassem de comprar e de remarcar preços."], ["Collor I: câmbio flutuante", "Foi introduzido o regime de taxa de câmbio flutuante para a moeda nacional."], ["Collor I: abertura comercial (PICE)", "As Diretrizes Gerais para a Política Industrial e de Comércio Exterior eliminaram barreiras não tarifárias e iniciaram um corte drástico das tarifas de importação. A tarifa média caiu de cerca de 40% em 1990 para 13% em 1995, expondo a indústria nacional à concorrência internacional."], ["Collor I: ajuste fiscal e administrativo", "Foram extintos vários órgãos públicos, milhares de funcionários estatais foram demitidos e criaram-se novos tributos sobre operações financeiras, para gerar um superávit temporário nas contas públicas."], ["Collor II: novo congelamento", "O confisco desorganizou o sistema produtivo. Em 1991, o governo tentou de novo conter a inflação com tabelamento de preços e regras de reajuste salarial por data-base."], ["Collor II: crédito e Taxa Referencial", "Novas medidas de contenção de crédito e mudanças nas regras financeiras, com a criação da Taxa Referencial (TR), buscaram conter a especulação."]] },
     { "ano": 1994, "curto": "Plano Real", "equipe": ["itamar"], "titulo": "Plano Real: a estabilização em três fases", "texto": "O Plano Real acabou com a hiperinflação em três etapas, a última delas a nova moeda.", "itens": [["1ª fase: ajuste fiscal (PAI)", "Equilíbrio orçamentário prévio e criação do Fundo Social de Emergência, que desvinculou receitas da União."], ["2ª fase: URV", "Um indexador de transição alinhou preços e salários pela média, sem favorecer ninguém, e devolveu à moeda a função de conta, sem congelamento prévio."], ["3ª fase: o Real", "Lançado em 1º de julho de 1994, com âncora cambial (dólar sobrevalorizado, em paridade) e juros altos para atrair capital e conter a demanda."]] },
-    { "ano": 1996, "curto": "Contribuições crescem", "equipe": ["fhc"], "titulo": "As contribuições crescem", "texto": "Além de COFINS e CSLL, vem a CPMF. Contribuição não se divide com estados e municípios." },
-    { "ano": 1999, "curto": "Tripé macroeconômico", "equipe": ["fhc"], "titulo": "Crise cambial e o tripé macroeconômico", "texto": "O câmbio valorizado somado a juros altos gerou déficits crescentes nas contas externas e dependência de capital volátil. Após as crises da Ásia (1997) e da Rússia (1998), o país perdeu reservas, recorreu ao FMI e desvalorizou o real de uma vez, em janeiro de 1999. Daí saiu o tripé macroeconômico: metas de inflação, câmbio flutuante e metas de superávit primário." },
+    { "ano": 1996, "curto": "Contribuições crescem", "equipe": ["fhc-i"], "titulo": "As contribuições crescem", "texto": "Além de COFINS e CSLL, vem a CPMF. Contribuição não se divide com estados e municípios." },
+    { "ano": 1999, "curto": "Tripé macroeconômico", "equipe": ["fhc-ii"], "titulo": "Crise cambial e o tripé macroeconômico", "texto": "O câmbio valorizado somado a juros altos gerou déficits crescentes nas contas externas e dependência de capital volátil. Após as crises da Ásia (1997) e da Rússia (1998), o país perdeu reservas, recorreu ao FMI e desvalorizou o real de uma vez, em janeiro de 1999. Daí saiu o tripé macroeconômico: metas de inflação, câmbio flutuante e metas de superávit primário." },
     { "ano": 2003, "curto": "Governos Lula", "equipe": ["lula-1-2"], "titulo": "Governos Lula (2003–2010): tripé mantido e consumo de massa", "texto": "A transição de 2002/2003 reafirmou o compromisso com a estabilidade e o superávit primário, por meio da Carta ao Povo Brasileiro e de um acordo com o FMI.", "itens": [["Boom de commodities", "A expansão do comércio global e dos preços das matérias-primas permitiu acumular mais de US$ 200 bilhões em reservas, quitar a dívida com o FMI e tornar o país credor líquido internacional."], ["Consumo de massa", "O crescimento veio do mercado interno: expansão do crédito bancário e do consignado, valorização real contínua do salário mínimo e programas de transferência de renda, como o Bolsa Família."], ["Contradições", "A valorização do real barateou os bens industriais importados e tirou competitividade da indústria nacional (desindustrialização relativa)."]] },
     { "ano": 2008, "curto": "Resposta à crise", "equipe": ["lula-1-2"], "titulo": "Resposta à crise de 2008", "texto": "O Estado adotou políticas abertamente anticíclicas: redução da Selic e dos compulsórios, desonerações fiscais (IPI), investimento público pelo PAC e forte expansão do crédito dos bancos públicos, como o BNDES." },
     { "ano": 2011, "curto": "Nova Matriz", "equipe": ["dilma"], "titulo": "Governo Dilma: a Nova Matriz Econômica (2011–2014)", "texto": "Com a piora dos termos de troca internacionais e a desaceleração da China, o ciclo das commodities se esgota. O governo responde com a Nova Matriz Econômica.", "itens": [["Desonerações", "Cortes de impostos sobre a folha de pagamento das empresas."], ["Juros e câmbio", "Redução forçada da Selic e desvalorização do real."], ["Subsídios tarifários", "Energia elétrica e combustíveis foram subsidiados para conter custos."], ["Conflito distributivo", "Com o mercado de trabalho aquecido (desemprego historicamente baixo), os salários reais subiram acima da produtividade. Isso pressionou os custos dos serviços e comprimiu as margens da indústria."]] },
@@ -135,7 +135,10 @@
               "Ajuste fiscal ortodoxo (corte de gastos e mais impostos) e arrocho salarial.",
               "Criou as instituições modernas do Estado: Banco Central, Conselho Monetário Nacional, BNH, FGTS e a correção monetária (ORTN), que abriu o mercado de títulos públicos.",
               "A inflação caiu de cerca de 90% para cerca de 25% ao ano."
-            ]
+            ],
+            "pilula": "PAEG",
+            "de": 1964,
+            "ate": 1967
           },
           {
             "id": "costa-medici",
@@ -153,7 +156,10 @@
             "politica": [
               "Virada para o expansionismo, com crédito farto, subsídios às exportações, minidesvalorizações do câmbio e uso da capacidade ociosa herdada.",
               "O PIB cresceu em média 11% ao ano (1968–1973), com inflação de cerca de 15% a 20%. Começou também a forte acumulação de reservas, com empréstimos de bancos privados em dólar."
-            ]
+            ],
+            "pilula": "Milagre",
+            "de": 1967,
+            "ate": 1974
           },
           {
             "id": "geisel",
@@ -177,7 +183,10 @@
             "politica": [
               "Diante do primeiro choque do petróleo (1973), o governo recusou a recessão e financiou, com dívida externa pesada, investimentos em energia (Itaipu), siderurgia e bens de capital.",
               "O PIB cresceu cerca de 7% ao ano, mas a inflação dobrou, para cerca de 40%, e a dívida externa líquida quintuplicou e foi estatizada."
-            ]
+            ],
+            "pilula": "II PND",
+            "de": 1974,
+            "ate": 1979
           },
           {
             "id": "figueiredo",
@@ -203,7 +212,10 @@
               "Depois de uma tentativa frustrada de prefixar juros e câmbio (1979–1980), o segundo choque do petróleo e a alta dos juros americanos travaram o crédito externo.",
               "A partir de 1981, Delfim e Galvêas aplicaram um duro ajuste recessivo, sob supervisão do FMI: maxidesvalorização do cruzeiro, corte de gastos e arrocho salarial, para gerar superávits comerciais e pagar os juros externos.",
               "A inflação saltou para 220% ao ano."
-            ]
+            ],
+            "pilula": "Figueiredo",
+            "de": 1979,
+            "ate": 1985
           }
         ]
       },
@@ -233,7 +245,10 @@
               "Plano Cruzado (1986, Funaro): congelamento geral de preços, gatilho salarial e criação do Cruzado. Houve explosão de consumo sem capacidade ociosa, desabastecimento, ágio e a moratória da dívida externa (1987).",
               "Plano Bresser (1987) e Plano Verão (1989, Maílson): novas tentativas de congelamento, seguidas de juros altos para evitar a hiperinflação aberta.",
               "A Constituição de 1988 ampliou a rigidez fiscal, e o governo terminou com inflação de 80% ao mês."
-            ]
+            ],
+            "pilula": "Sarney",
+            "de": 1985,
+            "ate": 1990
           },
           {
             "id": "collor",
@@ -252,7 +267,10 @@
             "politica": [
               "Planos Collor I e II (Zélia): bloqueio de 80% dos ativos financeiros (poupança e conta corrente) por 18 meses, abertura comercial abrupta, com redução das tarifas de importação, e início das privatizações. A inflação caiu no começo e voltou em poucos meses.",
               "Gestão Marcílio: abandonou congelamentos e confisco, buscou credibilidade externa, renegociou a dívida externa (preparando o Plano Brady) e manteve juros reais altos até o impeachment."
-            ]
+            ],
+            "pilula": "Collor",
+            "de": 1990,
+            "ate": 1992
           },
           {
             "id": "itamar",
@@ -285,7 +303,10 @@
               "Sob a liderança de FHC, o plano atacou as duas raízes da inflação sem congelar preços.",
               "Primeiro, um ajuste fiscal prévio, com o Fundo Social de Emergência, que desvinculou 20% das receitas.",
               "Depois, a desindexação pela URV, uma unidade de conta atrelada ao dólar que alinhou os preços relativos antes da troca pelo Real (julho de 1994). A inflação caiu de cerca de 45% para 1% a 2% ao mês."
-            ]
+            ],
+            "pilula": "Real",
+            "de": 1992,
+            "ate": 1994
           }
         ]
       },
@@ -295,10 +316,10 @@
         "tema": "Do câmbio fixo ao tripé e ao boom das commodities",
         "governos": [
           {
-            "id": "fhc",
-            "anos": "1995–2002",
+            "id": "fhc-i",
+            "anos": "1995–1998",
             "presidente": "Fernando Henrique Cardoso",
-            "plano": "Âncora cambial e tripé",
+            "plano": "Âncora cambial e privatizações",
             "ministros": [
               [
                 "Fazenda",
@@ -308,9 +329,31 @@
               ]
             ],
             "politica": [
-              "1º mandato (1995–1998): câmbio semifixo (bandas cambiais) e juros altíssimos para consolidar o fim da inflação, com amplas privatizações, saneamento dos bancos estaduais (PROES) e renegociação da dívida dos estados.",
-              "2º mandato (1999–2002): depois da crise cambial de janeiro de 1999, instituiu o tripé macroeconômico (metas de inflação, câmbio flutuante e superávit primário), aprovou a Lei de Responsabilidade Fiscal (2000) e elevou o superávit primário para conter a dívida em relação ao PIB."
-            ]
+              "Câmbio semifixo (bandas cambiais) e juros altíssimos para consolidar o fim da inflação, com amplas privatizações, saneamento dos bancos estaduais (PROES) e renegociação da dívida dos estados."
+            ],
+            "pilula": "FHC I",
+            "de": 1995,
+            "ate": 1999
+          },
+          {
+            "id": "fhc-ii",
+            "anos": "1999–2002",
+            "presidente": "Fernando Henrique Cardoso",
+            "plano": "Tripé macroeconômico e LRF",
+            "ministros": [
+              [
+                "Fazenda",
+                [
+                  "Pedro Malan (os oito anos)"
+                ]
+              ]
+            ],
+            "politica": [
+              "Depois da crise cambial de janeiro de 1999, instituiu o tripé macroeconômico (metas de inflação, câmbio flutuante e superávit primário), aprovou a Lei de Responsabilidade Fiscal (2000) e elevou o superávit primário para conter a dívida em relação ao PIB."
+            ],
+            "pilula": "FHC II",
+            "de": 1999,
+            "ate": 2003
           },
           {
             "id": "lula-1-2",
@@ -329,7 +372,10 @@
             "politica": [
               "Gestão Palocci: depois da crise de confiança de 2002, reforçou o tripé, elevando a meta de superávit primário para 4,25% do PIB, e manteve a Selic alta para derrubar a inflação. Aproveitou o boom mundial das commodities para zerar a dívida externa líquida e acumular mais de US$ 280 bilhões em reservas.",
               "Gestão Mantega: lançou o PAC (investimento público), ampliou o crédito pelos bancos públicos (BNDES, Banco do Brasil e Caixa) e adotou forte política anticíclica (corte de IPI e expansão fiscal) depois da crise global de 2008. O PIB cresceu 7,5% em 2010."
-            ]
+            ],
+            "pilula": "Lula I e II",
+            "de": 2003,
+            "ate": 2011
           }
         ]
       },
@@ -356,7 +402,10 @@
             "politica": [
               "1º mandato (Mantega): tentou forçar a queda da Selic enquanto ampliava desonerações, subsídios do BNDES e represava preços administrados (energia e combustíveis). O resultado foi a perda do superávit primário (primeiro déficit em 2014), a perda do grau de investimento e a alta da inflação.",
               "2º mandato (Levy e Barbosa): tentou um ajuste fiscal ortodoxo, com tarifaço para realinhar preços e corte de gastos, barrado pelo Congresso e pela crise política. Veio a maior recessão da história recente (queda de cerca de 7% do PIB em 2015–2016) e inflação acima de 10%."
-            ]
+            ],
+            "pilula": "Dilma",
+            "de": 2011,
+            "ate": 2016
           },
           {
             "id": "temer",
@@ -375,7 +424,10 @@
             "politica": [
               "Foco na credibilidade fiscal e na redução da Selic (de 14,25% para 6,5%).",
               "Aprovou o Teto de Gastos (Emenda 95) e a Reforma Trabalhista, criou a TLP (o fim dos subsídios automáticos do BNDES) e aprovou a Lei das Estatais."
-            ]
+            ],
+            "pilula": "Temer",
+            "de": 2016,
+            "ate": 2019
           },
           {
             "id": "bolsonaro",
@@ -393,7 +445,10 @@
             "politica": [
               "2019: Reforma da Previdência e avanço em marcos regulatórios (saneamento, gás e liberdade econômica).",
               "2020–2022: choque fiscal extraordinário na pandemia (Auxílio Emergencial e Orçamento de Guerra), que elevou a dívida bruta, por um tempo, a cerca de 89% do PIB. Aprovou a autonomia formal do Banco Central (2021), e a Selic subiu de 2% para 13,75% para conter a inflação global pós-covid."
-            ]
+            ],
+            "pilula": "Bolsonaro",
+            "de": 2019,
+            "ate": 2023
           },
           {
             "id": "lula-3",
@@ -411,12 +466,409 @@
             "politica": [
               "Trocou o Teto de Gastos pelo Arcabouço Fiscal, que limita o crescimento real da despesa a entre 0,6% e 2,5% ao ano, e aprovou a Reforma Tributária do consumo (IVA dual, com CBS e IBS).",
               "Busca equilíbrio primário com mais arrecadação, mas enfrenta a pressão das despesas obrigatórias e dos juros reais altos (Selic acima de 13% a 15% entre 2025 e 2026), que mantêm a dívida bruta acima de 80% do PIB."
-            ]
+            ],
+            "pilula": "Lula III",
+            "de": 2023,
+            "ate": 2026
           }
         ]
       }
     ],
     "nota": "Resumo editorial das principais decisões de cada gestão. Os números de inflação, PIB e reservas são aproximados; as séries oficiais estão no IBGE e no Banco Central."
+  },
+  "macro": {
+    "titulo": "Como a economia, os impostos, a moeda e as regras do orçamento evoluíram juntos",
+    "pilares": [
+      [
+        "fiscal",
+        "1 · Política fiscal e tributária"
+      ],
+      [
+        "monetaria",
+        "2 · Política monetária e cambial"
+      ],
+      [
+        "orcamento",
+        "3 · Política orçamentária (as regras do dinheiro)"
+      ]
+    ],
+    "eras": [
+      {
+        "id": "militar",
+        "de": 1964,
+        "ate": 1985,
+        "anos": "1964–1985",
+        "nome": "Regime militar",
+        "apelido": "Reformas, milagre e crise da dívida",
+        "frase": "Arrecada-se muito mais, mas as decisões ficam em Brasília.",
+        "carga_nota": "de ~16% para ~25% do PIB",
+        "mudanca": "A reforma de 1965/66 modernizou o sistema para pagar grandes obras, e o país cresceu com crédito e dívida externa. Os choques do petróleo e dos juros americanos terminaram em recessão e inflação alta.",
+        "subs": [
+          "castelo",
+          "costa-medici",
+          "geisel",
+          "figueiredo"
+        ],
+        "pilares": {
+          "fiscal": [
+            {
+              "t": "Reforma tributária de 1965/66: nascem o ICM (hoje ICMS), o IPI e o Código Tributário Nacional (CTN).",
+              "g": [
+                "castelo"
+              ]
+            },
+            {
+              "t": "Ajuste fiscal ortodoxo: corte de gastos e mais impostos.",
+              "g": [
+                "castelo"
+              ]
+            },
+            {
+              "t": "Subsídios às exportações sustentam o crescimento do Milagre.",
+              "g": [
+                "costa-medici"
+              ]
+            },
+            {
+              "t": "A carga tributária salta de cerca de 16% para cerca de 25% do PIB."
+            },
+            {
+              "t": "Endividamento externo pesado financia o II PND; a dívida externa líquida quintuplica e é estatizada.",
+              "g": [
+                "geisel"
+              ]
+            },
+            {
+              "t": "Ajuste recessivo sob o FMI: corte de gastos e arrocho salarial para pagar os juros externos.",
+              "g": [
+                "figueiredo"
+              ]
+            }
+          ],
+          "monetaria": [
+            {
+              "t": "Criação do Banco Central (1964) e da correção monetária (ORTN).",
+              "g": [
+                "castelo"
+              ]
+            },
+            {
+              "t": "Crédito farto e minidesvalorizações do câmbio sustentam o Milagre (1968–1973).",
+              "g": [
+                "costa-medici"
+              ]
+            },
+            {
+              "t": "Com o choque do petróleo, a inflação dobra, para cerca de 40%.",
+              "g": [
+                "geisel"
+              ]
+            },
+            {
+              "t": "Choque dos juros externos em 1979 e maxidesvalorização do cruzeiro; a inflação chega a 220% ao ano.",
+              "g": [
+                "figueiredo"
+              ]
+            }
+          ],
+          "orcamento": [
+            {
+              "t": "Lei 4.320/1964: padroniza a contabilidade pública e os balanços da União, estados e municípios.",
+              "g": [
+                "castelo"
+              ]
+            },
+            {
+              "t": "O orçamento fica concentrado no Poder Executivo."
+            }
+          ]
+        }
+      },
+      {
+        "id": "hiperinflacao",
+        "de": 1985,
+        "ate": 1995,
+        "anos": "1985–1994",
+        "nome": "Hiperinflação e Real",
+        "apelido": "Planos de choque até a nova moeda",
+        "frase": "A União dividiu os impostos e passou a cobrar por onde não precisa dividir.",
+        "carga_nota": "de ~25% para ~28% do PIB (aproximado)",
+        "mudanca": "A Constituição de 1988 obrigou a União a repassar quase metade do IR e do IPI a estados e municípios e criou a Seguridade Social, uma conta enorme. A inflação era vista como inercial, alimentada pela indexação, e veio uma sucessão de planos de choque até o Plano Real.",
+        "subs": [
+          "sarney",
+          "collor",
+          "itamar"
+        ],
+        "pilares": {
+          "fiscal": [
+            {
+              "t": "A Constituição de 1988 descentraliza o IR e o IPI para estados e municípios.",
+              "g": [
+                "sarney"
+              ]
+            },
+            {
+              "t": "A União cria contribuições (Cofins, CSLL e IPMF) para recompor o caixa."
+            },
+            {
+              "t": "Abertura comercial, privatizações e novos tributos sobre operações financeiras, com extinção de órgãos e demissões.",
+              "g": [
+                "collor"
+              ]
+            },
+            {
+              "t": "Ajuste prévio do Real: o Fundo Social de Emergência desvincula 20% das receitas.",
+              "g": [
+                "itamar"
+              ]
+            },
+            {
+              "t": "Com o fim da inflação, em 1994, acaba a senhoriagem: o ganho do governo ao emitir moeda.",
+              "g": [
+                "itamar"
+              ]
+            }
+          ],
+          "monetaria": [
+            {
+              "t": "Planos Cruzado (1986), Bresser (1987) e Verão (1989): congelamentos e troca de moeda, e a moratória da dívida externa (1987).",
+              "g": [
+                "sarney"
+              ]
+            },
+            {
+              "t": "Planos Collor I e II: confisco de 80% dos ativos por 18 meses e câmbio flutuante.",
+              "g": [
+                "collor"
+              ]
+            },
+            {
+              "t": "URV e Plano Real (1994): nova moeda sem congelamento; a inflação cai de cerca de 45% para 1% a 2% ao mês.",
+              "g": [
+                "itamar"
+              ]
+            }
+          ],
+          "orcamento": [
+            {
+              "t": "Constituição de 1988 (art. 165): cria o ciclo integrado PPA, LDO e LOA, unifica o orçamento (fim da “conta movimento” do Banco do Brasil) e cria a Seguridade Social.",
+              "g": [
+                "sarney"
+              ],
+              "l": [
+                [
+                  "PPA, LDO e LOA",
+                  "orcamento.html#tArc"
+                ]
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "id": "tripe",
+        "de": 1995,
+        "ate": 2011,
+        "anos": "1995–2010",
+        "nome": "Tripé e commodities",
+        "apelido": "Estabilização, tripé e expansão",
+        "frase": "A inflação foi domada, e o tripé deu regras para a moeda e para as contas.",
+        "carga_nota": "acima de 30% do PIB",
+        "mudanca": "As crises externas (Ásia e Rússia) derrubaram o câmbio quase fixo em 1999, e o país passou ao tripé: metas de inflação, câmbio flutuante e superávit primário. Depois, o boom das commodities e os superávits reduziram a dívida e acumularam reservas.",
+        "subs": [
+          "fhc-i",
+          "fhc-ii",
+          "lula-1-2"
+        ],
+        "pilares": {
+          "fiscal": [
+            {
+              "t": "Privatizações e renegociação das dívidas dos estados (PROES).",
+              "g": [
+                "fhc-i"
+              ]
+            },
+            {
+              "t": "A carga tributária passa de 30% do PIB."
+            },
+            {
+              "t": "Metas de superávit primário passam a guiar as contas.",
+              "g": [
+                "fhc-ii"
+              ]
+            },
+            {
+              "t": "Meta de superávit primário elevada para 4,25% do PIB; os superávits derrubam a dívida líquida (DLSP) de 60,4% para 38,5% do PIB.",
+              "g": [
+                "lula-1-2"
+              ],
+              "l": [
+                [
+                  "dívida líquida (DLSP)",
+                  "economia.html?aba=fiscal"
+                ]
+              ]
+            }
+          ],
+          "monetaria": [
+            {
+              "t": "Âncora cambial (1995–1998) com juros reais altíssimos.",
+              "g": [
+                "fhc-i"
+              ]
+            },
+            {
+              "t": "Depois da crise cambial de janeiro de 1999: tripé com metas de inflação, câmbio flutuante e superávit primário.",
+              "g": [
+                "fhc-ii"
+              ]
+            },
+            {
+              "t": "Selic alta para derrubar a inflação; acúmulo de reservas (mais de US$ 280 bilhões) e quitação com o FMI (2005).",
+              "g": [
+                "lula-1-2"
+              ]
+            }
+          ],
+          "orcamento": [
+            {
+              "t": "LRF (LC 101/2000): institucionaliza o superávit primário, limita os gastos com pessoal (RCL) e a dívida de estados e municípios e cria a transparência (RREO e RGF).",
+              "g": [
+                "fhc-ii"
+              ],
+              "l": [
+                [
+                  "LRF",
+                  "orcamento.html#tLrf"
+                ],
+                [
+                  "gastos com pessoal (RCL)",
+                  "economia.html?aba=fiscal"
+                ]
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "id": "crise",
+        "de": 2011,
+        "ate": 2025,
+        "anos": "2011–2026",
+        "nome": "Crise e novos regimes",
+        "apelido": "Nova Matriz, ajuste e reformas",
+        "frase": "O estímulo virou déficit, o ajuste virou recessão, e vieram regras novas para as contas.",
+        "carga_nota": "perto de 32% do PIB",
+        "mudanca": "Com o fim do ciclo das commodities, a Nova Matriz Econômica levou o resultado primário ao déficit. Depois vieram o Teto de Gastos, a pandemia, a autonomia do Banco Central, o Novo Arcabouço Fiscal e a Reforma Tributária do consumo.",
+        "subs": [
+          "dilma",
+          "temer",
+          "bolsonaro",
+          "lula-3"
+        ],
+        "pilares": {
+          "fiscal": [
+            {
+              "t": "Desonerações e recessão levam o resultado primário ao déficit em 2014.",
+              "g": [
+                "dilma"
+              ]
+            },
+            {
+              "t": "Criação da TLP: fim dos subsídios automáticos do BNDES.",
+              "g": [
+                "temer"
+              ]
+            },
+            {
+              "t": "Reforma da Previdência (2019) e choque fiscal na pandemia (2020): Auxílio Emergencial e dívida bruta a cerca de 89% do PIB.",
+              "g": [
+                "bolsonaro"
+              ]
+            },
+            {
+              "t": "Aprovação da Reforma Tributária do consumo (IBS e CBS), com foco em mais arrecadação.",
+              "g": [
+                "lula-3"
+              ]
+            }
+          ],
+          "monetaria": [
+            {
+              "t": "Corte forçado da Selic e, depois, alta (2012–2015); preços administrados represados e depois realinhados.",
+              "g": [
+                "dilma"
+              ]
+            },
+            {
+              "t": "A Selic cai de 14,25% para 6,5%.",
+              "g": [
+                "temer"
+              ]
+            },
+            {
+              "t": "Autonomia formal do Banco Central (LC 179/2021); a Selic sobe de 2% para 13,75% para conter a inflação pós-pandemia.",
+              "g": [
+                "bolsonaro"
+              ]
+            },
+            {
+              "t": "Juro real restritivo: Selic acima de 13% a 15% entre 2025 e 2026.",
+              "g": [
+                "lula-3"
+              ]
+            }
+          ],
+          "orcamento": [
+            {
+              "t": "Teto de Gastos (EC 95/2016).",
+              "g": [
+                "temer"
+              ],
+              "l": [
+                [
+                  "Teto de Gastos",
+                  "orcamento.html#tContra"
+                ]
+              ]
+            },
+            {
+              "t": "Orçamento de Guerra na pandemia (2020).",
+              "g": [
+                "bolsonaro"
+              ]
+            },
+            {
+              "t": "Novo Arcabouço Fiscal (LC 200/2023): a despesa real cresce entre 0,6% e 2,5% ao ano.",
+              "g": [
+                "lula-3"
+              ],
+              "l": [
+                [
+                  "Novo Arcabouço Fiscal",
+                  "orcamento.html#tContra"
+                ]
+              ]
+            },
+            {
+              "t": "Avanço do orçamento impositivo: emendas parlamentares de execução obrigatória."
+            }
+          ]
+        }
+      }
+    ],
+    "pontes": [
+      [
+        "Ciclo e leis",
+        "como o orçamento nasce, quem vota e quais são as regras hoje",
+        "orcamento.html"
+      ],
+      [
+        "Saúde fiscal",
+        "as contas da União agora: resultado, dívida e limites",
+        "economia.html?aba=fiscal"
+      ]
+    ]
   },
   "governos": {
     "titulo": "Do Plano Real até hoje: governos diferentes, a mesma conta",
